@@ -5,28 +5,26 @@
 
 // Linked List Node ========================================================
 template<class List>
-struct LinkedListNode                                                             // Struct that holds data and references to next and previous struct
+struct ListNode															// Struct that holds data and references to next and previous struct
 {
-public:
+private:
 	using ValueType = typename List::ValueType;
+	using Alloc = typename Allocator<ValueType>;
 
-	ValueType Value;                                                              // Data
-	ListNode* Previous	= nullptr;                                        // Reference to previous 
-	ListNode* Next		= nullptr;                                        // Reference to next
+	Alloc _alloc;
+
+public:
+	ValueType Value;													// Data
+	ListNode* Previous	= nullptr;										// Reference to previous 
+	ListNode* Next		= nullptr;										// Reference to next
+
+public:
 
 	ListNode() = default;
 
 	template<class... Args>
-	ListNode(Args&&... args) {                                              // Add data using emplace ValueTypepe Constructor
-		new(&Value) ValueType(std::forward<Args>(args)...);
-	}
-
-	ListNode(const ValueType& value) {                                      // Add data using reference ValueTypepe Constructor
-		new(&Value) ValueType(value);
-	}
-
-	ListNode(ValueType&& value) {                                           // Add data using temporary ValueTypepe Constructor
-		new(&Value) ValueType(std::move(value));
+	ListNode(Args&&... args) {											// Add data using emplace ValueTypepe Constructor
+		_alloc.construct(&Value, std::forward<Args>(args)...);
 	}
 };
 // Linked List Node ========================================================
@@ -105,9 +103,9 @@ class List
 {
 public:
 	using ValueType = Type;													// Type for stored values
-	using Node		= typename ListNode<List<ValueType>>;		// Node type
+	using Node		= typename ListNode<List<ValueType>>;					// Node type
 	using IterType	= Node;													// Type of iterating element
-	using Iterator	= typename ListIterator<List<ValueType>>;	// Iterator type
+	using Iterator	= typename ListIterator<List<ValueType>>;				// Iterator type
 	using Data		= typename Iterator::Data;								// Iteration data
 
 private:
@@ -120,7 +118,7 @@ private:
 public:
 	// Constructors
 
-	List() {                                                              // Default Constructor
+	List() {																// Default Constructor
 		reset_head();
 	}
 
@@ -137,15 +135,15 @@ public:
 		create_until_size(newSize, std::move(value));
 	}
 
-	List(const List<ValueType>& other) : List() {				// Copy Constructor
+	List(const List<ValueType>& other) : List() {					// Copy Constructor
 		copy(other);
 	}
 
-	List(List<ValueType>&& other) noexcept : List() {			// Move Constructor
+	List(List<ValueType>&& other) noexcept : List() {				// Move Constructor
 		move(std::move(other));
 	}
 
-	~List() {                                                             // Destructor
+	~List() {														// Destructor
 		clear();
 		clear_head();
 	}
