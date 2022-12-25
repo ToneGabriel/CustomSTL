@@ -1,5 +1,5 @@
 #pragma once
-#include "LinkedList.h"
+#include "List.h"
 #include "Vector.h"
 
 template<class Key, class Type>
@@ -7,13 +7,13 @@ class UnorderedMap
 {
 public:
 	using ValueType = std::pair<Key, Type>;							// Type of values stored in container
-	using Iterator = typename LinkedList<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
+	using Iterator = typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
 
 private:
 	using Hash = std::hash<Key>;						// Strong Hash function
-	using List = LinkedList<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
+	using List = List<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
 	using Node = typename List::Node;					// Node component from List
-	using Bucket = LinkedList<Node*>;					// List of Node* (as Value) from Iteration list
+	using Bucket = List<Node*>;					// List of Node* (as Value) from Iteration list
 	using HashArray = DynamicArray<Bucket>;				// Array of lists of Node*
 	using BucketIterator = typename Bucket::Iterator;	// Iterator for Buckets
 
