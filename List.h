@@ -118,21 +118,12 @@ private:
 public:
 	// Constructors
 
-	List() {																// Default Constructor
+	List() {														// Default Constructor
 		reset_head();
-	}
-
-	template<class... Args>
-	List(const size_t& newSize, Args&&... args) : List() {          // Emplace type Constructor
-		create_until_size(newSize, std::forward<Args>(args)...);
 	}
 
 	List(const size_t& newSize, const ValueType& value) : List() {  // Reference type Constructor
 		create_until_size(newSize, value);
-	}
-
-	List(const size_t& newSize, ValueType&& value) : List() {       // Temporary type Constructor
-		create_until_size(newSize, std::move(value));
 	}
 
 	List(const List<ValueType>& other) : List() {					// Copy Constructor
@@ -151,17 +142,11 @@ public:
 public:
 	// Main functions
 
-	template<class... Args>
-	void resize(const size_t& newSize, Args&&... args) {                    // Resize the list by removing or adding elements to the tail
-		resize_emplace(newSize, std::forward<Args>(args)...);               // Emplace type addition
-	}
+	// TODO: resize default
 
-	void resize(const size_t& newSize, const ValueType& copyValue) {
-		resize_emplace(newSize, copyValue);                                 // Reference type addition
-	}
-
-	void resize(const size_t& newSize, ValueType&& moveValue) {
-		resize_emplace(newSize, std::move(moveValue));                      // Temporary type addition
+	void resize(const size_t& newSize, const ValueType& copyValue) {		// Resize the list by removing or adding elements to the tail
+		delete_until_size(newSize);
+		create_until_size(newSize, copyValue);								// Reference type addition
 	}
 
 	template<class... Args>
@@ -204,7 +189,7 @@ public:
 
 	template<class... Args>
 	Iterator emplace(const Iterator& iterator, Args&&... args) {            // Construct object using arguments (Args) and add it BEFORE the iterator position
-		_workspaceNode = iterator._NodePtr;
+		_workspaceNode = iterator._Ptr;
 		Node* newNode = new Node(std::forward<Args>(args)...);
 		insert_node_before(_workspaceNode, newNode);
 
@@ -220,14 +205,14 @@ public:
 	}
 
 	Iterator pop(const Iterator& iterator) {                                 // Remove component at iterator position
-		if (iterator == end())
+		if (iterator._Ptr == _head)											 // Check end()
 			throw std::out_of_range("Cannot pop end iterator...");
 
-		_workspaceNode = iterator._NodePtr;
-		Iterator nextIterator = Iterator(_workspaceNode->Next, update_iteration_data());
+		_workspaceNode = iterator._Ptr;
+		Iterator prevIterator = Iterator(_workspaceNode->Previous, update_iteration_data());
 		remove_node(_workspaceNode);
 
-		return nextIterator;
+		return prevIterator;
 	}
 
 	void insert_node_before(Node* beforeNode, Node* newNode) {
@@ -280,15 +265,21 @@ public:
 	// Operators
 
 	List& operator=(const List<ValueType>& other) {              // Assign operator using reference
-		clear();
-		copy(other);
+		if (_head != other._head)
+		{
+			clear();
+			copy(other);
+		}
 
 		return *this;
 	}
 
 	List& operator=(List<ValueType>&& other) noexcept {          // Assign operator using temporary
-		clear();
-		move(std::move(other));
+		if (_head != other._head)
+		{
+			clear();
+			move(std::move(other));
+		}
 
 		return *this;
 	}
@@ -333,14 +324,8 @@ private:
 
 		// link old head with itself
 		other.reset_head();
-		other._data = nullptr;
 		other._size = 0;
-	}
-
-	template<class... Args>
-	void resize_emplace(const size_t& newSize, Args&&... args) {             // Resize the list by removing or adding elements to the tail
-		delete_until_size(newSize);
-		create_until_size(newSize, std::forward<Args>(args)...);
+		other.update_iteration_data();
 	}
 
 	template<class... Args>

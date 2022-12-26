@@ -314,7 +314,7 @@ public:
 private:
 	// Others
 
-	void copy(const Vector<ValueType>& other) {
+	void copy(const Vector<ValueType>& other) {								// Generic copy function for vector
 		clean_up_array();
 
 		_array = _alloc.alloc(other._capacity);
@@ -326,7 +326,7 @@ private:
 		update_iteration_data();
 	}
 
-	void move(Vector<ValueType>&& other) {
+	void move(Vector<ValueType>&& other) {									// Generic move function for vector
 		clean_up_array();
 
 		_array = other._array;
