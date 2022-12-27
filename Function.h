@@ -1,10 +1,17 @@
 #pragma once
 
-template<class Type>
+template<class Type, class... Args>
 class Function
 {
+private:
+	using RetType = Type;
+
+
 public:
-	Function();
+	Function() noexcept {}
+
+	template<class RetType>
+	Function(RetType&& func);
 
 
 };
