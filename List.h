@@ -9,7 +9,7 @@ struct ListNode															// Struct that holds data and references to next a
 {
 private:
 	using ValueType = typename List::ValueType;
-	using Alloc = typename Allocator<ValueType>;
+	using Alloc		= typename Allocator<ValueType>;
 
 	Alloc _alloc;
 

@@ -1,6 +1,30 @@
 #pragma once
-#include "QueueNode.h"
+#include "Allocator.h"
 
+// Queue Node ========================================================
+template<class Queue>
+struct QueueNode                                                             // Struct that holds data and references to next struct
+{
+private:
+	using ValueType = typename Queue::ValueType;
+	using Alloc		= typename Allocator<ValueType>;
+
+	Alloc _alloc;
+
+public:
+	ValueType Value;                                                         // Data
+	QueueNode* Next = nullptr;                                               // Reference to next
+
+	template<class... Args>
+	QueueNode(Args&&... args) {                                              // Add data using emplace type Constructor
+		_alloc.construct(&Value, std::forward<Args>(args)...);
+	}
+};
+// Queue Node ========================================================
+// END
+
+
+// Queue ========================================================
 template<class Type>
 class Queue
 {
@@ -9,9 +33,9 @@ public:
 	using Node = typename QueueNode<Queue<ValueType>>;                      // Node type
 
 private:
-	size_t _size = 0;                                                       // Number of Nodes held by this
-	Node* _head = nullptr;                                                  // Head of this list
-	Node* _tail = nullptr;                                                  // Tail of this list
+	size_t _size	= 0;													// Number of Nodes held by this
+	Node* _head		= nullptr;												// Head of this list
+	Node* _tail		= nullptr;												// Tail of this list
 
 	mutable Node* _workspaceNode = nullptr;                                 // Auxiliary Node for work
 	mutable ValueType _workspaceValue;                                      // Auxiliary Value for work
@@ -154,3 +178,5 @@ private:
 			emplace_back(std::forward<Args>(args)...);                       // Emplace type addition
 	}
 };
+// Queue ========================================================
+// END

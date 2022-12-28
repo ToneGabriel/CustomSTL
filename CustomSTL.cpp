@@ -2,6 +2,8 @@
 #include "Vector.h"
 #include "List.h"
 #include "UnorderedMap.h"
+#include "UnorderedSet.h"
+#include "String.h"
 
 class Test {
 
