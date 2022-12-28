@@ -161,7 +161,15 @@ public:
 		reserve(_size);
 	}
 
-	// TODO: realloc and resize with default
+	void realloc(const size_t& newCapacity) {									// Allocate memory and populate it with default values (delete old)
+		clean_up_array();
+
+		_capacity = newCapacity;
+		_size = _capacity;
+
+		_array = _alloc.alloc(_capacity);
+		_alloc.construct_range(_array, _capacity);
+	}
 
 	void realloc(const size_t& newCapacity, const ValueType& copyValue) {		// Allocate memory and populate it with given reference (delete old)
 		clean_up_array();
@@ -171,6 +179,19 @@ public:
 
 		_array = _alloc.alloc(_capacity);
 		_alloc.construct_range(_array, _capacity, copyValue);
+	}
+
+	void resize(const size_t& newSize) {										// Change size and Construct/Destruct objects with default value if needed
+		if (newSize < _size)
+			_alloc.destroy_range(&_array[newSize], _size - newSize);
+		else {
+			if (newSize > _capacity)
+				reserve(newSize);
+
+			_alloc.construct_range(&_array[_size], newSize - _size);
+		}
+
+		_size = newSize;
 	}
 
 	void resize(const size_t& newSize, const ValueType& copyValue) {			// Change size and Construct/Destruct objects with given reference if needed

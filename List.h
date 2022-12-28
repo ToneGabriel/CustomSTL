@@ -142,11 +142,14 @@ public:
 public:
 	// Main functions
 
-	// TODO: resize default
-
-	void resize(const size_t& newSize, const ValueType& copyValue) {		// Resize the list by removing or adding elements to the tail
+	void resize(const size_t& newSize) {									// Resize the list by removing or adding default elements to the tail
 		delete_until_size(newSize);
-		create_until_size(newSize, copyValue);								// Reference type addition
+		create_until_size(newSize);
+	}
+
+	void resize(const size_t& newSize, const ValueType& copyValue) {		// Resize the list by removing or adding copy elements to the tail
+		delete_until_size(newSize);
+		create_until_size(newSize, copyValue);
 	}
 
 	template<class... Args>

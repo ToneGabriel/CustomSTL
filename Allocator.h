@@ -29,7 +29,12 @@ public:
 		::new(address) Type(std::forward<Args>(args)...);
 	}
 
-	void construct_range(Type* address, const size_t& length, const Type& value) {
+	void construct_range(Type* address, const size_t& length) {							// Default value
+		for (size_t i = 0; i < length; i++)
+			construct(address + i);
+	}
+
+	void construct_range(Type* address, const size_t& length, const Type& value) {		// Copy value
 		for (size_t i = 0; i < length; i++)
 			construct(address + i, value);
 	}

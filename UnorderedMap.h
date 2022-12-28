@@ -18,8 +18,8 @@ private:
 	using BucketIterator	= typename Bucket::Iterator;		// Iterator for Buckets
 
 private:
-	static const float _maxLoadFactor	= 0.75;					// The maximum load factor admitted before rehashing
-	static const size_t _defaultBuckets = 8;					// Power of 2
+	static constexpr float _maxLoadFactor	= 0.75;					// The maximum load factor admitted before rehashing
+	static constexpr size_t _defaultBuckets = 8;					// Power of 2
 
 	Hash _hash;													// Used for initial(non-compressed) hash value
 	IterList _elems;											// Used to iterate through container
@@ -65,7 +65,7 @@ public:
 		}
 		else {
 			rehash_if_overload();
-			_elems.insert_node_before(_elems.end()._NodePtr, newNode);
+			_elems.insert_node_before(_elems.end()._Ptr, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
 			return Iterator(newNode, _elems.update_iteration_data());
 		}
@@ -84,7 +84,7 @@ public:
 			Key& newKey = newNode->Value.first;
 
 			rehash_if_overload();
-			_elems.insert_node_before(_elems.end()._NodePtr, newNode);
+			_elems.insert_node_before(_elems.end()._Ptr, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
 			return Iterator(newNode, _elems.update_iteration_data());
 		}
@@ -98,15 +98,15 @@ public:
 			return end();
 
 		Node* nodeToErase = (*it);
-		_buckets[index].pop(it);										// Remove reference from array of lists
-		return _elems.pop(Iterator(nodeToErase, _elems.update_iteration_data()));						// Remove value from iteration list and return next Node iterator
+		_buckets[index].pop(it);													// Remove reference from array of lists
+		return _elems.pop(Iterator(nodeToErase, _elems.update_iteration_data()));	// Remove value from iteration list and return next Node iterator
 	}
 
 	Iterator erase(const Iterator& iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
-		return erase(iterator._NodePtr->Value.first);
+		return erase(iterator._Ptr->Value.first);
 	}
 
 	Iterator find(const Key& key) {
@@ -122,8 +122,6 @@ public:
 		if (newBucketCount <= bucket_count())
 			return;
 
-		//TODO:
-		//newBucketCount = static_cast<size_t>(1) << std::_Ceiling_of_log_2(newBucketCount);	// 1 * 2 ^ ceil( log2 __ )
 		force_rehash(newBucketCount);
 	}
 
@@ -233,7 +231,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(it->Value.first)].push_back(it._NodePtr);
+			_buckets[bucket(it->Value.first)].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed
@@ -241,8 +239,7 @@ private:
 			force_rehash(2 * bucket_count());
 	}
 
-	size_t min_load_factor_buckets(const size_t& size) {				// returns the minimum number of buckets necessary for the elements in List
-		return static_cast<size_t>(static_cast<float>(size) / _maxLoadFactor);
+	size_t min_load_factor_buckets(const size_t& size) const {			// returns the minimum number of buckets necessary for the elements in List
+		return static_cast<size_t>(std::ceilf(static_cast<float>(size) / _maxLoadFactor));
 	}
 };
-
