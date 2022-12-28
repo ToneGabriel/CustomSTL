@@ -1,20 +1,40 @@
 #include <iostream>
 #include "Vector.h"
 #include "List.h"
+#include "UnorderedMap.h"
 
+class Test {
 
+public:
+
+	Test() {
+		std::cout << "Default Construct\n";
+	}
+
+	Test(const Test& other) {
+		std::cout << "Copy Construct\n";
+	}
+
+	Test(Test&& other) noexcept {
+		std::cout << "Move Construct\n";
+	}
+
+	~Test() {
+		std::cout << "Destruct\n";
+	}
+
+	Test& operator=(const Test& other) {
+		std::cout << "Copy Assign\n";
+	}
+
+	Test& operator=(Test&& other) noexcept {
+		std::cout << "Move Assign\n";
+	}
+
+};
 
 int main()
 {
-    List<std::string> list(3, "abc");
-    list.push_back("xyz");
 
-
-    auto it = list.at(3);
-    std::cout << *it << '\n';
-
-
-    for (auto& val : list)
-        std::cout << val << '\n';
 
 }

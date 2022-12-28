@@ -6,24 +6,24 @@ template<class Key, class Type>
 class UnorderedMap
 {
 public:
-	using ValueType = std::pair<Key, Type>;							// Type of values stored in container
-	using Iterator = typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
+	using ValueType = std::pair<Key, Type>;						// Type of values stored in container
+	using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
 
 private:
-	using Hash = std::hash<Key>;						// Strong Hash function
-	using List = List<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
-	using Node = typename List::Node;					// Node component from List
-	using Bucket = List<Node*>;					// List of Node* (as Value) from Iteration list
-	using HashArray = DynamicArray<Bucket>;				// Array of lists of Node*
-	using BucketIterator = typename Bucket::Iterator;	// Iterator for Buckets
+	using Hash				= std::hash<Key>;					// Strong Hash function
+	using IterList			= List<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
+	using Node				= typename IterList::Node;			// Node component from List
+	using Bucket			= List<Node*>;						// List of Node* (as Value) from Iteration list
+	using HashArray			= Vector<Bucket>;					// Array of lists of Node*
+	using BucketIterator	= typename Bucket::Iterator;		// Iterator for Buckets
 
 private:
-	const float _maxLoadFactor = 0.75;					// The maximum load factor admitted before rehashing
-	const size_t _defaultBuckets = 8;					// Power of 2
+	static const float _maxLoadFactor	= 0.75;					// The maximum load factor admitted before rehashing
+	static const size_t _defaultBuckets = 8;					// Power of 2
 
-	Hash _hash;											// Used for initial(non-compressed) hash value
-	List _elems;										// Used to iterate through container
-	HashArray _buckets;									// Used to map List values
+	Hash _hash;													// Used for initial(non-compressed) hash value
+	IterList _elems;											// Used to iterate through container
+	HashArray _buckets;											// Used to map IterList values
 
 public:
 	// Constructors
