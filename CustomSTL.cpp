@@ -1,9 +1,10 @@
 #include <iostream>
 #include "Vector.h"
 #include "List.h"
+#include "Queue.h"
 #include "UnorderedMap.h"
 #include "UnorderedSet.h"
-#include "String.h"
+//#include "String.h"
 
 class Test {
 
@@ -11,6 +12,10 @@ public:
 
 	Test() {
 		std::cout << "Default Construct\n";
+	}
+
+	Test(int) {
+		std::cout << "Custom Construct\n";
 	}
 
 	Test(const Test& other) {
@@ -34,6 +39,7 @@ public:
 	}
 
 };
+
 
 int main()
 {

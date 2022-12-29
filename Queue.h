@@ -15,10 +15,15 @@ public:
 	ValueType Value;                                                 // Data
 	QueueNode* Next = nullptr;                                       // Reference to next
 
+	QueueNode() = default;
+
 	template<class... Args>
 	QueueNode(Args&&... args) {                                      // Add data using emplace type Constructor
 		_alloc.construct(&Value, std::forward<Args>(args)...);
 	}
+
+	QueueNode(const QueueNode&)				= delete;
+	QueueNode& operator=(const QueueNode&)	= delete;
 };
 // Queue Node ========================================================
 // END
@@ -38,24 +43,14 @@ private:
 	Node* _tail		= nullptr;                                      // Tail of this list
 
 	mutable Node* _workspaceNode = nullptr;                         // Auxiliary Node for work
-	mutable ValueType _workspaceValue;                              // Auxiliary Value for work
 
 public:
 	// Constructors
 
 	Queue() = default;
 
-	template<class... Args>
-	Queue(const size_t& newSize, Args&&... args) {                  // Emplace ValueType Constructor
-		create_until_size(newSize, std::forward<Args>(args)...);
-	}
-
 	Queue(const size_t& newSize, const ValueType& value) {          // Reference type Constructor
 		create_until_size(newSize, value);
-	}
-
-	Queue(const size_t& newSize, ValueType&& value) {               // Temporary type Constructor
-		create_until_size(newSize, std::move(value));
 	}
 
 	Queue(const Queue& other) {                                     // Copy Constructor
@@ -74,21 +69,28 @@ public:
 	// Main functions
 
 	template<class... Args>
-	void enqueue(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
-		emplace_back(std::forward<Args>(args)...);
+	void emplace(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
+		Node* newNode = new Node(std::forward<Args>(args)...);
+
+		if (_head == nullptr)
+			_head = _tail = newNode;
+		else {
+			_tail->Next = newNode;
+			_tail = newNode;
+		}
+		_size++;
 	}
 
-	void enqueue(const ValueType& copyValue) {                      // Construct object using reference and add it to the tail
-		emplace_back(copyValue);
+	void push(const ValueType& copyValue) {
+		emplace(copyValue);
 	}
 
-	void enqueue(ValueType&& moveValue) {                           // Construct object using temporary and add it to the tail
-		emplace_back(std::move(moveValue));
+	void push(ValueType&& moveValue) {
+		emplace(std::move(moveValue));
 	}
 
-	ValueType&& dequeue() {                                         // Return first component and remove it from queue
+	void pop() {                                                   // Return first component and remove it from queue
 		if (_head) {
-			_workspaceValue = std::move(_head->Value);
 			_workspaceNode = _head;
 			_head = _head->Next;
 
@@ -97,9 +99,23 @@ public:
 
 			delete _workspaceNode;
 			_size--;
-
-			return std::move(_workspaceValue);
 		}
+	}
+
+	ValueType& front() {
+		return _head->Value;
+	}
+
+	const ValueType& front() const {
+		return _head->Value;
+	}
+
+	ValueType& back() {
+		return _tail->Value;
+	}
+
+	const ValueType& back() const {
+		return _tail->Value;
 	}
 
 	const size_t size() const {                                     // Get size
@@ -126,15 +142,21 @@ public:
 	// Operators
 
 	Queue& operator=(const Queue<ValueType>& other) {              // Assign operator using reference
-		clear();
-		copy(other);
+		if (_head != other._head)
+		{
+			clear();
+			copy(other);
+		}
 
 		return *this;
 	}
 
 	Queue& operator=(Queue<ValueType>&& other) noexcept {          // Assign operator using temporary
-		clear();
-		move(std::move(other));
+		if (_head != other._head)
+		{
+			clear();
+			move(std::move(other));
+		}
 
 		return *this;
 	}
@@ -160,22 +182,9 @@ private:
 	}
 
 	template<class... Args>
-	void emplace_back(Args&&... args) {                             // Construct object using arguments (Args) and add it to the tail
-		Node* newNode = new Node(std::forward<Args>(args)...);
-
-		if (_head == nullptr)
-			_head = _tail = newNode;
-		else {
-			_tail->Next = newNode;
-			_tail = newNode;
-		}
-		_size++;
-	}
-
-	template<class... Args>
 	void create_until_size(const size_t& newSize, Args&&... args) { // Add elements until current size equals newSize
 		while (_size < newSize)
-			emplace_back(std::forward<Args>(args)...);
+			emplace(std::forward<Args>(args)...);
 	}
 };
 // Queue ========================================================

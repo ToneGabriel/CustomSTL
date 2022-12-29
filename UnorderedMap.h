@@ -178,6 +178,17 @@ public:
 		return (*it)->Value.second;
 	}
 
+	void print_details() {												// For Debugging
+		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
+		for (size_t i = 0; i < _buckets.size(); i++)
+		{
+			std::cout << i << " : ";
+			for (auto& val : _buckets[i])
+				std::cout << val->Value.first << ' ' << val->Value.second << '\\';
+			std::cout << '\n';
+		}
+	}
+
 public:
 	// Operators
 

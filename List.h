@@ -26,6 +26,10 @@ public:
 	ListNode(Args&&... args) {											// Add data using emplace ValueTypepe Constructor
 		_alloc.construct(&Value, std::forward<Args>(args)...);
 	}
+
+	ListNode(const ListNode&)				= delete;
+	ListNode& operator=(const ListNode&)	= delete;
+
 };
 // Linked List Node ========================================================
 // END
