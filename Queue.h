@@ -7,7 +7,7 @@ struct QueueNode                                                     // Struct t
 {
 private:
 	using ValueType = typename Queue::ValueType;
-	using Alloc	    = typename Allocator<ValueType>;
+	using Alloc		= typename Allocator<ValueType>;
 
 	Alloc _alloc;
 
@@ -30,12 +30,12 @@ class Queue
 {
 public:
 	using ValueType = Type;                                         // Type for stored values
-	using Node      = typename QueueNode<Queue<ValueType>>;         // Node type
+	using Node		= typename QueueNode<Queue<ValueType>>;         // Node type
 
 private:
-	size_t _size    = 0;                                            // Number of Nodes held by this
-	Node* _head	    = nullptr;                                      // Head of this list
-	Node* _tail	    = nullptr;                                      // Tail of this list
+	size_t _size	= 0;                                            // Number of Nodes held by this
+	Node* _head		= nullptr;                                      // Head of this list
+	Node* _tail		= nullptr;                                      // Tail of this list
 
 	mutable Node* _workspaceNode = nullptr;                         // Auxiliary Node for work
 	mutable ValueType _workspaceValue;                              // Auxiliary Value for work
@@ -175,7 +175,7 @@ private:
 	template<class... Args>
 	void create_until_size(const size_t& newSize, Args&&... args) { // Add elements until current size equals newSize
 		while (_size < newSize)
-			emplace_back(std::forward<Args>(args)...);              // Emplace type addition
+			emplace_back(std::forward<Args>(args)...);
 	}
 };
 // Queue ========================================================
