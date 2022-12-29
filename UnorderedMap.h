@@ -56,7 +56,7 @@ public:
 	template<class... PairArgs>
 	Iterator emplace(PairArgs&&... args) {								// Constructs Node first with any given std::pair arguments
 		Node* newNode = new Node(std::forward<PairArgs>(args)...);
-		Key& newKey = newNode->Value.first;
+		Key& newKey = newNode->Value->first;
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -81,7 +81,7 @@ public:
 			Node* newNode = new Node(std::piecewise_construct,
 				std::forward_as_tuple(std::forward<Key>(key)),
 				std::forward_as_tuple(std::forward<Args>(args)...));
-			Key& newKey = newNode->Value.first;
+			Key& newKey = newNode->Value->first;
 
 			rehash_if_overload();
 			_elems.insert_node_before(_elems.end()._Ptr, newNode);
@@ -106,7 +106,7 @@ public:
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
-		return erase(iterator._Ptr->Value.first);
+		return erase(iterator._Ptr->Value->first);
 	}
 
 	Iterator find(const Key& key) {
@@ -167,7 +167,7 @@ public:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return (*it)->Value.second;
+		return (*it)->Value->second;
 	}
 
 	Type& at(const Key& key) {
@@ -175,7 +175,7 @@ public:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return (*it)->Value.second;
+		return (*it)->Value->second;
 	}
 
 	void print_details() {												// For Debugging
@@ -184,7 +184,7 @@ public:
 		{
 			std::cout << i << " : ";
 			for (auto& val : _buckets[i])
-				std::cout << val->Value.first << ' ' << val->Value.second << '\\';
+				std::cout << val->Value->first << ' ' << val->Value->second << '\\';
 			std::cout << '\n';
 		}
 	}
@@ -193,11 +193,11 @@ public:
 	// Operators
 
 	Type& operator[](const Key& key) {									// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->Value.second;
+		return try_emplace(key)->Value->second;
 	}
 
 	Type& operator[](Key&& key) {
-		return try_emplace(std::move(key))->Value.second;
+		return try_emplace(std::move(key))->Value->second;
 	}
 
 	UnorderedMap<Key, Type>& operator=(const UnorderedMap<Key, Type>& other) {
@@ -231,7 +231,7 @@ private:
 	BucketIterator find_in_array(const Key& key) {						// Get iterator from bucket with key
 		Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && (*it)->Value.first != key)
+		while (it != currentBucket.end() && (*it)->Value->first != key)
 			it++;
 
 		return it;
@@ -242,7 +242,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(it->Value.first)].push_back(it._Ptr);
+			_buckets[bucket(it->Value->first)].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed

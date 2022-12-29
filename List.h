@@ -1,7 +1,5 @@
 #pragma once
-#include "Allocator.h"
 #include "BaseIterator.h"
-
 
 // Linked List Node ========================================================
 template<class List>
@@ -9,26 +7,29 @@ struct ListNode															// Struct that holds data and references to next a
 {
 private:
 	using ValueType = typename List::ValueType;
-	using Alloc		= typename Allocator<ValueType>;
-
-	Alloc _alloc;
 
 public:
-	ValueType Value;													// Data
+	ValueType* Value	= nullptr;										// Data
 	ListNode* Previous	= nullptr;										// Reference to previous 
 	ListNode* Next		= nullptr;										// Reference to next
 
 public:
 
-	ListNode() = default;
+	ListNode()								= default;
+	ListNode(const ListNode&)				= delete;
+	ListNode& operator=(const ListNode&)	= delete;
 
 	template<class... Args>
 	ListNode(Args&&... args) {											// Add data using emplace ValueTypepe Constructor
-		_alloc.construct(&Value, std::forward<Args>(args)...);
+		Value = new ValueType(std::forward<Args>(args)...);
 	}
 
-	ListNode(const ListNode&)				= delete;
-	ListNode& operator=(const ListNode&)	= delete;
+	~ListNode() {
+		delete Value;
+		Value = nullptr;
+		Previous = nullptr;
+		Next = nullptr;
+	}
 
 };
 // Linked List Node ========================================================
@@ -86,7 +87,7 @@ public:
 		if (this->_Ptr == this->_IterationData->_IterEnd)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
-		return this->_Ptr->Value;
+		return *this->_Ptr->Value;
 	}
 
 	bool operator==(const ListIterator& other) const {
@@ -249,11 +250,19 @@ public:
 	}
 
 	ValueType& front() {                                                     // Get the value of the first component
-		return _head->Next->Value;
+		return *_head->Next->Value;
+	}
+
+	const ValueType& front() const {
+		return *_head->Next->Value;
 	}
 
 	ValueType& back() {                                                      // Get the value of the last component
-		return _head->Previous->Value;
+		return *_head->Previous->Value;
+	}
+
+	const ValueType& back() const {
+		return *_head->Previous->Value;
 	}
 
 	const size_t size() const {                                              // Get size
@@ -315,7 +324,7 @@ private:
 	void copy(const List<ValueType>& other) {
 		_workspaceNode = other._head->Next;
 		while (_size < other._size) {
-			push_back(_workspaceNode->Value);
+			push_back(*_workspaceNode->Value);
 			_workspaceNode = _workspaceNode->Next;
 		}
 	}

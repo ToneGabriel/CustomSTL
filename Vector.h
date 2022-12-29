@@ -336,8 +336,6 @@ private:
 	// Others
 
 	void copy(const Vector<ValueType>& other) {								// Generic copy function for vector
-		clean_up_array();
-
 		_array = _alloc.alloc(other._capacity);
 		for (size_t i = 0; i < other._size; i++)
 			_alloc.construct(&_array[i], other._array[i]);
@@ -348,8 +346,6 @@ private:
 	}
 
 	void move(Vector<ValueType>&& other) {									// Generic move function for vector
-		clean_up_array();
-
 		_array = other._array;
 		_size = other._size;
 		_capacity = other._capacity;

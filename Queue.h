@@ -1,5 +1,4 @@
 #pragma once
-#include "Allocator.h"
 
 // Queue Node ========================================================
 template<class Queue>
@@ -7,23 +6,25 @@ struct QueueNode                                                     // Struct t
 {
 private:
 	using ValueType = typename Queue::ValueType;
-	using Alloc		= typename Allocator<ValueType>;
-
-	Alloc _alloc;
 
 public:
-	ValueType Value;                                                 // Data
-	QueueNode* Next = nullptr;                                       // Reference to next
+	ValueType* Value = nullptr;                                       // Data
+	QueueNode* Next  = nullptr;                                       // Reference to next
 
-	QueueNode() = default;
+	QueueNode()								= default;
+	QueueNode(const QueueNode&)				= delete;
+	QueueNode& operator=(const QueueNode&)	= delete;
 
 	template<class... Args>
 	QueueNode(Args&&... args) {                                      // Add data using emplace type Constructor
-		_alloc.construct(&Value, std::forward<Args>(args)...);
+		Value = new ValueType(std::forward<Args>(args)...);
 	}
 
-	QueueNode(const QueueNode&)				= delete;
-	QueueNode& operator=(const QueueNode&)	= delete;
+	~QueueNode() {
+		delete Value;
+		Value = nullptr;
+		Next = nullptr;
+	}
 };
 // Queue Node ========================================================
 // END
@@ -103,19 +104,19 @@ public:
 	}
 
 	ValueType& front() {
-		return _head->Value;
+		return *_head->Value;
 	}
 
 	const ValueType& front() const {
-		return _head->Value;
+		return *_head->Value;
 	}
 
 	ValueType& back() {
-		return _tail->Value;
+		return *_tail->Value;
 	}
 
 	const ValueType& back() const {
-		return _tail->Value;
+		return *_tail->Value;
 	}
 
 	const size_t size() const {                                     // Get size
