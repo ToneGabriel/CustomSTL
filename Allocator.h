@@ -1,50 +1,54 @@
 #pragma once
 
-template<class Type>
-class Allocator
-{
-public:
+namespace custom {
 
-	Allocator() noexcept					= default;
-	Allocator(const Allocator&) noexcept	= delete;
-	~Allocator()							= default;
+	template<class Type>
+	class Allocator
+	{
+	public:
 
-	Allocator& operator=(const Allocator&)	= delete;
+		Allocator() noexcept					= default;
+		Allocator(const Allocator&) noexcept	= delete;
+		Allocator& operator=(const Allocator&)	= delete;
 
-public:
+		~Allocator()							= default;
 
-	Type* alloc(const size_t& capacity) {									// Allocate memory
-		return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
-	}
+	public:
 
-	void dealloc(Type* address, const size_t& capacity) {					// Deallocate memory
-		if (address == nullptr || capacity == 0)
-			throw std::out_of_range("Invalid block deallocation");
+		Type* alloc(const size_t& capacity) {									// Allocate memory
+			return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
+		}
 
-		::operator delete(address, capacity * sizeof(Type));
-	}
+		void dealloc(Type* address, const size_t& capacity) {					// Deallocate memory
+			if (address == nullptr || capacity == 0)
+				throw std::out_of_range("Invalid block deallocation");
 
-	template<class... Args>
-	void construct(Type* address, Args&&... args) {
-		::new(address) Type(std::forward<Args>(args)...);
-	}
+			::operator delete(address, capacity * sizeof(Type));
+		}
 
-	void construct_range(Type* address, const size_t& length) {							// Default value
-		for (size_t i = 0; i < length; i++)
-			construct(address + i);
-	}
+		template<class... Args>
+		void construct(Type* address, Args&&... args) {
+			::new(address) Type(std::forward<Args>(args)...);
+		}
 
-	void construct_range(Type* address, const size_t& length, const Type& value) {		// Copy value
-		for (size_t i = 0; i < length; i++)
-			construct(address + i, value);
-	}
+		void construct_range(Type* address, const size_t& length) {							// Default value
+			for (size_t i = 0; i < length; i++)
+				construct(address + i);
+		}
 
-	void destroy(Type* address) {
-		address->~Type();
-	}
+		void construct_range(Type* address, const size_t& length, const Type& value) {		// Copy value
+			for (size_t i = 0; i < length; i++)
+				construct(address + i, value);
+		}
 
-	void destroy_range(Type* address, const size_t& length) {
-		for (size_t i = 0; i < length; i++)
-			destroy(address + i);
-	}
-};
+		void destroy(Type* address) {
+			address->~Type();
+		}
+
+		void destroy_range(Type* address, const size_t& length) {
+			for (size_t i = 0; i < length; i++)
+				destroy(address + i);
+		}
+	};
+
+} // END custom::

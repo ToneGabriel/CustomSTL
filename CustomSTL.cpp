@@ -6,6 +6,12 @@
 #include "UnorderedSet.h"
 //#include "String.h"
 
+//#include <vector>
+//#include <list>
+//#include <queue>
+//#include <unordered_map>
+//#include <unordered_set>
+//#include <string>
 class Test {
 
 public:
@@ -45,7 +51,7 @@ public:
 
 int main()
 {
-	UnorderedMap<int, std::string> map;
+	custom::UnorderedMap<int, std::string> map;
 
 	map[10] = "abc";
 	map[11] = "gsa";

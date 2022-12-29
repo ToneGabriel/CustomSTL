@@ -2,9 +2,12 @@
 #include "List.h"
 #include "Vector.h"
 
-template<class Type>
-class UnorderedSet
-{
+namespace custom {
 
-};
+	template<class Type>
+	class UnorderedSet
+	{
 
+	};
+
+} // END custom::
