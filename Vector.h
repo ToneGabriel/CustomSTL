@@ -72,10 +72,6 @@ namespace custom {
 			return temp;
 		}
 
-		Base::IterType& operator[](const size_t& index) const {
-			return *(this->_Ptr + index);
-		}
-
 		Base::IterType* operator->() {
 			if (this->_Ptr >= this->_IterationData->_IterEnd)
 				throw std::out_of_range("Cannot access end iterator...");

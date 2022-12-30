@@ -1,42 +1,8 @@
 #pragma once
+#include "Node.h"
 #include "BaseIterator.h"
 
 namespace custom {
-
-	// Linked List Node ========================================================
-	template<class List>
-	struct ListNode															// Struct that holds data and references to next and previous struct
-	{
-	private:
-		using ValueType = typename List::ValueType;
-
-	public:
-		ValueType* Value	= nullptr;										// Data
-		ListNode* Previous	= nullptr;										// Reference to previous 
-		ListNode* Next		= nullptr;										// Reference to next
-
-	public:
-
-		ListNode()								= default;
-		ListNode(const ListNode&)				= delete;
-		ListNode& operator=(const ListNode&)	= delete;
-
-		template<class... Args>
-		ListNode(Args&&... args) {											// Add data using emplace ValueTypepe Constructor
-			Value = new ValueType(std::forward<Args>(args)...);
-		}
-
-		~ListNode() {
-			delete Value;
-			Value = nullptr;
-			Previous = nullptr;
-			Next = nullptr;
-		}
-
-	};
-	// Linked List Node ========================================================
-	// END
-
 
 	// Linked List Iterator ========================================================
 	template<class List>
@@ -109,18 +75,18 @@ namespace custom {
 	class List
 	{
 	public:
-		using ValueType = Type;													// Type for stored values
-		using Node		= typename ListNode<List<ValueType>>;					// Node type
-		using IterType	= Node;													// Type of iterating element
-		using Iterator	= typename ListIterator<List<ValueType>>;				// Iterator type
-		using Data		= typename Iterator::Data;								// Iteration data
+		using ValueType = Type;											// Type for stored values
+		using Node		= DoubleNode<ValueType>;						// Node type
+		using IterType	= Node;											// Type of iterating element
+		using Iterator	= typename ListIterator<List<ValueType>>;		// Iterator type
+		using Data		= typename Iterator::Data;						// Iteration data
 
 	private:
-		size_t _size	= 0;                                                    // Number of Nodes held by this
-		Node* _head		= nullptr;												// Head of this list
+		size_t _size	= 0;											// Number of Nodes held by this
+		Node* _head		= nullptr;										// Head of this list
 
 		mutable Data _data;
-		mutable Node* _workspaceNode = nullptr;                                 // Auxiliary Node for work
+		mutable Node* _workspaceNode = nullptr;							// Auxiliary Node for work
 
 	public:
 		// Constructors
@@ -206,16 +172,16 @@ namespace custom {
 			return Iterator(newNode, update_iteration_data());
 		}
 
-		Iterator push(const Iterator& iterator, const ValueType& copyValue) {    // Construct object using reference and add it BEFORE the iterator position
+		Iterator push(const Iterator& iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
 			return emplace(iterator, copyValue);
 		}
 
-		Iterator push(const Iterator& iterator, ValueType&& moveValue) {         // Construct object using temporary and add it BEFORE the iterator position
+		Iterator push(const Iterator& iterator, ValueType&& moveValue) {        // Construct object using temporary and add it BEFORE the iterator position
 			return emplace(iterator, std::move(moveValue));
 		}
 
-		Iterator pop(const Iterator& iterator) {                                 // Remove component at iterator position
-			if (iterator._Ptr == _head)											 // Check end()
+		Iterator pop(const Iterator& iterator) {                                // Remove component at iterator position
+			if (iterator._Ptr == _head)											// Check end()
 				throw std::out_of_range("Cannot pop end iterator...");
 
 			_workspaceNode = iterator._Ptr;
@@ -225,7 +191,15 @@ namespace custom {
 			return prevIterator;
 		}
 
-		void insert_node_before(Node* beforeNode, Node* newNode) {
+		template<class... Args>
+		Node* create_non_head(Args&&... args) {									// Create default Node and construct the value with args
+			Node* newNode = new Node();
+			newNode->init_non_head(std::forward<Args>(args)...);
+
+			return newNode;
+		}
+
+		void insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node ferore another
 			newNode->Previous = beforeNode->Previous;
 			newNode->Next = beforeNode;
 
@@ -235,23 +209,22 @@ namespace custom {
 			_size++;
 		}
 
-		void remove_node(Node* junkNode) {
+		void remove_node(Node* junkNode) {										// Remove Node and relink
 			junkNode->Previous->Next = junkNode->Next;
 			junkNode->Next->Previous = junkNode->Previous;
 
 			delete junkNode;
-			junkNode = nullptr;
 			_size--;
 		}
 
-		Data* update_iteration_data() const {
+		Data* update_iteration_data() const {									// Update data and sent it to iterator
 			_data._IterBegin = _head->Next;
 			_data._IterEnd = _head;
 
 			return &_data;
 		}
 
-		ValueType& front() {                                                     // Get the value of the first component
+		ValueType& front() {                                                    // Get the value of the first component
 			return *_head->Next->Value;
 		}
 
@@ -259,7 +232,7 @@ namespace custom {
 			return *_head->Next->Value;
 		}
 
-		ValueType& back() {                                                      // Get the value of the last component
+		ValueType& back() {                                                     // Get the value of the last component
 			return *_head->Previous->Value;
 		}
 
@@ -267,15 +240,15 @@ namespace custom {
 			return *_head->Previous->Value;
 		}
 
-		const size_t size() const {                                              // Get size
+		const size_t size() const {                                             // Get size
 			return _size;
 		}
 
-		bool empty() const {                                                     // Check if list is empty
+		bool empty() const {                                                    // Check if list is empty
 			return _size == 0;
 		}
 
-		void clear() {                                                           // Remove ALL components
+		void clear() {                                                          // Remove ALL components
 			delete_until_size(0);
 		}
 
@@ -323,7 +296,7 @@ namespace custom {
 	private:
 		// Others
 
-		void copy(const List<ValueType>& other) {
+		void copy(const List<ValueType>& other) {							// Generic copy function for list
 			_workspaceNode = other._head->Next;
 			while (_size < other._size) {
 				push_back(*_workspaceNode->Value);
@@ -331,7 +304,7 @@ namespace custom {
 			}
 		}
 
-		void move(List<ValueType>&& other) {
+		void move(List<ValueType>&& other) {								// Generic move function for vector
 			// link current head with the other "body"
 			_head->Next = other._head->Next;
 			_head->Next->Previous = _head;
@@ -347,32 +320,23 @@ namespace custom {
 		}
 
 		template<class... Args>
-		void create_until_size(const size_t& newSize, Args&&... args) {			 // Add elements until current size equals newSize
+		void create_until_size(const size_t& newSize, Args&&... args) {		// Add elements until current size equals newSize
 			while (_size < newSize)
-				emplace_back(std::forward<Args>(args)...);                       // Emplace type addition
+				emplace_back(std::forward<Args>(args)...);
 		}
 
-		void delete_until_size(const size_t& newSize) {							 // Remove elements until current size equals newSize
+		void delete_until_size(const size_t& newSize) {						// Remove elements until current size equals newSize
 			while (_size > newSize)
 				pop_back();
 		}
 
-		Node* scroll_node(const size_t& index) const {                           // Get object in the list at index position by going through all components
+		Node* scroll_node(const size_t& index) const {						// Get object in the list at index position by going through all components
 			_workspaceNode = _head->Next;
 			if (_workspaceNode != _head)
 				for (size_t i = 0; i < index; i++)
 					_workspaceNode = _workspaceNode->Next;
 
 			return _workspaceNode;
-		}
-
-		template<class... Args>
-		Node* create_non_head(Args&&... args) {
-			Node* newNode = new Node(std::forward<Args>(args)...);	// TODO: more elegant
-			if (newNode->Value == nullptr)
-				newNode->Value = new ValueType();
-
-			return newNode;
 		}
 
 		void reset_head() {

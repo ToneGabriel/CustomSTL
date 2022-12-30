@@ -57,7 +57,7 @@ namespace custom {
 
 		template<class... PairArgs>
 		Iterator emplace(PairArgs&&... args) {								// Constructs Node first with any given std::pair arguments
-			Node* newNode = new Node(std::forward<PairArgs>(args)...);
+			Node* newNode = _elems.create_non_head(std::forward<PairArgs>(args)...);
 			Key& newKey = newNode->Value->first;
 			Iterator it = find(newKey);
 
@@ -80,9 +80,9 @@ namespace custom {
 			if (it != end())
 				return it;
 			else {
-				Node* newNode = new Node(std::piecewise_construct,
-					std::forward_as_tuple(std::forward<Key>(key)),
-					std::forward_as_tuple(std::forward<Args>(args)...));
+				Node* newNode = _elems.create_non_head(std::piecewise_construct,
+								std::forward_as_tuple(std::forward<Key>(key)),
+								std::forward_as_tuple(std::forward<Args>(args)...));
 				Key& newKey = newNode->Value->first;
 
 				rehash_if_overload();

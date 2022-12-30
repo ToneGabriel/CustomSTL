@@ -1,36 +1,7 @@
 #pragma once
+#include "Node.h"
 
 namespace custom {
-
-	// Queue Node ========================================================
-	template<class Queue>
-	struct QueueNode														// Struct that holds data and references to next struct
-	{
-	private:
-		using ValueType = typename Queue::ValueType;
-
-	public:
-		ValueType* Value	= nullptr;										// Data
-		QueueNode* Next		= nullptr;										// Reference to next
-
-		QueueNode()								= default;
-		QueueNode(const QueueNode&)				= delete;
-		QueueNode& operator=(const QueueNode&)	= delete;
-
-		template<class... Args>
-		QueueNode(Args&&... args) {											// Add data using emplace type Constructor
-			Value = new ValueType(std::forward<Args>(args)...);
-		}
-
-		~QueueNode() {
-			delete Value;
-			Value = nullptr;
-			Next = nullptr;
-		}
-	};
-	// Queue Node ========================================================
-	// END
-
 
 	// Queue ========================================================
 	template<class Type>
@@ -38,7 +9,7 @@ namespace custom {
 	{
 	public:
 		using ValueType = Type;                                         // Type for stored values
-		using Node		= typename QueueNode<Queue<ValueType>>;         // Node type
+		using Node		= ForwardNode<ValueType>;						// Node type
 
 	private:
 		size_t _size	= 0;                                            // Number of Nodes held by this
@@ -73,10 +44,10 @@ namespace custom {
 
 		template<class... Args>
 		void emplace(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
-			Node* newNode = new Node(std::forward<Args>(args)...);
+			Node* newNode = create_non_head(std::forward<Args>(args)...);
 
 			if (_head == nullptr)
-				_head = _tail = newNode;
+				_head = _tail = newNode;								// Here head and tail are not important and can be used to store value
 			else {
 				_tail->Next = newNode;
 				_tail = newNode;
@@ -92,7 +63,7 @@ namespace custom {
 			emplace(std::move(moveValue));
 		}
 
-		void pop() {                                                   // Return first component and remove it from queue
+		void pop() {                                                   // Remove first elem from queue
 			if (_head) {
 				_workspaceNode = _head;
 				_head = _head->Next;
@@ -167,7 +138,7 @@ namespace custom {
 	private:
 		// Others
 
-		void copy(const Queue<ValueType>& other) {
+		void copy(const Queue<ValueType>& other) {						// Generic copy function for queue
 			_workspaceNode = other._head;
 			while (_size < other._size) {
 				enqueue(_workspaceNode->Value);
@@ -175,7 +146,7 @@ namespace custom {
 			}
 		}
 
-		void move(Queue<ValueType>&& other) {
+		void move(Queue<ValueType>&& other) {							// Generic move function for vector
 			_head = other._head;
 			_tail = other._tail;
 			_size = other._size;
@@ -188,6 +159,14 @@ namespace custom {
 		void create_until_size(const size_t& newSize, Args&&... args) { // Add elements until current size equals newSize
 			while (_size < newSize)
 				emplace(std::forward<Args>(args)...);
+		}
+
+		template<class... Args>
+		Node* create_non_head(Args&&... args) {
+			Node* newNode = new Node();
+			newNode->init_non_head(std::forward<Args>(args)...);
+
+			return newNode;
 		}
 	};
 	// Queue ========================================================
