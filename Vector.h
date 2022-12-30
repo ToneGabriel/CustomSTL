@@ -79,7 +79,7 @@ namespace custom {
 			return this->_Ptr;
 		}
 
-		Base::IterType& operator*() {
+		Base::ValueType& operator*() {
 			if (this->_Ptr >= this->_IterationData->_IterEnd)
 				throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -109,12 +109,12 @@ namespace custom {
 		using Data		= typename Iterator::Data;						// Iteration data
 
 	private:
-		size_t _size		= 0;					// Number of components held by this
-		size_t _capacity	= 0;					// Allocated momory of type ValueType
-		ValueType* _array	= nullptr;				// Actual container array
+		size_t _size		= 0;										// Number of components held by this
+		size_t _capacity	= 0;										// Allocated momory of type ValueType
+		ValueType* _array	= nullptr;									// Actual container array
 
-		mutable Data _data;							// Stores the ends of the array
-		mutable Alloc _alloc;						// Allocator
+		mutable Data _data;												// Stores the ends of the array
+		mutable Alloc _alloc;											// Allocator
 
 	public:
 		// Constructors

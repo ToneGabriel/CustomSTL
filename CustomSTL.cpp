@@ -4,7 +4,7 @@
 #include "Queue.h"
 #include "UnorderedMap.h"
 #include "UnorderedSet.h"
-//#include "String.h"
+#include "String.h"
 
 //#include <vector>
 //#include <list>

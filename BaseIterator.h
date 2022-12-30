@@ -14,8 +14,8 @@ namespace custom {
 			IterationData() = default;
 
 			~IterationData() {
-				_IterBegin = nullptr;
-				_IterEnd = nullptr;
+				_IterBegin	= nullptr;
+				_IterEnd	= nullptr;
 			}
 		};
 
@@ -33,8 +33,8 @@ namespace custom {
 			:_Ptr(ptr), _IterationData(data) { }
 
 		virtual ~BaseIterator() {
-			_Ptr = nullptr;
-			_IterationData = nullptr;
+			_Ptr			= nullptr;
+			_IterationData	= nullptr;
 		}
 	};
 

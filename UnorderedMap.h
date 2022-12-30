@@ -20,7 +20,7 @@ namespace custom {
 		using BucketIterator	= typename Bucket::Iterator;		// Iterator for Buckets
 
 	private:
-		static constexpr float _maxLoadFactor = 0.75;				// The maximum load factor admitted before rehashing
+		static constexpr float _maxLoadFactor	= 0.75;				// The maximum load factor admitted before rehashing
 		static constexpr size_t _defaultBuckets = 8;				// Power of 2
 
 		Hash _hash;													// Used for initial(non-compressed) hash value
