@@ -275,6 +275,24 @@ namespace custom {
 			return *this;
 		}
 
+		bool operator==(const List<ValueType>& other) {
+			if (size() != other.size())
+				return false;
+
+			auto it1 = begin();
+			auto it2 = other.begin();
+			while (it1 != end())
+			{
+				if (*it1 != *it2)
+					return false;
+
+				++it1;
+				++it2;
+			}
+
+			return true;
+		}
+
 	public:
 		// Iterator specific functions
 

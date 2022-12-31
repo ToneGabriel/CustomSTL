@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "Allocator.h"
 #include "BaseIterator.h"
 
@@ -373,6 +372,13 @@ namespace custom {
 		String& operator+=(const char& chr) {
 			append(1, chr);
 			return *this;
+		}
+
+		bool operator==(const String& other) {
+			if (size() != other.size())
+				return false;
+
+			return strcmp(_string, other._string) == 0;
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const String& string) {

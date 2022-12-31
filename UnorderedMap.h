@@ -217,11 +217,18 @@ namespace custom {
 			return *this;
 		}
 
-		bool operator==(const UnorderedMap<Key, Type>& other) {
-			if (_elems.end()._Ptr == other._elems.end()._Ptr)
-				return true;
+		bool operator==(const UnorderedMap<Key, Type>& other) {		// Contains the same elems, but not necessarily the same hashtable
+			if (size() != other.size())
+				return false;
 
-			return false;
+			for (const auto& val : other)
+			{
+				auto it = find(val.first);		// Search for key
+				if (it == end() || (*it).second != val.second)
+					return false;
+			}
+
+			return true;
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const UnorderedMap<Key, Type>& map) {
@@ -284,7 +291,7 @@ namespace custom {
 	// UnorderedMap Hash ========================================================
 	struct UnorderedMapHash {
 		template <typename Key, typename Type>
-		auto operator()(const UnorderedMap<Key, Type>& map) const -> size_t {
+		size_t operator()(const UnorderedMap<Key, Type>& map) const {
 			return std::hash<Key>{}(map.size()) ^ std::hash<Type>{}(map.bucket_count());
 		}
 	};

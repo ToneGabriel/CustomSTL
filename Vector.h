@@ -318,7 +318,7 @@ namespace custom {
 		}
 
 		bool operator==(const Vector<ValueType>& other) {
-			if (_size != other._size)
+			if (size() != other.size())
 				return false;
 
 			for (size_t i = 0; i < _size; i++)
