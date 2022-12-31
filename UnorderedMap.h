@@ -4,7 +4,8 @@
 
 namespace custom {
 
-	template<class Key, class Type>
+	// UnorderedMap ========================================================
+	template<class Key, class Type, class Hasher = std::hash<Key>>
 	class UnorderedMap
 	{
 	public:
@@ -12,7 +13,7 @@ namespace custom {
 		using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
 
 	private:
-		using Hash				= std::hash<Key>;					// Strong Hash function
+		using Hash				= Hasher;							// Strong Hash function
 		using IterList			= List<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
 		using Node				= typename IterList::Node;			// Node component from List
 		using Bucket			= List<Node*>;						// List of Node* (as Value) from Iteration list
@@ -21,7 +22,7 @@ namespace custom {
 
 	private:
 		static constexpr float _maxLoadFactor	= 0.75;				// The maximum load factor admitted before rehashing
-		static constexpr size_t _defaultBuckets = 8;				// Power of 2
+		static constexpr size_t _defaultBuckets = 8;				// Default number of buckets
 
 		Hash _hash;													// Used for initial(non-compressed) hash value
 		IterList _elems;											// Used to iterate through container
@@ -216,6 +217,18 @@ namespace custom {
 			return *this;
 		}
 
+		bool operator==(const UnorderedMap<Key, Type>& other) {
+			if (_elems.end()._Ptr == other._elems.end()._Ptr)
+				return true;
+
+			return false;
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const UnorderedMap<Key, Type>& map) {
+			os << "S=" << map.size() << " B=" << map.bucket_count();
+			return os;
+		}
+
 	public:
 		// Iterator functions
 
@@ -223,7 +236,15 @@ namespace custom {
 			return _elems.begin();
 		}
 
+		const Iterator begin() const {
+			return _elems.begin();
+		}
+
 		Iterator end() {
+			return _elems.end();
+		}
+
+		const Iterator end() const{
 			return _elems.end();
 		}
 
@@ -256,5 +277,18 @@ namespace custom {
 			return static_cast<size_t>(std::ceilf(static_cast<float>(size) / _maxLoadFactor));
 		}
 	};
+	// UnorderedMap ========================================================
+	// END
+	
+
+	// UnorderedMap Hash ========================================================
+	struct UnorderedMapHash {
+		template <typename Key, typename Type>
+		auto operator()(const UnorderedMap<Key, Type>& map) const -> size_t {
+			return std::hash<Key>{}(map.size()) ^ std::hash<Type>{}(map.bucket_count());
+		}
+	};
+	// UnorderedMap Hash ========================================================
+	// END
 
 } // END custom::

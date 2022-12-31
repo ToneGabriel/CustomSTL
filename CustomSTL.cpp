@@ -6,7 +6,7 @@
 #include "UnorderedSet.h"
 #include "String.h"
 
-//#include <vector>
+#include <vector>
 //#include <list>
 //#include <queue>
 //#include <unordered_map>
@@ -51,15 +51,34 @@ public:
 
 int main()
 {
-	custom::UnorderedMap<int, std::string> map;
+	custom::Vector<int> a1(3, 5);
+	custom::Vector<int> a2(3, 5);
 
-	map[10] = "abc";
-	map[11] = "gsa";
-	map[26] = "af";
-	map[101] = " a0";
-	map[54] = "69";
-	map[1] = "A bv";
-	map.emplace(3, "abc");
+	if (a1 == a2)
+		std::cout << "Da\n";
+	else
+		std::cout << "Nu\n";
 
-	map.print_details();
+
+	//custom::UnorderedMap<custom::UnorderedMap<int, int>, int, custom::UnorderedMapHash> map;
+
+	//map.emplace(custom::UnorderedMap<int, int>(3), 3);
+	//map.emplace(custom::UnorderedMap<int, int>(5), 4);
+	//map.emplace(custom::UnorderedMap<int, int>(10), 5);
+
+	//map.print_details();
+
+	// =================================================================================================
+	
+	//custom::UnorderedMap<int, std::string> map;
+
+	//map[10] = "abc";
+	//map[11] = "gsa";
+	//map[26] = "af";
+	//map[101] = " a0";
+	//map[54] = "69";
+	//map[1] = "A bv";
+	//map.emplace(3, "abc");
+
+	//map.print_details();
 }

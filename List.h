@@ -282,8 +282,23 @@ namespace custom {
 			return Iterator(_head->Next, update_iteration_data());
 		}
 
+		const Iterator begin() const {
+			return Iterator(_head->Next, update_iteration_data());
+		}
+
 		Iterator end() {
 			return Iterator(_head, update_iteration_data());
+		}
+
+		const Iterator end() const {
+			return Iterator(_head, update_iteration_data());
+		}
+
+		const Iterator at(const size_t& index) const {
+			if (index < 0 || index >= _size)
+				throw std::out_of_range("Invalid Index...");
+
+			return Iterator(scroll_node(index), update_iteration_data());
 		}
 
 		Iterator at(const size_t& index) {

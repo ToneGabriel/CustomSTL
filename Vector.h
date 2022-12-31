@@ -317,14 +317,33 @@ namespace custom {
 			return *this;
 		}
 
+		bool operator==(const Vector<ValueType>& other) {
+			if (_size != other._size)
+				return false;
+
+			for (size_t i = 0; i < _size; i++)
+				if (_array[i] != other._array[i])
+					return false;
+
+			return true;
+		}
+
 	public:
 		// Iterator specific functions
 
-		Iterator begin() const {
+		Iterator begin() {
 			return Iterator(_array, update_iteration_data());
 		}
 
-		Iterator end() const {
+		const Iterator begin() const {
+			return Iterator(_array, update_iteration_data());
+		}
+
+		Iterator end() {
+			return Iterator(_array + _size, update_iteration_data());
+		}
+
+		const Iterator end() const {
 			return Iterator(_array + _size, update_iteration_data());
 		}
 

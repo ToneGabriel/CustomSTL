@@ -390,11 +390,19 @@ namespace custom {
 	public:
 		// Iterator specific
 
-		Iterator begin() const {
+		Iterator begin() {
 			return Iterator(_string, update_iteration_data());
 		}
 
-		Iterator end() const {
+		const Iterator begin() const {
+			return Iterator(_string, update_iteration_data());
+		}
+
+		Iterator end() {
+			return Iterator(_string + _size, update_iteration_data());
+		}
+
+		const Iterator end() const {
 			return Iterator(_string + _size, update_iteration_data());
 		}
 
