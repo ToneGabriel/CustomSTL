@@ -44,7 +44,7 @@ namespace custom {
 
 		template<class... Args>
 		void emplace(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
-			Node* newNode = create_non_head(std::forward<Args>(args)...);
+			Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
 
 			if (_head == nullptr)
 				_head = _tail = newNode;								// Here head and tail are not important and can be used to store value
@@ -160,16 +160,18 @@ namespace custom {
 			while (_size < newSize)
 				emplace(std::forward<Args>(args)...);
 		}
-
-		template<class... Args>
-		Node* create_non_head(Args&&... args) {
-			Node* newNode = new Node();
-			newNode->init_non_head(std::forward<Args>(args)...);
-
-			return newNode;
-		}
 	};
 	// Queue ========================================================
+	// END
+
+	// Queue Hash ========================================================
+	struct QueueHash {
+		template <class Type>
+		size_t operator()(const Queue<Type>& queue) const {
+			return 0;
+		}
+	};
+	// Queue Hash ========================================================
 	// END
 
 } // END custom::

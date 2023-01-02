@@ -498,4 +498,13 @@ namespace custom {
 	// String ============================================
 	// END
 
+	// String Hash ========================================================
+	struct StringHash {
+		size_t operator()(const String& string) const {
+			return 0;
+		}
+	};
+	// String Hash ========================================================
+	// END
+
 } // END custom::

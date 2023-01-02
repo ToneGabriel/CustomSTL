@@ -404,4 +404,14 @@ namespace custom {
 	// Vector Template=======================================
 	// END
 
+	// Vector Hash ========================================================
+	struct VectorHash {
+		template <class Type>
+		size_t operator()(const Vector<Type>& vec) const {
+			return 0;
+		}
+	};
+	// Vector Hash ========================================================
+	// END
+
 } // END custom::

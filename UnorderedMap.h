@@ -5,7 +5,7 @@
 namespace custom {
 
 	// UnorderedMap ========================================================
-	template<class Key, class Type, class Hasher = std::hash<Key>>
+	template<class Key, class Type, class Hash = std::hash<Key>>
 	class UnorderedMap
 	{
 	public:
@@ -13,8 +13,7 @@ namespace custom {
 		using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
 
 	private:
-		using Hash				= Hasher;							// Strong Hash function
-		using IterList			= List<ValueType>;					// List of ValueType (encapsulated in Node*) used for iterating
+		using IterList			= List<ValueType>;					// List of ValueType used for iterating
 		using Node				= typename IterList::Node;			// Node component from List
 		using Bucket			= List<Node*>;						// List of Node* (as Value) from Iteration list
 		using HashArray			= Vector<Bucket>;					// Array of lists of Node*
@@ -58,7 +57,7 @@ namespace custom {
 
 		template<class... PairArgs>
 		Iterator emplace(PairArgs&&... args) {								// Constructs Node first with any given std::pair arguments
-			Node* newNode = _elems.create_non_head(std::forward<PairArgs>(args)...);
+			Node* newNode = Node::create_non_head(std::forward<PairArgs>(args)...);
 			Key& newKey = newNode->Value->first;
 			Iterator it = find(newKey);
 
@@ -81,7 +80,7 @@ namespace custom {
 			if (it != end())
 				return it;
 			else {
-				Node* newNode = _elems.create_non_head(std::piecewise_construct,
+				Node* newNode = Node::create_non_head(std::piecewise_construct,
 								std::forward_as_tuple(std::forward<Key>(key)),
 								std::forward_as_tuple(std::forward<Args>(args)...));
 				Key& newKey = newNode->Value->first;
@@ -217,13 +216,13 @@ namespace custom {
 			return *this;
 		}
 
-		bool operator==(const UnorderedMap<Key, Type>& other) {		// Contains the same elems, but not necessarily the same hashtable
+		bool operator==(const UnorderedMap<Key, Type>& other) {		// Contains the same elems, but not the same hashtable
 			if (size() != other.size())
 				return false;
 
-			for (const auto& val : other)
+			for (const ValueType& val : other)
 			{
-				auto it = find(val.first);		// Search for key
+				Iterator it = find(val.first);		// Search for key
 				if (it == end() || (*it).second != val.second)
 					return false;
 			}
@@ -290,7 +289,7 @@ namespace custom {
 
 	// UnorderedMap Hash ========================================================
 	struct UnorderedMapHash {
-		template <typename Key, typename Type>
+		template <class Key, class Type>
 		size_t operator()(const UnorderedMap<Key, Type>& map) const {
 			return std::hash<Key>{}(map.size()) ^ std::hash<Type>{}(map.bucket_count());
 		}

@@ -127,7 +127,7 @@ namespace custom {
 
 		template<class... Args>
 		void emplace_back(Args&&... args) {                                     // Construct object using arguments (Args) and add it to the tail
-			Node* newNode = create_non_head(std::forward<Args>(args)...);
+			Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
 			insert_node_before(_head, newNode);
 		}
 
@@ -146,7 +146,7 @@ namespace custom {
 
 		template<class... Args>
 		void emplace_front(Args&&... args) {                                    // Construct object using arguments (Args) and add it to the head
-			Node* newNode = create_non_head(std::forward<Args>(args)...);
+			Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
 			insert_node_before(_head->Next, newNode);
 		}
 
@@ -166,7 +166,7 @@ namespace custom {
 		template<class... Args>
 		Iterator emplace(const Iterator& iterator, Args&&... args) {            // Construct object using arguments (Args) and add it BEFORE the iterator position
 			_workspaceNode = iterator._Ptr;
-			Node* newNode = create_non_head(std::forward<Args>(args)...);
+			Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
 			insert_node_before(_workspaceNode, newNode);
 
 			return Iterator(newNode, update_iteration_data());
@@ -189,14 +189,6 @@ namespace custom {
 			remove_node(_workspaceNode);
 
 			return prevIterator;
-		}
-
-		template<class... Args>
-		Node* create_non_head(Args&&... args) {									// Create default Node and construct the value with args
-			Node* newNode = new Node();
-			newNode->init_non_head(std::forward<Args>(args)...);
-
-			return newNode;
 		}
 
 		void insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node ferore another
@@ -279,8 +271,8 @@ namespace custom {
 			if (size() != other.size())
 				return false;
 
-			auto it1 = begin();
-			auto it2 = other.begin();
+			Iterator it1 = begin();
+			Iterator it2 = other.begin();
 			while (it1 != end())
 			{
 				if (*it1 != *it2)
@@ -374,7 +366,7 @@ namespace custom {
 
 		void reset_head() {
 			if (_head == nullptr)
-				_head = new Node();
+				_head = Node::create_head();
 
 			_head->Next = _head;
 			_head->Previous = _head;
@@ -386,6 +378,16 @@ namespace custom {
 		}
 	};
 	// Linked List ========================================================
+	// END
+
+	// List Hash ========================================================
+	struct ListHash {
+		template <class Type>
+		size_t operator()(const List<Type>& list) const {
+			return 0;
+		}
+	};
+	// List Hash ========================================================
 	// END
 
 } // END custom::
