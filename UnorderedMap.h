@@ -73,17 +73,17 @@ namespace custom {
 			}
 		}
 
-		template<class... Args>
-		Iterator try_emplace(Key&& key, Args&&... args) {					// Force construction with known key and given arguments for object
+		template<class KeyType, class... Args>
+		Iterator try_emplace(KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
 			Iterator it = find(key);										// Check key and decide to construct or not
 
 			if (it != end())
 				return it;
 			else {
 				Node* newNode = Node::create_non_head(std::piecewise_construct,
-								std::forward_as_tuple(std::forward<Key>(key)),
+								std::forward_as_tuple(std::forward<KeyType>(key)),
 								std::forward_as_tuple(std::forward<Args>(args)...));
-				Key& newKey = newNode->Value->first;
+				KeyType& newKey = newNode->Value->first;
 
 				rehash_if_overload();
 				_elems.insert_node_before(_elems.end()._Ptr, newNode);
@@ -191,9 +191,9 @@ namespace custom {
 			}
 		}
 
+		
 	public:
 		// Operators
-
 		Type& operator[](const Key& key) {									// Access value or create new one with key and assignment (no const)
 			return try_emplace(key)->Value->second;
 		}
@@ -284,17 +284,6 @@ namespace custom {
 		}
 	};
 	// UnorderedMap ========================================================
-	// END
-	
-
-	// UnorderedMap Hash ========================================================
-	struct UnorderedMapHash {
-		template <class Key, class Type>
-		size_t operator()(const UnorderedMap<Key, Type>& map) const {
-			return std::hash<Key>{}(map.size()) ^ std::hash<Type>{}(map.bucket_count());
-		}
-	};
-	// UnorderedMap Hash ========================================================
 	// END
 
 } // END custom::

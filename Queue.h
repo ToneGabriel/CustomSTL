@@ -164,14 +164,4 @@ namespace custom {
 	// Queue ========================================================
 	// END
 
-	// Queue Hash ========================================================
-	struct QueueHash {
-		template <class Type>
-		size_t operator()(const Queue<Type>& queue) const {
-			return 0;
-		}
-	};
-	// Queue Hash ========================================================
-	// END
-
 } // END custom::

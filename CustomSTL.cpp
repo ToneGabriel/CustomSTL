@@ -51,25 +51,15 @@ public:
 
 int main()
 {
-	//custom::UnorderedMap<custom::UnorderedMap<int, int>, int, custom::UnorderedMapHash> map;
+	custom::UnorderedMap<int, std::string> map;
 
-	//map.emplace(custom::UnorderedMap<int, int>(3), 3);
-	//map.emplace(custom::UnorderedMap<int, int>(20), 4);
-	//map.emplace(custom::UnorderedMap<int, int>(11), 5);
+	map[10] = "abc";
+	map[11] = "gsa";
+	map[26] = "af";
+	map[101] = " a0";
+	map[54] = "69";
+	map[1] = "A bv";
+	map.emplace(3, "abc");
 
-	//map.print_details();
-
-	// =================================================================================================
-	
-	//custom::UnorderedMap<int, std::string> map;
-
-	//map[10] = "abc";
-	//map[11] = "gsa";
-	//map[26] = "af";
-	//map[101] = " a0";
-	//map[54] = "69";
-	//map[1] = "A bv";
-	//map.emplace(3, "abc");
-
-	//map.print_details();
+	map.print_details();
 }

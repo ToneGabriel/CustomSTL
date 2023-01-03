@@ -380,14 +380,4 @@ namespace custom {
 	// Linked List ========================================================
 	// END
 
-	// List Hash ========================================================
-	struct ListHash {
-		template <class Type>
-		size_t operator()(const List<Type>& list) const {
-			return 0;
-		}
-	};
-	// List Hash ========================================================
-	// END
-
 } // END custom::

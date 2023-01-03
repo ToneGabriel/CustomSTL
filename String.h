@@ -498,13 +498,19 @@ namespace custom {
 	// String ============================================
 	// END
 
+} // END custom::
+
+
+namespace std {
+
 	// String Hash ========================================================
-	struct StringHash {
-		size_t operator()(const String& string) const {
-			return 0;
+	template<>
+	struct hash<custom::String> {
+		size_t operator()(const custom::String& string) const {
+			return hash<char>()(string[0]) ^ string.size();
 		}
 	};
 	// String Hash ========================================================
 	// END
 
-} // END custom::
+} // END std::
