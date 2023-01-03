@@ -102,7 +102,7 @@ namespace custom {
 		}
 
 		String(const size_t& newCapacity) {
-			realloc_empty(newCapacity);
+			alloc_empty(newCapacity);
 		}
 
 		String(const String& other) {
@@ -387,7 +387,10 @@ namespace custom {
 		}
 
 		friend std::istream& operator>>(std::istream& is, String& string) {
-			string.realloc_empty(istream_capacity);
+			if (string._string != nullptr)
+				string.dealloc_string(string._string, string._capacity);
+
+			string.alloc_empty(istream_capacity);
 			is.getline(string._string, istream_capacity);
 			string._size = strlen(string._string);
 			return is;
@@ -423,6 +426,13 @@ namespace custom {
 			_alloc.dealloc(address, capacity + 1);
 		}
 
+		void alloc_empty(const size_t& newCapacity) {
+			_string = alloc_string(newCapacity);
+			_size = 0;
+			_capacity = newCapacity;
+			_string[_size] = NULL;
+		}
+
 		void initialize_from_cstring(const char* cstring) {
 			if (cstring == nullptr) {
 				_capacity = _size = 0;
@@ -454,14 +464,6 @@ namespace custom {
 			return *this;
 		}
 
-		void realloc_empty(const size_t& newCapacity) {
-			dealloc_string(_string, _capacity);
-			_string = alloc_string(newCapacity);
-			_size = 0;
-			_capacity = newCapacity;
-			_string[_size] = NULL;
-		}
-
 		const size_t get_iterator_index(const Iterator& iterator) const {	// Get the position for the element in array from iterator
 			return iterator._Ptr - _string;	// TODO: check
 		}
@@ -472,15 +474,20 @@ namespace custom {
 		}
 
 		void copy(const String& other) {								// Generic copy function for string
-			realloc_empty(other._capacity);
+			if (_string != nullptr)
+				dealloc_string(_string, _capacity);
+
+			alloc_empty(other._capacity);
 			memcpy(_string, other._string, other._size);
-			_string[_size] = NULL;
 			_size = other._size;
 			_capacity = other._capacity;
+			_string[_size] = NULL;
 		}
 
 		void move(String&& other) {										// Generic move function for vector
-			dealloc_string(_string, _capacity);
+			if (_string != nullptr)
+				dealloc_string(_string, _capacity);
+
 			_string = other._string;
 			_size = other._size;
 			_capacity = other._capacity;
