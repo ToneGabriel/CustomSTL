@@ -5,10 +5,9 @@
 #include <iostream>
 #include <cstring>
 
-CUSTOM_BEGIN
-
 #define NULLCHR '\0'
 
+CUSTOM_BEGIN
 // String Iterator ============================================
 template<class String>
 class StringIterator : public BaseIterator<String>
@@ -509,12 +508,10 @@ private:
 };
 // String ============================================
 // END
-
 CUSTOM_END
 
 
-namespace std {
-
+STD_BEGIN
 // String Hash ========================================================
 template<>
 struct hash<custom::String> {
@@ -524,5 +521,4 @@ struct hash<custom::String> {
 };
 // String Hash ========================================================
 // END
-
-} // END std::
+STD_END

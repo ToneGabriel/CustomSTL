@@ -7,7 +7,6 @@
 #include <functional>
 
 CUSTOM_BEGIN
-
 // UnorderedMap ========================================================
 template<class Key, class Type, class Hash = std::hash<Key>>
 class UnorderedMap
