@@ -1,13 +1,14 @@
 #pragma once
+#include "Common.h"
 #include "List.h"
 #include "Vector.h"
 
-namespace custom {
+CUSTOM_BEGIN
 
-	template<class Type>
-	class UnorderedSet
-	{
+template<class Type>
+class UnorderedSet
+{
 
-	};
+};
 
-} // END custom::
+CUSTOM_END

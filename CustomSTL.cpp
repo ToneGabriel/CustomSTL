@@ -1,10 +1,9 @@
-#include <iostream>
 #include "Vector.h"
-// #include "List.h"
+#include "List.h"
+#include "String.h"
 // #include "Queue.h"
 // #include "UnorderedMap.h"
 // #include "UnorderedSet.h"
-// #include "String.h"
 
 //#include <vector>
 //#include <list>
@@ -12,6 +11,7 @@
 //#include <unordered_map>
 //#include <unordered_set>
 //#include <string>
+
 class Test {
 
 public:
@@ -28,10 +28,12 @@ public:
 
 	Test(const Test& other) {
 		std::cout << "Copy Construct\n";
+		value = other.value;
 	}
 
 	Test(Test&& other) noexcept {
 		std::cout << "Move Construct\n";
+		value = std::move(other.value);
 	}
 
 	~Test() {
@@ -40,11 +42,13 @@ public:
 
 	Test& operator=(const Test& other) {
 		std::cout << "Copy Assign\n";
+		value = other.value;
 		return *this;
 	}
 
 	Test& operator=(Test&& other) noexcept {
 		std::cout << "Move Assign\n";
+		value = std::move(other.value);
 		return *this;
 	}
 
@@ -52,14 +56,6 @@ public:
 
 int main()
 {
-	custom::Vector<int> vec;
-
-	vec.push_back(3);
-	vec.push_back(3);
-
-	for(auto& val:vec)
-		std::cout<<val<<'\n';
-
 	// custom::UnorderedMap<int, std::string> map;
 
 	// map[10] = "abc";
