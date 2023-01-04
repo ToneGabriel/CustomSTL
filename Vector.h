@@ -13,7 +13,7 @@ namespace custom {
 
 	public:
 
-		explicit VectorIterator(Base::IterType* ptr, Base::Data* data)
+		explicit VectorIterator(typename Base::IterType* ptr, typename Base::Data* data)
 			:Base(ptr, data) { }
 
 		VectorIterator& operator++() {
@@ -72,14 +72,14 @@ namespace custom {
 			return temp;
 		}
 
-		Base::IterType* operator->() {
+		typename Base::IterType* operator->() {
 			if (this->_Ptr >= this->_IterationData->_IterEnd)
 				throw std::out_of_range("Cannot access end iterator...");
 
 			return this->_Ptr;
 		}
 
-		Base::ValueType& operator*() {
+		typename Base::ValueType& operator*() {
 			if (this->_Ptr >= this->_IterationData->_IterEnd)
 				throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -104,8 +104,8 @@ namespace custom {
 	public:
 		using ValueType = Type;											// Type for stored values
 		using IterType	= ValueType;
-		using Alloc		= typename Allocator<ValueType>;				// Allocator type
-		using Iterator	= typename VectorIterator<Vector<ValueType>>;	// Iterator type
+		using Alloc		= Allocator<ValueType>;				// Allocator type
+		using Iterator	= VectorIterator<Vector<ValueType>>;	// Iterator type
 		using Data		= typename Iterator::Data;						// Iteration data
 
 	private:

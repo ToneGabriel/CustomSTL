@@ -22,7 +22,7 @@ namespace custom {
 	public:
 		using ValueType = typename Container::ValueType;
 		using IterType	= typename Container::IterType;
-		using Data		= typename IterationData<IterType>;
+		using Data		= IterationData<IterType>;
 
 		IterType* _Ptr			= nullptr;
 		Data* _IterationData	= nullptr;

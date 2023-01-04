@@ -35,6 +35,7 @@ ExportedObj/
 *.lastbuildstate
 *.idb
 *.VC.db
+*.json
 
 # Prerequisites
 *.d
