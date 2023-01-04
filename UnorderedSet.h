@@ -7,6 +7,7 @@
 #include <functional>
 
 CUSTOM_BEGIN
+
 // UnorderedSet ========================================================
 template<class Key, class Hash = std::hash<Key>>
 class UnorderedSet
@@ -58,10 +59,11 @@ public:
 public:
 	// Main functions
 
-	template<class... PairArgs>
-	Iterator emplace(PairArgs&&... args) {								// Constructs Node first with any given std::pair arguments
-		Node* newNode = Node::create_non_head(std::forward<PairArgs>(args)...);
-		Key& newKey = newNode->Value->first;
+	template<class... Args>
+	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
+		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
+		Key& newKey = newNode->Value;
+		//Key& newKey = newNode->Value->first;
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -69,25 +71,6 @@ public:
 			return it;
 		}
 		else {
-			rehash_if_overload();
-			_elems.insert_node_before(_elems.end()._Ptr, newNode);
-			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, _elems.update_iteration_data());
-		}
-	}
-
-	template<class KeyType, class... Args>
-	Iterator try_emplace(KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
-		Iterator it = find(key);										// Check key and decide to construct or not
-
-		if (it != end())
-			return it;
-		else {
-			Node* newNode = Node::create_non_head(std::piecewise_construct,
-							std::forward_as_tuple(std::forward<KeyType>(key)),
-							std::forward_as_tuple(std::forward<Args>(args)...));
-			KeyType& newKey = newNode->Value->first;
-
 			rehash_if_overload();
 			_elems.insert_node_before(_elems.end()._Ptr, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
@@ -111,7 +94,8 @@ public:
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
-		return erase(iterator._Ptr->Value->first);
+		return erase(iterator._Ptr->Value);
+		//return erase(iterator._Ptr->Value->first);
 	}
 
 	Iterator find(const Key& key) {
@@ -167,29 +151,14 @@ public:
 		return _maxLoadFactor;
 	}
 
-	const Key& at(const Key& key) const {								// Access Value at key with check
-		BucketIterator it = find_in_array(key);
-		if (it == _buckets[bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
-
-		return (*it)->Value->second;
-	}
-
-	Key& at(const Key& key) {
-		BucketIterator it = find_in_array(key);
-		if (it == _buckets[bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
-
-		return (*it)->Value->second;
-	}
-
 	void print_details() {												// For Debugging
 		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
 		for (size_t i = 0; i < _buckets.size(); i++)
 		{
 			std::cout << i << " : ";
 			for (auto& val : _buckets[i])
-				std::cout << val->Value->first << ' ' << val->Value->second << '\\';
+				std::cout << val->Value << '\\';
+				//std::cout << val->Value->first << ' ' << val->Value->second << '\\';
 			std::cout << '\n';
 		}
 	}
@@ -197,13 +166,6 @@ public:
 	
 public:
 	// Operators
-	Key& operator[](const Key& key) {									// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->Value->second;
-	}
-
-	Key& operator[](Key&& key) {
-		return try_emplace(std::move(key))->Value->second;
-	}
 
 	UnorderedSet<Key>& operator=(const UnorderedSet<Key>& other) {
 		_elems = other._elems;
@@ -263,7 +225,7 @@ private:
 	BucketIterator find_in_array(const Key& key) {						// Get iterator from bucket with key
 		Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && (*it)->Value->first != key)
+		while (it != currentBucket.end() && (*it)->Value != key)
 			it++;
 
 		return it;
@@ -274,7 +236,8 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(it->Value->first)].push_back(it._Ptr);
+			_buckets[bucket(it->Value)].push_back(it._Ptr);
+			//_buckets[bucket(it->Value->first)].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed
@@ -288,4 +251,5 @@ private:
 };
 // UnorderedSet ========================================================
 // END
+
 CUSTOM_END
