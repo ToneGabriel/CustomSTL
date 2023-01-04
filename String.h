@@ -2,8 +2,12 @@
 #include "Common.h"
 #include "Allocator.h"
 #include "BaseIterator.h"
+#include <iostream>
+#include <cstring>
 
 CUSTOM_BEGIN
+
+#define NULLCHR '\0'
 
 // String Iterator ============================================
 template<class String>

@@ -2,6 +2,9 @@
 #include "Common.h"
 #include "List.h"
 #include "Vector.h"
+#include <iostream>
+#include <cmath>
+#include <functional>
 
 CUSTOM_BEGIN
 
@@ -281,7 +284,7 @@ private:
 	}
 
 	size_t min_load_factor_buckets(const size_t& size) const {			// returns the minimum number of buckets necessary for the elements in List
-		return static_cast<size_t>(std::ceilf(static_cast<float>(size) / _maxLoadFactor));
+		return static_cast<size_t>(std::ceil(static_cast<float>(size) / _maxLoadFactor));
 	}
 };
 // UnorderedMap ========================================================
