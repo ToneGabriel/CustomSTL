@@ -114,7 +114,7 @@ public:
 		return erase(iterator._Ptr->Value->first);
 	}
 
-	Iterator find(const Key& key) {
+	Iterator find(const Key& key) const {
 		BucketIterator it = find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
@@ -183,12 +183,12 @@ public:
 		return (*it)->Value->second;
 	}
 
-	void print_details() {												// For Debugging
+	void print_details() const {										// For Debugging
 		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
 		for (size_t i = 0; i < _buckets.size(); i++)
 		{
 			std::cout << i << " : ";
-			for (auto& val : _buckets[i])
+			for (const auto& val : _buckets[i])
 				std::cout << val->Value->first << ' ' << val->Value->second << '\\';
 			std::cout << '\n';
 		}
@@ -219,7 +219,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const UnorderedMap<Key, Type>& other) {		// Contains the same elems, but not the same hashtable
+	bool operator==(const UnorderedMap<Key, Type>& other) const {		// Contains the same elems, but not the same hashtable
 		if (size() != other.size())
 			return false;
 
@@ -231,6 +231,10 @@ public:
 		}
 
 		return true;
+	}
+
+	bool operator!=(const UnorderedMap<Key, Type>& other) const {
+		return !operator==(other);
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const UnorderedMap<Key, Type>& map) {
@@ -260,8 +264,8 @@ public:
 private:
 	// Others
 
-	BucketIterator find_in_array(const Key& key) {						// Get iterator from bucket with key
-		Bucket& currentBucket = _buckets[bucket(key)];
+	BucketIterator find_in_array(const Key& key) const {						// Get iterator from bucket with key
+		const Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
 		while (it != currentBucket.end() && (*it)->Value->first != key)
 			it++;

@@ -268,7 +268,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const List<ValueType>& other) {
+	bool operator==(const List<ValueType>& other) const {
 		if (size() != other.size())
 			return false;
 
@@ -284,6 +284,10 @@ public:
 		}
 
 		return true;
+	}
+
+	bool operator!=(const List<ValueType>& other) const {
+		return !operator==(other);
 	}
 
 public:

@@ -62,8 +62,7 @@ public:
 	template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
 		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
-		Key& newKey = newNode->Value;
-		//Key& newKey = newNode->Value->first;
+		Key& newKey = *newNode->Value;
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -94,11 +93,10 @@ public:
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
-		return erase(iterator._Ptr->Value);
-		//return erase(iterator._Ptr->Value->first);
+		return erase(*iterator._Ptr->Value);
 	}
 
-	Iterator find(const Key& key) {
+	Iterator find(const Key& key) const {
 		BucketIterator it = find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
@@ -151,14 +149,13 @@ public:
 		return _maxLoadFactor;
 	}
 
-	void print_details() {												// For Debugging
+	void print_details() const {										// For Debugging
 		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
 		for (size_t i = 0; i < _buckets.size(); i++)
 		{
 			std::cout << i << " : ";
-			for (auto& val : _buckets[i])
-				std::cout << val->Value << '\\';
-				//std::cout << val->Value->first << ' ' << val->Value->second << '\\';
+			for (const auto& val : _buckets[i])
+				std::cout << *val->Value << '\\';
 			std::cout << '\n';
 		}
 	}
@@ -181,18 +178,22 @@ public:
 		return *this;
 	}
 
-	bool operator==(const UnorderedSet<Key>& other) {		// Contains the same elems, but not the same hashtable
+	bool operator==(const UnorderedSet<Key>& other) const {				// Contains the same elems, but not the same hashtable
 		if (size() != other.size())
 			return false;
 
 		for (const ValueType& val : other)
 		{
-			Iterator it = find(val.first);		// Search for key
-			if (it == end() || (*it).second != val.second)
+			Iterator it = find(val);		// Search for key
+			if (it == end() || (*it) != val)
 				return false;
 		}
 
 		return true;
+	}
+
+	bool operator!=(const UnorderedSet<Key>& other) const {
+		return !operator==(other);
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const UnorderedSet<Key>& map) {
@@ -215,17 +216,17 @@ public:
 		return _elems.end();
 	}
 
-	const Iterator end() const{
+	const Iterator end() const {
 		return _elems.end();
 	}
 
 private:
 	// Others
 
-	BucketIterator find_in_array(const Key& key) {						// Get iterator from bucket with key
-		Bucket& currentBucket = _buckets[bucket(key)];
+	BucketIterator find_in_array(const Key& key) const {				// Get iterator from bucket with key
+		const Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && (*it)->Value != key)
+		while (it != currentBucket.end() && *(*it)->Value != key)
 			it++;
 
 		return it;
@@ -236,8 +237,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(it->Value)].push_back(it._Ptr);
-			//_buckets[bucket(it->Value->first)].push_back(it._Ptr);
+			_buckets[bucket(*it->Value)].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed

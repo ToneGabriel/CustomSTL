@@ -378,11 +378,15 @@ public:
 		return *this;
 	}
 
-	bool operator==(const String& other) {
+	bool operator==(const String& other) const {
 		if (size() != other.size())
 			return false;
 
 		return strcmp(_string, other._string) == 0;
+	}
+
+	bool operator!=(const String& other) const {
+		return !operator==(other);
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const String& string) {

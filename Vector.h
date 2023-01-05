@@ -318,7 +318,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Vector<ValueType>& other) {
+	bool operator==(const Vector<ValueType>& other) const {
 		if (size() != other.size())
 			return false;
 
@@ -327,6 +327,10 @@ public:
 				return false;
 
 		return true;
+	}
+
+	bool operator!=(const Vector<ValueType>& other) const {
+		return !operator==(other);
 	}
 
 public:
