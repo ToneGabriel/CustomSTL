@@ -394,7 +394,7 @@ private:
 	}
 
 	const size_t get_index(const Iterator& iterator) const {			// Get the position for the element in array from iterator
-		return iterator._Ptr - _array;
+		return iterator._Ptr - iterator._IterationData->_IterBegin;
 	}
 
 	const bool is_end(const Iterator& iterator) const {

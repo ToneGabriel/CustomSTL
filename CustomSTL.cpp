@@ -1,6 +1,6 @@
 // #include "Vector.h"
 // #include "List.h"
-// #include "String.h"
+#include "String.h"
 // #include "Queue.h"
 // #include "UnorderedMap.h"
 // #include "UnorderedSet.h"

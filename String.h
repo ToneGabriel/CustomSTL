@@ -224,16 +224,25 @@ public:
 		return *this;
 	}
 
-	Iterator insert(const Iterator& pos, const char& chr) {
-		// TODO: implement
-		return Iterator(_string, update_iteration_data());
+	Iterator insert(const Iterator& where, const char& chr) {
+		size_t pos = get_iterator_index(where);
+		insert_from_cstring(pos, &chr, 0, 1);
+
+		return Iterator(_string + pos, update_iteration_data());
 	}
 
-	Iterator insert(const Iterator& pos, const Iterator& first, const Iterator& last) {
-		if (pos._IterationData->_IterBegin != first._IterationData->_IterBegin &&
-			first._IterationData->_IterBegin == last._IterationData->_IterBegin)	// Check if pos string != first/last string
-		// TODO: implement
-		return Iterator(_string, update_iteration_data());
+	Iterator insert(const Iterator& where, const Iterator& first, const Iterator& last) {
+		if (where._IterationData->_IterBegin == first._IterationData->_IterBegin ||
+			first._IterationData->_IterBegin != last._IterationData->_IterBegin)	// Check if pos string != first/last string
+			throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
+
+		size_t pos 			= get_iterator_index(where);
+		size_t posFrom 		= get_iterator_index(first);
+		size_t posTo 		= get_iterator_index(last);
+		const char* cstring = first._IterationData->_IterBegin;
+		insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
+
+		return Iterator(_string + pos, update_iteration_data());
 	}
 	// end Insert
 
@@ -243,7 +252,7 @@ public:
 		return *this;
 	}
 
-	Iterator erase(const Iterator& pos) {
+	Iterator erase(const Iterator& where) {
 		// TODO: implement
 		return Iterator(_string, update_iteration_data());
 	}
@@ -473,7 +482,7 @@ private:
 	}
 
 	const size_t get_iterator_index(const Iterator& iterator) const {	// Get the position for the element in array from iterator
-		return iterator._Ptr - _string;	// TODO: check
+		return iterator._Ptr - iterator._IterationData->_IterBegin;	// TODO: check
 	}
 
 	void extend_if_full() {											// Reserve 50% more capacity when full
