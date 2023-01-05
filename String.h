@@ -225,7 +225,7 @@ public:
 	}
 
 	Iterator insert(const Iterator& where, const char& chr) {
-		size_t pos = get_iterator_index(where);
+		size_t pos = get_index(where);
 		insert_from_cstring(pos, &chr, 0, 1);
 
 		return Iterator(_string + pos, update_iteration_data());
@@ -236,9 +236,9 @@ public:
 			first._IterationData->_IterBegin != last._IterationData->_IterBegin)	// Check if pos string != first/last string
 			throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
 
-		size_t pos 			= get_iterator_index(where);
-		size_t posFrom 		= get_iterator_index(first);
-		size_t posTo 		= get_iterator_index(last);
+		size_t pos 			= get_index(where);
+		size_t posFrom 		= get_index(first);
+		size_t posTo 		= get_index(last);
 		const char* cstring = first._IterationData->_IterBegin;
 		insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
@@ -248,13 +248,16 @@ public:
 
 	// Erase function overload
 	String& erase(const size_t& pos, const size_t& len) {
-		// TODO: implement
+		remove_from_cstring(pos, len);
+
 		return *this;
 	}
 
 	Iterator erase(const Iterator& where) {
-		// TODO: implement
-		return Iterator(_string, update_iteration_data());
+		size_t pos = get_index(where);
+		remove_from_cstring(pos, 1);
+
+		return Iterator(_string + pos, update_iteration_data());
 	}
 
 	Iterator erase(const Iterator& first, const Iterator& last) {
@@ -464,9 +467,11 @@ private:
 		_string[_size] = NULLCHR;
 	}
 
-	String& insert_from_cstring(size_t pos, const char* cstring, const size_t& subpos, const size_t& sublen) {
+	void insert_from_cstring(const size_t& pos, const char* cstring, const size_t& subpos, const size_t& sublen) {
 		if (pos < 0 || pos > _size)		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
+		if (subpos + sublen > strlen(cstring))
+			throw std::out_of_range("Invalid length...");
 
 		size_t newSize = _size + sublen;
 
@@ -477,12 +482,21 @@ private:
 		memcpy(_string + pos, cstring + subpos, sublen);			// add substr from cstring between
 		_size = newSize;
 		_string[_size] = NULLCHR;
-
-		return *this;
 	}
 
-	const size_t get_iterator_index(const Iterator& iterator) const {	// Get the position for the element in array from iterator
-		return iterator._Ptr - iterator._IterationData->_IterBegin;	// TODO: check
+	void remove_from_cstring(const size_t& pos, const size_t& len) {	// TODO: check
+		if (pos < 0 || pos > _size)		// pos = start pos
+			throw std::out_of_range("Invalid starting position...");
+		if (pos + len > _size)
+			throw std::out_of_range("Invalid length...");
+
+		memcpy(_string + pos, _string + pos + len, _size - len);
+		_size = _size - len;
+		_string[_size] = NULLCHR;
+	}
+
+	const size_t get_index(const Iterator& iterator) const {		// Get the position for the element in array from iterator
+		return iterator._Ptr - iterator._IterationData->_IterBegin;
 	}
 
 	void extend_if_full() {											// Reserve 50% more capacity when full
