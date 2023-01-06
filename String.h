@@ -254,6 +254,9 @@ public:
 	}
 
 	Iterator erase(const Iterator& where) {
+		if (is_end(where))
+			throw std::out_of_range("String erase iterator outside range...");
+
 		size_t pos = get_index(where);
 		remove_from_cstring(pos, 1);
 
@@ -261,17 +264,52 @@ public:
 	}
 
 	Iterator erase(const Iterator& first, const Iterator& last) {
-		// TODO: implement
-		return Iterator(_string, update_iteration_data());
+		if (is_end(first))
+			throw std::out_of_range("String erase iterator outside range...");
+
+		size_t posFrom 		= get_index(first);
+		size_t posTo 		= get_index(last);
+		remove_from_cstring(posFrom, posTo - posFrom);
+
+		return Iterator(_string + posFrom, update_iteration_data());
 	}
 	// end Erase
 
 	// Find function overload
 	size_t find(const String& string, const size_t& pos) const {
-		// TODO: implement
-		return npos;
+		return search_for_cstring(string._string, pos, string._size);
+	}
+
+	size_t find (const char* cstring, const size_t& pos) const {
+		return search_for_cstring(cstring, pos, strlen(cstring));
+	}
+
+	size_t find (const char* cstring, const size_t& pos, const size_t& len) const {
+		return search_for_cstring(cstring, pos, len);
+	}
+
+	size_t find (const char& chr, const size_t& pos) const {
+		return search_for_cstring(&chr, pos, 1);
 	}
 	// end Find
+
+	// Compare function overload
+	int compare(const String& string) const {
+		return compare_with_cstring(0, _size, string._string, 0, string._size);
+	}
+
+	int compare(const size_t& pos, const size_t& len, const String& string, const size_t& subpos, const size_t& sublen) const {
+		return compare_with_cstring(pos, len, string._string, subpos, sublen);
+	}
+
+	int compare(const char* cstring) const {
+		return compare_with_cstring(0, _size, cstring, 0, strlen(cstring));
+	}
+
+	int compare(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
+		return compare_with_cstring(pos, len, cstring, subpos, sublen);
+	}
+	// end Compare
 
 	String substr(const size_t& pos, const size_t& len) const {		// Create substring from current string
 		if (pos < 0 || pos > _size)
@@ -391,10 +429,7 @@ public:
 	}
 
 	bool operator==(const String& other) const {
-		if (size() != other.size())
-			return false;
-
-		return strcmp(_string, other._string) == 0;
+		return compare(other) == 0;
 	}
 
 	bool operator!=(const String& other) const {
@@ -490,13 +525,39 @@ private:
 		if (pos + len > _size)
 			throw std::out_of_range("Invalid length...");
 
-		memcpy(_string + pos, _string + pos + len, _size - len);
+		memcpy(_string + pos, _string + pos + len, _size - pos - len);
 		_size = _size - len;
 		_string[_size] = NULLCHR;
 	}
 
+	size_t search_for_cstring(const char* cstring, const size_t& pos, const size_t& len) const {
+		if (pos < 0 || pos > _size)		// pos = start pos
+			throw std::out_of_range("Invalid starting position...");
+		if (pos + len > _size || len > strlen(cstring))
+			throw std::out_of_range("Invalid length...");
+
+		for(size_t i = pos; i <= _size - len; i++)
+			if(strncmp(_string + i, cstring, len) == 0)
+				return i;
+
+		return npos;
+	}
+
+	int compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
+		if(len < sublen)
+			return -1;
+		if(len > sublen)
+			return 1;
+		
+		return strncmp(_string + pos, cstring + subpos, len);
+	}
+
 	const size_t get_index(const Iterator& iterator) const {		// Get the position for the element in array from iterator
 		return iterator._Ptr - iterator._IterationData->_IterBegin;
+	}
+
+	const bool is_end(const Iterator& iterator) const {
+		return iterator._Ptr == iterator._IterationData->_IterEnd;
 	}
 
 	void extend_if_full() {											// Reserve 50% more capacity when full

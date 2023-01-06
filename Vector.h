@@ -253,7 +253,7 @@ public:
 			_array[i] = std::move(_array[i + 1]);
 		pop_back();
 
-		return Iterator(&_array[index - 1], update_iteration_data());
+		return Iterator(&_array[index], update_iteration_data());
 	}
 
 	const size_t capacity() const {											// Get capacity
@@ -398,7 +398,7 @@ private:
 	}
 
 	const bool is_end(const Iterator& iterator) const {
-		return iterator._Ptr == _array + _size;
+		return iterator._Ptr == iterator._IterationData->_IterEnd;
 	}
 
 	void extend_if_full() {												// Reserve 50% more capacity when full

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdlib.h>
-#include <stdexcept>
+#include <cstddef>      // std::size_t
+#include <stdexcept>    // exceptions
 
 #define CUSTOM_BEGIN namespace custom {
 #define CUSTOM_END }
