@@ -18,7 +18,7 @@ public:
 		:Base(nodePtr, data) { }
 
 	ListIterator& operator++() {
-		if (this->_Ptr == this->_IterationData->_IterEnd)
+		if (this->_Ptr == this->_IterationData->_End)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		this->_Ptr = this->_Ptr->Next;
@@ -32,7 +32,7 @@ public:
 	}
 
 	ListIterator& operator--() {
-		if (this->_Ptr == this->_IterationData->_IterBegin)
+		if (this->_Ptr == this->_IterationData->_Begin)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		this->_Ptr = this->_Ptr->Previous;
@@ -46,14 +46,14 @@ public:
 	}
 
 	typename Base::IterType* operator->() {
-		if (this->_Ptr == this->_IterationData->_IterEnd)
+		if (this->_Ptr == this->_IterationData->_End)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return this->_Ptr;
 	}
 
 	typename Base::ValueType& operator*() {
-		if (this->_Ptr == this->_IterationData->_IterEnd)
+		if (this->_Ptr == this->_IterationData->_End)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return *this->_Ptr->Value;
@@ -211,8 +211,8 @@ public:
 	}
 
 	Data* update_iteration_data() const {									// Update data and sent it to iterator
-		_data._IterBegin = _head->Next;
-		_data._IterEnd = _head;
+		_data._Begin = _head->Next;
+		_data._End = _head;
 
 		return &_data;
 	}

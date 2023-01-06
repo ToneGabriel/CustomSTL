@@ -9,14 +9,14 @@ class BaseIterator
 private:
 	template<class Type>
 	struct IterationData {
-		Type* _IterBegin	= nullptr;
-		Type* _IterEnd		= nullptr;
+		Type* _Begin	= nullptr;
+		Type* _End		= nullptr;
 
 		IterationData() = default;
 
 		~IterationData() {
-			_IterBegin	= nullptr;
-			_IterEnd	= nullptr;
+			_Begin	= nullptr;
+			_End	= nullptr;
 		}
 	};
 

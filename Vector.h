@@ -18,7 +18,7 @@ public:
 		:Base(ptr, data) { }
 
 	VectorIterator& operator++() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		this->_Ptr++;
@@ -32,7 +32,7 @@ public:
 	}
 
 	VectorIterator& operator+=(const size_t& diff) {
-		if (this->_Ptr + diff >= this->_IterationData->_IterEnd)
+		if (this->_Ptr + diff >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		this->_Ptr += diff;
@@ -46,7 +46,7 @@ public:
 	}
 
 	VectorIterator& operator--() {
-		if (this->_Ptr <= this->_IterationData->_IterBegin)
+		if (this->_Ptr <= this->_IterationData->_Begin)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		this->_Ptr--;
@@ -60,7 +60,7 @@ public:
 	}
 
 	VectorIterator& operator-=(const size_t& diff) {
-		if (this->_Ptr - diff <= this->_IterationData->_IterBegin)
+		if (this->_Ptr - diff <= this->_IterationData->_Begin)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		this->_Ptr -= diff;
@@ -74,14 +74,14 @@ public:
 	}
 
 	typename Base::IterType* operator->() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return this->_Ptr;
 	}
 
 	typename Base::ValueType& operator*() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return *this->_Ptr;
@@ -378,8 +378,8 @@ private:
 	}
 
 	Data* update_iteration_data() const {
-		_data._IterBegin = _array;
-		_data._IterEnd = _array + _size;
+		_data._Begin = _array;
+		_data._End = _array + _size;
 
 		return &_data;
 	}
@@ -394,11 +394,11 @@ private:
 	}
 
 	const size_t get_index(const Iterator& iterator) const {			// Get the position for the element in array from iterator
-		return iterator._Ptr - iterator._IterationData->_IterBegin;
+		return iterator._Ptr - iterator._IterationData->_Begin;
 	}
 
 	const bool is_end(const Iterator& iterator) const {
-		return iterator._Ptr == iterator._IterationData->_IterEnd;
+		return iterator._Ptr == iterator._IterationData->_End;
 	}
 
 	void extend_if_full() {												// Reserve 50% more capacity when full

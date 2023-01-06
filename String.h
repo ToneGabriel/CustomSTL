@@ -21,7 +21,7 @@ public:
 		:Base(ptr, data) {}
 
 	StringIterator& operator++() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		this->_Ptr++;
@@ -35,7 +35,7 @@ public:
 	}
 
 	StringIterator& operator--() {
-		if (this->_Ptr <= this->_IterationData->_IterBegin)
+		if (this->_Ptr <= this->_IterationData->_Begin)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		this->_Ptr--;
@@ -49,14 +49,14 @@ public:
 	}
 
 	typename Base::IterType* operator->() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return this->_Ptr;
 	}
 
 	typename Base::ValueType& operator*() {
-		if (this->_Ptr >= this->_IterationData->_IterEnd)
+		if (this->_Ptr >= this->_IterationData->_End)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return *this->_Ptr;
@@ -232,14 +232,14 @@ public:
 	}
 
 	Iterator insert(const Iterator& where, const Iterator& first, const Iterator& last) {
-		if (where._IterationData->_IterBegin == first._IterationData->_IterBegin ||
-			first._IterationData->_IterBegin != last._IterationData->_IterBegin)	// Check if pos string != first/last string
+		if (where._IterationData->_Begin == first._IterationData->_Begin ||
+			first._IterationData->_Begin != last._IterationData->_Begin)	// Check if pos string != first/last string
 			throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
 
 		size_t pos 			= get_index(where);
 		size_t posFrom 		= get_index(first);
 		size_t posTo 		= get_index(last);
-		const char* cstring = first._IterationData->_IterBegin;
+		const char* cstring = first._IterationData->_Begin;
 		insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
 		return Iterator(_string + pos, update_iteration_data());
@@ -376,7 +376,7 @@ public:
 		return _string[_size - 1];
 	}
 
-	void print_details() {											// For Debugging
+	void print_details() const {									// For Debugging
 		for (size_t i = 0; i <= _capacity; i++)
 		{
 			if (_string[i] == NULLCHR)
@@ -481,10 +481,10 @@ private:
 		_alloc.dealloc(address, capacity + 1);
 	}
 
-	void alloc_empty(const size_t& newCapacity) {
-		_string = alloc_string(newCapacity);
+	void alloc_empty(const size_t& capacity) {
+		_string = alloc_string(capacity);
 		_size = 0;
-		_capacity = newCapacity;
+		_capacity = capacity;
 		_string[_size] = NULLCHR;
 	}
 
@@ -553,11 +553,11 @@ private:
 	}
 
 	const size_t get_index(const Iterator& iterator) const {		// Get the position for the element in array from iterator
-		return iterator._Ptr - iterator._IterationData->_IterBegin;
+		return iterator._Ptr - iterator._IterationData->_Begin;
 	}
 
 	const bool is_end(const Iterator& iterator) const {
-		return iterator._Ptr == iterator._IterationData->_IterEnd;
+		return iterator._Ptr == iterator._IterationData->_End;
 	}
 
 	void extend_if_full() {											// Reserve 50% more capacity when full
@@ -588,8 +588,8 @@ private:
 	}
 
 	Data* update_iteration_data() const {
-		_data._IterBegin = _string;
-		_data._IterEnd = _string + _size;
+		_data._Begin = _string;
+		_data._End = _string + _size;
 
 		return &_data;
 	}
@@ -600,13 +600,20 @@ CUSTOM_END
 
 
 STD_BEGIN
-// String Hash ========================================================
+// String Helpers ========================================================
 template<>
 struct hash<custom::String> {
 	size_t operator()(const custom::String& string) const {
 		return hash<char>()(string[0]) ^ string.size();
 	}
 };
-// String Hash ========================================================
+
+template<>
+struct less<custom::String> {
+	bool operator()(const custom::String& left, const custom::String& right) const {
+		return left.compare(right) < 0;
+	}
+};
+// String Helpers ========================================================
 // END
 STD_END
