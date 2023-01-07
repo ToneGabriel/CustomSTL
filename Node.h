@@ -11,30 +11,28 @@ private:
 	using ValueType = Type;
 
 public:
-	ValueType* Value	= nullptr;										// Data
-	ForwardNode* Next	= nullptr;										// Reference to next
+	ValueType Value;													// Data
+	ForwardNode* Next = nullptr;										// Reference to next
 
-	~ForwardNode() {
-		delete Value;
-		Value	= nullptr;
-		Next	= nullptr;
-	}
+	ForwardNode()
+		:Value() { }
 
-	static ForwardNode* create_head() {
-		return new ForwardNode();
-	}
+	ForwardNode(const ValueType& copyValue)
+		:Value(copyValue) { }
+
+	ForwardNode(ValueType&& moveValue)
+		:Value(std::move(moveValue)) { }
 
 	template<class... Args>
-	static ForwardNode* create_non_head(Args&&... args) {				// Add data using emplace ValueTypepe Constructor
-		ForwardNode* temp = new ForwardNode();							// Workaround default Value initialization
-		temp->Value = new ValueType(std::forward<Args>(args)...);
-		return temp;
-	}
+	ForwardNode(Args&&... args)
+		:Value(std::forward<Args>(args)...) { }
 
-private:
-	ForwardNode()								= default;
-	ForwardNode(const ForwardNode&)				= delete;
-	ForwardNode& operator=(const ForwardNode&)	= delete;
+	ForwardNode(const ForwardNode<Type>&)				= delete;
+	ForwardNode& operator=(const ForwardNode<Type>&)	= delete;
+
+	~ForwardNode() {
+		Next = nullptr;
+	}
 };
 // Forward Node ========================================================
 // END
@@ -48,32 +46,30 @@ private:
 	using ValueType = Type;
 
 public:
-	ValueType* Value		= nullptr;									// Data
+	ValueType Value;													// Data
 	DoubleNode* Previous	= nullptr;									// Reference to previous 
 	DoubleNode* Next		= nullptr;									// Reference to next
 
+	DoubleNode() 
+		:Value() { }
+
+	DoubleNode(const ValueType& copyValue)
+		:Value(copyValue) { }
+
+	DoubleNode(ValueType&& moveValue)
+		:Value(std::move(moveValue)) { }
+
+	template<class... Args>
+	DoubleNode(Args&&... args)
+		: Value(std::forward<Args>(args)...) { }
+
+	DoubleNode(const DoubleNode<Type>&)				= delete;
+	DoubleNode& operator=(const DoubleNode<Type>&)	= delete;
+
 	~DoubleNode() {
-		delete Value;
-		Value		= nullptr;
 		Previous	= nullptr;
 		Next		= nullptr;
 	}
-
-	static DoubleNode* create_head() {
-		return new DoubleNode();
-	}
-
-	template<class... Args>
-	static DoubleNode* create_non_head(Args&&... args) {				// Add data using emplace ValueTypepe Constructor
-		DoubleNode* temp = new DoubleNode();							// Workaround default Value initialization
-		temp->Value = new ValueType(std::forward<Args>(args)...);
-		return temp;
-	}
-
-private:
-	DoubleNode()								= default;
-	DoubleNode(const DoubleNode&)				= delete;
-	DoubleNode& operator=(const DoubleNode&)	= delete;
 };
 // Double Node ========================================================
 // END

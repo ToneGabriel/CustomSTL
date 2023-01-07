@@ -45,7 +45,7 @@ public:
 
 	template<class... Args>
 	void emplace(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
-		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
+		Node* newNode = new Node(std::forward<Args>(args)...);
 
 		if (_head == nullptr)
 			_head = _tail = newNode;								// Here head and tail are not important and can be used to store value
@@ -78,19 +78,19 @@ public:
 	}
 
 	ValueType& front() {
-		return *_head->Value;
+		return _head->Value;
 	}
 
 	const ValueType& front() const {
-		return *_head->Value;
+		return _head->Value;
 	}
 
 	ValueType& back() {
-		return *_tail->Value;
+		return _tail->Value;
 	}
 
 	const ValueType& back() const {
-		return *_tail->Value;
+		return _tail->Value;
 	}
 
 	const size_t size() const {                                     // Get size

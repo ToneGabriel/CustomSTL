@@ -61,8 +61,8 @@ public:
 
 	template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
-		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
-		Key& newKey = *newNode->Value;
+		Node* newNode = new Node(std::forward<Args>(args)...);
+		Key& newKey = newNode->Value;
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -93,7 +93,7 @@ public:
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
-		return erase(*iterator._Ptr->Value);
+		return erase(iterator._Ptr->Value);
 	}
 
 	Iterator find(const Key& key) const {
@@ -155,7 +155,7 @@ public:
 		{
 			std::cout << i << " : ";
 			for (const auto& val : _buckets[i])
-				std::cout << *val->Value << '\\';
+				std::cout << val->Value << '\\';
 			std::cout << '\n';
 		}
 	}
@@ -226,7 +226,7 @@ private:
 	BucketIterator find_in_array(const Key& key) const {				// Get iterator from bucket with key
 		const Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && *(*it)->Value != key)
+		while (it != currentBucket.end() && (*it)->Value != key)
 			it++;
 
 		return it;
@@ -237,7 +237,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(*it->Value)].push_back(it._Ptr);
+			_buckets[bucket(it->Value)].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed

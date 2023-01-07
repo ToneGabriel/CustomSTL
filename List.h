@@ -56,7 +56,7 @@ public:
 		if (this->_Ptr == this->_IterationData->_End)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
-		return *this->_Ptr->Value;
+		return this->_Ptr->Value;
 	}
 
 	bool operator==(const ListIterator& other) const {
@@ -128,7 +128,7 @@ public:
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {                                     // Construct object using arguments (Args) and add it to the tail
-		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
+		Node* newNode = new Node(std::forward<Args>(args)...);
 		insert_node_before(_head, newNode);
 	}
 
@@ -147,7 +147,7 @@ public:
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {                                    // Construct object using arguments (Args) and add it to the head
-		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
+		Node* newNode = new Node(std::forward<Args>(args)...);
 		insert_node_before(_head->Next, newNode);
 	}
 
@@ -167,7 +167,7 @@ public:
 	template<class... Args>
 	Iterator emplace(const Iterator& iterator, Args&&... args) {            // Construct object using arguments (Args) and add it BEFORE the iterator position
 		_workspaceNode = iterator._Ptr;
-		Node* newNode = Node::create_non_head(std::forward<Args>(args)...);
+		Node* newNode = new Node(std::forward<Args>(args)...);
 		insert_node_before(_workspaceNode, newNode);
 
 		return Iterator(newNode, update_iteration_data());
@@ -218,19 +218,19 @@ public:
 	}
 
 	ValueType& front() {                                                    // Get the value of the first component
-		return *_head->Next->Value;
+		return _head->Next->Value;
 	}
 
 	const ValueType& front() const {
-		return *_head->Next->Value;
+		return _head->Next->Value;
 	}
 
 	ValueType& back() {                                                     // Get the value of the last component
-		return *_head->Previous->Value;
+		return _head->Previous->Value;
 	}
 
 	const ValueType& back() const {
-		return *_head->Previous->Value;
+		return _head->Previous->Value;
 	}
 
 	const size_t size() const {                                             // Get size
@@ -329,7 +329,7 @@ private:
 	void copy(const List<ValueType>& other) {							// Generic copy function for list
 		_workspaceNode = other._head->Next;
 		while (_size < other._size) {
-			push_back(*_workspaceNode->Value);
+			push_back(_workspaceNode->Value);
 			_workspaceNode = _workspaceNode->Next;
 		}
 	}
@@ -371,7 +371,7 @@ private:
 
 	void reset_head() {
 		if (_head == nullptr)
-			_head = Node::create_head();
+			_head = new Node();
 
 		_head->Next = _head;
 		_head->Previous = _head;

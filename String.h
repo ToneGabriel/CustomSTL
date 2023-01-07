@@ -543,13 +543,8 @@ private:
 		return npos;
 	}
 
-	int compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
-		if(len < sublen)
-			return -1;
-		if(len > sublen)
-			return 1;
-		
-		return strncmp(_string + pos, cstring + subpos, len);
+	int compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {		
+		return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));
 	}
 
 	const size_t get_index(const Iterator& iterator) const {		// Get the position for the element in array from iterator
