@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Tuple.h"
 
 CUSTOM_BEGIN
 
@@ -32,11 +33,16 @@ public:
 	Pair(Pair<Type1, Type2>&& other)
 		:First(std::move(other.First)), Second(std::move(other.Second)) { }
 
-	//template<class... ArgsType1, class... ArgsType2>
-	//Pair(PiecewiseConstruct, ArgsType1&&... args1, ArgsType2&&... args2)
-	//	:First(std::forward<ArgsType1>(args1)...), Second(std::forward<ArgsType2>(args2)...) { }
+	template <class... Types1, class... Types2>
+	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
+		:Pair(Val1, Val2, std::index_sequence_for<Types1...>{}, std::index_sequence_for<Types2...>{}) { }
 
 	~Pair() = default;
+
+private:
+	template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
+	Pair(Tuple1& Val1, Tuple2& Val2, std::index_sequence<Indexes1...>, std::index_sequence<Indexes2...>)
+		:First(tuple_get<Indexes1>(std::move(Val1))...), Second(tuple_get<Indexes2>(std::move(Val1))...) { }
 };
 
 CUSTOM_END
