@@ -27,8 +27,8 @@ public:
 	ForwardNode(Args&&... args)
 		:Value(std::forward<Args>(args)...) { }
 
-	ForwardNode(const ForwardNode<Type>&)				= delete;
-	ForwardNode& operator=(const ForwardNode<Type>&)	= delete;
+	ForwardNode(const ForwardNode&)				= delete;
+	ForwardNode& operator=(const ForwardNode&)	= delete;
 
 	~ForwardNode() {
 		Next = nullptr;
@@ -63,8 +63,8 @@ public:
 	DoubleNode(Args&&... args)
 		: Value(std::forward<Args>(args)...) { }
 
-	DoubleNode(const DoubleNode<Type>&)				= delete;
-	DoubleNode& operator=(const DoubleNode<Type>&)	= delete;
+	DoubleNode(const DoubleNode&)				= delete;
+	DoubleNode& operator=(const DoubleNode&)	= delete;
 
 	~DoubleNode() {
 		Previous	= nullptr;

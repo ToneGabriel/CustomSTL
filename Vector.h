@@ -126,11 +126,11 @@ public:
 		realloc(newCapacity, copyValue);
 	}
 
-	Vector(const Vector<ValueType>& other) {						// Copy Constructor
+	Vector(const Vector& other) {									// Copy Constructor
 		copy(other);
 	}
 
-	Vector(Vector<ValueType>&& other) noexcept {					// Move Constructor
+	Vector(Vector&& other) noexcept {								// Move Constructor
 		move(std::move(other));
 	}
 
@@ -298,7 +298,7 @@ public:
 		return _array[index];
 	}
 
-	Vector<ValueType>& operator=(const Vector<ValueType>& other) {			// Assign operator using reference
+	Vector& operator=(const Vector& other) {								// Assign operator using reference
 		if (_array != other._array)
 		{
 			clean_up_array();
@@ -308,7 +308,7 @@ public:
 		return *this;
 	}
 
-	Vector<ValueType>& operator=(Vector<ValueType>&& other) noexcept {		// Assign operator using temporary
+	Vector& operator=(Vector&& other) noexcept {							// Assign operator using temporary
 		if (_array != other._array)
 		{
 			clean_up_array();
@@ -318,7 +318,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Vector<ValueType>& other) const {
+	bool operator==(const Vector& other) const {
 		if (size() != other.size())
 			return false;
 
@@ -329,7 +329,7 @@ public:
 		return true;
 	}
 
-	bool operator!=(const Vector<ValueType>& other) const {
+	bool operator!=(const Vector& other) const {
 		return !operator==(other);
 	}
 
@@ -355,7 +355,7 @@ public:
 private:
 	// Others
 
-	void copy(const Vector<ValueType>& other) {								// Generic copy function for vector
+	void copy(const Vector& other) {										// Generic copy function for vector
 		_array = _alloc.alloc(other._capacity);
 		for (size_t i = 0; i < other._size; i++)
 			_alloc.construct(&_array[i], other._array[i]);
@@ -365,7 +365,7 @@ private:
 		update_iteration_data();
 	}
 
-	void move(Vector<ValueType>&& other) {									// Generic move function for vector
+	void move(Vector&& other) {												// Generic move function for vector
 		_array = other._array;
 		_size = other._size;
 		_capacity = other._capacity;

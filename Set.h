@@ -30,11 +30,11 @@ public:
 
     }
 
-    Set(const Set<Key>& other) {
+    Set(const Set& other) {
         
     }
 
-    Set(Set<Key>&& other) {
+    Set(Set&& other) {
         
     }
 
@@ -78,21 +78,21 @@ public:
 public:
     // Operators
 
-	Set<Key>& operator=(const Set<Key>& other) {
+	Set<Key>& operator=(const Set& other) {
 		_elems = other._elems;
 
 
 		return *this;
     }
 
-    Set<Key>& operator=(Set<Key>&& other) {
+    Set<Key>& operator=(Set&& other) {
     	_elems = std::move(other._elems);
 
 
 		return *this;
     }
 
-	bool operator==(const Set<Key>& other) const {
+	bool operator==(const Set& other) const {
     	if (size() != other.size())
 			return false;
 
@@ -100,7 +100,7 @@ public:
 		return true;
     }
 
-    bool operator!=(const Set<Key>& other) const {
+    bool operator!=(const Set& other) const {
 		return !operator==(other);
 	}
 

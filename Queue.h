@@ -32,7 +32,7 @@ public:
 		copy(other);
 	}
 
-	Queue(Queue<ValueType>&& other) noexcept {                      // Move Constructor
+	Queue(Queue&& other) noexcept {                      // Move Constructor
 		move(std::move(other));
 	}
 
@@ -116,7 +116,7 @@ public:
 public:
 	// Operators
 
-	Queue& operator=(const Queue<ValueType>& other) {              // Assign operator using reference
+	Queue& operator=(const Queue& other) {              // Assign operator using reference
 		if (_head != other._head)
 		{
 			clear();
@@ -126,7 +126,7 @@ public:
 		return *this;
 	}
 
-	Queue& operator=(Queue<ValueType>&& other) noexcept {          // Assign operator using temporary
+	Queue& operator=(Queue&& other) noexcept {          // Assign operator using temporary
 		if (_head != other._head)
 		{
 			clear();
@@ -139,7 +139,7 @@ public:
 private:
 	// Others
 
-	void copy(const Queue<ValueType>& other) {						// Generic copy function for queue
+	void copy(const Queue& other) {						// Generic copy function for queue
 		_workspaceNode = other._head;
 		while (_size < other._size) {
 			enqueue(_workspaceNode->Value);
@@ -147,7 +147,7 @@ private:
 		}
 	}
 
-	void move(Queue<ValueType>&& other) {							// Generic move function for vector
+	void move(Queue&& other) {							// Generic move function for vector
 		_head = other._head;
 		_tail = other._tail;
 		_size = other._size;

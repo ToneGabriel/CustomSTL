@@ -9,7 +9,7 @@ CUSTOM_BEGIN
 
 // Map ========================================================
 template<class Key, class Type, class Compare = std::less<Key>>
-class UnorderedMap
+class Map
 {
 public:
 	using ValueType = std::pair<Key, Type>;						// Type of values stored in container
@@ -30,11 +30,11 @@ public:
 
     }
 
-    Map(const Map<Key, Type>& other) {
+    Map(const Map& other) {
 
     }
 
-    Map(Map<Key, Type>&& other) {
+    Map(Map&& other) {
 
     }
 
@@ -92,21 +92,21 @@ public:
 		return try_emplace(std::move(key))->Value->second;
 	}
 
-	Map<Key, Type>& operator=(const Map<Key, Type>& other) {
+	Map& operator=(const Map& other) {
 		_elems = other._elems;
 
 
 		return *this;
 	}
 
-	Map<Key, Type>& operator=(Map<Key, Type>&& other) noexcept {
+	Map& operator=(Map&& other) noexcept {
 		_elems = std::move(other._elems);
 
 
 		return *this;
 	}
 
-	bool operator==(const Map<Key, Type>& other) const {		// Contains the same elems, but not the same hashtable
+	bool operator==(const Map& other) const {		// Contains the same elems, but not the same hashtable
 		if (size() != other.size())
 			return false;
 
@@ -114,7 +114,7 @@ public:
 		return true;
 	}
 
-	bool operator!=(const Map<Key, Type>& other) const {
+	bool operator!=(const Map& other) const {
 		return !operator==(other);
 	}
 

@@ -1,15 +1,10 @@
 #pragma once
 #include "HashTable.h"
-#include "Utility.h"
-
-#include <iostream>
-#include <cmath>
-#include <functional>
 
 CUSTOM_BEGIN
 
 // UnorderedMap Traits ==============================================
-template<class Key, class Type, class Hasher = std::hash<Key>>
+template<class Key, class Type, class Hasher>
 class UmapTraits
 {
 public:
@@ -38,9 +33,6 @@ public:
 	using ValueType 	= typename Base::ValueType;
 	using Iterator		= typename Base::Iterator;
 
-private:
-	using BucketIterator = typename Base::BucketIterator;
-
 public:
 	// Constructors
 
@@ -54,54 +46,18 @@ public:
 		:Base(other) { }
 
 	UnorderedMap(UnorderedMap&& other) noexcept
-		:Base(other) { }
+		:Base(std::move(other)) { }
 
-	~UnorderedMap() = default;
+	~UnorderedMap() { }
 
-public:
-	// Main functions
-
-	template<class _KeyType, class... Args>
-	Iterator try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
-		return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
-	}
-
-	const Type& at(const Key& key) const {								// Access Value at key with check
-		BucketIterator it = this->find_in_array(key);
-		if (it == this->_buckets[this->bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
-
-		return (*it)->Value.Second;
-	}
-
-	Type& at(const Key& key) {
-		BucketIterator it = this->find_in_array(key);
-		if (it == this->_buckets[bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
-
-		return (*it)->Value.Second;
-	}
-
-	void print_details() const {										// For Debugging
-		std::cout << "Capacity= " << this->_buckets.size() << ' ' << "Size= " << this->_elems.size() << '\n';
-		for (size_t i = 0; i < this->_buckets.size(); i++)
-		{
-			std::cout << i << " : ";
-			for (const auto& val : this->_buckets[i])
-				std::cout << val->Value.First << ' ' << val->Value.Second << '\\';
-			std::cout << '\n';
-		}
-	}
-
-	
 public:
 	// Operators
 
-	Type& operator[](const Key& key) {									// Access value or create new one with key and assignment (no const)
+	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
 		return try_emplace(key)->Value.Second;
 	}
 
-	Type& operator[](Key&& key) {
+	MappedType& operator[](Key&& key) {
 		return try_emplace(std::move(key))->Value.Second;
 	}
 
@@ -118,29 +74,32 @@ public:
 	}
 
 	bool operator==(const UnorderedMap& other) const {		// Contains the same elems, but not the same hashtable
-		if (this->size() != other.size())
-			return false;
-
-		for (const ValueType& val : other)
-		{
-			Iterator it = this->find(val.First);		// Search for key
-			if (it == this->end() || (*it).Second != val.Second)
-				return false;
-		}
-
-		return true;
+		return Base::operator==(other);
 	}
 
 	bool operator!=(const UnorderedMap& other) const {
 		return !operator==(other);
 	}
 
-	friend std::ostream& operator<<(std::ostream& os, const UnorderedMap& map) {
-		os << "S=" << map.size() << " B=" << map.bucket_count();
-		return os;
+public:
+	// Main functions
+
+	template<class _KeyType, class... Args>
+	Iterator try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
+		return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
+	}
+
+	const MappedType& at(const Key& key) const {						// Access Value at key with check
+		return this->_at(key);
+	}
+
+	MappedType& at(const Key& key) {
+		return this->_at(key);
 	}
 
 protected:
+	// get key, value interface override
+
 	KeyType& _get_key(ValueType& value) override {
 		return value.First;
 	}
@@ -149,6 +108,13 @@ protected:
 		return value.First;
 	}
 
+	virtual MappedType& _get_mval(ValueType& value) {
+		return value.Second;
+	}
+
+	virtual const MappedType& _get_mval(const ValueType& value) const {
+		return value.Second;
+	}
 };
 // UnorderedMap ========================================================
 // END

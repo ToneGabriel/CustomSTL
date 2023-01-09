@@ -77,7 +77,8 @@ struct PiecewiseConstruct { // tag type
 	explicit PiecewiseConstruct() = default;
 };
 
-constexpr PiecewiseConstruct piecewise_construct = PiecewiseConstruct();    // Tag for piecewise construction of custom::Pair objects.
+// Tag for piecewise construction of custom::Pair objects.
+constexpr PiecewiseConstruct piecewise_construct = PiecewiseConstruct();
 
 template<class Type1, class Type2>
 class Pair                                                  // Pair class
@@ -97,15 +98,15 @@ public:
 	Pair(Type1&& val1, Type2&& val2)
 		:First(std::move(val1)), Second(std::move(val2)) { }
 
-	Pair(const Pair<Type1, Type2>& other)
+	Pair(const Pair& other)
 		:First(other.First), Second(other.Second) { }
 
-	Pair(Pair<Type1, Type2>&& other)
+	Pair(Pair&& other)
 		:First(std::move(other.First)), Second(std::move(other.Second)) { }
 
 	template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
 	Pair(Tuple1& Val1, Tuple2& Val2, std::index_sequence<Indexes1...>, std::index_sequence<Indexes2...>)
-		:First(get<Indexes1>(std::move(Val1))...), Second(get<Indexes2>(std::move(Val1))...) { }
+		:First(get<Indexes1>(std::move(Val1))...), Second(get<Indexes2>(std::move(Val2))...) { }
 
 	template <class... Types1, class... Types2>
 	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)

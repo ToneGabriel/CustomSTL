@@ -5,6 +5,9 @@
 
 CUSTOM_BEGIN
 
+template <class Traits>
+class HashTable;
+
 // Linked List Iterator ========================================================
 template<class List>
 class ListIterator : public BaseIterator<List>
@@ -75,6 +78,10 @@ public:
 template<class Type>
 class List
 {
+private:
+	template <class>
+	friend class HashTable;
+
 public:
 	using ValueType = Type;											// Type for stored values
 	using Node		= DoubleNode<ValueType>;						// Node type
@@ -100,11 +107,11 @@ public:
 		create_until_size(newSize, value);
 	}
 
-	List(const List<ValueType>& other) : List() {					// Copy Constructor
+	List(const List& other) : List() {								// Copy Constructor
 		copy(other);
 	}
 
-	List(List<ValueType>&& other) noexcept : List() {				// Move Constructor
+	List(List&& other) noexcept : List() {							// Move Constructor
 		move(std::move(other));
 	}
 
@@ -192,31 +199,7 @@ public:
 		return prevIterator;
 	}
 
-	void insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node ferore another
-		newNode->Previous = beforeNode->Previous;
-		newNode->Next = beforeNode;
-
-		beforeNode->Previous->Next = newNode;
-		beforeNode->Previous = newNode;
-
-		_size++;
-	}
-
-	void remove_node(Node* junkNode) {										// Remove Node and relink
-		junkNode->Previous->Next = junkNode->Next;
-		junkNode->Next->Previous = junkNode->Previous;
-
-		delete junkNode;
-		_size--;
-	}
-
-	Data* update_iteration_data() const {									// Update data and sent it to iterator
-		_data._Begin = _head->Next;
-		_data._End = _head;
-
-		return &_data;
-	}
-
+public:
 	ValueType& front() {                                                    // Get the value of the first component
 		return _head->Next->Value;
 	}
@@ -248,7 +231,7 @@ public:
 public:
 	// Operators
 
-	List& operator=(const List<ValueType>& other) {              // Assign operator using reference
+	List& operator=(const List& other) {									// Assign operator using reference
 		if (_head != other._head)
 		{
 			clear();
@@ -258,7 +241,7 @@ public:
 		return *this;
 	}
 
-	List& operator=(List<ValueType>&& other) noexcept {          // Assign operator using temporary
+	List& operator=(List&& other) noexcept {								// Assign operator using temporary
 		if (_head != other._head)
 		{
 			clear();
@@ -268,7 +251,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const List<ValueType>& other) const {
+	bool operator==(const List& other) const {
 		if (size() != other.size())
 			return false;
 
@@ -286,7 +269,7 @@ public:
 		return true;
 	}
 
-	bool operator!=(const List<ValueType>& other) const {
+	bool operator!=(const List& other) const {
 		return !operator==(other);
 	}
 
@@ -326,7 +309,32 @@ public:
 private:
 	// Others
 
-	void copy(const List<ValueType>& other) {							// Generic copy function for list
+	void insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node ferore another
+		newNode->Previous = beforeNode->Previous;
+		newNode->Next = beforeNode;
+
+		beforeNode->Previous->Next = newNode;
+		beforeNode->Previous = newNode;
+
+		_size++;
+	}
+
+	void remove_node(Node* junkNode) {										// Remove Node and relink
+		junkNode->Previous->Next = junkNode->Next;
+		junkNode->Next->Previous = junkNode->Previous;
+
+		delete junkNode;
+		_size--;
+	}
+
+	Data* update_iteration_data() const {									// Update data and sent it to iterator
+		_data._Begin = _head->Next;
+		_data._End = _head;
+
+		return &_data;
+	}
+
+	void copy(const List& other) {											// Generic copy function for list
 		_workspaceNode = other._head->Next;
 		while (_size < other._size) {
 			push_back(_workspaceNode->Value);
@@ -334,7 +342,7 @@ private:
 		}
 	}
 
-	void move(List<ValueType>&& other) {								// Generic move function for vector
+	void move(List&& other) {												// Generic move function for vector
 		// link current head with the other "body"
 		_head->Next = other._head->Next;
 		_head->Next->Previous = _head;
