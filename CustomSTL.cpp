@@ -2,12 +2,11 @@
 // #include "List.h"
 #include "String.h"
 // #include "Queue.h"
-// #include "UnorderedMap.h"
+#include "UnorderedMap.h"
 // #include "UnorderedSet.h"
 // #include "Map.h"
 // #include "Set.h"
-#include "Tuple.h"
-#include "Pair.h"
+// #include "Utility.h"
 
 #include <iostream>
 // #include <vector>
@@ -66,15 +65,13 @@ public:
 
 int main()
 {
-	//std::pair<int, Test> p1(std::piecewise_construct,
-	//						std::forward_as_tuple(std::forward<int>(3)),
-	//						std::forward_as_tuple(std::forward<Test>(3)));
+	// custom::Pair<int, Test> p(custom::piecewise_construct,
+	// 						custom::forward_as_tuple(3),
+	// 						custom::forward_as_tuple(3));
 
+	// std::cout << p.First << ' ' << p.Second << '\n';
 
-	custom::Tuple<int> t1(3);
-	custom::Tuple<Test> t2(Test(3));
-	
-	custom::Pair<int, Test> p(custom::PiecewiseConstruct, t1, t2);
+	// =====================================================================
 
 	//{
 	//	std::tuple<int, Test> tuple(3, Test(3));
@@ -86,15 +83,17 @@ int main()
 	//	std::cout << custom::get<1>(Tuple) << '\n';
 	//}
 
-	// custom::UnorderedMap<int, custom::String> map;
+	// =====================================================================
 
-	// map[10] = "abc";
-	// map[11] = "gsa";
-	// map[26] = "af";
-	// map[101] = " a0";
-	// map[54] = "69";
-	// map[1] = "A bv";
-	// map.emplace(3, "abc");
+	custom::UnorderedMap<int, custom::String> map;
 
-	// map.print_details();
+	map[10] = "abc";
+	map[11] = "gsa";
+	map[26] = "af";
+	map[101] = " a0";
+	map[54] = "69";
+	map[1] = "A bv";
+	map.emplace(3, "abc");
+
+	map.print_details();
 }

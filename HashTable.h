@@ -2,28 +2,33 @@
 #include "Common.h"
 #include "List.h"
 #include "Vector.h"
+#include "Utility.h"
+
 #include <iostream>
 #include <cmath>
 #include <functional>
 
 CUSTOM_BEGIN
 
-// UnorderedSet ========================================================
-template<class Key, class Hasher = std::hash<Key>>
-class UnorderedSet
+template<class Traits>
+class HashTable
 {
-public:
-	using ValueType = Key;                                      // Type of values stored in container
-	using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
+protected:
+    using KeyType           = typename Traits::KeyType;
+    using MappedType        = typename Traits::MappedType;
+    using Hasher            = typename Traits::HasherType;
 
-private:
-	using IterList			= List<ValueType>;					// List of ValueType used for iterating
+	using IterList			= List<typename Traits::ValueType>;	// List of ValueType used for iterating
 	using Node				= typename IterList::Node;			// Node component from List
 	using Bucket			= List<Node*>;						// List of Node* (as Value) from Iteration list
 	using HashArray			= Vector<Bucket>;					// Array of lists of Node*
 	using BucketIterator	= typename Bucket::Iterator;		// Iterator for Buckets
 
-private:
+public:
+	using ValueType = typename Traits::ValueType;				// Type of values stored in container
+	using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
+
+protected:
 	static constexpr float _maxLoadFactor	= 0.75;				// The maximum load factor admitted before rehashing
 	static constexpr size_t _defaultBuckets = 8;				// Default number of buckets
 
@@ -31,38 +36,38 @@ private:
 	IterList _elems;											// Used to iterate through container
 	HashArray _buckets;											// Used to map IterList values
 
-public:
-	// Constructors
+protected:
+    // Constructors
 
-	UnorderedSet() {
+    HashTable() {
 		rehash(_defaultBuckets);
 	}
 
-	UnorderedSet(const size_t& buckets) {
+	HashTable(const size_t& buckets) {
 		rehash((buckets < _defaultBuckets) ? _defaultBuckets : buckets);
 	}
 
-	UnorderedSet(const UnorderedSet<Key>& other) {
+	HashTable(const HashTable& other) {
 		_elems = other._elems;
 		force_rehash(other.bucket_count());
 	}
 
-	UnorderedSet(UnorderedSet<Key>&& other) noexcept {
+	HashTable(HashTable&& other) noexcept {
 		_elems = std::move(other._elems);
 		force_rehash(other.bucket_count());
 	}
 
-	~UnorderedSet() {
+	~HashTable() {
 		clear();
 	}
 
 public:
-	// Main functions
+    // Main functions
 
-	template<class... Args>
+    template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
 		Node* newNode = new Node(std::forward<Args>(args)...);
-		Key& newKey = newNode->Value;
+		KeyType& newKey = _get_key(newNode->Value);
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -77,7 +82,7 @@ public:
 		}
 	}
 
-	Iterator erase(const Key& key) {
+	Iterator erase(const KeyType& key) {
 		size_t index = bucket(key);
 		BucketIterator it = find_in_array(key);
 
@@ -96,7 +101,7 @@ public:
 		return erase(iterator._Ptr->Value);
 	}
 
-	Iterator find(const Key& key) const {
+	Iterator find(const KeyType& key) const {
 		BucketIterator it = find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
@@ -129,7 +134,7 @@ public:
 		return _buckets[index].size();
 	}
 
-	size_t bucket(const Key& key) const {								// Get bucket index from key
+	size_t bucket(const KeyType& key) const {								// Get bucket index from key
 		return _hash(key) % bucket_count();
 	}
 
@@ -147,58 +152,6 @@ public:
 
 	float max_load_factor() const {
 		return _maxLoadFactor;
-	}
-
-	void print_details() const {										// For Debugging
-		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
-		for (size_t i = 0; i < _buckets.size(); i++)
-		{
-			std::cout << i << " : ";
-			for (const auto& val : _buckets[i])
-				std::cout << val->Value << '\\';
-			std::cout << '\n';
-		}
-	}
-
-	
-public:
-	// Operators
-
-	UnorderedSet<Key>& operator=(const UnorderedSet<Key>& other) {
-		_elems = other._elems;
-		force_rehash(other.bucket_count());
-
-		return *this;
-	}
-
-	UnorderedSet<Key>& operator=(UnorderedSet<Key>&& other) noexcept {
-		_elems = std::move(other._elems);
-		force_rehash(other.bucket_count());
-
-		return *this;
-	}
-
-	bool operator==(const UnorderedSet<Key>& other) const {				// Contains the same elems, but not the same hashtable
-		if (size() != other.size())
-			return false;
-
-		for (const ValueType& val : other)
-		{
-			Iterator it = find(val);		// Search for key
-			if (it == end() || (*it) != val)
-				return false;
-		}
-
-		return true;
-	}
-
-	bool operator!=(const UnorderedSet<Key>& other) const {
-		return !operator==(other);
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, const UnorderedSet<Key>& map) {
-		os << "S=" << map.size() << " B=" << map.bucket_count();
-		return os;
 	}
 
 public:
@@ -220,13 +173,54 @@ public:
 		return _elems.end();
 	}
 
-private:
+protected:
+
+	HashTable& operator=(const HashTable& other) {
+		_elems = other._elems;
+		force_rehash(other.bucket_count());
+
+		return *this;
+	}
+
+	HashTable& operator=(HashTable&& other) noexcept {
+		_elems = std::move(other._elems);
+		force_rehash(other.bucket_count());
+
+		return *this;
+	}
+
+protected:
 	// Others
 
-	BucketIterator find_in_array(const Key& key) const {				// Get iterator from bucket with key
+	virtual KeyType& _get_key(ValueType& value) = 0;
+
+	virtual const KeyType& _get_key(const ValueType& value) const = 0;
+
+	template<class _KeyType, class... Args>
+	Iterator _try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
+		Iterator it = this->find(key);									// Check key and decide to construct or not
+
+		if (it != this->end())
+			return it;
+		else {
+			Node* newNode = new Node(
+							piecewise_construct,
+							forward_as_tuple(std::forward<_KeyType>(key)),
+							forward_as_tuple(std::forward<Args>(args)...)
+							);
+			_KeyType& newKey = newNode->Value.First;
+
+			this->rehash_if_overload();
+			this->_elems.insert_node_before(this->_elems.end()._Ptr, newNode);
+			this->_buckets[this->bucket(newKey)].emplace_back(newNode);
+			return Iterator(newNode, this->_elems.update_iteration_data());
+		}
+	}
+
+	BucketIterator find_in_array(const KeyType& key) const {				// Get iterator from bucket with key
 		const Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && (*it)->Value != key)
+		while (it != currentBucket.end() && _get_key((*it)->Value) != key)
 			it++;
 
 		return it;
@@ -237,7 +231,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(it->Value)].push_back(it._Ptr);
+			_buckets[bucket(_get_key(it->Value))].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {											// Check load factor and rehash if needed
@@ -248,8 +242,7 @@ private:
 	size_t min_load_factor_buckets(const size_t& size) const {			// returns the minimum number of buckets necessary for the elements in List
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / _maxLoadFactor));
 	}
+
 };
-// UnorderedSet ========================================================
-// END
 
 CUSTOM_END
