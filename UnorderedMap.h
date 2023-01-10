@@ -16,6 +16,14 @@ public:
 public:
 
 	UmapTraits() = default;
+
+	static const KeyType& extract_key(const ValueType& value) noexcept { // extract key from element value
+		return value.First;
+	}
+
+	static const MappedType& extract_mapval(const ValueType& value) noexcept { // extract mapped val from element value
+		return value.Second;
+	}
 };
 // UnorderedMap Traits ==============================================
 // END
@@ -95,25 +103,6 @@ public:
 
 	MappedType& at(const Key& key) {
 		return this->_at(key);
-	}
-
-protected:
-	// get key, value interface override
-
-	KeyType& _get_key(ValueType& value) override {
-		return value.First;
-	}
-
-	virtual const KeyType& _get_key(const ValueType& value) const {
-		return value.First;
-	}
-
-	virtual MappedType& _get_mval(ValueType& value) {
-		return value.Second;
-	}
-
-	virtual const MappedType& _get_mval(const ValueType& value) const {
-		return value.Second;
 	}
 };
 // UnorderedMap ========================================================

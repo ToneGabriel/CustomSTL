@@ -16,6 +16,14 @@ public:
 public:
 
 	UsetTraits() = default;
+
+	static const KeyType& extract_key(const ValueType& value) { // extract key from element value
+		return value;
+	}
+
+	static const MappedType& extract_mapval(const ValueType& value) { // extract key from element value
+		return value;
+	}
 };
 // Unordered Traits ==============================================
 // END
@@ -71,25 +79,6 @@ public:
 
 	bool operator!=(const UnorderedSet& other) const {
 		return !operator==(other);
-	}
-
-protected:
-	// get key, value interface override
-
-	KeyType& _get_key(ValueType& value) override {
-		return value;
-	}
-
-	virtual const KeyType& _get_key(const ValueType& value) const {
-		return value;
-	}
-
-	virtual MappedType& _get_mval(ValueType& value) {
-		return value;
-	}
-
-	virtual const MappedType& _get_mval(const ValueType& value) const {
-		return value;
 	}
 };
 // UnorderedSet ========================================================

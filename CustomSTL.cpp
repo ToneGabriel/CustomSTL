@@ -4,7 +4,7 @@
 // #include "List.h"
 // #include "Queue.h"
 #include "UnorderedMap.h"
-// #include "UnorderedSet.h"
+#include "UnorderedSet.h"
 // #include "Map.h"
 // #include "Set.h"
 
@@ -13,10 +13,10 @@
 // #include <vector>
 // #include <list>
 // #include <queue>
-// #include <unordered_map>
-// #include <unordered_set>
-// #include <map>
-// #include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <map>
+#include <set>
 
 class Test {
 
@@ -67,6 +67,9 @@ public:
 
 int main()
 {
+	//std::unordered_map<int, int> umap;
+	//std::map<int, int> map;
+	//std::set<int, int> set;
 	// custom::Pair<int, Test> p(custom::piecewise_construct,
 	// 						custom::forward_as_tuple(3),
 	// 						custom::forward_as_tuple(3));
@@ -87,6 +90,19 @@ int main()
 
 	// =====================================================================
 
+	//custom::UnorderedSet<custom::String> set;
+	//custom::UnorderedSet<custom::String> set1;
+
+	//set.emplace("abc");
+	//set.emplace("def");
+	//set.emplace("ghi");
+	//set.emplace("jkl");
+	//set1 = set;
+	//set == set1;
+	//set.print_details();
+
+	// =====================================================================
+
 	custom::UnorderedMap<int, custom::String> map;
 
 	map[10] = "abc";
@@ -96,6 +112,6 @@ int main()
 	map[54] = "69";
 	map[1] = "A bv";
 	map.emplace(3, "abc");
-
+	map.try_emplace(56, custom::String("shmecher"));
 	map.print_details();
 }

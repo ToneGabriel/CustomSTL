@@ -85,14 +85,14 @@ protected:
 		return *this;
 	}
 
-	bool operator==(const HashTable& other) const {		// Contains the same elems, but not the same hashtable
+	bool operator==(const HashTable& other) const {						// Contains the same elems, but not the same hashtable
 		if (size() != other.size())
 			return false;
 
 		for (const ValueType& val : other)
 		{
-			Iterator it = find(_get_key(val));			// Search for key
-			if (it == end() || _get_mval(*it) != _get_mval(val))
+			Iterator it = find(Traits::extract_key(val));				// Search for key
+			if (it == end() || Traits::extract_mapval(*it) != Traits::extract_mapval(val))
 				return false;
 		}
 
@@ -105,7 +105,7 @@ public:
     template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
 		Node* newNode = new Node(std::forward<Args>(args)...);
-		KeyType& newKey = _get_key(newNode->Value);
+		const KeyType& newKey = Traits::extract_key(newNode->Value);
 		Iterator it = find(newKey);
 
 		if (it != end()) {												// Destroy newly-created Node if key exists
@@ -198,7 +198,7 @@ public:
 		{
 			std::cout << i << " : ";
 			for (const auto& val : _buckets[i])
-				std::cout << _get_key(val->Value) << ' ' << _get_mval(val->Value) << '\\';
+				std::cout << Traits::extract_key(val->Value) << ' ' << Traits::extract_mapval(val->Value) << '\\';
 			std::cout << '\n';
 		}
 	}
@@ -237,7 +237,7 @@ protected:
 							forward_as_tuple(std::forward<_KeyType>(key)),
 							forward_as_tuple(std::forward<Args>(args)...)
 							);
-			KeyType& newKey = _get_key(newNode->Value);
+			const KeyType& newKey = Traits::extract_key(newNode->Value);
 
 			rehash_if_overload();
 			_elems.insert_node_before(_elems.end()._Ptr, newNode);
@@ -251,7 +251,7 @@ protected:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return _get_mval((*it)->Value);
+		return Traits::extract_mapval((*it)->Value);
 	}
 
 	MappedType& _at(const KeyType& key) {
@@ -259,17 +259,8 @@ protected:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return _get_mval((*it)->Value);
+		return Traits::extract_mapval((*it)->Value);
 	}
-
-protected:
-	// get key, mapped value interface
-
-	virtual KeyType& _get_key(ValueType& value) = 0;				// Interface to get Key elem from ValueType
-	virtual const KeyType& _get_key(const ValueType& value) const = 0;
-
-	virtual MappedType& _get_mval(ValueType& value) = 0;			// Interface to get Mapped elem from ValueType
-	virtual const MappedType& _get_mval(const ValueType& value) const = 0;
 
 private:
 	// Helpers
@@ -277,7 +268,7 @@ private:
 	BucketIterator find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
 		const Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
-		while (it != currentBucket.end() && _get_key((*it)->Value) != key)
+		while (it != currentBucket.end() && Traits::extract_key((*it)->Value) != key)
 			it++;
 
 		return it;
@@ -288,7 +279,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(_get_key(it->Value))].push_back(it._Ptr);
+			_buckets[bucket(Traits::extract_key(it->Value))].push_back(it._Ptr);
 	}
 
 	void rehash_if_overload() {										// Check load factor and rehash if needed
