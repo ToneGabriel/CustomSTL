@@ -38,7 +38,7 @@ protected:
 	HashArray _buckets;									// Used to map IterList values
 
 protected:
-    // Constructors and Operators
+    // Constructors
 
     HashTable() {
 		rehash(_defaultBuckets);

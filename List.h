@@ -8,6 +8,9 @@ CUSTOM_BEGIN
 template <class Traits>
 class HashTable;
 
+template<class>
+class SearchTree;
+
 // Linked List Iterator ========================================================
 template<class List>
 class ListIterator : public BaseIterator<List>
@@ -79,8 +82,11 @@ template<class Type>
 class List
 {
 private:
-	template <class>
+	template<class>
 	friend class HashTable;
+
+	template<class>
+	friend class SearchTree;
 
 public:
 	using ValueType = Type;											// Type for stored values
