@@ -20,32 +20,43 @@ protected:
 
     using IterList      = List<typename Traits::ValueType>;		// List of ValueType used for iterating
     using Node          = typename IterList::Node;				// Node component from List
-	using TreeNode 		= DoubleNode<Node*>;
+	using TreeNode 		= TreeNode<Node*>;						// Node component from Tree
+
+	enum Colors 
+	{
+		Red,
+		Black
+	};
 
 public:
     using ValueType     = typename Traits::ValueType;			// Type of values stored in container
     using Iterator      = typename List<ValueType>::Iterator;	// Iterator for this container (identical to List iterator)
 
 protected:
-    KeyCompare _comp;								// Used for comparison
-    IterList _elems;								// Used to iterate through container
+    KeyCompare _comp;											// Used for comparison
+    IterList _elems;											// Used to iterate through container
 
-	TreeNode* _head 					= nullptr;
-	mutable TreeNode* _workspaceNode 	= nullptr;							// Auxiliary Node for work
+	TreeNode* _head 					= nullptr;				// Head of the Tree
+	mutable TreeNode* _workspaceNode 	= nullptr;				// Auxiliary Node for work
 
 protected:
 	// Constructors
 
 	SearchTree() {
+		// TODO: complete
 
 	}
 
 	SearchTree(const SearchTree& other) {
 		_elems = other._elems;
+		// TODO: complete
+
 	}
 
 	SearchTree(SearchTree&& other) noexcept {
 		_elems = std::move(other._elems);
+		// TODO: complete
+
 	}
 
 	virtual ~SearchTree() {
@@ -56,20 +67,22 @@ protected:
 	// Operators
 
 	SearchTree& operator=(const SearchTree& other) {
-		if (begin()._Ptr != other.begin()._Ptr)
+		if (_elems._head != other._elems._head)
 		{
 			_elems = other._elems;
-			
+			// TODO: complete
+
 		}
 
 		return *this;
 	}
 
 	SearchTree& operator=(SearchTree&& other) noexcept {
-		if (begin()._Ptr != other.begin()._Ptr)
+		if (_elems._head != other._elems._head)
 		{
 			_elems = std::move(other._elems);
-			
+			// TODO: complete
+
 		}
 
 		return *this;
@@ -98,18 +111,51 @@ public:
 			return it;
 		}
 		else {
-			_elems.insert_node_before(_elems.end()._Ptr, newNode);
+			_elems.insert_node_before(_elems._head, newNode);
 			
 			return Iterator(newNode, _elems.update_iteration_data());
 		}
+	}
+
+	Iterator find(const KeyType& key) const {
+		// TODO: complete
+
+		return Iterator(*it, _elems.update_iteration_data());
+	}
+
+	void clear() {
+		_elems.clear();													// Delete all Node* with values
+		// TODO: complete
+
+	}
+
+public:
+	// Iterator functions
+
+	Iterator begin() {
+		return _elems.begin();
+	}
+
+	const Iterator begin() const {
+		return _elems.begin();
+	}
+
+	Iterator end() {
+		return _elems.end();
+	}
+
+	const Iterator end() const {
+		return _elems.end();
 	}
 
 private:
 	// Helpers
 
 	TreeNode* find_insertion_in_tree(const KeyType& key) const {
-		_workspaceNode = _head;
+		if (_head == nullptr)
+			return _head;
 
+		_workspaceNode = _head;
 		while(_workspaceNode != nullptr)
 		{
 			if(_comp(key, Traits::extract_key(_workspaceNode->Value)))

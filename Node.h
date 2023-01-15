@@ -7,12 +7,13 @@ CUSTOM_BEGIN
 template<class Type>
 struct ForwardNode														// Struct that holds data and references to next struct
 {
-private:
+public:
 	using ValueType = Type;
 
-public:
 	ValueType Value;													// Data
 	ForwardNode* Next = nullptr;										// Reference to next
+
+public:
 
 	ForwardNode()
 		:Value() { }
@@ -42,13 +43,14 @@ public:
 template<class Type>
 struct DoubleNode														// Struct that holds data and references to next and previous struct
 {
-private:
+public:
 	using ValueType = Type;
 
-public:
 	ValueType Value;													// Data
 	DoubleNode* Previous	= nullptr;									// Reference to previous 
 	DoubleNode* Next		= nullptr;									// Reference to next
+
+public:
 
 	DoubleNode() 
 		:Value() { }
@@ -74,4 +76,50 @@ public:
 // Double Node ========================================================
 // END
 
+
+// Tree Node ========================================================
+template<class Type>
+struct TreeNode
+{
+public:
+	using ValueType = Type;
+
+	ValueType Value;												// Data
+	TreeNode* Parent	= nullptr;									// Reference to parent
+	TreeNode* Left		= nullptr;									// Reference to left
+	TreeNode* Right		= nullptr;									// Reference to right
+	char Color;
+
+	enum Colors 
+	{
+		Red,
+		Black
+	};
+
+public:
+
+	TreeNode()
+		:Value(), Color(Black) { }
+
+	TreeNode(const ValueType& copyValue)
+		:Value(copyValue), Color(Black) { }
+
+	TreeNode(ValueType&& moveValue)
+		:Value(std::move(moveValue)), Color(Black) { }
+
+	template<class... Args>
+	TreeNode(Args&&... args)
+		: Value(std::forward<Args>(args)...), Color(Black) { }
+
+	TreeNode(const TreeNode&)				= delete;
+	TreeNode& operator=(const TreeNode&)	= delete;
+
+	~TreeNode() {
+		Parent	= nullptr;
+		Left	= nullptr;
+		Right	= nullptr;
+	}
+};
+// Tree Node ========================================================
+// END
 CUSTOM_END

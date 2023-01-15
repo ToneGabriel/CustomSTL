@@ -66,7 +66,7 @@ protected:
 	// Operators
 
 	HashTable& operator=(const HashTable& other) {
-		if (begin()._Ptr != other.begin()._Ptr)
+		if (_elems._head != other._elems._head)
 		{
 			_elems = other._elems;
 			force_rehash(other.bucket_count());
@@ -76,7 +76,7 @@ protected:
 	}
 
 	HashTable& operator=(HashTable&& other) noexcept {
-		if (begin()._Ptr != other.begin()._Ptr)
+		if (_elems._head != other._elems._head)
 		{
 			_elems = std::move(other._elems);
 			force_rehash(other.bucket_count());
@@ -114,7 +114,7 @@ public:
 		}
 		else {
 			rehash_if_overload();
-			_elems.insert_node_before(_elems.end()._Ptr, newNode);
+			_elems.insert_node_before(_elems._head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
 			return Iterator(newNode, _elems.update_iteration_data());
 		}
@@ -240,7 +240,7 @@ protected:
 			const KeyType& newKey = Traits::extract_key(newNode->Value);
 
 			rehash_if_overload();
-			_elems.insert_node_before(_elems.end()._Ptr, newNode);
+			_elems.insert_node_before(_elems._head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
 			return Iterator(newNode, _elems.update_iteration_data());
 		}
