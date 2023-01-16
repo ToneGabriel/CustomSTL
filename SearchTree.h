@@ -151,6 +151,30 @@ public:
 private:
 	// Helpers
 
+	TreeNode* _rotate_left(TreeNode* subroot) {
+
+		TreeNode* subrootParent = subroot->parent;
+		TreeNode* subrootRight = subroot->Right;
+		TreeNode* subrootRightLeft = nullptr;
+
+		assert(subrootRight != nullptr); // pointer to true node required
+		subrootRightLeft = subrootRight->Left;
+		subroot->Right = subrootRightLeft; 
+		if (subrootRightLeft != nullptr)
+			subrootRightLeft->parent = subroot;
+
+		subrootRight->Left = subroot;
+		subroot->parent = subrootRight;
+		subrootRight->parent = subrootParent;
+
+		if (subrootParent != nullptr)
+			subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;	// ???
+		else
+			_head = subrootRight;
+
+		return subrootRight; // new root of subtree
+	}
+
 	TreeNode* find_insertion_in_tree(const KeyType& key) const {
 		if (_head == nullptr)
 			return _head;
