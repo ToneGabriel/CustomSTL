@@ -180,6 +180,30 @@ private:
 		return subrootRight; // new root of subtree
 	}
 
+	void _Lrotate(_Nodeptr _Wherenode) noexcept { // promote right node to root of subtree
+		_Nodeptr _Pnode = _Wherenode->_Right;
+		_Wherenode->_Right = _Pnode->_Left;
+
+		if (!_Pnode->_Left->_Isnil) {
+			_Pnode->_Left->_Parent = _Wherenode;
+		}
+
+		_Pnode->_Parent = _Wherenode->_Parent;
+
+		if (_Wherenode == _Myhead->_Parent) {
+			_Myhead->_Parent = _Pnode;
+		}
+		else if (_Wherenode == _Wherenode->_Parent->_Left) {
+			_Wherenode->_Parent->_Left = _Pnode;
+		}
+		else {
+			_Wherenode->_Parent->_Right = _Pnode;
+		}
+
+		_Pnode->_Left = _Wherenode;
+		_Wherenode->_Parent = _Pnode;
+	}
+
 	TreeNode* _rotate_right(TreeNode* subroot) {
 
 		TreeNode* subrootParent = subroot->parent;
@@ -207,6 +231,30 @@ private:
 			_head = subrootLeft;
 
 		return subrootLeft; // new root of subtree
+	}
+
+	void _Rrotate(_Nodeptr _Wherenode) noexcept { // promote left node to root of subtree
+		_Nodeptr _Pnode = _Wherenode->_Left;
+		_Wherenode->_Left = _Pnode->_Right;
+
+		if (!_Pnode->_Right->_Isnil) {
+			_Pnode->_Right->_Parent = _Wherenode;
+		}
+
+		_Pnode->_Parent = _Wherenode->_Parent;
+
+		if (_Wherenode == _Myhead->_Parent) {
+			_Myhead->_Parent = _Pnode;
+		}
+		else if (_Wherenode == _Wherenode->_Parent->_Right) {
+			_Wherenode->_Parent->_Right = _Pnode;
+		}
+		else {
+			_Wherenode->_Parent->_Left = _Pnode;
+		}
+
+		_Pnode->_Right = _Wherenode;
+		_Wherenode->_Parent = _Pnode;
 	}
 
 	void insert(TreeNode* newNode, TreeNode* parentOfNew) {
