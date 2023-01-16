@@ -158,6 +158,7 @@ private:
 		TreeNode* subrootRightLeft = nullptr;
 
 		assert(subrootRight != nullptr); // pointer to true node required
+
 		subrootRightLeft = subrootRight->Left;
 		subroot->Right = subrootRightLeft; 
 		if (subrootRightLeft != nullptr)
@@ -168,28 +169,70 @@ private:
 		subrootRight->parent = subrootParent;
 
 		if (subrootParent != nullptr)
-			subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;	// ???
+			if(subroot == subrootParent->Left)
+				subrootParent->Left = subrootRight;
+			else
+				subrootParent->Right = subrootRight;
+				//subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;
 		else
 			_head = subrootRight;
 
 		return subrootRight; // new root of subtree
 	}
 
-	TreeNode* find_insertion_in_tree(const KeyType& key) const {
-		if (_head == nullptr)
-			return _head;
+	TreeNode* _rotate_right(TreeNode* subroot) {
 
-		_workspaceNode = _head;
-		while(_workspaceNode != nullptr)
-		{
-			if(_comp(key, Traits::extract_key(_workspaceNode->Value)))
-				_workspaceNode = _workspaceNode->Previous;
+		TreeNode* subrootParent = subroot->parent;
+		TreeNode* subrootLeft = subroot->Left;
+		TreeNode* subrootLeftRight = nullptr;
+
+		assert(subrootLeft != nullptr); // pointer to true node required
+
+		subrootLeftRight = subrootLeft->Right;
+		subroot->Left = subrootLeftRight;
+		if (subrootLeftRight != nullptr)
+			subrootLeftRight->parent = subroot;
+
+		subrootLeft->Right = subroot;
+		subroot->parent = subrootLeft;
+		subrootLeft->parent = subrootParent;
+
+		if (subrootParent != nullptr)
+			if(subroot == subrootParent->Left)
+				subrootParent->Left = subrootLeft;
 			else
-				_workspaceNode = _workspaceNode->Next;
+				subrootParent->Right = subrootLeft;
+				//subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;
+		else
+			_head = subrootLeft;
+
+		return subrootLeft; // new root of subtree
+	}
+
+	void insert(TreeNode* newNode, TreeNode* parentOfNew) {
+		TreeNode* parentOfParent = nullptr;
+		TreeNode* uncleOfNew = nullptr;
+
+		newNode->Color = Red;
+		newNode->Parent = parentOfNew;
+
+		if(parentOfNew == nullptr)
+		{
+			_head = newNode;
+			return;
 		}
 
-		
+		parentOfNew->Right = newNode;	// TODO: depends of std::less()
 
+		do
+		{
+			if(parentOfNew->Color == Black)		// case 1
+				return;
+
+			if((parentOfParent = parentOfNew->Parent) == nullptr)
+				// case 4
+			
+		}
 	}
 
 };
