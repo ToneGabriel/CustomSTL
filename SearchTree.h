@@ -129,6 +129,14 @@ public:
 
 	}
 
+	bool empty() const {
+		return _elems.empty();
+	}
+
+	size_t size() const {
+		return _elems.size();
+	}
+
 public:
 	// Iterator functions
 
@@ -151,110 +159,50 @@ public:
 private:
 	// Helpers
 
-	TreeNode* _rotate_left(TreeNode* subroot) {
+	void _rotate_left(TreeNode* subroot) {
+		TreeNode* promotionNode = subroot->Right;
+		subroot->Right = promotionNode->Left;
 
-		TreeNode* subrootParent = subroot->parent;
-		TreeNode* subrootRight = subroot->Right;
-		TreeNode* subrootRightLeft = nullptr;
+		if(promotionNode->Left != nullptr)
+			promotionNode->Left->Parent = subroot;		// right-left parent set
 
-		assert(subrootRight != nullptr); // pointer to true node required
+		promotionNode->Parent = subroot->Parent;
 
-		subrootRightLeft = subrootRight->Left;
-		subroot->Right = subrootRightLeft; 
-		if (subrootRightLeft != nullptr)
-			subrootRightLeft->parent = subroot;
-
-		subrootRight->Left = subroot;
-		subroot->parent = subrootRight;
-		subrootRight->parent = subrootParent;
-
-		if (subrootParent != nullptr)
-			if(subroot == subrootParent->Left)
-				subrootParent->Left = subrootRight;
-			else
-				subrootParent->Right = subrootRight;
-				//subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;
+		if (subroot == _head)
+		{
+			_head = promotionNode;
+			promotionNode->Parent = nullptr;
+		}
+		else if (subroot == subroot->Parent->Left)
+			subroot->Parent->Left = promotionNode;
 		else
-			_head = subrootRight;
+			subroot->Parent->Right = promotionNode;
 
-		return subrootRight; // new root of subtree
-	}
-
-	void _Lrotate(_Nodeptr _Wherenode) noexcept { // promote right node to root of subtree
-		_Nodeptr _Pnode = _Wherenode->_Right;
-		_Wherenode->_Right = _Pnode->_Left;
-
-		if (!_Pnode->_Left->_Isnil) {
-			_Pnode->_Left->_Parent = _Wherenode;
-		}
-
-		_Pnode->_Parent = _Wherenode->_Parent;
-
-		if (_Wherenode == _Myhead->_Parent) {
-			_Myhead->_Parent = _Pnode;
-		}
-		else if (_Wherenode == _Wherenode->_Parent->_Left) {
-			_Wherenode->_Parent->_Left = _Pnode;
-		}
-		else {
-			_Wherenode->_Parent->_Right = _Pnode;
-		}
-
-		_Pnode->_Left = _Wherenode;
-		_Wherenode->_Parent = _Pnode;
+		promotionNode->Left = subroot;
+		subroot->Parent = promotionNode;
 	}
 
 	TreeNode* _rotate_right(TreeNode* subroot) {
+		TreeNode* promotionNode = subroot->Left;
+		subroot->Left = promotionNode->Right;
 
-		TreeNode* subrootParent = subroot->parent;
-		TreeNode* subrootLeft = subroot->Left;
-		TreeNode* subrootLeftRight = nullptr;
+		if (promotionNode->Right != nullptr)
+			promotionNode->Right->Parent = subroot;		// left-right parent set
 
-		assert(subrootLeft != nullptr); // pointer to true node required
+		promotionNode->Parent = subroot->Parent;
 
-		subrootLeftRight = subrootLeft->Right;
-		subroot->Left = subrootLeftRight;
-		if (subrootLeftRight != nullptr)
-			subrootLeftRight->parent = subroot;
-
-		subrootLeft->Right = subroot;
-		subroot->parent = subrootLeft;
-		subrootLeft->parent = subrootParent;
-
-		if (subrootParent != nullptr)
-			if(subroot == subrootParent->Left)
-				subrootParent->Left = subrootLeft;
-			else
-				subrootParent->Right = subrootLeft;
-				//subrootParent->child[ subroot == subrootParent->right ? RIGHT : LEFT ] = subrootRight;
+		if (subroot == _head)
+		{
+			_head = promotionNode;
+			promotionNode->Parent = nullptr;
+		}
+		else if (subroot == subroot->Parent->Left)
+			subroot->Parent->Left = promotionNode;
 		else
-			_head = subrootLeft;
+			subroot->Parent->Right = promotionNode;
 
-		return subrootLeft; // new root of subtree
-	}
-
-	void _Rrotate(_Nodeptr _Wherenode) noexcept { // promote left node to root of subtree
-		_Nodeptr _Pnode = _Wherenode->_Left;
-		_Wherenode->_Left = _Pnode->_Right;
-
-		if (!_Pnode->_Right->_Isnil) {
-			_Pnode->_Right->_Parent = _Wherenode;
-		}
-
-		_Pnode->_Parent = _Wherenode->_Parent;
-
-		if (_Wherenode == _Myhead->_Parent) {
-			_Myhead->_Parent = _Pnode;
-		}
-		else if (_Wherenode == _Wherenode->_Parent->_Right) {
-			_Wherenode->_Parent->_Right = _Pnode;
-		}
-		else {
-			_Wherenode->_Parent->_Left = _Pnode;
-		}
-
-		_Pnode->_Right = _Wherenode;
-		_Wherenode->_Parent = _Pnode;
+		promotionNode->Right = subroot;
+		subroot->Parent = promotionNode;
 	}
 
 	void insert(TreeNode* newNode, TreeNode* parentOfNew) {
@@ -270,17 +218,9 @@ private:
 			return;
 		}
 
-		parentOfNew->Right = newNode;	// TODO: depends of std::less()
+		parentOfNew->Right = newNode;	// TODO: depends on std::less()
 
-		do
-		{
-			if(parentOfNew->Color == Black)		// case 1
-				return;
-
-			if((parentOfParent = parentOfNew->Parent) == nullptr)
-				// case 4
-			
-		}
+		//do
 	}
 
 };
