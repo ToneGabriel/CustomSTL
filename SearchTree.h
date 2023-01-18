@@ -44,7 +44,7 @@ protected:
 
 	SearchTree() {
 		// TODO: complete
-
+	
 	}
 
 	SearchTree(const SearchTree& other) {
@@ -159,50 +159,50 @@ public:
 private:
 	// Helpers
 
-	void _rotate_left(TreeNode* subroot) {
-		TreeNode* promotionNode = subroot->Right;
-		subroot->Right = promotionNode->Left;
+	void _rotate_left(TreeNode* subroot) {				// promotes subroot right
+		TreeNode* promotedNode = subroot->Right;
+		subroot->Right = promotedNode->Left;			// subroot adopt left child of promoted
 
-		if(promotionNode->Left != nullptr)
-			promotionNode->Left->Parent = subroot;		// right-left parent set
+		if(promotedNode->Left != nullptr)
+			promotedNode->Left->Parent = subroot;		// subroot-right-left parent set
 
-		promotionNode->Parent = subroot->Parent;
+		promotedNode->Parent = subroot->Parent;			// promoted takes subroot parent
 
-		if (subroot == _head)
+		if (subroot == _head)							// special case when tree root is chosen for rotation
 		{
-			_head = promotionNode;
-			promotionNode->Parent = nullptr;
+			_head = promotedNode;
+			promotedNode->Parent = nullptr;
 		}
-		else if (subroot == subroot->Parent->Left)
-			subroot->Parent->Left = promotionNode;
+		else if (subroot == subroot->Parent->Left)		// parent links his new promoted child
+			subroot->Parent->Left = promotedNode;
 		else
-			subroot->Parent->Right = promotionNode;
+			subroot->Parent->Right = promotedNode;
 
-		promotionNode->Left = subroot;
-		subroot->Parent = promotionNode;
+		promotedNode->Left = subroot;					// promoted takes subroot as left child
+		subroot->Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
-	TreeNode* _rotate_right(TreeNode* subroot) {
-		TreeNode* promotionNode = subroot->Left;
-		subroot->Left = promotionNode->Right;
+	TreeNode* _rotate_right(TreeNode* subroot) {		// promotes subroot left
+		TreeNode* promotedNode = subroot->Left;
+		subroot->Left = promotedNode->Right;			// subroot adopt right child of promoted
 
-		if (promotionNode->Right != nullptr)
-			promotionNode->Right->Parent = subroot;		// left-right parent set
+		if (promotedNode->Right != nullptr)
+			promotedNode->Right->Parent = subroot;		// subroot-left-right parent set
 
-		promotionNode->Parent = subroot->Parent;
+		promotedNode->Parent = subroot->Parent;			// promoted takes subroot parent
 
-		if (subroot == _head)
+		if (subroot == _head)							// special case when tree root is chosen for rotation
 		{
-			_head = promotionNode;
-			promotionNode->Parent = nullptr;
+			_head = promotedNode;
+			promotedNode->Parent = nullptr;
 		}
 		else if (subroot == subroot->Parent->Left)
-			subroot->Parent->Left = promotionNode;
+			subroot->Parent->Left = promotedNode;		// parent links his new promoted child
 		else
-			subroot->Parent->Right = promotionNode;
+			subroot->Parent->Right = promotedNode;
 
-		promotionNode->Right = subroot;
-		subroot->Parent = promotionNode;
+		promotedNode->Right = subroot;					// promoted takes subroot as right child
+		subroot->Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
 	void insert(TreeNode* newNode, TreeNode* parentOfNew) {
