@@ -5,7 +5,7 @@
 // #include "Queue.h"
 #include "UnorderedMap.h"
 #include "UnorderedSet.h"
-// #include "Map.h"
+#include "Map.h"
 // #include "Set.h"
 
 #include <iostream>
@@ -103,15 +103,23 @@ int main()
 
 	// =====================================================================
 
-	custom::UnorderedMap<int, custom::String> map;
+	// custom::UnorderedMap<int, custom::String> map;
 
-	map[10] = "abc";
-	map[11] = "gsa";
-	map[26] = "af";
-	map[101] = " a0";
-	map[54] = "69";
-	map[1] = "A bv";
-	map.emplace(3, "abc");
-	map.try_emplace(56, custom::String("shmecher"));
-	map.print_details();
+	// map[10] = "abc";
+	// map[11] = "gsa";
+	// map[26] = "af";
+	// map[101] = " a0";
+	// map[54] = "69";
+	// map[1] = "A bv";
+	// map.emplace(3, "abc");
+	// map.try_emplace(56, custom::String("shmecher"));
+	// map.print_details();
+
+	// =====================================================================
+
+	custom::Map<int,int> map;
+
+	map.emplace(1,11);
+	map.emplace(2,12);
+	map.emplace(3,13);
 }

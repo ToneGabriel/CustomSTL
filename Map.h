@@ -1,117 +1,85 @@
 #pragma once
-#include "Common.h"
-#include "List.h"
-#include <iostream>
-#include <cmath>
-#include <functional>
+#include "SearchTree.h"
 
 CUSTOM_BEGIN
 
-// Map ========================================================
-template<class Key, class Type, class Compare = std::less<Key>>
-class Map
+// Map Traits ==============================================
+template<class Key, class Type, class Compare>
+class MapTraits
 {
 public:
-	using ValueType = std::pair<Key, Type>;						// Type of values stored in container
-	using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
-
-private:
-	using IterList			= List<ValueType>;					// List of ValueType used for iterating
-	using Node				= typename IterList::Node;			// Node component from List
-
-private:
-	Compare _comp;												// Used for initial(non-compressed) hash value
-	IterList _elems;											// Used to iterate through container
+	using KeyType 		= Key;
+	using MappedType 	= Type;
+	using KeyCompare 	= Compare;
+	using ValueType 	= Pair<Key, Type>;
 
 public:
-    // Constructors
 
-    Map() {
+	MapTraits() = default;
 
-    }
+	static const KeyType& extract_key(const ValueType& value) noexcept { // extract key from element value
+		return value.First;
+	}
 
-    Map(const Map& other) {
+	static const MappedType& extract_mapval(const ValueType& value) noexcept { // extract mapped val from element value
+		return value.Second;
+	}
+};
+// Map Traits ==============================================
+// END
 
-    }
-
-    Map(Map&& other) {
-
-    }
-
-    ~Map() {
-        clear();
-    }
+// Map ========================================================
+template<class Key, class Type, class Compare = std::less<Key>>
+class Map : public SearchTree<MapTraits<Key, Type, Compare>>
+{
+private:
+	using Base = SearchTree<MapTraits<Key, Type, Compare>>;
 
 public:
-	// Main functions
+	using KeyType 		= typename Base::KeyType;
+	using MappedType 	= typename Base::MappedType;
+	using ValueType 	= typename Base::ValueType;
+	using Iterator		= typename Base::Iterator;
 
-	template<class... PairArgs>
-	Iterator emplace(PairArgs&&... args) {								// Constructs Node first with any given std::pair arguments
-    }
+public:
+	// Constructors
 
-    template<class KeyType, class... Args>
-	Iterator try_emplace(KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
-    }
+	Map() 
+		:Base() { }
 
-	Iterator erase(const Key& key) {
+	Map(const Map& other)
+		:Base(other) { }
 
-    }
+	Map(Map&& other) noexcept
+		:Base(std::move(other)) { }
 
-	Iterator erase(const Iterator& iterator) {
-    }
-
-	Iterator find(const Key& key) const {
-    }
-
-    void clear() {
-		_elems.clear();													// Delete all Node* with values
-
-	}
-
-    bool empty() const {
-		return _elems.empty();
-	}
-
-	size_t size() const {
-		return _elems.size();
-	}
-
-	const Type& at(const Key& key) const {								// Access Value at key with check
-    }
-
-	Type& at(const Key& key) {
-    }
+	~Map() { }
 
 public:
 	// Operators
-	Type& operator[](const Key& key) {									// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->Value->second;
+
+	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
+		return try_emplace(key)->Value.Second;
 	}
 
-	Type& operator[](Key&& key) {
-		return try_emplace(std::move(key))->Value->second;
+	MappedType& operator[](Key&& key) {
+		return try_emplace(std::move(key))->Value.Second;
 	}
 
 	Map& operator=(const Map& other) {
-		_elems = other._elems;
-
+		Base::operator=(other);
 
 		return *this;
 	}
 
 	Map& operator=(Map&& other) noexcept {
-		_elems = std::move(other._elems);
-
+		Base::operator=(std::move(other));
 
 		return *this;
 	}
 
 	bool operator==(const Map& other) const {		// Contains the same elems, but not the same hashtable
-		if (size() != other.size())
-			return false;
-
-
-		return true;
+		return Base::operator==(other);
 	}
 
 	bool operator!=(const Map& other) const {
@@ -119,26 +87,20 @@ public:
 	}
 
 public:
-	// Iterator functions
+	// Main functions
 
-	Iterator begin() {
-		return _elems.begin();
+	template<class _KeyType, class... Args>
+	Iterator try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
+		return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
 	}
 
-	const Iterator begin() const {
-		return _elems.begin();
+	const MappedType& at(const Key& key) const {						// Access Value at key with check
+		return this->_at(key);
 	}
 
-	Iterator end() {
-		return _elems.end();
+	MappedType& at(const Key& key) {
+		return this->_at(key);
 	}
-
-	const Iterator end() const{
-		return _elems.end();
-	}
-
-private:
-	// Others
 
 };
 // Map ========================================================

@@ -104,23 +104,17 @@ public:
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
 		Node* newNode = new Node(std::forward<Args>(args)...);
 		const KeyType& newKey = Traits::extract_key(newNode->Value);
-		Iterator it = find(newKey);
 
-		if (it != end()) {												// Destroy newly-created Node if key exists
-			delete newNode;
-			return it;
-		}
-		else {
-			_elems.insert_node_before(_elems._head, newNode);
-			
-			return Iterator(newNode, _elems.update_iteration_data());
-		}
+		_elems.insert_node_before(_elems._head, newNode);
+		_insert(new TreeNode(newNode));
+
+		return Iterator(newNode, _elems.update_iteration_data());
 	}
 
 	Iterator find(const KeyType& key) const {
 		// TODO: complete
 
-		return Iterator(*it, _elems.update_iteration_data());
+		//return Iterator(*it, _elems.update_iteration_data());
 	}
 
 	void clear() {
@@ -223,7 +217,7 @@ private:
 		{
 			futureParent = _workspaceNode;
 			
-			if(_less(Traits::extract_key(newNode->Value), Traits::extract_key(futureParent->Value)))
+			if(_less(Traits::extract_key(newNode->Value), Traits::extract_key(futureParent->Value)))	// TODO: value is pointer here!!!
 			{
 				_workspaceNode = _workspaceNode->Left;
 				if(_workspaceNode == nullptr)
@@ -248,10 +242,58 @@ private:
 	}
 
 	void _fix_inserted(TreeNode* newNode) {
-		TreeNode* parentOfParent = nullptr;
-		TreeNode* uncleOfNew = nullptr;
+		
+		while(newNode->Parent->Color == Red)
+		{
+			if(newNode->Parent == newNode->Parent->Parent->Left)
+			{
+				_workspaceNode = newNode->Parent->Parent->Right;
+				if(_workspaceNode->Color == Red)						// case1
+				{
+					newNode->Parent->Color = Black;
+					_workspaceNode->Color = Black;
+					newNode->Parent->Parent->Color = Red;
+					newNode = newNode->Parent->Parent;
+				}
+				else 
+				{
+					if (newNode == newNode->Parent->Right)				// case2
+					{
+						newNode = newNode->Parent;
+						_rotate_left(newNode);
+					}
 
-		//do
+					newNode->Parent->Color = Black;						// case3
+					newNode->Parent->Parent->Color = Red;
+					_rotate_right(newNode->Parent->Parent);
+				}
+			}
+			else
+			{
+				_workspaceNode = newNode->Parent->Parent->Left;
+				if(_workspaceNode->Color == Red)
+				{
+					newNode->Parent->Color = Black;
+					_workspaceNode->Color = Black;
+					newNode->Parent->Parent->Color = Red;
+					newNode = newNode->Parent->Parent;
+				}
+				else 
+				{
+					if (newNode == newNode->Parent->Left)
+					{
+						newNode = newNode->Parent;
+						_rotate_right(newNode);
+					}
+
+					newNode->Parent->Color = Black;
+					newNode->Parent->Parent->Color = Red;
+					_rotate_left(newNode->Parent->Parent);
+				}
+			}
+		}
+
+		_head->Color = Black;
 	}
 
 	TreeNode* _find_in_tree(const KeyType& key) const {
