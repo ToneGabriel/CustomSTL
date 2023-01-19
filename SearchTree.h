@@ -33,7 +33,7 @@ public:
     using Iterator      = typename List<ValueType>::Iterator;	// Iterator for this container (identical to List iterator)
 
 protected:
-    KeyCompare _comp;											// Used for comparison
+    KeyCompare _less;											// Used for comparison
     IterList _elems;											// Used to iterate through container
 
 	TreeNode* _head 					= nullptr;				// Head of the Tree
@@ -205,24 +205,74 @@ private:
 		subroot->Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
-	void insert(TreeNode* newNode, TreeNode* parentOfNew) {
-		TreeNode* parentOfParent = nullptr;
-		TreeNode* uncleOfNew = nullptr;
+	void _insert(TreeNode* newNode) {
 
-		newNode->Color = Red;
-		newNode->Parent = parentOfNew;
-
-		if(parentOfNew == nullptr)
-		{
+		if(_head == nullptr)
 			_head = newNode;
-			return;
+		else
+		{
+			_insert_raw(newNode);
+			_fix_inserted(newNode);
+		}
+	}
+
+	void _insert_raw(TreeNode* newNode) {
+		TreeNode* futureParent 	= nullptr;
+
+		for(_workspaceNode = _head;;)					// find parent for newly created node
+		{
+			futureParent = _workspaceNode;
+			
+			if(_less(Traits::extract_key(newNode->Value), Traits::extract_key(futureParent->Value)))
+			{
+				_workspaceNode = _workspaceNode->Left;
+				if(_workspaceNode == nullptr)
+				{
+					futureParent->Left = newNode;
+					break;
+				}
+			}
+			else
+			{
+				_workspaceNode = _workspaceNode->Right;
+				if(_workspaceNode == nullptr)
+				{
+					futureParent->Right = newNode;
+					break;
+				}
+			}
 		}
 
-		parentOfNew->Right = newNode;	// TODO: depends on std::less()
+		newNode->Parent = futureParent;
+		newNode->Color = Red;
+	}
+
+	void _fix_inserted(TreeNode* newNode) {
+		TreeNode* parentOfParent = nullptr;
+		TreeNode* uncleOfNew = nullptr;
 
 		//do
 	}
 
+	TreeNode* _find_in_tree(const KeyType& key) const {
+		TreeNode* found = nullptr;
+
+		for(_workspaceNode = _head; _workspaceNode!= nullptr; )
+		{
+			if(key == Traits::extract_key(_workspaceNode->Value))
+				found = _workspaceNode;
+			else if(_less(key, Traits::extract_key(_workspaceNode->Value)))
+			{
+				_workspaceNode = _workspaceNode->Left;
+			}
+			else
+			{
+				_workspaceNode = _workspaceNode->Right;
+			}
+		}
+
+		return found;
+	}
 };
 // SearchTree Template =====================================================
 // END
