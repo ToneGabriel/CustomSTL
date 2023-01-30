@@ -177,13 +177,13 @@ public:
 private:
 	// Others
 
-	void copy(const Vector& other);												// Generic copy function for vector
-	void move(Vector&& other);													// Generic move function for vector
-	void extend_if_full();														// Reserve 50% more capacity when full
-	void clean_up_array();
-	const bool is_end(const Iterator& iterator) const;
-	const size_t get_index(const Iterator& iterator) const;						// Get the position for the element in array from iterator
-	Data* update_iteration_data() const;
+	void _copy(const Vector& other);												// Generic copy function for vector
+	void _move(Vector&& other);													// Generic move function for vector
+	void _extend_if_full();														// Reserve 50% more capacity when full
+	void _clean_up_array();
+	const bool _is_end(const Iterator& iterator) const;
+	const size_t _get_index(const Iterator& iterator) const;						// Get the position for the element in array from iterator
+	Data* _update_iteration_data() const;
 }; // END Vector Template
 
 
@@ -195,17 +195,17 @@ Vector<Type>::Vector(const size_t& newCapacity, const ValueType& copyValue) {
 
 template<class Type>
 Vector<Type>::Vector(const Vector& other) {
-	copy(other);
+	_copy(other);
 }
 
 template<class Type>
 Vector<Type>::Vector(Vector&& other) noexcept {
-	move(std::move(other));
+	_move(std::move(other));
 }
 
 template<class Type>
 Vector<Type>::~Vector() {
-	clean_up_array();
+	_clean_up_array();
 }
 
 template<class Type>
@@ -217,7 +217,7 @@ void Vector<Type>::reserve(const size_t& newCapacity) {
 	for (size_t i = 0; i < _size; i++)
 		_alloc.construct(&newArray[i], std::move(_array[i]));
 
-	clean_up_array();
+	_clean_up_array();
 	_array = newArray;
 	_capacity = newCapacity;
 }
@@ -229,7 +229,7 @@ void Vector<Type>::shrink_to_fit() {
 
 template<class Type>
 void Vector<Type>::realloc(const size_t& newCapacity) {
-	clean_up_array();
+	_clean_up_array();
 
 	_capacity = newCapacity;
 	_size = _capacity;
@@ -240,7 +240,7 @@ void Vector<Type>::realloc(const size_t& newCapacity) {
 
 template<class Type>
 void Vector<Type>::realloc(const size_t& newCapacity, const ValueType& copyValue) {
-	clean_up_array();
+	_clean_up_array();
 
 	_capacity = newCapacity;
 	_size = _capacity;
@@ -280,7 +280,7 @@ void Vector<Type>::resize(const size_t& newSize, const ValueType& copyValue) {
 template<class Type>
 template<class... Args>
 void Vector<Type>::emplace_back(Args&&... args) {
-	extend_if_full();
+	_extend_if_full();
 	_alloc.construct(&_array[_size++], std::forward<Args>(args)...);
 }
 
@@ -303,7 +303,7 @@ void Vector<Type>::pop_back() {
 template<class Type>
 template<class... Args>
 typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	size_t index = get_index(iterator);										// Don't check end()
+	size_t index = _get_index(iterator);										// Don't check end()
 	emplace_back();
 	for (size_t i = _size - 1; i > index; i--)
 		_array[i] = std::move(_array[i - 1]);
@@ -311,7 +311,7 @@ typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, 
 	_alloc.destroy(&_array[index]);
 	_alloc.construct(&_array[index], std::forward<Args>(args)...);
 
-	return Iterator(&_array[index], update_iteration_data());
+	return Iterator(&_array[index], _update_iteration_data());
 }
 
 template<class Type>
@@ -326,15 +326,15 @@ Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, ValueType&& 
 
 template<class Type>
 Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
-	if (is_end(iterator))
+	if (_is_end(iterator))
 		throw std::out_of_range("Array pop iterator outside range...");
 
-	size_t index = get_index(iterator);
+	size_t index = _get_index(iterator);
 	for (size_t i = index; i < _size - 1; i++)
 		_array[i] = std::move(_array[i + 1]);
 	pop_back();
 
-	return Iterator(&_array[index], update_iteration_data());
+	return Iterator(&_array[index], _update_iteration_data());
 }
 
 template<class Type>
@@ -388,8 +388,8 @@ template<class Type>
 Vector<Type>& Vector<Type>::operator=(const Vector& other) {
 	if (_array != other._array)
 	{
-		clean_up_array();
-		copy(other);
+		_clean_up_array();
+		_copy(other);
 	}
 
 	return *this;
@@ -399,8 +399,8 @@ template<class Type>
 Vector<Type>& Vector<Type>::operator=(Vector&& other) noexcept {
 	if (_array != other._array)
 	{
-		clean_up_array();
-		move(std::move(other));
+		_clean_up_array();
+		_move(std::move(other));
 	}
 
 	return *this;
@@ -425,50 +425,50 @@ bool Vector<Type>::operator!=(const Vector& other) const {
 
 template<class Type>
 typename Vector<Type>::Iterator Vector<Type>::begin() {
-	return Iterator(_array, update_iteration_data());
+	return Iterator(_array, _update_iteration_data());
 }
 
 template<class Type>
 const typename Vector<Type>::Iterator Vector<Type>::begin() const {
-	return Iterator(_array, update_iteration_data());
+	return Iterator(_array, _update_iteration_data());
 }
 
 template<class Type>
 typename Vector<Type>::Iterator Vector<Type>::end() {
-	return Iterator(_array + _size, update_iteration_data());
+	return Iterator(_array + _size, _update_iteration_data());
 }
 
 template<class Type>
 const typename Vector<Type>::Iterator Vector<Type>::end() const {
-	return Iterator(_array + _size, update_iteration_data());
+	return Iterator(_array + _size, _update_iteration_data());
 }
 
 template<class Type>
-void Vector<Type>::copy(const Vector& other) {
+void Vector<Type>::_copy(const Vector& other) {
 	_array = _alloc.alloc(other._capacity);
 	for (size_t i = 0; i < other._size; i++)
 		_alloc.construct(&_array[i], other._array[i]);
 
 	_size = other._size;
 	_capacity = other._capacity;
-	update_iteration_data();
+	_update_iteration_data();
 }
 
 template<class Type>
-void Vector<Type>::move(Vector&& other) {
+void Vector<Type>::_move(Vector&& other) {
 	_array = other._array;
 	_size = other._size;
 	_capacity = other._capacity;
-	update_iteration_data();
+	_update_iteration_data();
 
 	other._size = 0;
 	other._capacity = 0;
 	other._array = nullptr;
-	other.update_iteration_data();
+	other._update_iteration_data();
 }
 
 template<class Type>
-typename Vector<Type>::Data* Vector<Type>::update_iteration_data() const {
+typename Vector<Type>::Data* Vector<Type>::_update_iteration_data() const {
 	_data._Begin = _array;
 	_data._End = _array + _size;
 
@@ -476,7 +476,7 @@ typename Vector<Type>::Data* Vector<Type>::update_iteration_data() const {
 }
 
 template<class Type>
-void Vector<Type>::clean_up_array() {
+void Vector<Type>::_clean_up_array() {
 	if (_array != nullptr)
 	{
 		_alloc.destroy_range(_array, _size);
@@ -486,17 +486,17 @@ void Vector<Type>::clean_up_array() {
 }
 
 template<class Type>
-const size_t Vector<Type>::get_index(const Iterator& iterator) const {
+const size_t Vector<Type>::_get_index(const Iterator& iterator) const {
 	return iterator._Ptr - iterator._IterationData->_Begin;
 }
 
 template<class Type>
-const bool Vector<Type>::is_end(const Iterator& iterator) const {
+const bool Vector<Type>::_is_end(const Iterator& iterator) const {
 	return iterator._Ptr == iterator._IterationData->_End;
 }
 
 template<class Type>
-void Vector<Type>::extend_if_full() {
+void Vector<Type>::_extend_if_full() {
 	if (_size >= _capacity)
 		reserve(_capacity + _capacity / 2 + 1);
 }

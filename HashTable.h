@@ -114,9 +114,9 @@ public:
 		}
 		else {
 			rehash_if_overload();
-			_elems.insert_node_before(_elems._head, newNode);
+			_elems._insert_node_before(_elems._head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, _elems.update_iteration_data());
+			return Iterator(newNode, _elems._update_iteration_data());
 		}
 	}
 
@@ -129,7 +129,7 @@ public:
 
 		Node* nodeToErase = (*it);
 		_buckets[index].pop(it);													// Remove reference from array of lists
-		return _elems.pop(Iterator(nodeToErase, _elems.update_iteration_data()));	// Remove value from iteration list and return next Node iterator
+		return _elems.pop(Iterator(nodeToErase, _elems._update_iteration_data()));	// Remove value from iteration list and return next Node iterator
 	}
 
 	Iterator erase(const Iterator& iterator) {
@@ -144,7 +144,7 @@ public:
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
-		return Iterator(*it, _elems.update_iteration_data());
+		return Iterator(*it, _elems._update_iteration_data());
 	}
 
 	void rehash(const size_t& buckets) {											// rebuild table with at least buckets
@@ -240,9 +240,9 @@ protected:
 			const KeyType& newKey = Traits::extract_key(newNode->Value);
 
 			rehash_if_overload();
-			_elems.insert_node_before(_elems._head, newNode);
+			_elems._insert_node_before(_elems._head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, _elems.update_iteration_data());
+			return Iterator(newNode, _elems._update_iteration_data());
 		}
 	}
 

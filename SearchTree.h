@@ -105,10 +105,10 @@ public:
 		Node* newNode = new Node(std::forward<Args>(args)...);
 		const KeyType& newKey = Traits::extract_key(newNode->Value);
 
-		_elems.insert_node_before(_elems._head, newNode);
+		_elems._insert_node_before(_elems._head, newNode);
 		_insert(new TreeNode(newNode));
 
-		return Iterator(newNode, _elems.update_iteration_data());
+		return Iterator(newNode, _elems._update_iteration_data());
 	}
 
 	Iterator find(const KeyType& key) const {
