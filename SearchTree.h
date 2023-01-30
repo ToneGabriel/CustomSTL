@@ -176,7 +176,7 @@ private:
 		subroot->Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
-	TreeNode* _rotate_right(TreeNode* subroot) {		// promotes subroot left
+	void _rotate_right(TreeNode* subroot) {				// promotes subroot left
 		TreeNode* promotedNode = subroot->Left;
 		subroot->Left = promotedNode->Right;			// subroot adopt right child of promoted
 
@@ -217,7 +217,7 @@ private:
 		{
 			futureParent = _workspaceNode;
 			
-			if(_less(Traits::extract_key(newNode->Value), Traits::extract_key(futureParent->Value)))	// TODO: value is pointer here!!!
+			if(_less(Traits::extract_key(newNode->Value->Value), Traits::extract_key(futureParent->Value->Value)))	// TODO: value is pointer here!!!
 			{
 				_workspaceNode = _workspaceNode->Left;
 				if(_workspaceNode == nullptr)

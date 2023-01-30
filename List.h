@@ -11,9 +11,8 @@ class HashTable;
 template<class>
 class SearchTree;
 
-// Linked List Iterator ========================================================
 template<class List>
-class ListIterator : public BaseIterator<List>
+class ListIterator : public BaseIterator<List>		// Linked List Iterator
 {
 private:
 	using Base = BaseIterator<List>;
@@ -72,14 +71,11 @@ public:
 	bool operator!=(const ListIterator& other) const {
 		return !(*this == other);
 	}
-};
-// Linked List Iterator ========================================================
-// END
+}; // END Linked List Iterator
 
 
-// Linked List ========================================================
 template<class Type>
-class List
+class List				// Linked List
 {
 private:
 	template<class>
@@ -105,298 +101,407 @@ private:
 public:
 	// Constructors
 
-	List() {														// Default Constructor
-		reset_head();
-	}
-
-	List(const size_t& newSize, const ValueType& value) : List() {  // Reference type Constructor
-		create_until_size(newSize, value);
-	}
-
-	List(const List& other) : List() {								// Copy Constructor
-		copy(other);
-	}
-
-	List(List&& other) noexcept : List() {							// Move Constructor
-		move(std::move(other));
-	}
-
-	~List() {														// Destructor
-		clear();
-		clear_head();
-	}
+	List();															// Default Constructor
+	List(const size_t& newSize, const ValueType& value);			// Reference type Constructor
+	List(const List& other);										// Copy Constructor
+	List(List&& other) noexcept;									// Move Constructor
+	~List();														// Destructor
 
 public:
 	// Main functions
 
-	void resize(const size_t& newSize) {									// Resize the list by removing or adding default elements to the tail
-		delete_until_size(newSize);
-		create_until_size(newSize);
-	}
-
-	void resize(const size_t& newSize, const ValueType& copyValue) {		// Resize the list by removing or adding copy elements to the tail
-		delete_until_size(newSize);
-		create_until_size(newSize, copyValue);
-	}
+	void resize(const size_t& newSize);									// Resize the list by removing or adding default elements to the tail
+	void resize(const size_t& newSize, const ValueType& copyValue);		// Resize the list by removing or adding copy elements to the tail
 
 	template<class... Args>
-	void emplace_back(Args&&... args) {                                     // Construct object using arguments (Args) and add it to the tail
-		Node* newNode = new Node(std::forward<Args>(args)...);
-		insert_node_before(_head, newNode);
-	}
-
-	void push_back(const ValueType& copyValue) {                            // Construct object using reference and add it to the tail
-		emplace_back(copyValue);
-	}
-
-	void push_back(ValueType&& moveValue) {                                 // Construct object using temporary and add it to the tail
-		emplace_back(std::move(moveValue));
-	}
-
-	void pop_back() {                                                       // Remove last component
-		if (_size > 0)
-			remove_node(_head->Previous);
-	}
+	void emplace_back(Args&&... args);									// Construct object using arguments (Args) and add it to the tail
+	void push_back(const ValueType& copyValue);							// Construct object using reference and add it to the tail
+	void push_back(ValueType&& moveValue);                              // Construct object using temporary and add it to the tail
+	void pop_back();                                                    // Remove last component
 
 	template<class... Args>
-	void emplace_front(Args&&... args) {                                    // Construct object using arguments (Args) and add it to the head
-		Node* newNode = new Node(std::forward<Args>(args)...);
-		insert_node_before(_head->Next, newNode);
-	}
-
-	void push_front(const ValueType& copyValue) {                           // Construct object using reference and add it to the head
-		emplace_front(copyValue);
-	}
-
-	void push_front(ValueType&& moveValue) {                                // Construct object using temporary and add it to the head
-		emplace_front(std::move(moveValue));
-	}
-
-	void pop_front() {                                                      // Remove first component
-		if (_size > 0)
-			remove_node(_head->Next);
-	}
+	void emplace_front(Args&&... args);                                 // Construct object using arguments (Args) and add it to the head
+	void push_front(const ValueType& copyValue);                        // Construct object using reference and add it to the head
+	void push_front(ValueType&& moveValue);                             // Construct object using temporary and add it to the head
+	void pop_front();                                                   // Remove first component
 
 	template<class... Args>
-	Iterator emplace(const Iterator& iterator, Args&&... args) {            // Construct object using arguments (Args) and add it BEFORE the iterator position
-		_workspaceNode = iterator._Ptr;
-		Node* newNode = new Node(std::forward<Args>(args)...);
-		insert_node_before(_workspaceNode, newNode);
-
-		return Iterator(newNode, update_iteration_data());
-	}
-
-	Iterator push(const Iterator& iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
-		return emplace(iterator, copyValue);
-	}
-
-	Iterator push(const Iterator& iterator, ValueType&& moveValue) {        // Construct object using temporary and add it BEFORE the iterator position
-		return emplace(iterator, std::move(moveValue));
-	}
-
-	Iterator pop(const Iterator& iterator) {                                // Remove component at iterator position
-		if (iterator._Ptr == _head)											// Check end()
-			throw std::out_of_range("Cannot pop end iterator...");
-
-		_workspaceNode = iterator._Ptr;
-		Iterator prevIterator = Iterator(_workspaceNode->Previous, update_iteration_data());
-		remove_node(_workspaceNode);
-
-		return prevIterator;
-	}
+	Iterator emplace(const Iterator& iterator, Args&&... args);				// Construct object using arguments (Args) and add it BEFORE the iterator position
+	Iterator push(const Iterator& iterator, const ValueType& copyValue);    // Construct object using reference and add it BEFORE the iterator position
+	Iterator push(const Iterator& iterator, ValueType&& moveValue);         // Construct object using temporary and add it BEFORE the iterator position
+	Iterator pop(const Iterator& iterator);                                 // Remove component at iterator position
 
 public:
-	ValueType& front() {                                                    // Get the value of the first component
-		return _head->Next->Value;
-	}
-
-	const ValueType& front() const {
-		return _head->Next->Value;
-	}
-
-	ValueType& back() {                                                     // Get the value of the last component
-		return _head->Previous->Value;
-	}
-
-	const ValueType& back() const {
-		return _head->Previous->Value;
-	}
-
-	const size_t size() const {                                             // Get size
-		return _size;
-	}
-
-	bool empty() const {                                                    // Check if list is empty
-		return _size == 0;
-	}
-
-	void clear() {                                                          // Remove ALL components
-		delete_until_size(0);
-	}
+	ValueType& front();                                                     // Get the value of the first component
+	const ValueType& front() const;
+	ValueType& back();                                                      // Get the value of the last component
+	const ValueType& back() const;
+	
+	const size_t size() const;                                              // Get size
+	bool empty() const;                                                     // Check if list is empty
+	void clear();                                                           // Remove ALL components
 
 public:
 	// Operators
 
-	List& operator=(const List& other) {									// Assign operator using reference
-		if (_head != other._head)
-		{
-			clear();
-			copy(other);
-		}
+	List& operator=(const List& other);										// Assign operator using reference
+	List& operator=(List&& other) noexcept;									// Assign operator using temporary
 
-		return *this;
-	}
-
-	List& operator=(List&& other) noexcept {								// Assign operator using temporary
-		if (_head != other._head)
-		{
-			clear();
-			move(std::move(other));
-		}
-
-		return *this;
-	}
-
-	bool operator==(const List& other) const {
-		if (size() != other.size())
-			return false;
-
-		Iterator it1 = begin();
-		Iterator it2 = other.begin();
-		while (it1 != end())
-		{
-			if (*it1 != *it2)
-				return false;
-
-			++it1;
-			++it2;
-		}
-
-		return true;
-	}
-
-	bool operator!=(const List& other) const {
-		return !operator==(other);
-	}
+	bool operator==(const List& other) const;
+	bool operator!=(const List& other) const;
 
 public:
 	// Iterator specific functions
 
-	Iterator begin() {
-		return Iterator(_head->Next, update_iteration_data());
-	}
+	Iterator begin();
+	const Iterator begin() const;
 
-	const Iterator begin() const {
-		return Iterator(_head->Next, update_iteration_data());
-	}
+	Iterator end();
+	const Iterator end() const;
 
-	Iterator end() {
-		return Iterator(_head, update_iteration_data());
-	}
-
-	const Iterator end() const {
-		return Iterator(_head, update_iteration_data());
-	}
-
-	const Iterator at(const size_t& index) const {
-		if (index < 0 || index >= _size)
-			throw std::out_of_range("Invalid Index...");
-
-		return Iterator(scroll_node(index), update_iteration_data());
-	}
-
-	Iterator at(const size_t& index) {
-		if (index < 0 || index >= _size)
-			throw std::out_of_range("Invalid Index...");
-
-		return Iterator(scroll_node(index), update_iteration_data());
-	}
+	const Iterator at(const size_t& index) const;
+	Iterator at(const size_t& index);
 
 private:
 	// Others
 
-	void insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node ferore another
-		newNode->Previous = beforeNode->Previous;
-		newNode->Next = beforeNode;
-
-		beforeNode->Previous->Next = newNode;
-		beforeNode->Previous = newNode;
-
-		_size++;
-	}
-
-	void remove_node(Node* junkNode) {										// Remove Node and relink
-		junkNode->Previous->Next = junkNode->Next;
-		junkNode->Next->Previous = junkNode->Previous;
-
-		delete junkNode;
-		_size--;
-	}
-
-	Data* update_iteration_data() const {									// Update data and sent it to iterator
-		_data._Begin = _head->Next;
-		_data._End = _head;
-
-		return &_data;
-	}
-
-	void copy(const List& other) {											// Generic copy function for list
-		_workspaceNode = other._head->Next;
-		while (_size < other._size) {
-			push_back(_workspaceNode->Value);
-			_workspaceNode = _workspaceNode->Next;
-		}
-	}
-
-	void move(List&& other) {												// Generic move function for vector
-		// link current head with the other "body"
-		_head->Next = other._head->Next;
-		_head->Next->Previous = _head;
-		_head->Previous = other._head->Previous;
-		_head->Previous->Next = _head;
-		_size = other._size;
-		_data = other._data;
-
-		// link old head with itself
-		other.reset_head();
-		other._size = 0;
-		other.update_iteration_data();
-	}
+	void insert_node_before(Node* beforeNode, Node* newNode);				// Insert Node ferore another
+	void remove_node(Node* junkNode);										// Remove Node and relink
+	void copy(const List& other);											// Generic copy function for list
+	void move(List&& other);												// Generic move function for vector
+	void reset_head();
+	void clear_head();
 
 	template<class... Args>
-	void create_until_size(const size_t& newSize, Args&&... args) {		// Add elements until current size equals newSize
-		while (_size < newSize)
-			emplace_back(std::forward<Args>(args)...);
+	void create_until_size(const size_t& newSize, Args&&... args);			// Add elements until current size equals newSize
+	void delete_until_size(const size_t& newSize);							// Remove elements until current size equals newSize
+	Node* scroll_node(const size_t& index) const;							// Get object in the list at index position by going through all components
+	Data* update_iteration_data() const;									// Update data and sent it to iterator
+}; // END Linked List
+
+
+template<class Type>
+List<Type>::List() {
+	reset_head();
+}
+
+template<class Type>
+List<Type>::List(const size_t& newSize, const ValueType& value) : List() {
+	create_until_size(newSize, value);
+}
+
+template<class Type>
+List<Type>::List(const List& other) : List() {
+	copy(other);
+}
+
+template<class Type>
+List<Type>::List(List&& other) noexcept : List() {
+	move(std::move(other));
+}
+
+template<class Type>
+List<Type>::~List() {
+	clear();
+	clear_head();
+}
+
+template<class Type>
+void List<Type>::resize(const size_t& newSize) {
+	delete_until_size(newSize);
+	create_until_size(newSize);
+}
+
+template<class Type>
+void List<Type>::resize(const size_t& newSize, const ValueType& copyValue) {
+	delete_until_size(newSize);
+	create_until_size(newSize, copyValue);
+}
+
+template<class Type>
+template<class... Args>
+void List<Type>::emplace_back(Args&&... args) {
+	Node* newNode = new Node(std::forward<Args>(args)...);
+	insert_node_before(_head, newNode);
+}
+
+template<class Type>
+void List<Type>::push_back(const ValueType& copyValue) {
+	emplace_back(copyValue);
+}
+
+template<class Type>
+void List<Type>::push_back(ValueType&& moveValue) {
+	emplace_back(std::move(moveValue));
+}
+
+template<class Type>
+void List<Type>::pop_back() {
+	if (_size > 0)
+		remove_node(_head->Previous);
+}
+
+template<class Type>
+template<class... Args>
+void List<Type>::emplace_front(Args&&... args) {
+	Node* newNode = new Node(std::forward<Args>(args)...);
+	insert_node_before(_head->Next, newNode);
+}
+
+template<class Type>
+void List<Type>::push_front(const ValueType& copyValue) {
+	emplace_front(copyValue);
+}
+
+template<class Type>
+void List<Type>::push_front(ValueType&& moveValue) {
+	emplace_front(std::move(moveValue));
+}
+
+template<class Type>
+void List<Type>::pop_front() {
+	if (_size > 0)
+		remove_node(_head->Next);
+}
+
+template<class Type>
+template<class... Args>
+typename List<Type>::Iterator List<Type>::emplace(const Iterator& iterator, Args&&... args) {
+	_workspaceNode = iterator._Ptr;
+	Node* newNode = new Node(std::forward<Args>(args)...);
+	insert_node_before(_workspaceNode, newNode);
+
+	return Iterator(newNode, update_iteration_data());
+}
+
+template<class Type>
+typename List<Type>::Iterator List<Type>::push(const Iterator& iterator, const ValueType& copyValue) {
+	return emplace(iterator, copyValue);
+}
+
+template<class Type>
+typename List<Type>::Iterator List<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
+	return emplace(iterator, std::move(moveValue));
+}
+
+template<class Type>
+typename List<Type>::Iterator List<Type>::pop(const Iterator& iterator) {
+	if (iterator._Ptr == _head)											// Check end()
+		throw std::out_of_range("Cannot pop end iterator...");
+
+	_workspaceNode = iterator._Ptr;
+	Iterator prevIterator = Iterator(_workspaceNode->Previous, update_iteration_data());
+	remove_node(_workspaceNode);
+
+	return prevIterator;
+}
+
+template<class Type>
+typename List<Type>::ValueType& List<Type>::front() {
+	return _head->Next->Value;
+}
+
+template<class Type>
+const typename List<Type>::ValueType& List<Type>::front() const {
+	return _head->Next->Value;
+}
+
+template<class Type>
+typename List<Type>::ValueType& List<Type>::back() {
+	return _head->Previous->Value;
+}
+
+template<class Type>
+const typename List<Type>::ValueType& List<Type>::back() const {
+	return _head->Previous->Value;
+}
+
+template<class Type>
+const size_t List<Type>::size() const {
+	return _size;
+}
+
+template<class Type>
+bool List<Type>::empty() const {
+	return _size == 0;
+}
+
+template<class Type>
+void List<Type>::clear() {
+	delete_until_size(0);
+}
+
+template<class Type>
+List<Type>& List<Type>::operator=(const List& other) {
+	if (_head != other._head)
+	{
+		clear();
+		copy(other);
 	}
 
-	void delete_until_size(const size_t& newSize) {						// Remove elements until current size equals newSize
-		while (_size > newSize)
-			pop_back();
+	return *this;
+}
+
+template<class Type>
+List<Type>& List<Type>::operator=(List&& other) noexcept {
+	if (_head != other._head)
+	{
+		clear();
+		move(std::move(other));
 	}
 
-	Node* scroll_node(const size_t& index) const {						// Get object in the list at index position by going through all components
-		_workspaceNode = _head->Next;
-		if (_workspaceNode != _head)
-			for (size_t i = 0; i < index; i++)
-				_workspaceNode = _workspaceNode->Next;
+	return *this;
+}
 
-		return _workspaceNode;
+template<class Type>
+bool List<Type>::operator==(const List& other) const {
+	if (size() != other.size())
+		return false;
+
+	Iterator it1 = begin();
+	Iterator it2 = other.begin();
+	while (it1 != end())
+	{
+		if (*it1 != *it2)
+			return false;
+
+		++it1;
+		++it2;
 	}
 
-	void reset_head() {
-		if (_head == nullptr)
-			_head = new Node();
+	return true;
+}
 
-		_head->Next = _head;
-		_head->Previous = _head;
-	}
+template<class Type>
+bool List<Type>::operator!=(const List& other) const {
+	return !operator==(other);
+}
 
-	void clear_head() {
-		delete _head;
-		_head = nullptr;
+template<class Type>
+typename List<Type>::Iterator List<Type>::begin() {
+	return Iterator(_head->Next, update_iteration_data());
+}
+
+template<class Type>
+const typename List<Type>::Iterator List<Type>::begin() const {
+	return Iterator(_head->Next, update_iteration_data());
+}
+
+template<class Type>
+typename List<Type>::Iterator List<Type>::end() {
+	return Iterator(_head, update_iteration_data());
+}
+
+template<class Type>
+const typename List<Type>::Iterator List<Type>::end() const {
+	return Iterator(_head, update_iteration_data());
+}
+
+template<class Type>
+const typename List<Type>::Iterator List<Type>::at(const size_t& index) const {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return Iterator(scroll_node(index), update_iteration_data());
+}
+
+template<class Type>
+typename List<Type>::Iterator List<Type>::at(const size_t& index) {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return Iterator(scroll_node(index), update_iteration_data());
+}
+
+template<class Type>
+void List<Type>::insert_node_before(Node* beforeNode, Node* newNode) {
+	newNode->Previous = beforeNode->Previous;
+	newNode->Next = beforeNode;
+
+	beforeNode->Previous->Next = newNode;
+	beforeNode->Previous = newNode;
+
+	_size++;
+}
+
+template<class Type>
+void List<Type>::remove_node(Node* junkNode) {
+	junkNode->Previous->Next = junkNode->Next;
+	junkNode->Next->Previous = junkNode->Previous;
+
+	delete junkNode;
+	_size--;
+}
+
+template<class Type>
+typename List<Type>::Data* List<Type>::update_iteration_data() const {
+	_data._Begin = _head->Next;
+	_data._End = _head;
+
+	return &_data;
+}
+
+template<class Type>
+void List<Type>::copy(const List& other) {
+	_workspaceNode = other._head->Next;
+	while (_size < other._size) {
+		push_back(_workspaceNode->Value);
+		_workspaceNode = _workspaceNode->Next;
 	}
-};
-// Linked List ========================================================
-// END
+}
+
+template<class Type>
+void List<Type>::move(List&& other) {
+	// link current head with the other "body"
+	_head->Next = other._head->Next;
+	_head->Next->Previous = _head;
+	_head->Previous = other._head->Previous;
+	_head->Previous->Next = _head;
+	_size = other._size;
+	_data = other._data;
+
+	// link old head with itself
+	other.reset_head();
+	other._size = 0;
+	other.update_iteration_data();
+}
+
+template<class Type>
+template<class... Args>
+void List<Type>::create_until_size(const size_t& newSize, Args&&... args) {
+	while (_size < newSize)
+		emplace_back(std::forward<Args>(args)...);
+}
+
+template<class Type>
+void List<Type>::delete_until_size(const size_t& newSize) {
+	while (_size > newSize)
+		pop_back();
+}
+
+template<class Type>
+typename List<Type>::Node* List<Type>::scroll_node(const size_t& index) const {
+	_workspaceNode = _head->Next;
+	if (_workspaceNode != _head)
+		for (size_t i = 0; i < index; i++)
+			_workspaceNode = _workspaceNode->Next;
+
+	return _workspaceNode;
+}
+
+template<class Type>
+void List<Type>::reset_head() {
+	if (_head == nullptr)
+		_head = new Node();
+
+	_head->Next = _head;
+	_head->Previous = _head;
+}
+
+template<class Type>
+void List<Type>::clear_head() {
+	delete _head;
+	_head = nullptr;
+}
 
 CUSTOM_END
