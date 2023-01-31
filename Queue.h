@@ -57,7 +57,7 @@ private:
 	// Others
 
 	void _copy(const Queue& other);							// Generic copy function for queue
-	void _move(Queue&& other);								// Generic move function for vector
+	void _move(Queue&& other);								// Generic move function for queue
 
 	template<class... Args>
 	void _create_until_size(const size_t& newSize, Args&&... args); // Add elements until current size equals newSize
@@ -69,32 +69,32 @@ private:
 
 // Queue Template
 template<class Type>
-Queue<Type>::Queue(const size_t& newSize, const ValueType& value) {          // Reference type Constructor
+Queue<Type>::Queue(const size_t& newSize, const ValueType& value) {
 	_create_until_size(newSize, value);
 }
 
 template<class Type>
-Queue<Type>::Queue(const Queue& other) {                                     // Copy Constructor
+Queue<Type>::Queue(const Queue& other) {
 	_copy(other);
 }
 
 template<class Type>
-Queue<Type>::Queue(Queue&& other) noexcept {                      // Move Constructor
+Queue<Type>::Queue(Queue&& other) noexcept {
 	_move(std::move(other));
 }
 
 template<class Type>
-Queue<Type>::~Queue() {                                                      // Destructor
+Queue<Type>::~Queue() {
 	clear();
 }
 
 template<class Type>
 template<class... Args>
-void Queue<Type>::emplace(Args&&... args) {                                  // Construct object using arguments (Args) and add it to the tail
+void Queue<Type>::emplace(Args&&... args) {
 	Node* newNode = new Node(std::forward<Args>(args)...);
 
 	if (_head == nullptr)
-		_head = _tail = newNode;								// Here head and tail are not important and can be used to store value
+		_head = _tail = newNode;	// Here head and tail are not important and can be used to store value
 	else {
 		_tail->Next = newNode;
 		_tail = newNode;
@@ -113,7 +113,7 @@ void Queue<Type>::push(ValueType&& moveValue) {
 }
 
 template<class Type>
-void Queue<Type>::pop() {                                                   // Remove first elem from queue
+void Queue<Type>::pop() {
 	if (_head) {
 		_workspaceNode = _head;
 		_head = _head->Next;
@@ -147,17 +147,17 @@ const typename Queue<Type>::ValueType& Queue<Type>::back() const {
 }
 
 template<class Type>
-const size_t Queue<Type>::size() const {                                     // Get size
+const size_t Queue<Type>::size() const {
 	return _size;
 }
 
 template<class Type>
-bool Queue<Type>::empty() const {                                            // Check if list is empty
+bool Queue<Type>::empty() const {
 	return _size == 0;
 }
 
 template<class Type>
-void Queue<Type>::clear() {                                                  // Remove ALL components
+void Queue<Type>::clear() {
 	while (_size) {
 		_workspaceNode = _head;
 		_head = _head->Next;
@@ -170,7 +170,7 @@ void Queue<Type>::clear() {                                                  // 
 }
 
 template<class Type>
-Queue<Type>& Queue<Type>::operator=(const Queue& other) {              // Assign operator using reference
+Queue<Type>& Queue<Type>::operator=(const Queue& other) {
 	if (_head != other._head)
 	{
 		clear();
@@ -181,7 +181,7 @@ Queue<Type>& Queue<Type>::operator=(const Queue& other) {              // Assign
 }
 
 template<class Type>
-Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {          // Assign operator using temporary
+Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {
 	if (_head != other._head)
 	{
 		clear();
@@ -192,7 +192,7 @@ Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {          // Assign
 }
 
 template<class Type>
-void Queue<Type>::_copy(const Queue& other) {						// Generic copy function for queue
+void Queue<Type>::_copy(const Queue& other) {
 	_workspaceNode = other._head;
 	while (_size < other._size) {
 		enqueue(_workspaceNode->Value);
@@ -201,7 +201,7 @@ void Queue<Type>::_copy(const Queue& other) {						// Generic copy function for 
 }
 
 template<class Type>
-void Queue<Type>::_move(Queue&& other) {							// Generic move function for vector
+void Queue<Type>::_move(Queue&& other) {
 	_head = other._head;
 	_tail = other._tail;
 	_size = other._size;
@@ -212,7 +212,7 @@ void Queue<Type>::_move(Queue&& other) {							// Generic move function for vect
 
 template<class Type>
 template<class... Args>
-void Queue<Type>::_create_until_size(const size_t& newSize, Args&&... args) { // Add elements until current size equals newSize
+void Queue<Type>::_create_until_size(const size_t& newSize, Args&&... args) {
 	while (_size < newSize)
 		emplace(std::forward<Args>(args)...);
 }

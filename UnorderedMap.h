@@ -86,19 +86,19 @@ const typename UmapTraits<Key, Type, Hasher>::MappedType& UmapTraits<Key, Type, 
 // UnorderedMap Template
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap()
-	:Base() { }
+	:Base() { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap(const size_t& buckets)
-	:Base(buckets) { }
+	:Base(buckets) { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap(const UnorderedMap& other)
-	:Base(other) { }
+	:Base(other) { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap(UnorderedMap&& other) noexcept
-	:Base(std::move(other)) { }
+	:Base(std::move(other)) { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::~UnorderedMap() { /*Empty*/ }

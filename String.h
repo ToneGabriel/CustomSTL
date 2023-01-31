@@ -13,20 +13,23 @@ CUSTOM_BEGIN
 template<class String>
 class StringIterator : public BaseIterator<String>	// String Iterator
 {
-private:
-	using Base = BaseIterator<String>;
+public:
+	using Base		= BaseIterator<String>;
+	using Data		= typename Base::Data;
+	using IterType	= typename Base::IterType;
+	using ValueType = typename Base::ValueType;
 
 public:
 
-	explicit StringIterator(typename Base::IterType* ptr, typename Base::Data* data);
+	explicit StringIterator(IterType* ptr, Data* data);
 
 	StringIterator& operator++();		// ++it
-	StringIterator& operator++(int);	// it++
+	StringIterator operator++(int);		// it++
 	StringIterator& operator--();		// --it
-	StringIterator& operator--(int);	// it--
+	StringIterator operator--(int);		// it--
 
-	typename Base::IterType* operator->();
-	typename Base::ValueType& operator*();
+	IterType* operator->();
+	ValueType& operator*();
 
 	bool operator==(const StringIterator& other) const;
 	bool operator!=(const StringIterator& other) const;
@@ -169,7 +172,7 @@ private:
 	
 	void _extend_if_full();												// Reserve 50% more capacity when full
 	void _copy(const String& other);									// Generic copy function for string
-	void _move(String&& other);											// Generic move function for vector
+	void _move(String&& other);											// Generic move function for string
 	const size_t _get_index(const Iterator& iterator) const;			// Get the position for the element in array from iterator
 	const bool _is_end(const Iterator& iterator) const;
 	Data* _update_iteration_data() const;
@@ -182,7 +185,7 @@ private:
 // String Iterator
 template<class String>
 StringIterator<String>::StringIterator(typename Base::IterType* ptr, typename Base::Data* data)
-	:Base(ptr, data) {}
+	:Base(ptr, data) { /*Empty*/ }
 
 template<class String>
 StringIterator<String>& StringIterator<String>::operator++() {
@@ -194,7 +197,7 @@ StringIterator<String>& StringIterator<String>::operator++() {
 }
 
 template<class String>
-StringIterator<String>& StringIterator<String>::operator++(int) {
+StringIterator<String> StringIterator<String>::operator++(int) {
 	StringIterator temp = *this;
 	++(*this);
 	return temp;
@@ -210,14 +213,14 @@ StringIterator<String>& StringIterator<String>::operator--() {
 }
 
 template<class String>
-StringIterator<String>& StringIterator<String>::operator--(int) {
+StringIterator<String> StringIterator<String>::operator--(int) {
 	StringIterator temp = *this;
 	--(*this);
 	return temp;
 }
 
 template<class String>
-typename StringIterator<String>::Base::IterType* StringIterator<String>::operator->() {
+typename StringIterator<String>::IterType* StringIterator<String>::operator->() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
@@ -225,7 +228,7 @@ typename StringIterator<String>::Base::IterType* StringIterator<String>::operato
 }
 
 template<class String>
-typename StringIterator<String>::Base::ValueType& StringIterator<String>::operator*() {
+typename StringIterator<String>::ValueType& StringIterator<String>::operator*() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 

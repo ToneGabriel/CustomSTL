@@ -31,7 +31,7 @@ public:
 public:
 
 	explicit BaseIterator(IterType* ptr, Data* data)
-		:_Ptr(ptr), _IterationData(data) { }
+		:_Ptr(ptr), _IterationData(data) { /*Empty*/ }
 
 	virtual ~BaseIterator() {
 		_Ptr			= nullptr;

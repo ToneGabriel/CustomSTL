@@ -45,15 +45,15 @@ public:
 	// Constructors
 
 	Map() 
-		:Base() { }
+		:Base() { /*Empty*/ }
 
 	Map(const Map& other)
-		:Base(other) { }
+		:Base(other) { /*Empty*/ }
 
 	Map(Map&& other) noexcept
-		:Base(std::move(other)) { }
+		:Base(std::move(other)) { /*Empty*/ }
 
-	~Map() { }
+	~Map() { /*Empty*/ }
 
 public:
 	// Operators

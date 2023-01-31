@@ -17,10 +17,10 @@ public:
 public:
 
 	Tuple(const This& first, Rest&&... rest)
-		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(first) { }
+		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(first) { /*Empty*/ }
 
 	Tuple(This&& first, Rest&&... rest)
-		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(std::move(first)) { }
+		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(std::move(first)) { /*Empty*/ }
 
 	Tuple(const Tuple&) = default;
 	Tuple(Tuple&&)		= default;
@@ -78,11 +78,11 @@ Tuple<Types&&...> forward_as_tuple(Types&&... args) {	    // Forward arguments i
 
 // Pair Definitions ===================================================================================
 
-struct PiecewiseConstruct { // tag
+struct PiecewiseConstruct { // Tag struct declaration for piecewise construction of custom::Pair objects
 	explicit PiecewiseConstruct() = default;
 };
 
-// Tag for piecewise construction of custom::Pair objects.
+// Instance of piecewise tag
 constexpr PiecewiseConstruct piecewise_construct = PiecewiseConstruct();
 
 template<class Type1, class Type2>
@@ -95,27 +95,27 @@ public:
 public:
 
 	Pair()
-		:First(), Second() { }
+		:First(), Second() { /*Empty*/ }
 
 	Pair(const Type1& val1, const Type2& val2)
-		:First(val1), Second(val2) { }
+		:First(val1), Second(val2) { /*Empty*/ }
 
 	Pair(Type1&& val1, Type2&& val2)
-		:First(std::move(val1)), Second(std::move(val2)) { }
+		:First(std::move(val1)), Second(std::move(val2)) { /*Empty*/ }
 
 	Pair(const Pair& other)
-		:First(other.First), Second(other.Second) { }
+		:First(other.First), Second(other.Second) { /*Empty*/ }
 
 	Pair(Pair&& other)
-		:First(std::move(other.First)), Second(std::move(other.Second)) { }
+		:First(std::move(other.First)), Second(std::move(other.Second)) { /*Empty*/ }
 
 	template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
 	Pair(Tuple1& Val1, Tuple2& Val2, std::index_sequence<Indexes1...>, std::index_sequence<Indexes2...>)
-		:First(get<Indexes1>(std::move(Val1))...), Second(get<Indexes2>(std::move(Val2))...) { }
+		:First(get<Indexes1>(std::move(Val1))...), Second(get<Indexes2>(std::move(Val2))...) { /*Empty*/ }
 
 	template <class... Types1, class... Types2>
 	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
-		:Pair(Val1, Val2, std::index_sequence_for<Types1...>{}, std::index_sequence_for<Types2...>{}) { }
+		:Pair(Val1, Val2, std::index_sequence_for<Types1...>{}, std::index_sequence_for<Types2...>{}) { /*Empty*/ }
 
 	~Pair() = default;
 }; // END Pair Template

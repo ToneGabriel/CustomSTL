@@ -10,12 +10,15 @@ CUSTOM_BEGIN
 template<class Vector>
 class VectorIterator : public BaseIterator<Vector>	// Vector Iterator
 {
-private:
-	using Base = BaseIterator<Vector>;
+public:
+	using Base		= BaseIterator<Vector>;
+	using Data		= typename Base::Data;
+	using IterType	= typename Base::IterType;
+	using ValueType = typename Base::ValueType;
 
 public:
 
-	explicit VectorIterator(typename Base::IterType* ptr, typename Base::Data* data);
+	explicit VectorIterator(IterType* ptr, Data* data);
 
 	VectorIterator& operator++();							// ++it
 	VectorIterator operator++(int);							// it++
@@ -27,8 +30,8 @@ public:
 	VectorIterator& operator-=(const size_t& diff);
 	VectorIterator operator-(const size_t& diff) const;
 
-	typename Base::IterType* operator->();
-	typename Base::ValueType& operator*();
+	IterType* operator->();
+	ValueType& operator*();
 
 	bool operator==(const VectorIterator& other) const;
 	bool operator!=(const VectorIterator& other) const;
@@ -132,7 +135,7 @@ private:
 // Vector Iterator
 template<class Vector>
 VectorIterator<Vector>::VectorIterator(typename Base::IterType* ptr, typename Base::Data* data)
-	:Base(ptr, data) { }
+	:Base(ptr, data) { /*Empty*/ }
 
 template<class Vector>
 VectorIterator<Vector>& VectorIterator<Vector>::operator++() {
@@ -199,7 +202,7 @@ VectorIterator<Vector> VectorIterator<Vector>::operator-(const size_t& diff) con
 }
 
 template<class Vector>
-typename VectorIterator<Vector>::Base::IterType* VectorIterator<Vector>::operator->() {
+typename VectorIterator<Vector>::IterType* VectorIterator<Vector>::operator->() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
@@ -207,7 +210,7 @@ typename VectorIterator<Vector>::Base::IterType* VectorIterator<Vector>::operato
 }
 
 template<class Vector>
-typename VectorIterator<Vector>::Base::ValueType& VectorIterator<Vector>::operator*() {
+typename VectorIterator<Vector>::ValueType& VectorIterator<Vector>::operator*() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 

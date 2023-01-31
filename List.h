@@ -16,20 +16,23 @@ class SearchTree;
 template<class List>
 class ListIterator : public BaseIterator<List>		// Linked List Iterator
 {
-private:
-	using Base = BaseIterator<List>;
+public:
+	using Base		= BaseIterator<List>;
+	using Data		= typename Base::Data;
+	using IterType	= typename Base::IterType;
+	using ValueType = typename Base::ValueType;
 
 public:
 
-	explicit ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data);
+	explicit ListIterator(IterType* nodePtr, Data* data);
 
 	ListIterator& operator++();			// ++it
 	ListIterator operator++(int);		// it++
 	ListIterator& operator--();			// --it
 	ListIterator operator--(int);		// it--
 
-	typename Base::IterType* operator->();
-	typename Base::ValueType& operator*();
+	IterType* operator->();
+	ValueType& operator*();
 
 	bool operator==(const ListIterator& other) const;
 	bool operator!=(const ListIterator& other) const;
@@ -130,7 +133,7 @@ private:
 	void _insert_node_before(Node* beforeNode, Node* newNode);				// Insert Node ferore another
 	void _remove_node(Node* junkNode);										// Remove Node and relink
 	void _copy(const List& other);											// Generic copy function for list
-	void _move(List&& other);												// Generic move function for vector
+	void _move(List&& other);												// Generic move function for list
 	void _reset_head();
 	void _clear_head();
 
@@ -148,7 +151,7 @@ private:
 // Linked List Iterator
 template<class List>
 ListIterator<List>::ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data)
-	:Base(nodePtr, data) { }
+	:Base(nodePtr, data) { /*Empty*/ }
 
 template<class List>
 ListIterator<List>& ListIterator<List>::operator++() {
@@ -183,7 +186,7 @@ ListIterator<List> ListIterator<List>::operator--(int) {
 }
 
 template<class List>
-typename ListIterator<List>::Base::IterType* ListIterator<List>::operator->() {
+typename ListIterator<List>::IterType* ListIterator<List>::operator->() {
 	if (this->_Ptr == this->_IterationData->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
@@ -191,7 +194,7 @@ typename ListIterator<List>::Base::IterType* ListIterator<List>::operator->() {
 }
 
 template<class List>
-typename ListIterator<List>::Base::ValueType& ListIterator<List>::operator*() {
+typename ListIterator<List>::ValueType& ListIterator<List>::operator*() {
 	if (this->_Ptr == this->_IterationData->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 

@@ -16,17 +16,17 @@ public:
 public:
 
 	ForwardNode()
-		:Value() { }
+		:Value() { /*Empty*/ }
 
 	ForwardNode(const ValueType& copyValue)
-		:Value(copyValue) { }
+		:Value(copyValue) { /*Empty*/ }
 
 	ForwardNode(ValueType&& moveValue)
-		:Value(std::move(moveValue)) { }
+		:Value(std::move(moveValue)) { /*Empty*/ }
 
 	template<class... Args>
 	ForwardNode(Args&&... args)
-		:Value(std::forward<Args>(args)...) { }
+		:Value(std::forward<Args>(args)...) { /*Empty*/ }
 
 	ForwardNode(const ForwardNode&)				= delete;
 	ForwardNode& operator=(const ForwardNode&)	= delete;
@@ -53,17 +53,17 @@ public:
 public:
 
 	DoubleNode() 
-		:Value() { }
+		:Value() { /*Empty*/ }
 
 	DoubleNode(const ValueType& copyValue)
-		:Value(copyValue) { }
+		:Value(copyValue) { /*Empty*/ }
 
 	DoubleNode(ValueType&& moveValue)
-		:Value(std::move(moveValue)) { }
+		:Value(std::move(moveValue)) { /*Empty*/ }
 
 	template<class... Args>
 	DoubleNode(Args&&... args)
-		: Value(std::forward<Args>(args)...) { }
+		: Value(std::forward<Args>(args)...) { /*Empty*/ }
 
 	DoubleNode(const DoubleNode&)				= delete;
 	DoubleNode& operator=(const DoubleNode&)	= delete;
@@ -99,17 +99,17 @@ public:
 public:
 
 	TreeNode()
-		:Value(), Color(Black) { }
+		:Value(), Color(Black) { /*Empty*/ }
 
 	TreeNode(const ValueType& copyValue)
-		:Value(copyValue), Color(Black) { }
+		:Value(copyValue), Color(Black) { /*Empty*/ }
 
 	TreeNode(ValueType&& moveValue)
-		:Value(std::move(moveValue)), Color(Black) { }
+		:Value(std::move(moveValue)), Color(Black) { /*Empty*/ }
 
 	template<class... Args>
 	TreeNode(Args&&... args)
-		: Value(std::forward<Args>(args)...), Color(Black) { }
+		: Value(std::forward<Args>(args)...), Color(Black) { /*Empty*/ }
 
 	TreeNode(const TreeNode&)				= delete;
 	TreeNode& operator=(const TreeNode&)	= delete;

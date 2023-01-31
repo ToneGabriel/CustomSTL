@@ -73,19 +73,19 @@ const typename UsetTraits<Key, Hasher>::MappedType& UsetTraits<Key, Hasher>::ext
 // UnorderedSet Template
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::UnorderedSet()
-	:Base() { }
+	:Base() { /*Empty*/ }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::UnorderedSet(const size_t& buckets)
-	:Base(buckets) { }
+	:Base(buckets) { /*Empty*/ }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::UnorderedSet(const UnorderedSet& other)
-	:Base(other) { }
+	:Base(other) { /*Empty*/ }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::UnorderedSet(UnorderedSet&& other) noexcept
-	:Base(std::move(other)) { }
+	:Base(std::move(other)) { /*Empty*/ }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::~UnorderedSet() { /*Empty*/ }
