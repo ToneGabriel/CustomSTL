@@ -23,10 +23,10 @@ public:
 
 	explicit ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data);
 
-	ListIterator& operator++();
-	ListIterator& operator++(int);
-	ListIterator& operator--();
-	ListIterator& operator--(int);
+	ListIterator& operator++();			// ++it
+	ListIterator operator++(int);		// it++
+	ListIterator& operator--();			// --it
+	ListIterator operator--(int);		// it--
 
 	typename Base::IterType* operator->();
 	typename Base::ValueType& operator*();
@@ -160,7 +160,7 @@ ListIterator<List>& ListIterator<List>::operator++() {
 }
 
 template<class List>
-ListIterator<List>& ListIterator<List>::operator++(int) {
+ListIterator<List> ListIterator<List>::operator++(int) {	// TODO: "&" missing or not???
 	ListIterator temp = *this;
 	++(*this);
 	return temp;
@@ -176,7 +176,7 @@ ListIterator<List>& ListIterator<List>::operator--() {
 }
 
 template<class List>
-ListIterator<List>& ListIterator<List>::operator--(int) {
+ListIterator<List> ListIterator<List>::operator--(int) {
 	ListIterator temp = *this;
 	--(*this);
 	return temp;

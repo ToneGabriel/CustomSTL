@@ -238,8 +238,8 @@ void HashTable<Traits>::reserve(const size_t& size) {
 
 template<class Traits>
 void HashTable<Traits>::clear() {
-	_elems.clear();													// Delete all Node* with values
-	_buckets.clear();												// Remove lists with Node* references
+	_elems.clear();						// Delete all Node* with values
+	_buckets.clear();					// Remove lists with Node* references
 }
 
 template<class Traits>
@@ -312,7 +312,7 @@ const typename HashTable<Traits>::Iterator HashTable<Traits>::end() const {
 template<class Traits>
 template<class _KeyType, class... Args>
 typename HashTable<Traits>::Iterator HashTable<Traits>::_try_emplace(_KeyType&& key, Args&&... args) {
-	Iterator it = find(key);									// Check key and decide to construct or not
+	Iterator it = find(key);		// Check key and decide to construct or not
 
 	if (it != end())
 		return it;

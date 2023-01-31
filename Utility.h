@@ -4,12 +4,13 @@
 
 CUSTOM_BEGIN
 
-// Tuple Template =======================================================
+// Tuple Definitions ==============================================================================
+
 template <class... Types>
-class Tuple;                                                // Tuple prototype
+class Tuple;				// Tuple prototype
 
 template<class This, class... Rest>
-class Tuple<This, Rest...> : public Tuple<Rest...> {		// Recursive Tuple implementation
+class Tuple<This, Rest...> : public Tuple<Rest...> {	// Recursive Tuple implementation
 public:
 	This First;
 
@@ -26,7 +27,7 @@ public:
 };
 
 template<>
-class Tuple<> {												// Default implementation
+class Tuple<> {				// Default Tuple implementation
 public:
 
 	Tuple() 			= default;
@@ -42,7 +43,7 @@ template<size_t Index, class This, class... Rest>
 struct TupleElement<Index, Tuple<This, Rest...>> 
 : public TupleElement<Index - 1, Tuple<Rest...>> {};        // Recursive TupleElement implementation
 
-template <class This, class... Rest>                        // Default implementation
+template <class This, class... Rest>                        // Default TupleElement implementation
 struct TupleElement <0, Tuple<This, Rest...>>
 {
 	using Type = This;
@@ -68,12 +69,16 @@ template <class... Types>
 Tuple<Types&&...> forward_as_tuple(Types&&... args) {	    // Forward arguments in a tuple
 	return Tuple<Types&&...>(std::forward<Types>(args)...);
 }
-// Tuple Template =======================================================
-// END
+
+// END Tuple Definitions ==============================================================================
 
 
-// Pair Template =======================================================
-struct PiecewiseConstruct { // tag type
+
+
+
+// Pair Definitions ===================================================================================
+
+struct PiecewiseConstruct { // tag
 	explicit PiecewiseConstruct() = default;
 };
 
@@ -81,7 +86,7 @@ struct PiecewiseConstruct { // tag type
 constexpr PiecewiseConstruct piecewise_construct = PiecewiseConstruct();
 
 template<class Type1, class Type2>
-class Pair                                                  // Pair class
+class Pair								// Pair Template
 {
 public:
 	Type1 First;
@@ -113,8 +118,8 @@ public:
 		:Pair(Val1, Val2, std::index_sequence_for<Types1...>{}, std::index_sequence_for<Types2...>{}) { }
 
 	~Pair() = default;
-};
-// Pair Template =======================================================
-// END
+}; // END Pair Template
+
+// END Pair Definitions ===================================================================================
 
 CUSTOM_END

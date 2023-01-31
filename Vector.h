@@ -17,13 +17,13 @@ public:
 
 	explicit VectorIterator(typename Base::IterType* ptr, typename Base::Data* data);
 
-	VectorIterator& operator++();
-	VectorIterator& operator++(int);
+	VectorIterator& operator++();							// ++it
+	VectorIterator operator++(int);							// it++
 	VectorIterator& operator+=(const size_t& diff);
 	VectorIterator operator+(const size_t& diff) const;
 
-	VectorIterator& operator--();
-	VectorIterator& operator--(int);
+	VectorIterator& operator--();							// --it
+	VectorIterator operator--(int);							// it--
 	VectorIterator& operator-=(const size_t& diff);
 	VectorIterator operator-(const size_t& diff) const;
 
@@ -139,12 +139,12 @@ VectorIterator<Vector>& VectorIterator<Vector>::operator++() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	this->_Ptr++;
+	++this->_Ptr;
 	return *this;
 }
 
 template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator++(int) {
+VectorIterator<Vector> VectorIterator<Vector>::operator++(int) {
 	VectorIterator temp = *this;
 	++(*this);
 	return temp;
@@ -171,12 +171,12 @@ VectorIterator<Vector>& VectorIterator<Vector>::operator--() {
 	if (this->_Ptr <= this->_IterationData->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	this->_Ptr--;
+	--this->_Ptr;
 	return *this;
 }
 
 template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator--(int) {
+VectorIterator<Vector> VectorIterator<Vector>::operator--(int) {
 	VectorIterator temp = *this;
 	--(*this);
 	return temp;

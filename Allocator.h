@@ -3,8 +3,10 @@
 
 CUSTOM_BEGIN
 
+// Headings =================================================================================
+
 template<class Type>
-class Allocator
+class Allocator			// Allocator Template
 {
 public:
 
@@ -24,17 +26,19 @@ public:
 	void construct_range(Type* address, const size_t& length, const Type& value);		// Copy value
 	void destroy(Type* address);
 	void destroy_range(Type* address, const size_t& length);
-};
+}; // END Allocator Template
 
 
+// Definitions =================================================================================
 
+// Allocator Template
 template<class Type>
-Type* Allocator<Type>::alloc(const size_t& capacity) {									// Allocate memory
+Type* Allocator<Type>::alloc(const size_t& capacity) {
 	return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
 }
 
 template<class Type>
-void Allocator<Type>::dealloc(Type* address, const size_t& capacity) {					// Deallocate memory
+void Allocator<Type>::dealloc(Type* address, const size_t& capacity) {
 	if (address == nullptr || capacity == 0)
 		throw std::out_of_range("Invalid block deallocation");
 
@@ -48,13 +52,13 @@ void Allocator<Type>::construct(Type* address, Args&&... args) {
 }
 
 template<class Type>
-void Allocator<Type>::construct_range(Type* address, const size_t& length) {							// Default value
+void Allocator<Type>::construct_range(Type* address, const size_t& length) {
 	for (size_t i = 0; i < length; i++)
 		construct(address + i);
 }
 
 template<class Type>
-void Allocator<Type>::construct_range(Type* address, const size_t& length, const Type& value) {		// Copy value
+void Allocator<Type>::construct_range(Type* address, const size_t& length, const Type& value) {
 	for (size_t i = 0; i < length; i++)
 		construct(address + i, value);
 }
@@ -69,5 +73,6 @@ void Allocator<Type>::destroy_range(Type* address, const size_t& length) {
 	for (size_t i = 0; i < length; i++)
 		destroy(address + i);
 }
+// END Allocator Template
 
 CUSTOM_END

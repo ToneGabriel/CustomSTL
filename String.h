@@ -20,10 +20,10 @@ public:
 
 	explicit StringIterator(typename Base::IterType* ptr, typename Base::Data* data);
 
-	StringIterator& operator++();
-	StringIterator& operator++(int);
-	StringIterator& operator--();
-	StringIterator& operator--(int);
+	StringIterator& operator++();		// ++it
+	StringIterator& operator++(int);	// it++
+	StringIterator& operator--();		// --it
+	StringIterator& operator--(int);	// it--
 
 	typename Base::IterType* operator->();
 	typename Base::ValueType& operator*();
@@ -189,7 +189,7 @@ StringIterator<String>& StringIterator<String>::operator++() {
 	if (this->_Ptr >= this->_IterationData->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	this->_Ptr++;
+	++this->_Ptr;
 	return *this;
 }
 
@@ -205,7 +205,7 @@ StringIterator<String>& StringIterator<String>::operator--() {
 	if (this->_Ptr <= this->_IterationData->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	this->_Ptr--;
+	--this->_Ptr;
 	return *this;
 }
 
