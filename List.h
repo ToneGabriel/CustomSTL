@@ -5,6 +5,8 @@
 
 CUSTOM_BEGIN
 
+// Headings =================================================================================
+
 template <class Traits>
 class HashTable;
 
@@ -19,58 +21,18 @@ private:
 
 public:
 
-	explicit ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data)
-		:Base(nodePtr, data) { }
+	explicit ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data);
 
-	ListIterator& operator++() {
-		if (this->_Ptr == this->_IterationData->_End)
-			throw std::out_of_range("Cannot increment end iterator...");
+	ListIterator& operator++();
+	ListIterator& operator++(int);
+	ListIterator& operator--();
+	ListIterator& operator--(int);
 
-		this->_Ptr = this->_Ptr->Next;
-		return *this;
-	}
+	typename Base::IterType* operator->();
+	typename Base::ValueType& operator*();
 
-	ListIterator& operator++(int) {
-		ListIterator temp = *this;
-		++(*this);
-		return temp;
-	}
-
-	ListIterator& operator--() {
-		if (this->_Ptr == this->_IterationData->_Begin)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
-		this->_Ptr = this->_Ptr->Previous;
-		return *this;
-	}
-
-	ListIterator& operator--(int) {
-		ListIterator temp = *this;
-		--(*this);
-		return temp;
-	}
-
-	typename Base::IterType* operator->() {
-		if (this->_Ptr == this->_IterationData->_End)
-			throw std::out_of_range("Cannot access end iterator...");
-
-		return this->_Ptr;
-	}
-
-	typename Base::ValueType& operator*() {
-		if (this->_Ptr == this->_IterationData->_End)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
-		return this->_Ptr->Value;
-	}
-
-	bool operator==(const ListIterator& other) const {
-		return this->_Ptr == other._Ptr;
-	}
-
-	bool operator!=(const ListIterator& other) const {
-		return !(*this == other);
-	}
+	bool operator==(const ListIterator& other) const;
+	bool operator!=(const ListIterator& other) const;
 }; // END Linked List Iterator
 
 
@@ -102,7 +64,7 @@ public:
 	// Constructors
 
 	List();															// Default Constructor
-	List(const size_t& newSize, const ValueType& value);			// Reference type Constructor
+	List(const size_t& newSize, const ValueType& value);			// Add multiple copies Constructor
 	List(const List& other);										// Copy Constructor
 	List(List&& other) noexcept;									// Move Constructor
 	~List();														// Destructor
@@ -180,6 +142,75 @@ private:
 }; // END Linked List
 
 
+
+// Definitions =================================================================================
+
+// Linked List Iterator
+template<class List>
+ListIterator<List>::ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data)
+	:Base(nodePtr, data) { }
+
+template<class List>
+ListIterator<List>& ListIterator<List>::operator++() {
+	if (this->_Ptr == this->_IterationData->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
+
+	this->_Ptr = this->_Ptr->Next;
+	return *this;
+}
+
+template<class List>
+ListIterator<List>& ListIterator<List>::operator++(int) {
+	ListIterator temp = *this;
+	++(*this);
+	return temp;
+}
+
+template<class List>
+ListIterator<List>& ListIterator<List>::operator--() {
+	if (this->_Ptr == this->_IterationData->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	this->_Ptr = this->_Ptr->Previous;
+	return *this;
+}
+
+template<class List>
+ListIterator<List>& ListIterator<List>::operator--(int) {
+	ListIterator temp = *this;
+	--(*this);
+	return temp;
+}
+
+template<class List>
+typename ListIterator<List>::Base::IterType* ListIterator<List>::operator->() {
+	if (this->_Ptr == this->_IterationData->_End)
+		throw std::out_of_range("Cannot access end iterator...");
+
+	return this->_Ptr;
+}
+
+template<class List>
+typename ListIterator<List>::Base::ValueType& ListIterator<List>::operator*() {
+	if (this->_Ptr == this->_IterationData->_End)
+		throw std::out_of_range("Cannot dereference end iterator...");
+
+	return this->_Ptr->Value;
+}
+
+template<class List>
+bool ListIterator<List>::operator==(const ListIterator& other) const {
+	return this->_Ptr == other._Ptr;
+}
+
+template<class List>
+bool ListIterator<List>::operator!=(const ListIterator& other) const {
+	return !(*this == other);
+}
+// END Linked List Iterator
+
+
+// Linked List
 template<class Type>
 List<Type>::List() {
 	_reset_head();
@@ -503,5 +534,6 @@ void List<Type>::_clear_head() {
 	delete _head;
 	_head = nullptr;
 }
+// END Linked List
 
 CUSTOM_END

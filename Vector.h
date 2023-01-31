@@ -5,6 +5,8 @@
 
 CUSTOM_BEGIN
 
+// Headings =================================================================================
+
 template<class Vector>
 class VectorIterator : public BaseIterator<Vector>	// Vector Iterator
 {
@@ -13,86 +15,23 @@ private:
 
 public:
 
-	explicit VectorIterator(typename Base::IterType* ptr, typename Base::Data* data)
-		:Base(ptr, data) { }
+	explicit VectorIterator(typename Base::IterType* ptr, typename Base::Data* data);
 
-	VectorIterator& operator++() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot increment end iterator...");
+	VectorIterator& operator++();
+	VectorIterator& operator++(int);
+	VectorIterator& operator+=(const size_t& diff);
+	VectorIterator operator+(const size_t& diff) const;
 
-		this->_Ptr++;
-		return *this;
-	}
+	VectorIterator& operator--();
+	VectorIterator& operator--(int);
+	VectorIterator& operator-=(const size_t& diff);
+	VectorIterator operator-(const size_t& diff) const;
 
-	VectorIterator& operator++(int) {
-		VectorIterator temp = *this;
-		++(*this);
-		return temp;
-	}
+	typename Base::IterType* operator->();
+	typename Base::ValueType& operator*();
 
-	VectorIterator& operator+=(const size_t& diff) {
-		if (this->_Ptr + diff >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot increment end iterator...");
-
-		this->_Ptr += diff;
-		return *this;
-	}
-
-	VectorIterator operator+(const size_t& diff) const {
-		VectorIterator temp = *this;
-		temp += diff;
-		return temp;
-	}
-
-	VectorIterator& operator--() {
-		if (this->_Ptr <= this->_IterationData->_Begin)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
-		this->_Ptr--;
-		return *this;
-	}
-
-	VectorIterator& operator--(int) {
-		VectorIterator temp = *this;
-		--(*this);
-		return temp;
-	}
-
-	VectorIterator& operator-=(const size_t& diff) {
-		if (this->_Ptr - diff <= this->_IterationData->_Begin)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
-		this->_Ptr -= diff;
-		return *this;
-	}
-
-	VectorIterator operator-(const size_t& diff) const {
-		VectorIterator temp = *this;
-		temp -= diff;
-		return temp;
-	}
-
-	typename Base::IterType* operator->() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot access end iterator...");
-
-		return this->_Ptr;
-	}
-
-	typename Base::ValueType& operator*() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
-		return *this->_Ptr;
-	}
-
-	bool operator==(const VectorIterator& other) const {
-		return this->_Ptr == other._Ptr;
-	}
-
-	bool operator!=(const VectorIterator& other) const {
-		return !(*this == other);
-	}
+	bool operator==(const VectorIterator& other) const;
+	bool operator!=(const VectorIterator& other) const;
 }; // END Vector Iterator
 
 
@@ -118,7 +57,7 @@ public:
 	// Constructors
 
 	Vector() = default;												// Default Constructor
-	Vector(const size_t& newCapacity, const ValueType& copyValue);	// Reference type Constructor
+	Vector(const size_t& newCapacity, const ValueType& copyValue);	// Add multiple copies Constructor
 	Vector(const Vector& other);									// Copy Constructor
 	Vector(Vector&& other) noexcept;								// Move Constructor
 	~Vector();														// Destructor
@@ -177,17 +116,117 @@ public:
 private:
 	// Others
 
-	void _copy(const Vector& other);												// Generic copy function for vector
+	void _copy(const Vector& other);											// Generic copy function for vector
 	void _move(Vector&& other);													// Generic move function for vector
 	void _extend_if_full();														// Reserve 50% more capacity when full
 	void _clean_up_array();
 	const bool _is_end(const Iterator& iterator) const;
-	const size_t _get_index(const Iterator& iterator) const;						// Get the position for the element in array from iterator
+	const size_t _get_index(const Iterator& iterator) const;					// Get the position for the element in array from iterator
 	Data* _update_iteration_data() const;
 }; // END Vector Template
 
 
 
+// Definitions =================================================================================
+
+// Vector Iterator
+template<class Vector>
+VectorIterator<Vector>::VectorIterator(typename Base::IterType* ptr, typename Base::Data* data)
+	:Base(ptr, data) { }
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator++() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
+
+	this->_Ptr++;
+	return *this;
+}
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator++(int) {
+	VectorIterator temp = *this;
+	++(*this);
+	return temp;
+}
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator+=(const size_t& diff) {
+	if (this->_Ptr + diff >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
+
+	this->_Ptr += diff;
+	return *this;
+}
+
+template<class Vector>
+VectorIterator<Vector> VectorIterator<Vector>::operator+(const size_t& diff) const {
+	VectorIterator temp = *this;
+	temp += diff;
+	return temp;
+}
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator--() {
+	if (this->_Ptr <= this->_IterationData->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	this->_Ptr--;
+	return *this;
+}
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator--(int) {
+	VectorIterator temp = *this;
+	--(*this);
+	return temp;
+}
+
+template<class Vector>
+VectorIterator<Vector>& VectorIterator<Vector>::operator-=(const size_t& diff) {
+	if (this->_Ptr - diff <= this->_IterationData->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	this->_Ptr -= diff;
+	return *this;
+}
+
+template<class Vector>
+VectorIterator<Vector> VectorIterator<Vector>::operator-(const size_t& diff) const {
+	VectorIterator temp = *this;
+	temp -= diff;
+	return temp;
+}
+
+template<class Vector>
+typename VectorIterator<Vector>::Base::IterType* VectorIterator<Vector>::operator->() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot access end iterator...");
+
+	return this->_Ptr;
+}
+
+template<class Vector>
+typename VectorIterator<Vector>::Base::ValueType& VectorIterator<Vector>::operator*() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot dereference end iterator...");
+
+	return *this->_Ptr;
+}
+
+template<class Vector>
+bool VectorIterator<Vector>::operator==(const VectorIterator& other) const {
+	return this->_Ptr == other._Ptr;
+}
+
+template<class Vector>
+bool VectorIterator<Vector>::operator!=(const VectorIterator& other) const {
+	return !(*this == other);
+}
+// END Vector Iterator
+
+
+// Vector Template
 template<class Type>
 Vector<Type>::Vector(const size_t& newCapacity, const ValueType& copyValue) {
 	realloc(newCapacity, copyValue);
@@ -315,17 +354,17 @@ typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, 
 }
 
 template<class Type>
-Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, const ValueType& copyValue) {
+typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, const ValueType& copyValue) {
 	return emplace(iterator, copyValue);
 }
 
 template<class Type>
-Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
+typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
 	return emplace(iterator, std::move(moveValue));
 }
 
 template<class Type>
-Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
+typename Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
 	if (_is_end(iterator))
 		throw std::out_of_range("Array pop iterator outside range...");
 
@@ -500,5 +539,6 @@ void Vector<Type>::_extend_if_full() {
 	if (_size >= _capacity)
 		reserve(_capacity + _capacity / 2 + 1);
 }
+// END Vector Template
 
 CUSTOM_END

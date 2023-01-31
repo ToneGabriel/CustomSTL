@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstring>	// TODO: check if needed
 
-#define NULLCHR '\0'
 
 CUSTOM_BEGIN
+
+// Headings =================================================================================
 
 template<class String>
 class StringIterator : public BaseIterator<String>	// String Iterator
@@ -17,58 +18,18 @@ private:
 
 public:
 
-	explicit StringIterator(typename Base::IterType* ptr, typename Base::Data* data)
-		:Base(ptr, data) {}
+	explicit StringIterator(typename Base::IterType* ptr, typename Base::Data* data);
 
-	StringIterator& operator++() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot increment end iterator...");
+	StringIterator& operator++();
+	StringIterator& operator++(int);
+	StringIterator& operator--();
+	StringIterator& operator--(int);
 
-		this->_Ptr++;
-		return *this;
-	}
+	typename Base::IterType* operator->();
+	typename Base::ValueType& operator*();
 
-	StringIterator& operator++(int) {
-		StringIterator temp = *this;
-		++(*this);
-		return temp;
-	}
-
-	StringIterator& operator--() {
-		if (this->_Ptr <= this->_IterationData->_Begin)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
-		this->_Ptr--;
-		return *this;
-	}
-
-	StringIterator& operator--(int) {
-		StringIterator temp = *this;
-		--(*this);
-		return temp;
-	}
-
-	typename Base::IterType* operator->() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot access end iterator...");
-
-		return this->_Ptr;
-	}
-
-	typename Base::ValueType& operator*() {
-		if (this->_Ptr >= this->_IterationData->_End)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
-		return *this->_Ptr;
-	}
-
-	bool operator==(const StringIterator& other) const {
-		return this->_Ptr == other._Ptr;
-	}
-
-	bool operator!=(const StringIterator& other) const {
-		return !(*this == other);
-	}
+	bool operator==(const StringIterator& other) const;
+	bool operator!=(const StringIterator& other) const;
 }; // END String Iterator
 
 
@@ -83,6 +44,7 @@ public:
 
 	static constexpr size_t npos				= static_cast<size_t>(-1);
 	static constexpr size_t istream_capacity	= 255;
+	static constexpr char NULLCHR 				= '\0';
 
 private:
 	size_t _size		= 0;
@@ -198,22 +160,91 @@ private:
 	char* _alloc_string(const size_t& capacity);						// Allocate memory +1 null term
 	void _dealloc_string(char* address, const size_t& capacity);		// Deallocate memory +1 null term
 	void _alloc_empty(const size_t& capacity);
+
 	void _initialize_from_cstring(const char* cstring);
 	void _insert_from_cstring(const size_t& pos, const char* cstring, const size_t& subpos, const size_t& sublen);
 	void _remove_from_cstring(const size_t& pos, const size_t& len);	// TODO: check
 	int _compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const;
 	size_t _search_for_cstring(const char* cstring, const size_t& pos, const size_t& len) const;
+	
 	void _extend_if_full();												// Reserve 50% more capacity when full
 	void _copy(const String& other);									// Generic copy function for string
 	void _move(String&& other);											// Generic move function for vector
 	const size_t _get_index(const Iterator& iterator) const;			// Get the position for the element in array from iterator
 	const bool _is_end(const Iterator& iterator) const;
 	Data* _update_iteration_data() const;
-};
-// String ============================================
-// END
+}; // END String
 
 
+
+// Definitions =================================================================================
+
+// String Iterator
+template<class String>
+StringIterator<String>::StringIterator(typename Base::IterType* ptr, typename Base::Data* data)
+	:Base(ptr, data) {}
+
+template<class String>
+StringIterator<String>& StringIterator<String>::operator++() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
+
+	this->_Ptr++;
+	return *this;
+}
+
+template<class String>
+StringIterator<String>& StringIterator<String>::operator++(int) {
+	StringIterator temp = *this;
+	++(*this);
+	return temp;
+}
+
+template<class String>
+StringIterator<String>& StringIterator<String>::operator--() {
+	if (this->_Ptr <= this->_IterationData->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	this->_Ptr--;
+	return *this;
+}
+
+template<class String>
+StringIterator<String>& StringIterator<String>::operator--(int) {
+	StringIterator temp = *this;
+	--(*this);
+	return temp;
+}
+
+template<class String>
+typename StringIterator<String>::Base::IterType* StringIterator<String>::operator->() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot access end iterator...");
+
+	return this->_Ptr;
+}
+
+template<class String>
+typename StringIterator<String>::Base::ValueType& StringIterator<String>::operator*() {
+	if (this->_Ptr >= this->_IterationData->_End)
+		throw std::out_of_range("Cannot dereference end iterator...");
+
+	return *this->_Ptr;
+}
+
+template<class String>
+bool StringIterator<String>::operator==(const StringIterator& other) const {
+	return this->_Ptr == other._Ptr;
+}
+
+template<class String>
+bool StringIterator<String>::operator!=(const StringIterator& other) const {
+	return !(*this == other);
+}
+// END String Iterator
+
+
+// String
 String::String() {
 	_initialize_from_cstring(nullptr);
 }
@@ -693,11 +724,13 @@ typename String::Data* String::_update_iteration_data() const {
 
 	return &_data;
 }
+// END String
 
 CUSTOM_END
 
 
 STD_BEGIN
+
 // String Helpers
 template<>
 struct hash<custom::String> {
@@ -713,4 +746,5 @@ struct less<custom::String> {
 	}
 };
 // END String Helpers
+
 STD_END
