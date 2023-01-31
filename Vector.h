@@ -134,7 +134,7 @@ private:
 
 // Vector Iterator
 template<class Vector>
-VectorIterator<Vector>::VectorIterator(typename Base::IterType* ptr, typename Base::Data* data)
+VectorIterator<Vector>::VectorIterator(IterType* ptr, Data* data)
 	:Base(ptr, data) { /*Empty*/ }
 
 template<class Vector>

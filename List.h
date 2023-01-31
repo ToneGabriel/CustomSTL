@@ -150,7 +150,7 @@ private:
 
 // Linked List Iterator
 template<class List>
-ListIterator<List>::ListIterator(typename Base::IterType* nodePtr, typename Base::Data* data)
+ListIterator<List>::ListIterator(IterType* nodePtr, Data* data)
 	:Base(nodePtr, data) { /*Empty*/ }
 
 template<class List>

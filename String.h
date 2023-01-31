@@ -184,7 +184,7 @@ private:
 
 // String Iterator
 template<class String>
-StringIterator<String>::StringIterator(typename Base::IterType* ptr, typename Base::Data* data)
+StringIterator<String>::StringIterator(IterType* ptr, Data* data)
 	:Base(ptr, data) { /*Empty*/ }
 
 template<class String>
