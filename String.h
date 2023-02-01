@@ -612,11 +612,11 @@ const typename String::Iterator String::end() const {
 	return Iterator(_string + _size, _update_iteration_data());
 }
 
-char* String::_alloc_string(const size_t& capacity) {					// Allocate memory +1 null term
+char* String::_alloc_string(const size_t& capacity) {
 	return _alloc.alloc(capacity + 1);
 }
 
-void String::_dealloc_string(char* address, const size_t& capacity) {	// Deallocate memory +1 null term
+void String::_dealloc_string(char* address, const size_t& capacity) {
 	_alloc.dealloc(address, capacity + 1);
 }
 
@@ -686,7 +686,7 @@ int String::_compare_with_cstring(const size_t& pos, const size_t& len, const ch
 	return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));
 }
 
-const size_t String::_get_index(const Iterator& iterator) const {		// Get the position for the element in array from iterator
+const size_t String::_get_index(const Iterator& iterator) const {
 	return iterator._Ptr - iterator._IterationData->_Begin;
 }
 
@@ -694,12 +694,12 @@ const bool String::_is_end(const Iterator& iterator) const {
 	return iterator._Ptr == iterator._IterationData->_End;
 }
 
-void String::_extend_if_full() {											// Reserve 50% more capacity when full
+void String::_extend_if_full() {
 	if (_size >= _capacity)
 		reserve(_capacity + _capacity / 2 + 1);
 }
 
-void String::_copy(const String& other) {								// Generic copy function for string
+void String::_copy(const String& other) {
 	if (_string != nullptr)
 		_dealloc_string(_string, _capacity);
 
@@ -710,7 +710,7 @@ void String::_copy(const String& other) {								// Generic copy function for st
 	_string[_size] = NULLCHR;
 }
 
-void String::_move(String&& other) {										// Generic move function for vector
+void String::_move(String&& other) {
 	if (_string != nullptr)
 		_dealloc_string(_string, _capacity);
 
