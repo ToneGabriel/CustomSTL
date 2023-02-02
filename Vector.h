@@ -8,17 +8,31 @@ CUSTOM_BEGIN
 // Headings =================================================================================
 
 template<class Vector>
-class VectorIterator : public BaseIterator<Vector>	// Vector Iterator
+class VectorIterator			// Vector Iterator
 {
+private:
+	template<class Type>
+	struct VectorIterationData {
+		Type* _Begin	= nullptr;
+		Type* _End		= nullptr;
+
+		VectorIterationData() = default;
+		~VectorIterationData();
+	};
+
 public:
-	using Base		= BaseIterator<Vector>;
-	using Data		= typename Base::Data;
-	using IterType	= typename Base::IterType;
-	using ValueType = typename Base::ValueType;
+	using ValueType = typename Vector::ValueType;
+	using IterType	= typename Vector::IterType;
+	using Data		= VectorIterationData<IterType>;
+
+	IterType* _Ptr	= nullptr;
+	Data* _Data		= nullptr;
 
 public:
 
 	explicit VectorIterator(IterType* ptr, Data* data);
+	~VectorIterator();
+
 
 	VectorIterator& operator++();							// ++it
 	VectorIterator operator++(int);							// it++
@@ -35,6 +49,12 @@ public:
 
 	bool operator==(const VectorIterator& other) const;
 	bool operator!=(const VectorIterator& other) const;
+
+public:
+
+	const size_t get_index() const;							// Get the position for the element in array from iterator
+	const bool is_begin() const;
+	const bool is_end() const;
 }; // END Vector Iterator
 
 
@@ -122,10 +142,8 @@ private:
 	void _copy(const Vector& other);											// Generic copy function for vector
 	void _move(Vector&& other);													// Generic move function for vector
 	void _extend_if_full();														// Reserve 50% more capacity when full
-	void _clean_up_array();
-	const bool _is_end(const Iterator& iterator) const;
-	const size_t _get_index(const Iterator& iterator) const;					// Get the position for the element in array from iterator
-	Data* _update_iteration_data() const;
+	void _clean_up_array();														// Clear and Deallocate array
+	Data* _update_iteration_data() const;										// Update the data used in Iterator
 }; // END Vector Template
 
 
@@ -134,15 +152,28 @@ private:
 
 // Vector Iterator
 template<class Vector>
+template<class Type>
+VectorIterator<Vector>::VectorIterationData<Type>::~VectorIterationData() {
+	_Begin	= nullptr;
+	_End	= nullptr;
+}
+
+template<class Vector>
 VectorIterator<Vector>::VectorIterator(IterType* ptr, Data* data)
-	:Base(ptr, data) { /*Empty*/ }
+	:_Ptr(ptr), _Data(data) { /*Empty*/ }
+
+template<class Vector>
+VectorIterator<Vector>::~VectorIterator() {
+	_Ptr	= nullptr;
+	_Data	= nullptr;
+}
 
 template<class Vector>
 VectorIterator<Vector>& VectorIterator<Vector>::operator++() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	++this->_Ptr;
+	++_Ptr;
 	return *this;
 }
 
@@ -155,10 +186,10 @@ VectorIterator<Vector> VectorIterator<Vector>::operator++(int) {
 
 template<class Vector>
 VectorIterator<Vector>& VectorIterator<Vector>::operator+=(const size_t& diff) {
-	if (this->_Ptr + diff >= this->_IterationData->_End)
+	if (_Ptr + diff >= _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	this->_Ptr += diff;
+	_Ptr += diff;
 	return *this;
 }
 
@@ -171,10 +202,10 @@ VectorIterator<Vector> VectorIterator<Vector>::operator+(const size_t& diff) con
 
 template<class Vector>
 VectorIterator<Vector>& VectorIterator<Vector>::operator--() {
-	if (this->_Ptr <= this->_IterationData->_Begin)
+	if (_Ptr <= _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	--this->_Ptr;
+	--_Ptr;
 	return *this;
 }
 
@@ -187,10 +218,10 @@ VectorIterator<Vector> VectorIterator<Vector>::operator--(int) {
 
 template<class Vector>
 VectorIterator<Vector>& VectorIterator<Vector>::operator-=(const size_t& diff) {
-	if (this->_Ptr - diff <= this->_IterationData->_Begin)
+	if (_Ptr - diff <= _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	this->_Ptr -= diff;
+	_Ptr -= diff;
 	return *this;
 }
 
@@ -203,28 +234,43 @@ VectorIterator<Vector> VectorIterator<Vector>::operator-(const size_t& diff) con
 
 template<class Vector>
 typename VectorIterator<Vector>::IterType* VectorIterator<Vector>::operator->() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
-	return this->_Ptr;
+	return _Ptr;
 }
 
 template<class Vector>
 typename VectorIterator<Vector>::ValueType& VectorIterator<Vector>::operator*() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 
-	return *this->_Ptr;
+	return *_Ptr;
 }
 
 template<class Vector>
 bool VectorIterator<Vector>::operator==(const VectorIterator& other) const {
-	return this->_Ptr == other._Ptr;
+	return _Ptr == other._Ptr;
 }
 
 template<class Vector>
 bool VectorIterator<Vector>::operator!=(const VectorIterator& other) const {
 	return !(*this == other);
+}
+
+template<class Vector>
+const size_t VectorIterator<Vector>::get_index() const {
+	return _Ptr - _Data->_Begin;
+}
+
+template<class Vector>
+const bool VectorIterator<Vector>::is_begin() const {
+	return _Ptr == _Data->_Begin;
+}
+
+template<class Vector>
+const bool VectorIterator<Vector>::is_end() const {
+	return _Ptr == _Data->_End;
 }
 // END Vector Iterator
 
@@ -345,7 +391,7 @@ void Vector<Type>::pop_back() {
 template<class Type>
 template<class... Args>
 typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	size_t index = _get_index(iterator);										// Don't check end()
+	size_t index = iterator.get_index();				// Don't check end()
 	emplace_back();
 	for (size_t i = _size - 1; i > index; i--)
 		_array[i] = std::move(_array[i - 1]);
@@ -368,10 +414,10 @@ typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, Val
 
 template<class Type>
 typename Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
-	if (_is_end(iterator))
+	if (iterator.is_end())
 		throw std::out_of_range("Array pop iterator outside range...");
 
-	size_t index = _get_index(iterator);
+	size_t index = iterator.get_index();
 	for (size_t i = index; i < _size - 1; i++)
 		_array[i] = std::move(_array[i + 1]);
 	pop_back();
@@ -493,7 +539,6 @@ void Vector<Type>::_copy(const Vector& other) {
 
 	_size = other._size;
 	_capacity = other._capacity;
-	_update_iteration_data();
 }
 
 template<class Type>
@@ -501,12 +546,10 @@ void Vector<Type>::_move(Vector&& other) {
 	_array = other._array;
 	_size = other._size;
 	_capacity = other._capacity;
-	_update_iteration_data();
 
 	other._size = 0;
 	other._capacity = 0;
 	other._array = nullptr;
-	other._update_iteration_data();
 }
 
 template<class Type>
@@ -525,16 +568,6 @@ void Vector<Type>::_clean_up_array() {
 		_alloc.dealloc(_array, _capacity);
 		_array = nullptr;
 	}
-}
-
-template<class Type>
-const size_t Vector<Type>::_get_index(const Iterator& iterator) const {
-	return iterator._Ptr - iterator._IterationData->_Begin;
-}
-
-template<class Type>
-const bool Vector<Type>::_is_end(const Iterator& iterator) const {
-	return iterator._Ptr == iterator._IterationData->_End;
 }
 
 template<class Type>
