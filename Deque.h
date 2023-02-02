@@ -52,9 +52,10 @@ public:
 private:
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
-	size_t _front		= 0;
-	size_t _back		= 0;
 	ValueType* _array	= nullptr;									// Actual container array
+	
+	ssize_t _front		= 0;										// TODO: take care of -1 situations
+	ssize_t _back		= 0;
 
 	mutable Data _data;												// Stores the ends of the array
 	mutable Alloc _alloc;											// Allocator
@@ -85,10 +86,21 @@ public:
 	void pop_back();															// Remove last component
 
 	template<class... Args>
+	void emplace_front(Args&&... args);											// Construct object using arguments (Args) and add it to the front
+	void push_front(const ValueType& copyValue);								// Construct object using reference and add it to the front
+	void push_front(ValueType&& moveValue);										// Construct object using temporary and add it to the front
+	void pop_front();															// Remove first component
+
+	template<class... Args>
 	Iterator emplace(const Iterator& iterator, Args&&... args);					// Emplace object at iterator position with given arguments
 	Iterator push(const Iterator& iterator, const ValueType& copyValue);		// Push copy object at iterator position
 	Iterator push(const Iterator& iterator, ValueType&& moveValue);				// Push temporary object at iterator position
 	Iterator pop(const Iterator& iterator);										// Remove component at iterator position
+
+	ValueType& front();                                                     	// Get the value of the first component
+	const ValueType& front() const;
+	ValueType& back();                                                      	// Get the value of the last component
+	const ValueType& back() const;
 
 	const size_t capacity() const;												// Get capacity
 	const size_t size() const;													// Get size
@@ -131,6 +143,9 @@ private:
 	void _clean_up_array();
 	const bool _is_end(const Iterator& iterator) const;
 	const size_t _get_index(const Iterator& iterator) const;					// Get the position for the element in array from iterator
+	const size_t _get_true_index(const size_t& offset, const size_t& index) const;
+	size_t& _increment_offset(size_t& offset);
+	size_t& _decrement_offset(size_t& offset);
 	Data* _update_iteration_data() const;
 }; // END Deque Template
 
@@ -141,17 +156,17 @@ private:
 // Deque Template
 template<class Type>
 Deque<Type>::Deque(const size_t& newCapacity, const ValueType& copyValue) {
-
+	realloc(newCapacity, copyValue);
 }
 
 template<class Type>
 Deque<Type>::Deque(const Deque& other) {
-
+	_copy(other);
 }
 
 template<class Type>
 Deque<Type>::Deque(Deque&& other) noexcept {
-
+	_move(std::move(other));
 }
 
 template<class Type>
@@ -162,12 +177,22 @@ Deque<Type>::~Deque() {
 template<class Type>
 void Deque<Type>::reserve(const size_t& newCapacity)
 {
+	ValueType* newArray = _alloc_array(newCapacity);
+
 	if (newCapacity < _size)
 		_size = newCapacity;
 
-	ValueType* newArray = _alloc.alloc(newCapacity);
-	for (size_t i = _front; i <= _back; i++)
-		_alloc.construct(&newArray[i], std::move(_array[i]));
+	if(_size > 0)
+	{
+		for(size_t i = 0; i < _size; i++)
+		{
+			_alloc.construct(&newArray[i], std::move(_array[_front]));
+			_increment_offset(_front);
+		}
+
+		_front = 0;
+		_back = _size - 1;
+	}
 
 	_clean_up_array();
 	_array = newArray;
@@ -175,19 +200,186 @@ void Deque<Type>::reserve(const size_t& newCapacity)
 }
 
 template<class Type>
-Deque<Type>::ValueType* Deque<Type>::_alloc_array(const size_t& capacity) {
-	return _alloc.alloc(capacity + 1);
+void Deque<Type>::shrink_to_fit() {
+	reserve(_size);
+}
+
+template<class Type>
+void Deque<Type>::realloc(const size_t& newCapacity) {
+	_clean_up_array();
+
+	_capacity = newCapacity;
+	_size = _capacity;
+	_front = 0;
+	_back = _size - 1;		// TODO: check back = -1
+
+	_array = _alloc_array(_capacity);
+	_alloc.construct_range(_array, _capacity);
+}
+
+template<class Type>
+void Deque<Type>::realloc(const size_t& newCapacity, const ValueType& copyValue) {
+	_clean_up_array();
+
+	_capacity = newCapacity;
+	_size = _capacity;
+	_front = 0;
+	_back = _size - 1;
+
+	_array = _alloc.alloc(_capacity);
+	_alloc.construct_range(_array, _capacity, copyValue);
+}
+
+template<class Type>
+template<class... Args>
+void Deque<Type>::emplace_back(Args&&... args) {
+	_extend_if_full();
+
+	if(_size == 0)
+		_alloc.construct(&_array[_back], std::forward<Args>(args)...);
+	else
+		_alloc.construct(&_array[_increment_offset(_back)], std::forward<Args>(args)...);
+
+	++_size;
+}
+
+template<class Type>
+void Deque<Type>::push_back(const ValueType& copyValue) {
+	emplace_back(copyValue);
+}
+
+template<class Type>
+void Deque<Type>::push_back(ValueType&& moveValue) {
+	emplace_back(std::move(moveValue));
+}
+
+template<class Type>
+void Deque<Type>::pop_back() {
+	if (_size > 0)
+		{
+			_alloc.destroy(&_array[_back]);
+			_decrement_offset(_back);
+			--_size;
+		}
+}
+
+template<class Type>
+template<class... Args>
+void Deque<Type>::emplace_front(Args&&... args) {
+	_extend_if_full();
+
+	if(_size == 0)
+		_alloc.construct(&_array[_front], std::forward<Args>(args)...);
+	else
+		_alloc.construct(&_array[_decrement_offset(_front)], std::forward<Args>(args)...);
+
+	++_size;
+}
+
+template<class Type>
+void Deque<Type>::push_front(const ValueType& copyValue) {
+	emplace_front(copyValue);
+}
+
+template<class Type>
+void Deque<Type>::push_front(ValueType&& moveValue) {
+	emplace_front(std::move(moveValue));
+}
+
+template<class Type>
+void Deque<Type>::pop_front() {
+	if (_size > 0)
+		{
+			_alloc.destroy(&_array[_front]);
+			_increment_offset(_front);
+			--_size;
+		}
+}
+
+template<class Type>
+typename Deque<Type>::ValueType& Deque<Type>::front() {
+	return _array[_front];
+}
+
+
+template<class Type>
+const typename Deque<Type>::ValueType& Deque<Type>::front() const {
+	return _array[_front];
+}
+
+template<class Type>
+typename Deque<Type>::ValueType& Deque<Type>::back() {
+	return _array[_back];
+}
+
+template<class Type>
+const typename Deque<Type>::ValueType& Deque<Type>::back() const {
+	return _array[_back];
+}
+
+template<class Type>
+const size_t Deque<Type>::capacity() const {
+	return _capacity;
+}
+
+template<class Type>
+const size_t Deque<Type>::size() const {
+	return _size;
+}
+
+template<class Type>
+void Deque<Type>::clear() {
+	_destroy_array(_array, _front, _size, _capacity);
+	_size = 0;
+}
+
+template<class Type>
+bool Deque<Type>::empty() const {
+	return _size == 0;
+}
+
+template<class Type>
+typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) {
+	return _array[_get_true_index(_front, index)];
+}
+
+template<class Type>
+typename Deque<Type>::ValueType* Deque<Type>::_alloc_array(const size_t& capacity) {
+	return _alloc.alloc(capacity);
 }
 
 template<class Type>
 void Deque<Type>::_dealloc_array(ValueType* address, const size_t& capacity) {
-	_alloc.dealloc(address, capacity + 1);
+	_alloc.dealloc(address, capacity);
 }
 
 template<class Type>
 void Deque<Type>::_destroy_array(ValueType* address, const size_t& offset, const size_t& size, const size_t& capacity) {
 	for (size_t i = 0; i < size; i++)
-		_alloc.destroy(address + (offset + i) % capacity);
+		_alloc.destroy(address + (offset + i) % (capacity));	// TODO: replace with true_index
+}
+
+template<class Type>
+void Deque<Type>::_extend_if_full() {
+	if (_size >= _capacity)
+		reserve(_capacity + _capacity / 2 + 1);
+}
+
+template<class Type>
+const size_t Deque<Type>::_get_true_index(const size_t& offset, const size_t& index) const {
+	return (offset + index) % (_capacity);
+}
+
+template<class Type>
+size_t& Deque<Type>::_increment_offset(size_t& offset) {
+	offset = (offset + 1) % (_capacity);
+	return offset;
+}
+
+template<class Type>
+size_t& Deque<Type>::_decrement_offset(size_t& offset) {
+	offset = (offset - 1) % (_capacity);
+	return offset;
 }
 
 template<class Type>
@@ -195,7 +387,7 @@ void Deque<Type>::_clean_up_array()
 {
 	if (_array != nullptr)
 	{
-		_destroy_array(_array, front, _size, _capacity);
+		_destroy_array(_array, _front, _size, _capacity);
 		_dealloc_array(_array, _capacity);
 		_array = nullptr;
 	}
