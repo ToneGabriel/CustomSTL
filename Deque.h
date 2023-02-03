@@ -1,25 +1,38 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
-#include "BaseIterator.h"
 
 
 CUSTOM_BEGIN
 
 // Headings =================================================================================
 
+template<class Type>
+struct DequeIterationData {			// Data used for iterating Deque
+	Type* _Begin	= nullptr;
+	Type* _End		= nullptr;
+	size_t _TrueCapacity;
+
+	DequeIterationData() = default;
+	~DequeIterationData();
+};
+
+
 template<class Deque>
-class DequeIterator : public BaseIterator<Deque>	// Deque Iterator
+class DequeIterator			// Deque Iterator
 {
 public:
-	using Base		= BaseIterator<Deque>;
-	using Data		= typename Base::Data;
-	using IterType	= typename Base::IterType;
-	using ValueType = typename Base::ValueType;
+	using ValueType = typename Deque::ValueType;
+	using IterType	= typename Deque::IterType;
+	using Data		= DequeIterationData<IterType>;
+
+	IterType* _Ptr	= nullptr;
+	Data* _Data		= nullptr;
 
 public:
 
 	explicit DequeIterator(IterType* ptr, Data* data);
+	~DequeIterator();
 
 	DequeIterator& operator++();							// ++it
 	DequeIterator operator++(int);							// it++
@@ -36,6 +49,12 @@ public:
 
 	bool operator==(const DequeIterator& other) const;
 	bool operator!=(const DequeIterator& other) const;
+
+public:
+
+	const size_t get_index() const;							// Get the position for the element in array from iterator
+	const bool is_begin() const;
+	const bool is_end() const;
 }; // END Deque Iterator
 
 
@@ -137,12 +156,12 @@ private:
 	ValueType* _alloc_array(const size_t& capacity);							// Allocate memory +1 null term
 	void _dealloc_array(ValueType* address, const size_t& capacity);			// Deallocate memory +1 null term
 	void _destroy_array(ValueType* address, const size_t& offset, const size_t& size, const size_t& capacity);
+	
 	void _copy(const Deque& other);												// Generic copy function for vector
 	void _move(Deque&& other);													// Generic move function for vector
 	void _extend_if_full();														// Reserve 50% more capacity when full
 	void _clean_up_array();
-	const bool _is_end(const Iterator& iterator) const;
-	const size_t _get_index(const Iterator& iterator) const;					// Get the position for the element in array from iterator
+
 	const size_t _get_true_index(const size_t& offset, const size_t& index) const;
 	size_t& _increment_offset(size_t& offset);
 	size_t& _decrement_offset(size_t& offset);
@@ -152,6 +171,100 @@ private:
 
 
 // Definitions =================================================================================
+
+// Deque Iterator Data
+template<class Type>
+DequeIterationData<Type>::~DequeIterationData() {
+	_Begin	= nullptr;
+	_End	= nullptr;
+}
+
+// Deque Iterator
+template<class Deque>
+DequeIterator<Deque>::DequeIterator(IterType* ptr, Data* data)
+	:_Ptr(ptr), _Data(data) { /*Empty*/ }
+
+template<class Deque>
+DequeIterator<Deque>::~DequeIterator() {
+	_Ptr	= nullptr;
+	_Data	= nullptr;
+}
+
+template<class Deque>
+DequeIterator<Deque>& DequeIterator<Deque>::operator++() {
+
+}
+
+template<class Deque>
+DequeIterator<Deque> DequeIterator<Deque>::operator++(int) {
+
+}
+
+template<class Deque>
+DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {
+
+}
+
+template<class Deque>
+DequeIterator<Deque> DequeIterator<Deque>::operator+(const size_t& diff) const {
+
+}
+
+template<class Deque>
+DequeIterator<Deque>& DequeIterator<Deque>::operator--() {
+
+}
+
+template<class Deque>
+DequeIterator<Deque> DequeIterator<Deque>::operator--(int) {
+
+}
+
+template<class Deque>
+DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {
+
+}
+
+template<class Deque>
+DequeIterator<Deque> DequeIterator<Deque>::operator-(const size_t& diff) const {
+
+}
+
+template<class Deque>
+typename DequeIterator<Deque>::IterType* DequeIterator<Deque>::operator->() {
+
+}
+
+template<class Deque>
+typename DequeIterator<Deque>::ValueType& DequeIterator<Deque>::operator*() {
+
+}
+
+template<class Deque>
+bool DequeIterator<Deque>::operator==(const DequeIterator& other) const {
+
+}
+
+template<class Deque>
+bool DequeIterator<Deque>::operator!=(const DequeIterator& other) const {
+
+}
+
+template<class Deque>
+const size_t DequeIterator<Deque>::get_index() const {
+
+}
+
+template<class Deque>
+const bool DequeIterator<Deque>::is_begin() const {
+
+}
+
+template<class Deque>
+const bool DequeIterator<Deque>::is_end() const {
+
+}
+// END Deque Iterator
 
 // Deque Template
 template<class Type>
@@ -391,6 +504,15 @@ void Deque<Type>::_clean_up_array()
 		_dealloc_array(_array, _capacity);
 		_array = nullptr;
 	}
+}
+
+template<class Type>
+typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
+	_data._Begin = _array + _front;
+	_data._End = _array + _back + 1;
+	_data._TrueCapacity = _capacity + 1;
+
+	return &_data;
 }
 // END Deque Template
 

@@ -7,7 +7,7 @@ CUSTOM_BEGIN
 // Headings =================================================================================
 
 template<class Type>
-struct VectorIterationData {
+struct VectorIterationData {		// Data used for iterating Vector
 	Type* _Begin	= nullptr;
 	Type* _End		= nullptr;
 
@@ -149,13 +149,14 @@ private:
 
 // Definitions =================================================================================
 
-// Vector Iterator
+// Vector Iterator Data
 template<class Type>
 VectorIterationData<Type>::~VectorIterationData() {
 	_Begin	= nullptr;
 	_End	= nullptr;
 }
 
+// Vector Iterator
 template<class Vector>
 VectorIterator<Vector>::VectorIterator(IterType* ptr, Data* data)
 	:_Ptr(ptr), _Data(data) { /*Empty*/ }

@@ -13,7 +13,7 @@ template<class>
 class SearchTree;
 
 template<class Type>
-struct ListIterationData {
+struct ListIterationData {		// Data used for iterating List
 	Type* _Begin	= nullptr;
 	Type* _End		= nullptr;
 
@@ -163,13 +163,14 @@ private:
 
 // Definitions =================================================================================
 
-// Linked List Iterator
+// Linked List Iterator Data
 template<class Type>
 ListIterationData<Type>::~ListIterationData() {
 	_Begin	= nullptr;
 	_End	= nullptr;
 }
 
+// Linked List Iterator
 template<class List>
 ListIterator<List>::ListIterator(IterType* nodePtr, Data* data)
 	:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
