@@ -1,25 +1,23 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
-#include "BaseIterator.h"
 
 CUSTOM_BEGIN
 
 // Headings =================================================================================
 
+template<class Type>
+struct VectorIterationData {
+	Type* _Begin	= nullptr;
+	Type* _End		= nullptr;
+
+	VectorIterationData() = default;
+	~VectorIterationData();
+};
+
 template<class Vector>
 class VectorIterator			// Vector Iterator
 {
-private:
-	template<class Type>
-	struct VectorIterationData {
-		Type* _Begin	= nullptr;
-		Type* _End		= nullptr;
-
-		VectorIterationData() = default;
-		~VectorIterationData();
-	};
-
 public:
 	using ValueType = typename Vector::ValueType;
 	using IterType	= typename Vector::IterType;
@@ -33,6 +31,7 @@ public:
 	explicit VectorIterator(IterType* ptr, Data* data);
 	~VectorIterator();
 
+public:
 
 	VectorIterator& operator++();							// ++it
 	VectorIterator operator++(int);							// it++
@@ -151,9 +150,8 @@ private:
 // Definitions =================================================================================
 
 // Vector Iterator
-template<class Vector>
 template<class Type>
-VectorIterator<Vector>::VectorIterationData<Type>::~VectorIterationData() {
+VectorIterationData<Type>::~VectorIterationData() {
 	_Begin	= nullptr;
 	_End	= nullptr;
 }

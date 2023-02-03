@@ -1,27 +1,40 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
-#include "BaseIterator.h"
 #include <iostream>
-#include <cstring>	// TODO: check if needed
+#include <cstring>
 
 
 CUSTOM_BEGIN
 
 // Headings =================================================================================
 
+template<class Type>
+struct StringIterationData {	// Data used for iterating String
+	Type* _Begin	= nullptr;
+	Type* _End		= nullptr;
+
+	StringIterationData() = default;
+	~StringIterationData();
+};
+
 template<class String>
-class StringIterator : public BaseIterator<String>	// String Iterator
+class StringIterator		// String Iterator
 {
 public:
-	using Base		= BaseIterator<String>;
-	using Data		= typename Base::Data;
-	using IterType	= typename Base::IterType;
-	using ValueType = typename Base::ValueType;
+	using ValueType = typename String::ValueType;
+	using IterType	= typename String::IterType;
+	using Data		= StringIterationData<IterType>;
+
+	IterType* _Ptr	= nullptr;
+	Data* _Data		= nullptr;
 
 public:
 
 	explicit StringIterator(IterType* ptr, Data* data);
+	~StringIterator();
+
+public:
 
 	StringIterator& operator++();		// ++it
 	StringIterator operator++(int);		// it++
@@ -33,6 +46,12 @@ public:
 
 	bool operator==(const StringIterator& other) const;
 	bool operator!=(const StringIterator& other) const;
+
+public:
+
+	const size_t get_index() const;							// Get the position for the element in array from iterator
+	const bool is_begin() const;
+	const bool is_end() const;
 }; // END String Iterator
 
 
@@ -173,8 +192,6 @@ private:
 	void _extend_if_full();												// Reserve 50% more capacity when full
 	void _copy(const String& other);									// Generic copy function for string
 	void _move(String&& other);											// Generic move function for string
-	const size_t _get_index(const Iterator& iterator) const;			// Get the position for the element in array from iterator
-	const bool _is_end(const Iterator& iterator) const;
 	Data* _update_iteration_data() const;
 }; // END String
 
@@ -183,16 +200,28 @@ private:
 // Definitions =================================================================================
 
 // String Iterator
+template<class Type>
+StringIterationData<Type>::~StringIterationData() {
+	_Begin	= nullptr;
+	_End	= nullptr;
+}
+
 template<class String>
 StringIterator<String>::StringIterator(IterType* ptr, Data* data)
-	:Base(ptr, data) { /*Empty*/ }
+	:_Ptr(ptr), _Data(data) { /*Empty*/ }
+
+template<class String>
+StringIterator<String>::~StringIterator() {
+	_Ptr	= nullptr;
+	_Data	= nullptr;
+}
 
 template<class String>
 StringIterator<String>& StringIterator<String>::operator++() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	++this->_Ptr;
+	++_Ptr;
 	return *this;
 }
 
@@ -205,10 +234,10 @@ StringIterator<String> StringIterator<String>::operator++(int) {
 
 template<class String>
 StringIterator<String>& StringIterator<String>::operator--() {
-	if (this->_Ptr <= this->_IterationData->_Begin)
+	if (_Ptr <= _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	--this->_Ptr;
+	--_Ptr;
 	return *this;
 }
 
@@ -221,28 +250,43 @@ StringIterator<String> StringIterator<String>::operator--(int) {
 
 template<class String>
 typename StringIterator<String>::IterType* StringIterator<String>::operator->() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
-	return this->_Ptr;
+	return _Ptr;
 }
 
 template<class String>
 typename StringIterator<String>::ValueType& StringIterator<String>::operator*() {
-	if (this->_Ptr >= this->_IterationData->_End)
+	if (_Ptr >= _Data->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 
-	return *this->_Ptr;
+	return *_Ptr;
 }
 
 template<class String>
 bool StringIterator<String>::operator==(const StringIterator& other) const {
-	return this->_Ptr == other._Ptr;
+	return _Ptr == other._Ptr;
 }
 
 template<class String>
 bool StringIterator<String>::operator!=(const StringIterator& other) const {
 	return !(*this == other);
+}
+
+template<class String>
+const size_t StringIterator<String>::get_index() const {
+	return _Ptr - _Data->_Begin;
+}
+
+template<class String>
+const bool StringIterator<String>::is_begin() const {
+	return _Ptr == _Data->_Begin;
+}
+
+template<class String>
+const bool StringIterator<String>::is_end() const {
+	return _Ptr == _Data->_End;
 }
 // END String Iterator
 
@@ -373,21 +417,21 @@ String& String::insert(const size_t& pos, const size_t& nchar, const char& chr) 
 }
 
 typename String::Iterator String::insert(const Iterator& where, const char& chr) {
-	size_t pos = _get_index(where);
+	size_t pos = where.get_index();
 	_insert_from_cstring(pos, &chr, 0, 1);
 
 	return Iterator(_string + pos, _update_iteration_data());
 }
 
 typename String::Iterator String::insert(const Iterator& where, const Iterator& first, const Iterator& last) {
-	if (where._IterationData->_Begin == first._IterationData->_Begin ||
-		first._IterationData->_Begin != last._IterationData->_Begin)	// Check if pos string != first/last string
+	if (where._Data->_Begin == first._Data->_Begin ||
+		first._Data->_Begin != last._Data->_Begin)	// Check if pos string != first/last string
 		throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
 
-	size_t pos = _get_index(where);
-	size_t posFrom = _get_index(first);
-	size_t posTo = _get_index(last);
-	const char* cstring = first._IterationData->_Begin;
+	size_t pos = where.get_index();
+	size_t posFrom = first.get_index();
+	size_t posTo = last.get_index();
+	const char* cstring = first._Data->_Begin;
 	_insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
 	return Iterator(_string + pos, _update_iteration_data());
@@ -402,21 +446,21 @@ String& String::erase(const size_t& pos, const size_t& len) {
 }
 
 typename String::Iterator String::erase(const Iterator& where) {
-	if (_is_end(where))
+	if (where.is_end())
 		throw std::out_of_range("String erase iterator outside range...");
 
-	size_t pos = _get_index(where);
+	size_t pos = where.get_index();
 	_remove_from_cstring(pos, 1);
 
 	return Iterator(_string + pos, _update_iteration_data());
 }
 
 typename String::Iterator String::erase(const Iterator& first, const Iterator& last) {
-	if (_is_end(first))
+	if (first.is_end())
 		throw std::out_of_range("String erase iterator outside range...");
 
-	size_t posFrom = _get_index(first);
-	size_t posTo = _get_index(last);
+	size_t posFrom = first.get_index();
+	size_t posTo = last.get_index();
 	_remove_from_cstring(posFrom, posTo - posFrom);
 
 	return Iterator(_string + posFrom, _update_iteration_data());
@@ -683,15 +727,7 @@ size_t String::_search_for_cstring(const char* cstring, const size_t& pos, const
 }
 
 int String::_compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
-	return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));
-}
-
-const size_t String::_get_index(const Iterator& iterator) const {
-	return iterator._Ptr - iterator._IterationData->_Begin;
-}
-
-const bool String::_is_end(const Iterator& iterator) const {
-	return iterator._Ptr == iterator._IterationData->_End;
+	return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));		// TODO: check why max
 }
 
 void String::_extend_if_full() {

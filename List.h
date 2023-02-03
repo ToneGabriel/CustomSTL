@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "Node.h"
-#include "BaseIterator.h"
 
 CUSTOM_BEGIN
 
@@ -13,18 +12,30 @@ class HashTable;
 template<class>
 class SearchTree;
 
+template<class Type>
+struct ListIterationData {
+	Type* _Begin	= nullptr;
+	Type* _End		= nullptr;
+
+	ListIterationData() = default;
+	~ListIterationData();
+};
+
 template<class List>
-class ListIterator : public BaseIterator<List>		// Linked List Iterator
+class ListIterator		// Linked List Iterator
 {
 public:
-	using Base		= BaseIterator<List>;
-	using Data		= typename Base::Data;
-	using IterType	= typename Base::IterType;
-	using ValueType = typename Base::ValueType;
+	using ValueType = typename List::ValueType;
+	using IterType	= typename List::IterType;
+	using Data		= ListIterationData<IterType>;
+
+	IterType* _Ptr	= nullptr;
+	Data* _Data		= nullptr;
 
 public:
 
 	explicit ListIterator(IterType* nodePtr, Data* data);
+	~ListIterator();
 
 	ListIterator& operator++();			// ++it
 	ListIterator operator++(int);		// it++
@@ -36,6 +47,10 @@ public:
 
 	bool operator==(const ListIterator& other) const;
 	bool operator!=(const ListIterator& other) const;
+
+public:
+	const bool is_begin() const;
+	const bool is_end() const;
 }; // END Linked List Iterator
 
 
@@ -149,16 +164,28 @@ private:
 // Definitions =================================================================================
 
 // Linked List Iterator
+template<class Type>
+ListIterationData<Type>::~ListIterationData() {
+	_Begin	= nullptr;
+	_End	= nullptr;
+}
+
 template<class List>
 ListIterator<List>::ListIterator(IterType* nodePtr, Data* data)
-	:Base(nodePtr, data) { /*Empty*/ }
+	:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
+
+template<class List>
+ListIterator<List>::~ListIterator() {
+	_Ptr	= nullptr;
+	_Data	= nullptr;
+}
 
 template<class List>
 ListIterator<List>& ListIterator<List>::operator++() {
-	if (this->_Ptr == this->_IterationData->_End)
+	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	this->_Ptr = this->_Ptr->Next;
+	_Ptr = _Ptr->Next;
 	return *this;
 }
 
@@ -171,10 +198,10 @@ ListIterator<List> ListIterator<List>::operator++(int) {	// TODO: "&" missing or
 
 template<class List>
 ListIterator<List>& ListIterator<List>::operator--() {
-	if (this->_Ptr == this->_IterationData->_Begin)
+	if (_Ptr == _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	this->_Ptr = this->_Ptr->Previous;
+	_Ptr = _Ptr->Previous;
 	return *this;
 }
 
@@ -187,28 +214,38 @@ ListIterator<List> ListIterator<List>::operator--(int) {
 
 template<class List>
 typename ListIterator<List>::IterType* ListIterator<List>::operator->() {
-	if (this->_Ptr == this->_IterationData->_End)
+	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot access end iterator...");
 
-	return this->_Ptr;
+	return _Ptr;
 }
 
 template<class List>
 typename ListIterator<List>::ValueType& ListIterator<List>::operator*() {
-	if (this->_Ptr == this->_IterationData->_End)
+	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 
-	return this->_Ptr->Value;
+	return _Ptr->Value;
 }
 
 template<class List>
 bool ListIterator<List>::operator==(const ListIterator& other) const {
-	return this->_Ptr == other._Ptr;
+	return _Ptr == other._Ptr;
 }
 
 template<class List>
 bool ListIterator<List>::operator!=(const ListIterator& other) const {
 	return !(*this == other);
+}
+
+template<class List>
+const bool ListIterator<List>::is_begin() const {
+	return _Ptr == _Data->_Begin;
+}
+
+template<class List>
+const bool ListIterator<List>::is_end() const {
+	return _Ptr == _Data->_End;
 }
 // END Linked List Iterator
 
@@ -320,7 +357,7 @@ typename List<Type>::Iterator List<Type>::push(const Iterator& iterator, ValueTy
 
 template<class Type>
 typename List<Type>::Iterator List<Type>::pop(const Iterator& iterator) {
-	if (iterator._Ptr == _head)											// Check end()
+	if (iterator.is_end())
 		throw std::out_of_range("Cannot pop end iterator...");
 
 	_workspaceNode = iterator._Ptr;
