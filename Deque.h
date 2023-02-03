@@ -11,6 +11,7 @@ template<class Type>
 struct DequeIterationData {			// Data used for iterating Deque
 	Type* _Begin	= nullptr;
 	Type* _End		= nullptr;
+	Type* _ArrBase	= nullptr;
 	size_t _TrueCapacity;
 
 	DequeIterationData() = default;
@@ -73,8 +74,8 @@ private:
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
 	ValueType* _array	= nullptr;									// Actual container array
 	
-	ssize_t _front		= 0;										// TODO: take care of -1 situations
-	ssize_t _back		= 0;
+	size_t _front		= 0;										// TODO: take care of -1 situations
+	size_t _back		= 0;
 
 	mutable Data _data;												// Stores the ends of the array
 	mutable Alloc _alloc;											// Allocator
@@ -162,9 +163,9 @@ private:
 	void _extend_if_full();														// Reserve 50% more capacity when full
 	void _clean_up_array();
 
-	const size_t _get_true_index(const size_t& offset, const size_t& index) const;
-	size_t& _increment_offset(size_t& offset);
-	size_t& _decrement_offset(size_t& offset);
+	const size_t _get_true_index(const size_t& index) const;
+	size_t& _increment_offset(size_t& offset, const size_t& inc = 1);
+	size_t& _decrement_offset(size_t& offset, const size_t& dec = 1);
 	Data* _update_iteration_data() const;
 }; // END Deque Template
 
@@ -453,7 +454,27 @@ bool Deque<Type>::empty() const {
 
 template<class Type>
 typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) {
-	return _array[_get_true_index(_front, index)];
+	return _array[_get_true_index(index)];
+}
+
+template<class Type>
+typename Deque<Type>::Iterator Deque<Type>::begin() {
+	return Iterator(_array + _front, _update_iteration_data());
+}
+
+template<class Type>
+const typename Deque<Type>::Iterator Deque<Type>::begin() const {
+	return Iterator(_array + _front, _update_iteration_data());
+}
+
+template<class Type>
+typename Deque<Type>::Iterator Deque<Type>::end() {
+	return Iterator(_array + _back + 1, _update_iteration_data());
+}
+
+template<class Type>
+const typename Deque<Type>::Iterator Deque<Type>::end() const {
+	return Iterator(_array + _back + 1, _update_iteration_data());
 }
 
 template<class Type>
@@ -479,19 +500,23 @@ void Deque<Type>::_extend_if_full() {
 }
 
 template<class Type>
-const size_t Deque<Type>::_get_true_index(const size_t& offset, const size_t& index) const {
-	return (offset + index) % (_capacity);
+const size_t Deque<Type>::_get_true_index(const size_t& index) const {
+	return (_front + index) % (_capacity + 1);
 }
 
 template<class Type>
-size_t& Deque<Type>::_increment_offset(size_t& offset) {
-	offset = (offset + 1) % (_capacity);
+size_t& Deque<Type>::_increment_offset(size_t& offset, const size_t& inc) {
+	offset = (offset + inc) % (_capacity + 1);
 	return offset;
 }
 
 template<class Type>
-size_t& Deque<Type>::_decrement_offset(size_t& offset) {
-	offset = (offset - 1) % (_capacity);
+size_t& Deque<Type>::_decrement_offset(size_t& offset, const size_t& dec) {
+	if(offset - dec < 0)
+		offset = _capacity + 1 - (offset - dec);
+	else
+		offset = (offset - dec) % (_capacity + 1);
+	
 	return offset;
 }
 
@@ -510,6 +535,7 @@ template<class Type>
 typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
 	_data._Begin = _array + _front;
 	_data._End = _array + _back + 1;
+	_data._ArrBase = _array;
 	_data._TrueCapacity = _capacity + 1;
 
 	return &_data;
