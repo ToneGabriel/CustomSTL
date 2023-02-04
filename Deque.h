@@ -9,10 +9,10 @@ CUSTOM_BEGIN
 
 template<class Type>
 struct DequeIterationData {			// Data used for iterating Deque
-	Type* _Begin	= nullptr;
-	Type* _End		= nullptr;
-	Type* _ArrBase	= nullptr;
-	size_t _TrueCapacity;
+	Type* _Begin			= nullptr;
+	Type* _End				= nullptr;
+	Type* _ArrBase			= nullptr;
+	size_t _TrueCapacity	= 0;
 
 	DequeIterationData() = default;
 	~DequeIterationData();
@@ -192,13 +192,19 @@ DequeIterator<Deque>::~DequeIterator() {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator++() {
+DequeIterator<Deque>& DequeIterator<Deque>::operator++() {		// TODO: check
+	if (_Ptr >= _Data->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
 
+	_Ptr = _Data->_ArrBase + (++_Ptr - _Data->_ArrBase) % _Data->_TrueCapacity;
+	return *this;
 }
 
 template<class Deque>
 DequeIterator<Deque> DequeIterator<Deque>::operator++(int) {
-
+	DequeIterator temp = *this;
+	++(*this);
+	return temp;
 }
 
 template<class Deque>
@@ -212,13 +218,19 @@ DequeIterator<Deque> DequeIterator<Deque>::operator+(const size_t& diff) const {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator--() {
+DequeIterator<Deque>& DequeIterator<Deque>::operator--() {			// TODO: check
+	if (_Ptr <= _Data->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
 
+	_Ptr = _Data->_ArrBase + (--_Ptr - _Data->_ArrBase) % _Data->_TrueCapacity;		// TODO: check negative
+	return *this;
 }
 
 template<class Deque>
 DequeIterator<Deque> DequeIterator<Deque>::operator--(int) {
-
+	DequeIterator temp = *this;
+	--(*this);
+	return temp;
 }
 
 template<class Deque>
@@ -233,22 +245,28 @@ DequeIterator<Deque> DequeIterator<Deque>::operator-(const size_t& diff) const {
 
 template<class Deque>
 typename DequeIterator<Deque>::IterType* DequeIterator<Deque>::operator->() {
+	if (_Ptr >= _Data->_End)
+		throw std::out_of_range("Cannot access end iterator...");
 
+	return _Ptr;
 }
 
 template<class Deque>
 typename DequeIterator<Deque>::ValueType& DequeIterator<Deque>::operator*() {
+	if (_Ptr >= _Data->_End)
+		throw std::out_of_range("Cannot dereference end iterator...");
 
+	return *_Ptr;
 }
 
 template<class Deque>
 bool DequeIterator<Deque>::operator==(const DequeIterator& other) const {
-
+	return _Ptr == other._Ptr;
 }
 
 template<class Deque>
 bool DequeIterator<Deque>::operator!=(const DequeIterator& other) const {
-
+	return !(*this == other);
 }
 
 template<class Deque>
@@ -258,12 +276,12 @@ const size_t DequeIterator<Deque>::get_index() const {
 
 template<class Deque>
 const bool DequeIterator<Deque>::is_begin() const {
-
+	return _Ptr == _Data->_Begin;
 }
 
 template<class Deque>
 const bool DequeIterator<Deque>::is_end() const {
-
+	return _Ptr == _Data->_End;
 }
 // END Deque Iterator
 

@@ -141,11 +141,11 @@ int main()
 	dq.emplace_front(6);
 	
 	dq.reserve(10);
-	dq.emplace_front(7);
+	//dq.emplace_front(7);	// TODO: WTF is this so wrong???
 	std::cout << dq.size() << ' ' << dq. capacity() << '\n';
 
-	for(size_t i = 0; i < dq.size(); i++)
-		std::cout << dq[i] << '\n';
+	for (auto& val : dq)
+		std::cout << val << ' ';
 
 	//std::cout << dq.front() << ' ' << dq.back()<< '\n';
 }
