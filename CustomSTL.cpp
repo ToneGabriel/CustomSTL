@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <list>
 #include <queue>
 #include <unordered_map>
@@ -140,12 +141,17 @@ int main()
 	dq.emplace_front(5);
 	dq.emplace_front(6);
 	
-	dq.reserve(10);
-	//dq.emplace_front(7);	// TODO: WTF is this so wrong???
-	std::cout << dq.size() << ' ' << dq. capacity() << '\n';
+	dq.emplace_front(7);
+	dq.emplace_front(8);
+	dq.emplace_front(9);
+	dq.emplace_front(10);
+	dq.emplace_front(11);
+
+	dq.print_details();
 
 	for (auto& val : dq)
 		std::cout << val << ' ';
+	std::cout << '\n';
 
 	//std::cout << dq.front() << ' ' << dq.back()<< '\n';
 }
