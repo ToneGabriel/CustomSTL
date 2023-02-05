@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
+#include <cassert>
 
 
 CUSTOM_BEGIN
@@ -58,13 +59,13 @@ public:
 	using Iterator	= DequeIterator<Deque<ValueType>>;				// Iterator type
 
 private:
-	friend class Iterator;
+	friend class Iterator;											// Let Iterator access privates
 
 private:
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
-	size_t _front		= 0;
-	size_t _back		= 0;
+	size_t _front		= 0;										// Indicator of first elem (begin())
+	size_t _back		= 0;										// Indicator of last elem (end() - 1)
 	ValueType* _array	= nullptr;									// Actual container array
 
 	mutable Alloc _alloc;											// Allocator
@@ -175,12 +176,11 @@ DequeIterator<Deque>::~DequeIterator() {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator++() {		// TODO: check
-	if (_Ptr == _MyDeq->_array + _MyDeq->_back + 1)
+DequeIterator<Deque>& DequeIterator<Deque>::operator++() {
+	if (is_end())
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	size_t offset = static_cast<size_t>(_Ptr - _MyDeq->_array);
-	_Ptr = _MyDeq->_array + _MyDeq->_increment_offset(offset);
+	_Ptr = _MyDeq->_array + _MyDeq->_increment_offset(static_cast<size_t>(_Ptr - _MyDeq->_array));
 
 	return *this;
 }
@@ -204,16 +204,10 @@ DequeIterator<Deque> DequeIterator<Deque>::operator+(const size_t& diff) const {
 
 template<class Deque>
 DequeIterator<Deque>& DequeIterator<Deque>::operator--() {			// TODO: check
-	if (_Ptr == _MyDeq->_front)
+	if (is_begin())
 		throw std::out_of_range("Cannot decrement begin iterator...");
 	
-	size_t offset = static_cast<size_t>(_Ptr - _MyDeq->_array);
-	_Ptr = _MyDeq->_array + _MyDeq->_decrement_offset(offset);
-
-	//if (_Ptr == _MyDeq->_array)
-	//	_Ptr = _MyDeq->_array + _MyDeq->_capacity + 1;
-	//else
-	//	--_Ptr;
+	_Ptr = _MyDeq->_array + _MyDeq->_decrement_offset(static_cast<size_t>(_Ptr - _MyDeq->_array));
 
 	return *this;
 }
@@ -237,7 +231,7 @@ DequeIterator<Deque> DequeIterator<Deque>::operator-(const size_t& diff) const {
 
 template<class Deque>
 typename DequeIterator<Deque>::IterType* DequeIterator<Deque>::operator->() {
-	if (_Ptr == _MyDeq->_array + _MyDeq->_back + 1)
+	if (is_end())
 		throw std::out_of_range("Cannot access end iterator...");
 
 	return _Ptr;
@@ -245,7 +239,7 @@ typename DequeIterator<Deque>::IterType* DequeIterator<Deque>::operator->() {
 
 template<class Deque>
 typename DequeIterator<Deque>::ValueType& DequeIterator<Deque>::operator*() {
-	if (_Ptr == _MyDeq->_array + _MyDeq->_back + 1)
+	if (is_end())
 		throw std::out_of_range("Cannot dereference end iterator...");
 
 	return *_Ptr;
@@ -299,13 +293,11 @@ Deque<Type>::~Deque() {
 }
 
 template<class Type>
-void Deque<Type>::reserve(const size_t& newCapacity)
-{
+void Deque<Type>::reserve(const size_t& newCapacity) {
 	ValueType* newArray = _alloc_array(newCapacity);
 
 	if (newCapacity < _size)
 		_size = newCapacity;
-
 	if(_size > 0)
 	{
 		for(size_t i = 0; i < _size; i++)
@@ -315,7 +307,7 @@ void Deque<Type>::reserve(const size_t& newCapacity)
 		}
 
 		_front = 0;
-		_back = _size - 1;
+		_back = (_size == 0) ? 0 : _size - 1;		// TODO: check back = -1
 	}
 
 	_clean_up_array();
@@ -335,7 +327,7 @@ void Deque<Type>::realloc(const size_t& newCapacity) {
 	_capacity = newCapacity;
 	_size = _capacity;
 	_front = 0;
-	_back = _size - 1;		// TODO: check back = -1
+	_back = (_size == 0) ? 0 : _size - 1;		// TODO: check back = -1
 
 	_array = _alloc_array(_capacity);
 	_alloc.construct_range(_array, _capacity);
@@ -348,7 +340,7 @@ void Deque<Type>::realloc(const size_t& newCapacity, const ValueType& copyValue)
 	_capacity = newCapacity;
 	_size = _capacity;
 	_front = 0;
-	_back = _size - 1;
+	_back = (_size == 0) ? 0 : _size - 1;
 
 	_array = _alloc.alloc(_capacity);
 	_alloc.construct_range(_array, _capacity, copyValue);
@@ -476,16 +468,36 @@ void Deque<Type>::print_details() {
 	std::cout << "Back= " << _back << '\n';
 
 	for (size_t i = 0; i <= _capacity; i++)
-		if (_array[i] < 0)
-			std::cout << "N ";
-		else
-			std::cout << _array[i] << ' ';
+		std::cout << _array[i] << ' ';
 	
 	std::cout << "\n\n";
 }
 
 template<class Type>
+const typename Deque<Type>::ValueType& Deque<Type>::at(const size_t& index) const {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _array[_get_true_index(index)];
+}
+
+template<class Type>
+typename Deque<Type>::ValueType& Deque<Type>::at(const size_t& index) {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _array[_get_true_index(index)];
+}
+
+template<class Type>
+const typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) const {
+	assert(!(index < 0 || index >= _size));
+	return _array[_get_true_index(index)];
+}
+
+template<class Type>
 typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) {
+	assert(!(index < 0 || index >= _size));
 	return _array[_get_true_index(index)];
 }
 
@@ -521,12 +533,8 @@ void Deque<Type>::_dealloc_array() {
 
 template<class Type>
 void Deque<Type>::_destroy_array() {
-	size_t offset = _front;
-	while (offset <= _back)
-	{
-		_alloc.destroy(_array + offset);
-		offset = _increment_offset(offset);
-	}
+	for (size_t i = _front; i <= _back; i = _increment_offset(i))
+		_alloc.destroy(_array + i);
 }
 
 template<class Type>

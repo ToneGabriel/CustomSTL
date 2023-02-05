@@ -3,6 +3,7 @@
 #include "Allocator.h"
 #include <iostream>
 #include <cstring>
+#include <cassert>
 
 
 CUSTOM_BEGIN
@@ -581,10 +582,12 @@ void String::print_details() const {
 }
 
 const char& String::operator[](const size_t& index) const {
+	assert(index >= 0 && index < _size);
 	return _string[index];
 }
 
 char& String::operator[](const size_t& index) {
+	assert(index >= 0 && index < _size);
 	return _string[index];
 }
 

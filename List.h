@@ -191,7 +191,7 @@ ListIterator<List>& ListIterator<List>::operator++() {
 }
 
 template<class List>
-ListIterator<List> ListIterator<List>::operator++(int) {	// TODO: "&" missing or not???
+ListIterator<List> ListIterator<List>::operator++(int) {
 	ListIterator temp = *this;
 	++(*this);
 	return temp;

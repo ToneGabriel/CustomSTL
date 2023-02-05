@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
+#include <cassert>
+
 
 CUSTOM_BEGIN
 
@@ -463,11 +465,13 @@ typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) {
 
 template<class Type>
 const typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) const {
+	assert(index >= 0 && index < _size);
 	return _array[index];
 }
 
 template<class Type>
 typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) {
+	assert(index >= 0 && index < _size);
 	return _array[index];
 }
 
