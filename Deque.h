@@ -59,7 +59,7 @@ public:
 	using Iterator	= DequeIterator<Deque<ValueType>>;				// Iterator type
 
 private:
-	friend class Iterator;											// Let Iterator access privates
+	friend Iterator;												// Let Iterator access privates
 
 private:
 	size_t _size		= 0;										// Number of components held by this
@@ -257,7 +257,7 @@ bool DequeIterator<Deque>::operator!=(const DequeIterator& other) const {
 
 template<class Deque>
 const size_t DequeIterator<Deque>::get_index() const {
-
+	return 0;	// TODO: implement
 }
 
 template<class Deque>

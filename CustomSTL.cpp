@@ -129,7 +129,6 @@ int main()
 	// =====================================================================
 
 	custom::Deque<int> dq;
-	dq.reserve(5);
 
 	dq.emplace_back(0);
 	dq.emplace_back(1);
@@ -148,10 +147,4 @@ int main()
 	dq.emplace_front(11);
 
 	dq.print_details();
-
-	for (auto& val : dq)
-		std::cout << val << ' ';
-	std::cout << '\n';
-
-	//std::cout << dq.front() << ' ' << dq.back()<< '\n';
 }

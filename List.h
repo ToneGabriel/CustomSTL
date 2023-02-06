@@ -12,6 +12,9 @@ class HashTable;
 template<class>
 class SearchTree;
 
+template<class>
+class Deque;
+
 template<class Type>
 struct ListIterationData {		// Data used for iterating List
 	Type* _Begin	= nullptr;
@@ -63,6 +66,9 @@ private:
 
 	template<class>
 	friend class SearchTree;
+
+	template<class>
+	friend class Deque;
 
 public:
 	using ValueType = Type;											// Type for stored values
