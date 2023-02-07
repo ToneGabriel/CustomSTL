@@ -147,4 +147,7 @@ int main()
 	dq.emplace_front(11);
 
 	dq.print_details();
+
+	for(auto& val: dq)
+		std::cout << val << ' ';
 }

@@ -11,20 +11,20 @@ CUSTOM_BEGIN
 // Headings =================================================================================
 
 template<class Type>
-class Deque					// Deque Template implemented as circular array
+class Deque					// Deque Template implemented as circular array (with list as iterator)
 {
 public:
-	using ValueType = Type;									// Type for stored values
-	using IterList	= List<ValueType>;						// List of ValueType used for iterating
-	using Node		= typename IterList::Node;				// Node component from List
-	using Array		= Vector<Node*>;						// Array of Node* used for quick access
-	using Iterator	= typename List<ValueType>::Iterator;	// Iterator for this container (identical to List iterator)
+	using ValueType 	= Type;										// Type for stored values
+	using IterList		= List<ValueType>;							// List of ValueType used for iterating
+	using Node			= typename IterList::Node;					// Node component from List
+	using CircularArray	= Vector<Node*>;							// Vector of Node* used for quick access
+	using Iterator		= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
 
 private:
-	size_t _front	= 0;									// Indicator of first elem (begin())
-	size_t _back	= 0;									// Indicator of last elem (end() - 1)
-	Array _array;											// Circular array used for quick access
-	IterList _elems;										// Used to iterate through container
+	size_t _front		= 0;										// Indicator of first elem (begin())
+	size_t _back		= 0;										// Indicator of last elem (end() - 1)
+	IterList _elems;												// Used to iterate through container
+	CircularArray _array;											// Circular array used for quick access
 
 public:
 	// Constructors
@@ -107,8 +107,8 @@ private:
 	void _clean_up_array();
 
 	const size_t _get_true_index(const size_t& index) const;
-	size_t _increment_offset(const size_t& offset);
-	size_t _decrement_offset(const size_t& offset);
+	size_t& _circular_increment(size_t& offset);
+	size_t& _circular_decrement(size_t& offset);
 }; // END Deque Template
 
 
@@ -118,13 +118,14 @@ private:
 // Deque Template
 
 template<class Type>
-Deque<Type>::Deque() {
-	_array.resize(12, nullptr);
-}
+Deque<Type>::Deque() 
+	: _array(CircularArray::default_capacity, nullptr), _elems() { /*Empty*/ }
 
 template<class Type>
-Deque<Type>::Deque(const size_t& newCapacity, const ValueType& copyValue) {
-	_array.resize(newCapacity);
+Deque<Type>::Deque(const size_t& newCapacity, const ValueType& copyValue)
+	: _array(newCapacity, nullptr), _elems() 
+{
+	// TODO: implement
 }
 
 template<class Type>
@@ -168,7 +169,7 @@ void Deque<Type>::emplace_back(Args&&... args) {
 	Node* newNode = new Node(std::forward<Args>(args)...);
 
 	if(!empty())
-		_back = _increment_offset(_back);
+		_circular_increment(_back);
 
 	_array[_back] = newNode;
 	_elems._insert_node_before(_elems._head, newNode);
@@ -188,7 +189,7 @@ template<class Type>
 void Deque<Type>::pop_back() {
 	_elems.pop_back();
 	_array[_back] = nullptr;
-	_back = _decrement_offset(_back);
+	_circular_decrement(_back);
 }
 
 template<class Type>
@@ -197,7 +198,7 @@ void Deque<Type>::emplace_front(Args&&... args) {
 	Node* newNode = new Node(std::forward<Args>(args)...);
 
 	if(!empty())
-		_front = _decrement_offset(_front);
+		_circular_decrement(_front);
 
 	_array[_front] = newNode;
 	_elems._insert_node_before(_elems._head->Next, newNode);
@@ -217,7 +218,7 @@ template<class Type>
 void Deque<Type>::pop_front() {
 	_elems.pop_front();
 	_array[_front] = nullptr;
-	_front = _increment_offset(_front);
+	_circular_increment(_front);
 }
 
 template<class Type>
@@ -360,7 +361,8 @@ const typename Deque<Type>::Iterator Deque<Type>::end() const {
 
 template<class Type>
 void Deque<Type>::_extend_if_full() {
-
+	if (size() >= capacity())
+		reserve(capacity() + capacity() / 2 + 1);
 }
 
 template<class Type>
@@ -369,13 +371,13 @@ const size_t Deque<Type>::_get_true_index(const size_t& index) const {
 }
 
 template<class Type>
-size_t Deque<Type>::_increment_offset(const size_t& offset) {
-	return (offset == capacity() - 1) ? 0 : offset + 1;
+size_t& Deque<Type>::_circular_increment(size_t& offset) {
+	return offset = (offset == capacity() - 1) ? 0 : ++offset;
 }
 
 template<class Type>
-size_t Deque<Type>::_decrement_offset(const size_t& offset) {
-	return (offset == 0) ? capacity() - 1 : offset - 1;
+size_t& Deque<Type>::_circular_decrement(size_t& offset) {
+	return offset = (offset == 0) ? capacity() - 1 : --offset;
 }
 // END Deque Template
 

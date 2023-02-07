@@ -69,6 +69,8 @@ public:
 	using Iterator	= VectorIterator<Vector<ValueType>>;			// Iterator type
 	using Data		= typename Iterator::Data;						// Iteration data
 
+	static constexpr size_t default_capacity = 12;	// TODO: set 8
+
 private:
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
@@ -80,7 +82,7 @@ private:
 public:
 	// Constructors
 
-	Vector() = default;												// Default Constructor
+	Vector();														// Default Constructor
 	Vector(const size_t& newCapacity, const ValueType& copyValue);	// Add multiple copies Constructor
 	Vector(const Vector& other);									// Copy Constructor
 	Vector(Vector&& other) noexcept;								// Move Constructor
@@ -277,6 +279,11 @@ const bool VectorIterator<Vector>::is_end() const {
 
 
 // Vector Template
+template<class Type>
+Vector<Type>::Vector() {
+	reserve(default_capacity);
+}
+
 template<class Type>
 Vector<Type>::Vector(const size_t& newCapacity, const ValueType& copyValue) {
 	realloc(newCapacity, copyValue);
