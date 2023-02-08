@@ -456,12 +456,14 @@ public:
 	using Iterator 	= DequeIterator<Deque<ValueType>>;		// Iterator type
 	using Data		= typename Iterator::Data;				// Iteration data
 
+	static constexpr size_t default_capacity = 8;
+
 private:
-	size_t _size = 0;										// Number of components held by this
-	size_t _capacity = 0;									// Allocated momory of type ValueType
-	size_t _front = 0;										// Indicator of first elem (begin())
-	size_t _back = 0;										// Indicator of last elem (end() - 1)
-	ValueType* _array = nullptr;							// Actual container array
+	size_t _size 		= 0;								// Number of components held by this
+	size_t _capacity 	= 0;								// Allocated momory of type ValueType
+	size_t _front 		= 0;								// Indicator of first elem (begin())
+	size_t _back 		= 0;								// Indicator of last elem (end() - 1)
+	ValueType* _array 	= nullptr;							// Actual container array
 
 	mutable Alloc _alloc;									// Allocator
 	mutable Data _data;										// Stores the ends of the array + others
@@ -469,14 +471,17 @@ private:
 public:
 	// Constructors
 
-	Deque() = default;												// Default Constructor
-	Deque(const size_t& newCapacity, const ValueType& copyValue);	// Add multiple copies Constructor
-	Deque(const Deque& other);										// Copy Constructor
-	Deque(Deque&& other) noexcept;									// Move Constructor
+	Deque();																	// Default Constructor
+	Deque(const size_t& newCapacity, const ValueType& copyValue);				// Add multiple copies Constructor
+	Deque(const Deque& other);													// Copy Constructor
+	Deque(Deque&& other) noexcept;												// Move Constructor
 	~Deque();
 
 public:
 	// Main functions
+
+	static size_t& circular_increment(size_t& index, const size_t& capacity);	// increment and return index
+	static size_t& circular_decrement(size_t& index, const size_t& capacity);	// decrement and return index
 
 	void reserve(const size_t& newCapacity);									// Allocate memory and move values if needed
 	void shrink_to_fit();														// Allocate memory with capacity equal to size and move values there
@@ -538,9 +543,6 @@ public:
 	Iterator end();
 	const Iterator end() const;
 
-	static size_t& circular_increment(size_t& index, const size_t& capacity);	// increment and return index
-	static size_t& circular_decrement(size_t& index, const size_t& capacity);	// decrement and return index
-
 private:
 	// Others
 
@@ -554,7 +556,7 @@ private:
 	void _clean_up_array();
 
 	const size_t _get_true_index(const size_t& index) const;
-	Data* _update_iteration_data(const size_t& index) const;										// Update the data used in Iterator
+	Data* _update_iteration_data() const;										// Update the data used in Iterator
 }; // END Deque Template
 
 
@@ -679,6 +681,11 @@ const bool DequeIterator<Deque>::is_end() const {
 // END Deque Iterator
 
 // Deque Template
+template<class Type>
+Deque<Type>::Deque() {
+	reserve(default_capacity);
+}
+
 template<class Type>
 Deque<Type>::Deque(const size_t& newCapacity, const ValueType& copyValue) {
 	realloc(newCapacity, copyValue);
@@ -903,22 +910,22 @@ typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) {
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::begin() {
-	return Iterator(_array + _front, _update_iteration_data(_front));
+	return Iterator(_array + _front, _update_iteration_data());
 }
 
 template<class Type>
 const typename Deque<Type>::Iterator Deque<Type>::begin() const {
-	return Iterator(_array + _front, _update_iteration_data(_front));
+	return Iterator(_array + _front, _update_iteration_data());
 }
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::end() {
-	return Iterator(_array + _back + 1, _update_iteration_data(_back + 1));
+	return Iterator(_array + _back + 1, _update_iteration_data());
 }
 
 template<class Type>
 const typename Deque<Type>::Iterator Deque<Type>::end() const {
-	return Iterator(_array + _back + 1, _update_iteration_data(_back + 1));
+	return Iterator(_array + _back + 1, _update_iteration_data());
 }
 
 template<class Type>
@@ -970,7 +977,7 @@ const size_t Deque<Type>::_get_true_index(const size_t& index) const {
 }
 
 template<class Type>
-typename Deque<Type>::Data* Deque<Type>::_update_iteration_data(const size_t& index) const {
+typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
 	_data._Begin = _array + _front;
 	_data._End = _array + _back + 1;
 	_data._Base = _array;
