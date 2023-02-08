@@ -148,6 +148,6 @@ int main()
 
 	dq.print_details();
 
-	for(auto& val: dq)
+	for(auto& val : dq)
 		std::cout << val << ' ';
 }

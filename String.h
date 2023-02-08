@@ -277,7 +277,7 @@ bool StringIterator<String>::operator!=(const StringIterator& other) const {
 
 template<class String>
 const size_t StringIterator<String>::get_index() const {
-	return _Ptr - _Data->_Begin;
+	return static_cast<size_t>(_Ptr - _Data->_Begin);
 }
 
 template<class String>
@@ -582,12 +582,12 @@ void String::print_details() const {
 }
 
 const char& String::operator[](const size_t& index) const {
-	assert(index >= 0 && index < _size);
+	assert(!(index < 0 || index >= _size));
 	return _string[index];
 }
 
 char& String::operator[](const size_t& index) {
-	assert(index >= 0 && index < _size);
+	assert(!(index < 0 || index >= _size));
 	return _string[index];
 }
 

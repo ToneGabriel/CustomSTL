@@ -263,7 +263,7 @@ bool VectorIterator<Vector>::operator!=(const VectorIterator& other) const {
 
 template<class Vector>
 const size_t VectorIterator<Vector>::get_index() const {
-	return _Ptr - _Data->_Begin;
+	return static_cast<size_t>(_Ptr - _Data->_Begin);
 }
 
 template<class Vector>
@@ -472,13 +472,13 @@ typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) {
 
 template<class Type>
 const typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) const {
-	assert(index >= 0 && index < _size);
+	assert(!(index < 0 || index >= _size));
 	return _array[index];
 }
 
 template<class Type>
 typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) {
-	assert(index >= 0 && index < _size);
+	assert(!(index < 0 || index >= _size));
 	return _array[index];
 }
 
