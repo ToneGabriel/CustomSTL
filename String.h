@@ -3,7 +3,6 @@
 #include "Allocator.h"
 #include <iostream>
 #include <cstring>
-#include <cassert>
 
 
 CUSTOM_BEGIN
@@ -625,7 +624,7 @@ bool String::operator==(const String& other) const {
 }
 
 bool String::operator!=(const String& other) const {
-	return !operator==(other);
+	return !(*this == other);
 }
 
 std::ostream& operator<<(std::ostream& os, const String& string) {

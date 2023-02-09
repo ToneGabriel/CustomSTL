@@ -15,7 +15,7 @@ class SearchTree
 {
 protected:
     using KeyType       = typename Traits::KeyType;				// Type of Key
-    using MappedType    = typename Traits::MappedType;			// Type of Mapped Value
+    using MappedType    = typename Traits::MappedType;			// Type of Mapped _Value
     using KeyCompare    = typename Traits::KeyCompare;			// Comparison struct
 
     using IterList      = List<typename Traits::ValueType>;		// List of ValueType used for iterating
@@ -103,7 +103,7 @@ public:
     template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
 		Node* newNode = new Node(std::forward<Args>(args)...);
-		const KeyType& newKey = Traits::extract_key(newNode->Value);
+		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 		_elems._insert_node_before(_elems._head, newNode);
 		_insert(new TreeNode(newNode));
@@ -154,49 +154,49 @@ private:
 	// Helpers
 
 	void _rotate_left(TreeNode* subroot) {				// promotes subroot right
-		TreeNode* promotedNode = subroot->Right;
-		subroot->Right = promotedNode->Left;			// subroot adopt left child of promoted
+		TreeNode* promotedNode = subroot->_Right;
+		subroot->_Right = promotedNode->_Left;			// subroot adopt left child of promoted
 
-		if(promotedNode->Left != nullptr)
-			promotedNode->Left->Parent = subroot;		// subroot-right-left parent set
+		if(promotedNode->_Left != nullptr)
+			promotedNode->_Left->_Parent = subroot;		// subroot-right-left parent set
 
-		promotedNode->Parent = subroot->Parent;			// promoted takes subroot parent
+		promotedNode->_Parent = subroot->_Parent;			// promoted takes subroot parent
 
 		if (subroot == _head)							// special case when tree root is chosen for rotation
 		{
 			_head = promotedNode;
-			promotedNode->Parent = nullptr;
+			promotedNode->_Parent = nullptr;
 		}
-		else if (subroot == subroot->Parent->Left)		// parent links his new promoted child
-			subroot->Parent->Left = promotedNode;
+		else if (subroot == subroot->_Parent->_Left)		// parent links his new promoted child
+			subroot->_Parent->_Left = promotedNode;
 		else
-			subroot->Parent->Right = promotedNode;
+			subroot->_Parent->_Right = promotedNode;
 
-		promotedNode->Left = subroot;					// promoted takes subroot as left child
-		subroot->Parent = promotedNode;					// subroot has promoted as new parent
+		promotedNode->_Left = subroot;					// promoted takes subroot as left child
+		subroot->_Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
 	void _rotate_right(TreeNode* subroot) {				// promotes subroot left
-		TreeNode* promotedNode = subroot->Left;
-		subroot->Left = promotedNode->Right;			// subroot adopt right child of promoted
+		TreeNode* promotedNode = subroot->_Left;
+		subroot->_Left = promotedNode->_Right;			// subroot adopt right child of promoted
 
-		if (promotedNode->Right != nullptr)
-			promotedNode->Right->Parent = subroot;		// subroot-left-right parent set
+		if (promotedNode->_Right != nullptr)
+			promotedNode->_Right->_Parent = subroot;		// subroot-left-right parent set
 
-		promotedNode->Parent = subroot->Parent;			// promoted takes subroot parent
+		promotedNode->_Parent = subroot->_Parent;			// promoted takes subroot parent
 
 		if (subroot == _head)							// special case when tree root is chosen for rotation
 		{
 			_head = promotedNode;
-			promotedNode->Parent = nullptr;
+			promotedNode->_Parent = nullptr;
 		}
-		else if (subroot == subroot->Parent->Left)
-			subroot->Parent->Left = promotedNode;		// parent links his new promoted child
+		else if (subroot == subroot->_Parent->_Left)
+			subroot->_Parent->_Left = promotedNode;		// parent links his new promoted child
 		else
-			subroot->Parent->Right = promotedNode;
+			subroot->_Parent->_Right = promotedNode;
 
-		promotedNode->Right = subroot;					// promoted takes subroot as right child
-		subroot->Parent = promotedNode;					// subroot has promoted as new parent
+		promotedNode->_Right = subroot;					// promoted takes subroot as right child
+		subroot->_Parent = promotedNode;					// subroot has promoted as new parent
 	}
 
 	void _insert(TreeNode* newNode) {
@@ -217,83 +217,83 @@ private:
 		{
 			futureParent = _workspaceNode;
 			
-			if(_less(Traits::extract_key(newNode->Value->Value), Traits::extract_key(futureParent->Value->Value)))	// TODO: value is pointer here!!!
+			if(_less(Traits::extract_key(newNode->_Value->_Value), Traits::extract_key(futureParent->_Value->_Value)))	// TODO: value is pointer here!!!
 			{
-				_workspaceNode = _workspaceNode->Left;
+				_workspaceNode = _workspaceNode->_Left;
 				if(_workspaceNode == nullptr)
 				{
-					futureParent->Left = newNode;
+					futureParent->_Left = newNode;
 					break;
 				}
 			}
 			else
 			{
-				_workspaceNode = _workspaceNode->Right;
+				_workspaceNode = _workspaceNode->_Right;
 				if(_workspaceNode == nullptr)
 				{
-					futureParent->Right = newNode;
+					futureParent->_Right = newNode;
 					break;
 				}
 			}
 		}
 
-		newNode->Parent = futureParent;
-		newNode->Color = Red;
+		newNode->_Parent = futureParent;
+		newNode->_Color = Red;
 	}
 
 	void _fix_inserted(TreeNode* newNode) {
 		
-		while(newNode->Parent->Color == Red)
+		while(newNode->_Parent->_Color == Red)
 		{
-			if(newNode->Parent == newNode->Parent->Parent->Left)
+			if(newNode->_Parent == newNode->_Parent->_Parent->_Left)
 			{
-				_workspaceNode = newNode->Parent->Parent->Right;
-				if(_workspaceNode->Color == Red)						// case1
+				_workspaceNode = newNode->_Parent->_Parent->_Right;
+				if(_workspaceNode->_Color == Red)						// case1
 				{
-					newNode->Parent->Color = Black;
-					_workspaceNode->Color = Black;
-					newNode->Parent->Parent->Color = Red;
-					newNode = newNode->Parent->Parent;
+					newNode->_Parent->_Color = Black;
+					_workspaceNode->_Color = Black;
+					newNode->_Parent->_Parent->_Color = Red;
+					newNode = newNode->_Parent->_Parent;
 				}
 				else 
 				{
-					if (newNode == newNode->Parent->Right)				// case2
+					if (newNode == newNode->_Parent->_Right)				// case2
 					{
-						newNode = newNode->Parent;
+						newNode = newNode->_Parent;
 						_rotate_left(newNode);
 					}
 
-					newNode->Parent->Color = Black;						// case3
-					newNode->Parent->Parent->Color = Red;
-					_rotate_right(newNode->Parent->Parent);
+					newNode->_Parent->_Color = Black;						// case3
+					newNode->_Parent->_Parent->_Color = Red;
+					_rotate_right(newNode->_Parent->_Parent);
 				}
 			}
 			else
 			{
-				_workspaceNode = newNode->Parent->Parent->Left;
-				if(_workspaceNode->Color == Red)
+				_workspaceNode = newNode->_Parent->_Parent->_Left;
+				if(_workspaceNode->_Color == Red)
 				{
-					newNode->Parent->Color = Black;
-					_workspaceNode->Color = Black;
-					newNode->Parent->Parent->Color = Red;
-					newNode = newNode->Parent->Parent;
+					newNode->_Parent->_Color = Black;
+					_workspaceNode->_Color = Black;
+					newNode->_Parent->_Parent->_Color = Red;
+					newNode = newNode->_Parent->_Parent;
 				}
 				else 
 				{
-					if (newNode == newNode->Parent->Left)
+					if (newNode == newNode->_Parent->_Left)
 					{
-						newNode = newNode->Parent;
+						newNode = newNode->_Parent;
 						_rotate_right(newNode);
 					}
 
-					newNode->Parent->Color = Black;
-					newNode->Parent->Parent->Color = Red;
-					_rotate_left(newNode->Parent->Parent);
+					newNode->_Parent->_Color = Black;
+					newNode->_Parent->_Parent->_Color = Red;
+					_rotate_left(newNode->_Parent->_Parent);
 				}
 			}
 		}
 
-		_head->Color = Black;
+		_head->_Color = Black;
 	}
 
 	TreeNode* _find_in_tree(const KeyType& key) const {
@@ -301,15 +301,15 @@ private:
 
 		for(_workspaceNode = _head; _workspaceNode!= nullptr; )
 		{
-			if(key == Traits::extract_key(_workspaceNode->Value))
+			if(key == Traits::extract_key(_workspaceNode->_Value))
 				found = _workspaceNode;
-			else if(_less(key, Traits::extract_key(_workspaceNode->Value)))
+			else if(_less(key, Traits::extract_key(_workspaceNode->_Value)))
 			{
-				_workspaceNode = _workspaceNode->Left;
+				_workspaceNode = _workspaceNode->_Left;
 			}
 			else
 			{
-				_workspaceNode = _workspaceNode->Right;
+				_workspaceNode = _workspaceNode->_Right;
 			}
 		}
 

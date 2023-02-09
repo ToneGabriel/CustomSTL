@@ -62,7 +62,7 @@ public:
 	template<class _KeyType, class... Args>
 	Iterator try_emplace(_KeyType&& key, Args&&... args);	// Force construction with known key and given arguments for object
 
-	const MappedType& at(const Key& key) const;				// Access Value at key with check
+	const MappedType& at(const Key& key) const;				// Access value at key with check
 	MappedType& at(const Key& key);
 }; // END UnorderedMap Template
 
@@ -105,12 +105,12 @@ UnorderedMap<Key, Type, Hasher>::~UnorderedMap() { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](const Key& key) {
-	return try_emplace(key)->Value.Second;
+	return try_emplace(key)->_Value.Second;
 }
 
 template<class Key, class Type, class Hasher>
 typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](Key&& key) {
-	return try_emplace(std::move(key))->Value.Second;
+	return try_emplace(std::move(key))->_Value.Second;
 }
 
 template<class Key, class Type, class Hasher>
@@ -134,7 +134,7 @@ bool UnorderedMap<Key, Type, Hasher>::operator==(const UnorderedMap& other) cons
 
 template<class Key, class Type, class Hasher>
 bool UnorderedMap<Key, Type, Hasher>::operator!=(const UnorderedMap& other) const {
-	return !operator==(other);
+	return Base::operator!=(other);
 }
 
 template<class Key, class Type, class Hasher>

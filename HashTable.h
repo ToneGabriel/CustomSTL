@@ -17,12 +17,12 @@ class HashTable				// HashTable Template
 {
 protected:
     using KeyType           = typename Traits::KeyType;				// Type of Key
-    using MappedType        = typename Traits::MappedType;			// Type of Mapped Value
+    using MappedType        = typename Traits::MappedType;			// Type of Mapped _Value
     using Hasher            = typename Traits::HasherType;			// Hash struct
 
 	using IterList			= List<typename Traits::ValueType>;		// List of ValueType used for iterating
 	using Node				= typename IterList::Node;				// Node component from List
-	using Bucket			= List<Node*>;							// List of Node* (as Value) from Iteration list
+	using Bucket			= List<Node*>;							// List of Node* (as _Value) from Iteration list
 	using HashArray			= Vector<Bucket>;						// Array of lists of Node*
 	using BucketIterator	= typename Bucket::Iterator;			// Iterator for Buckets
 
@@ -54,6 +54,7 @@ protected:
 	HashTable& operator=(HashTable&& other) noexcept;
 
 	bool operator==(const HashTable& other) const;					// Contains the same elems, but not the same hashtable
+	bool operator!=(const HashTable& other) const;
 
 public:
     // Main functions
@@ -93,7 +94,7 @@ protected:
 	template<class _KeyType, class... Args>
 	Iterator _try_emplace(_KeyType&& key, Args&&... args);			// Force construction with known key and given arguments for object
 
-	const MappedType& _at(const KeyType& key) const;				// Access Value at key with check
+	const MappedType& _at(const KeyType& key) const;				// Access _Value at key with check
 	MappedType& _at(const KeyType& key);
 
 private:
@@ -174,10 +175,15 @@ bool HashTable<Traits>::operator==(const HashTable& other) const {
 }
 
 template<class Traits>
+bool HashTable<Traits>::operator!=(const HashTable& other) const {
+	return !(*this == other);
+}
+
+template<class Traits>
 template<class... Args>
 typename HashTable<Traits>::Iterator HashTable<Traits>::emplace(Args&&... args) {
 	Node* newNode = new Node(std::forward<Args>(args)...);
-	const KeyType& newKey = Traits::extract_key(newNode->Value);
+	const KeyType& newKey = Traits::extract_key(newNode->_Value);
 	Iterator it = find(newKey);
 
 	if (it != end()) {												// Destroy newly-created Node if key exists
@@ -210,7 +216,7 @@ typename HashTable<Traits>::Iterator HashTable<Traits>::erase(const Iterator& it
 	if (iterator == end())
 		throw std::out_of_range("Map erase iterator outside range...");
 
-	return erase(iterator._Ptr->Value);
+	return erase(iterator._Ptr->_Value);
 }
 
 template<class Traits>
@@ -284,7 +290,7 @@ void HashTable<Traits>::print_details() const {
 	{
 		std::cout << i << " : ";
 		for (const auto& val : _buckets[i])
-			std::cout << Traits::extract_key(val->Value) << ' ' << Traits::extract_mapval(val->Value) << '\\';
+			std::cout << Traits::extract_key(val->_Value) << ' ' << Traits::extract_mapval(val->_Value) << '\\';
 		std::cout << '\n';
 	}
 }
@@ -322,7 +328,7 @@ typename HashTable<Traits>::Iterator HashTable<Traits>::_try_emplace(_KeyType&& 
 						forward_as_tuple(std::forward<_KeyType>(key)),
 						forward_as_tuple(std::forward<Args>(args)...)
 						);
-		const KeyType& newKey = Traits::extract_key(newNode->Value);
+		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 		_rehash_if_overload();
 		_elems._insert_node_before(_elems._head, newNode);
@@ -337,7 +343,7 @@ const typename HashTable<Traits>::MappedType& HashTable<Traits>::_at(const KeyTy
 	if (it == _buckets[bucket(key)].end())
 		throw std::out_of_range("Invalid key...");
 
-	return Traits::extract_mapval((*it)->Value);
+	return Traits::extract_mapval((*it)->_Value);
 }
 
 template<class Traits>
@@ -346,14 +352,14 @@ typename HashTable<Traits>::MappedType& HashTable<Traits>::_at(const KeyType& ke
 	if (it == _buckets[bucket(key)].end())
 		throw std::out_of_range("Invalid key...");
 
-	return Traits::extract_mapval((*it)->Value);
+	return Traits::extract_mapval((*it)->_Value);
 }
 
 template<class Traits>
 typename HashTable<Traits>::BucketIterator HashTable<Traits>::_find_in_array(const KeyType& key) const {
 	const Bucket& currentBucket = _buckets[bucket(key)];
 	BucketIterator it = currentBucket.begin();
-	while (it != currentBucket.end() && Traits::extract_key((*it)->Value) != key)
+	while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 		it++;
 
 	return it;
@@ -365,7 +371,7 @@ void HashTable<Traits>::_force_rehash(const size_t& buckets) {
 	_buckets.resize(buckets);
 
 	for (auto it = _elems.begin(); it != _elems.end(); ++it)
-		_buckets[bucket(Traits::extract_key(it->Value))].push_back(it._Ptr);
+		_buckets[bucket(Traits::extract_key(it->_Value))].push_back(it._Ptr);
 }
 
 template<class Traits>

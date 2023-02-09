@@ -111,7 +111,7 @@ bool UnorderedSet<Key, Hasher>::operator==(const UnorderedSet& other) const {			
 
 template<class Key, class Hasher>
 bool UnorderedSet<Key, Hasher>::operator!=(const UnorderedSet& other) const {
-	return !operator==(other);
+	return Base::operator!=(other);
 }
 // END UnorderedSet Template
 

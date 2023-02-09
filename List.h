@@ -12,9 +12,6 @@ class HashTable;
 template<class>
 class SearchTree;
 
-template<class>
-class Deque;
-
 template<class Type>
 struct ListIterationData {		// Data used for iterating List
 	Type* _Begin	= nullptr;
@@ -66,9 +63,6 @@ private:
 
 	template<class>
 	friend class SearchTree;
-
-	template<class>
-	friend class Deque;
 
 public:
 	using ValueType = Type;											// Type for stored values
@@ -192,7 +186,7 @@ ListIterator<List>& ListIterator<List>::operator++() {
 	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	_Ptr = _Ptr->Next;
+	_Ptr = _Ptr->_Next;
 	return *this;
 }
 
@@ -208,7 +202,7 @@ ListIterator<List>& ListIterator<List>::operator--() {
 	if (_Ptr == _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	_Ptr = _Ptr->Previous;
+	_Ptr = _Ptr->_Previous;
 	return *this;
 }
 
@@ -232,7 +226,7 @@ typename ListIterator<List>::ValueType& ListIterator<List>::operator*() {
 	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot dereference end iterator...");
 
-	return _Ptr->Value;
+	return _Ptr->_Value;
 }
 
 template<class List>
@@ -316,14 +310,14 @@ void List<Type>::push_back(ValueType&& moveValue) {
 template<class Type>
 void List<Type>::pop_back() {
 	if (_size > 0)
-		_remove_node(_head->Previous);
+		_remove_node(_head->_Previous);
 }
 
 template<class Type>
 template<class... Args>
 void List<Type>::emplace_front(Args&&... args) {
 	Node* newNode = new Node(std::forward<Args>(args)...);
-	_insert_node_before(_head->Next, newNode);
+	_insert_node_before(_head->_Next, newNode);
 }
 
 template<class Type>
@@ -339,7 +333,7 @@ void List<Type>::push_front(ValueType&& moveValue) {
 template<class Type>
 void List<Type>::pop_front() {
 	if (_size > 0)
-		_remove_node(_head->Next);
+		_remove_node(_head->_Next);
 }
 
 template<class Type>
@@ -368,7 +362,7 @@ typename List<Type>::Iterator List<Type>::pop(const Iterator& iterator) {
 		throw std::out_of_range("Cannot pop end iterator...");
 
 	_workspaceNode = iterator._Ptr;
-	Iterator prevIterator = Iterator(_workspaceNode->Previous, _update_iteration_data());
+	Iterator prevIterator = Iterator(_workspaceNode->_Previous, _update_iteration_data());
 	_remove_node(_workspaceNode);
 
 	return prevIterator;
@@ -376,22 +370,22 @@ typename List<Type>::Iterator List<Type>::pop(const Iterator& iterator) {
 
 template<class Type>
 typename List<Type>::ValueType& List<Type>::front() {
-	return _head->Next->Value;
+	return _head->_Next->_Value;
 }
 
 template<class Type>
 const typename List<Type>::ValueType& List<Type>::front() const {
-	return _head->Next->Value;
+	return _head->_Next->_Value;
 }
 
 template<class Type>
 typename List<Type>::ValueType& List<Type>::back() {
-	return _head->Previous->Value;
+	return _head->_Previous->_Value;
 }
 
 template<class Type>
 const typename List<Type>::ValueType& List<Type>::back() const {
-	return _head->Previous->Value;
+	return _head->_Previous->_Value;
 }
 
 template<class Type>
@@ -452,17 +446,17 @@ bool List<Type>::operator==(const List& other) const {
 
 template<class Type>
 bool List<Type>::operator!=(const List& other) const {
-	return !operator==(other);
+	return !(*this == other);
 }
 
 template<class Type>
 typename List<Type>::Iterator List<Type>::begin() {
-	return Iterator(_head->Next, _update_iteration_data());
+	return Iterator(_head->_Next, _update_iteration_data());
 }
 
 template<class Type>
 const typename List<Type>::Iterator List<Type>::begin() const {
-	return Iterator(_head->Next, _update_iteration_data());
+	return Iterator(_head->_Next, _update_iteration_data());
 }
 
 template<class Type>
@@ -493,19 +487,19 @@ typename List<Type>::Iterator List<Type>::at(const size_t& index) {
 
 template<class Type>
 void List<Type>::_insert_node_before(Node* beforeNode, Node* newNode) {
-	newNode->Previous = beforeNode->Previous;
-	newNode->Next = beforeNode;
+	newNode->_Previous = beforeNode->_Previous;
+	newNode->_Next = beforeNode;
 
-	beforeNode->Previous->Next = newNode;
-	beforeNode->Previous = newNode;
+	beforeNode->_Previous->_Next = newNode;
+	beforeNode->_Previous = newNode;
 
 	_size++;
 }
 
 template<class Type>
 void List<Type>::_remove_node(Node* junkNode) {
-	junkNode->Previous->Next = junkNode->Next;
-	junkNode->Next->Previous = junkNode->Previous;
+	junkNode->_Previous->_Next = junkNode->_Next;
+	junkNode->_Next->_Previous = junkNode->_Previous;
 
 	delete junkNode;
 	_size--;
@@ -513,7 +507,7 @@ void List<Type>::_remove_node(Node* junkNode) {
 
 template<class Type>
 typename List<Type>::Data* List<Type>::_update_iteration_data() const {
-	_data._Begin = _head->Next;
+	_data._Begin = _head->_Next;
 	_data._End = _head;
 
 	return &_data;
@@ -521,20 +515,20 @@ typename List<Type>::Data* List<Type>::_update_iteration_data() const {
 
 template<class Type>
 void List<Type>::_copy(const List& other) {
-	_workspaceNode = other._head->Next;
+	_workspaceNode = other._head->_Next;
 	while (_size < other._size) {
-		push_back(_workspaceNode->Value);
-		_workspaceNode = _workspaceNode->Next;
+		push_back(_workspaceNode->_Value);
+		_workspaceNode = _workspaceNode->_Next;
 	}
 }
 
 template<class Type>
 void List<Type>::_move(List&& other) {
 	// link current head with the other "body"
-	_head->Next = other._head->Next;
-	_head->Next->Previous = _head;
-	_head->Previous = other._head->Previous;
-	_head->Previous->Next = _head;
+	_head->_Next = other._head->_Next;
+	_head->_Next->_Previous = _head;
+	_head->_Previous = other._head->_Previous;
+	_head->_Previous->_Next = _head;
 	_size = other._size;
 	_data = other._data;
 
@@ -559,10 +553,10 @@ void List<Type>::_delete_until_size(const size_t& newSize) {
 
 template<class Type>
 typename List<Type>::Node* List<Type>::_scroll_node(const size_t& index) const {
-	_workspaceNode = _head->Next;
+	_workspaceNode = _head->_Next;
 	if (_workspaceNode != _head)
 		for (size_t i = 0; i < index; i++)
-			_workspaceNode = _workspaceNode->Next;
+			_workspaceNode = _workspaceNode->_Next;
 
 	return _workspaceNode;
 }
@@ -572,8 +566,8 @@ void List<Type>::_reset_head() {
 	if (_head == nullptr)
 		_head = new Node();
 
-	_head->Next = _head;
-	_head->Previous = _head;
+	_head->_Next = _head;
+	_head->_Previous = _head;
 }
 
 template<class Type>

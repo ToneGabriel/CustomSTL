@@ -59,11 +59,11 @@ public:
 	// Operators
 
 	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->Value.Second;
+		return try_emplace(key)->_Value.Second;
 	}
 
 	MappedType& operator[](Key&& key) {
-		return try_emplace(std::move(key))->Value.Second;
+		return try_emplace(std::move(key))->_Value.Second;
 	}
 
 	Map& operator=(const Map& other) {
@@ -94,7 +94,7 @@ public:
 		return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
 	}
 
-	const MappedType& at(const Key& key) const {						// Access Value at key with check
+	const MappedType& at(const Key& key) const {						// Access _Value at key with check
 		return this->_at(key);
 	}
 

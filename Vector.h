@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
-#include <cassert>
 
 
 CUSTOM_BEGIN
@@ -518,7 +517,7 @@ bool Vector<Type>::operator==(const Vector& other) const {
 
 template<class Type>
 bool Vector<Type>::operator!=(const Vector& other) const {
-	return !operator==(other);
+	return !(*this == other);
 }
 
 template<class Type>

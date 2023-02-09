@@ -111,7 +111,7 @@ bool Pair<Type1, Type2>::operator==(const Pair& other) {
 
 template<class Type1, class Type2>
 bool Pair<Type1, Type2>::operator!=(const Pair& other) {
-    return !operator==(other);
+    return !(*this == other);
 }
 // END Pair Template
 

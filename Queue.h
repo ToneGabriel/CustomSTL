@@ -96,7 +96,7 @@ void Queue<Type>::emplace(Args&&... args) {
 	if (_head == nullptr)
 		_head = _tail = newNode;	// Here head and tail are not important and can be used to store value
 	else {
-		_tail->Next = newNode;
+		_tail->_Next = newNode;
 		_tail = newNode;
 	}
 	_size++;
@@ -116,7 +116,7 @@ template<class Type>
 void Queue<Type>::pop() {
 	if (_head) {
 		_workspaceNode = _head;
-		_head = _head->Next;
+		_head = _head->_Next;
 
 		if (_head == nullptr)
 			_tail = nullptr;
@@ -128,22 +128,22 @@ void Queue<Type>::pop() {
 
 template<class Type>
 typename Queue<Type>::ValueType& Queue<Type>::front() {
-	return _head->Value;
+	return _head->_Value;
 }
 
 template<class Type>
 const typename Queue<Type>::ValueType& Queue<Type>::front() const {
-	return _head->Value;
+	return _head->_Value;
 }
 
 template<class Type>
 typename Queue<Type>::ValueType& Queue<Type>::back() {
-	return _tail->Value;
+	return _tail->_Value;
 }
 
 template<class Type>
 const typename Queue<Type>::ValueType& Queue<Type>::back() const {
-	return _tail->Value;
+	return _tail->_Value;
 }
 
 template<class Type>
@@ -160,7 +160,7 @@ template<class Type>
 void Queue<Type>::clear() {
 	while (_size) {
 		_workspaceNode = _head;
-		_head = _head->Next;
+		_head = _head->_Next;
 
 		delete _workspaceNode;
 		_size--;
@@ -195,8 +195,8 @@ template<class Type>
 void Queue<Type>::_copy(const Queue& other) {
 	_workspaceNode = other._head;
 	while (_size < other._size) {
-		enqueue(_workspaceNode->Value);
-		_workspaceNode = _workspaceNode->Next;
+		enqueue(_workspaceNode->_Value);
+		_workspaceNode = _workspaceNode->_Next;
 	}
 }
 
