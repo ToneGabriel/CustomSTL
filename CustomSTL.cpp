@@ -31,33 +31,33 @@ public:
 	}
 
 	Test(int x) {
-		std::cout << "Custom Construct\n";
 		value = x;
+		std::cout << "Custom Construct " << value << '\n';
 	}
 
 	Test(const Test& other) {
-		std::cout << "Copy Construct\n";
 		value = other.value;
+		std::cout << "Copy Construct " << value << '\n';
 	}
 
 	Test(Test&& other) noexcept {
-		std::cout << "Move Construct\n";
 		value = std::move(other.value);
+		std::cout << "Move Construct " << value << '\n';
 	}
 
 	~Test() {
-		std::cout << "Destruct\n";
+		std::cout << "Destruct " << value << '\n';
 	}
 
 	Test& operator=(const Test& other) {
-		std::cout << "Copy Assign\n";
 		value = other.value;
+		std::cout << "Copy Assign " << value << '\n';
 		return *this;
 	}
 
 	Test& operator=(Test&& other) noexcept {
-		std::cout << "Move Assign\n";
 		value = std::move(other.value);
+		std::cout << "Move Assign " << value << '\n';
 		return *this;
 	}
 
@@ -128,7 +128,7 @@ int main()
 
 	// =====================================================================
 
-	custom::Deque<int> dq;
+	custom::Deque<Test> dq;
 
 	dq.emplace_back(0);
 	dq.emplace_back(1);
@@ -150,4 +150,5 @@ int main()
 
 	for(auto& val : dq)
 		std::cout << val << ' ';
+	std::cout << '\n';
 }

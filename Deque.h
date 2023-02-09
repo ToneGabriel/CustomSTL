@@ -93,8 +93,8 @@ public:
 public:
 	// Main functions
 
-	static size_t& circular_increment(size_t& index, const size_t& capacity, const size_t& count = 1);	// increment and return index
-	static size_t& circular_decrement(size_t& index, const size_t& capacity, const size_t& count = 1);	// decrement and return index
+	static size_t circular_increment(const size_t& index, const size_t& capacity, const size_t& count = 1);	// increment and return index
+	static size_t circular_decrement(const size_t& index, const size_t& capacity, const size_t& count = 1);	// decrement and return index
 
 	void reserve(const size_t& newCapacity);									// Allocate memory and move values if needed
 	void shrink_to_fit();														// Allocate memory with capacity equal to size and move values there
@@ -168,7 +168,6 @@ private:
 	void _extend_if_full();														// Reserve 50% more capacity when full
 	void _clean_up_array();
 
-	const size_t _get_true_index(const size_t& index) const;
 	Data* _update_iteration_data() const;										// Update the data used in Iterator
 }; // END Deque Template
 
@@ -200,8 +199,7 @@ DequeIterator<Deque>& DequeIterator<Deque>::operator++() {
 	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	size_t index = get_index();
-	_Ptr = _Data->_Base + Deque::circular_increment(index, _Data->_Capacity);
+	_Ptr = _Data->_Base + Deque::circular_increment(get_index(), _Data->_Capacity);
 
 	return *this;
 }
@@ -224,12 +222,11 @@ DequeIterator<Deque> DequeIterator<Deque>::operator+(const size_t& diff) const {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator--() {			// TODO: check
+DequeIterator<Deque>& DequeIterator<Deque>::operator--() {
 	if (_Ptr == _Data->_Begin)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
-	size_t index = get_index();
-	_Ptr = _Data->_Base + Deque::circular_decrement(index, _Data->_Capacity);
+	_Ptr = _Data->_Base + Deque::circular_decrement(get_index(), _Data->_Capacity);
 
 	return *this;
 }
@@ -329,14 +326,14 @@ void Deque<Type>::reserve(const size_t& newCapacity) {		// TODO: check
 	for (size_t i = 0; i < _size; i++)
 	{
 		_alloc.construct(&newArray[i], std::move(_array[aux]));
-		circular_increment(aux, _capacity);
+		aux = circular_increment(aux, _capacity);
 	}
 
 	_clean_up_array();
 	_array = newArray;
 	_capacity = newCapacity;
 	_front = 0;
-	_back = (_size == 0) ? 0 : _size - 1;
+	_back = (_size == 0) ? 0 : _size - 1;	// TODO: check modulo variant
 }
 
 template<class Type>
@@ -386,7 +383,7 @@ void Deque<Type>::emplace_back(Args&&... args) {
 	_extend_if_full();
 
 	if(!empty())
-		circular_increment(_back, _capacity);
+		_back = circular_increment(_back, _capacity);
 
 	_alloc.construct(&_array[_back], std::forward<Args>(args)...);
 	++_size;
@@ -407,7 +404,7 @@ void Deque<Type>::pop_back() {
 	if (_size > 0)
 	{
 		_alloc.destroy(&_array[_back]);
-		circular_decrement(_back, _capacity);
+		_back = circular_decrement(_back, _capacity);
 		--_size;
 	}
 }
@@ -418,7 +415,7 @@ void Deque<Type>::emplace_front(Args&&... args) {
 	_extend_if_full();
 
 	if(!empty())
-		circular_decrement(_front, _capacity);
+		_front = circular_decrement(_front, _capacity);
 
 	_alloc.construct(&_array[_front], std::forward<Args>(args)...);
 	++_size;
@@ -439,7 +436,7 @@ void Deque<Type>::pop_front() {
 	if (_size > 0)
 	{
 		_alloc.destroy(&_array[_front]);
-		circular_increment(_front, _capacity);
+		_front = circular_increment(_front, _capacity);
 		--_size;
 	}
 }
@@ -513,7 +510,6 @@ void Deque<Type>::print_details() {
 	std::cout << "Capacity= " << _capacity << '\n';
 	std::cout << "Front= " << _front << '\n';
 	std::cout << "Back= " << _back << '\n';
-	std::cout << "Address= " << _array << '\n';
 
 	for (size_t i = 0; i <= _capacity; i++)
 		std::cout << _array[i] << ' ';
@@ -526,7 +522,7 @@ const typename Deque<Type>::ValueType& Deque<Type>::at(const size_t& index) cons
 	if (index < 0 || index >= _size)
 		throw std::out_of_range("Invalid Index...");
 
-	return _array[_get_true_index(index)];
+	return _array[circular_increment(_front, _capacity, index)];
 }
 
 template<class Type>
@@ -534,19 +530,19 @@ typename Deque<Type>::ValueType& Deque<Type>::at(const size_t& index) {
 	if (index < 0 || index >= _size)
 		throw std::out_of_range("Invalid Index...");
 
-	return _array[_get_true_index(index)];
+	return _array[circular_increment(_front, _capacity, index)];
 }
 
 template<class Type>
 const typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) const {
 	assert(!(index < 0 || index >= _size));
-	return _array[_get_true_index(index)];
+	return _array[circular_increment(_front, _capacity, index)];
 }
 
 template<class Type>
 typename Deque<Type>::ValueType& Deque<Type>::operator[](const size_t& index) {
 	assert(!(index < 0 || index >= _size));
-	return _array[_get_true_index(index)];
+	return _array[circular_increment(_front, _capacity, index)];
 }
 
 template<class Type>
@@ -616,23 +612,13 @@ const typename Deque<Type>::Iterator Deque<Type>::end() const {
 }
 
 template<class Type>
-size_t& Deque<Type>::circular_increment(size_t& index, const size_t& capacity, const size_t& count) {	// No bound check
-	if (index + count > capacity)
-		index = index + count - capacity - 1;
-	else
-		index = index + count;
-
-	return index;
+size_t Deque<Type>::circular_increment(const size_t& index, const size_t& capacity, const size_t& count) {	// No bound check
+	return (index + count) % (capacity + 1);
 }
 
 template<class Type>
-size_t& Deque<Type>::circular_decrement(size_t& index, const size_t& capacity, const size_t& count) {	// No bound check
-	if (index < count)
-		index = capacity + index - count + 1;
-	else
-		index = index - count;
-
-	return index;
+size_t Deque<Type>::circular_decrement(const size_t& index, const size_t& capacity, const size_t& count) {	// No bound check
+	return ((capacity + 1) + index - count) % (capacity + 1);
 }
 
 template<class Type>
@@ -647,14 +633,14 @@ void Deque<Type>::_dealloc_array() {
 
 template<class Type>
 void Deque<Type>::_destroy_array() {
-	for (size_t i = _front; i != _back + 1; circular_increment(i, _capacity))
+	for (size_t i = _front; i != _back + 1; i = circular_increment(i, _capacity))
 		_alloc.destroy(_array + i);
 }
 
 template<class Type>
 void Deque<Type>::_copy(const Deque& other) {
 	_array = _alloc_array(other._capacity);
-	for (size_t i = other._front; i != other._back; circular_increment(i, other._capacity))
+	for (size_t i = other._front; i != other._back + 1; i = circular_increment(i, other._capacity))
 		_alloc.construct(&_array[i], other._array[i]);
 
 	_size 		= other._size;
@@ -696,14 +682,9 @@ void Deque<Type>::_clean_up_array()
 }
 
 template<class Type>
-const size_t Deque<Type>::_get_true_index(const size_t& index) const {
-	return (_front + index) % (_capacity + 1);
-}
-
-template<class Type>
 typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
 	_data._Begin = _array + _front;
-	_data._End = _array + _get_true_index(_size);
+	_data._End = _array + circular_increment(_front, _capacity, _size);
 	_data._Base = _array;
 	_data._Capacity = _capacity;
 
