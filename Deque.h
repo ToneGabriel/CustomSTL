@@ -53,7 +53,7 @@ public:
 
 public:
 
-	const size_t get_index() const;							// Get the position for the element in array from iterator
+	const size_t get_index() const;							// Get the position for the element in array from iterator (relative to array address, NOT begin)
 	const bool is_begin() const;
 	const bool is_end() const;
 }; // END Deque Iterator
@@ -495,8 +495,10 @@ const size_t Deque<Type>::size() const {
 
 template<class Type>
 void Deque<Type>::clear() {
-	_destroy_array(_array, _size, _capacity);
+	_destroy_array();
 	_size = 0;
+	_front = 0;
+	_back = 0;
 }
 
 template<class Type>
