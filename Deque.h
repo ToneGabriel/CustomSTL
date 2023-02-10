@@ -444,6 +444,7 @@ void Deque<Type>::pop_front() {
 template<class Type>
 template<class... Args>
 typename Deque<Type>::Iterator Deque<Type>::emplace(const Iterator& iterator, Args&&... args) {
+	// size_t pos = circular_decrement(iterator.get_index(), _capacity, _front);
 	return begin();		// TODO: implement
 }
 
