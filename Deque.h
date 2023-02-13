@@ -12,6 +12,7 @@ struct DequeIterationData {		// Data used for iterating Deque
 	Type* _Begin		= nullptr;
 	Type* _End			= nullptr;
 	Type* _Base 		= nullptr;
+	size_t _Size		= 0;
 	size_t _Capacity 	= 0;
 
 	DequeIterationData() = default;
@@ -200,7 +201,6 @@ DequeIterator<Deque>& DequeIterator<Deque>::operator++() {
 		throw std::out_of_range("Cannot increment end iterator...");
 
 	_Ptr = _Data->_Base + Deque::circular_increment(get_index(), _Data->_Capacity);
-
 	return *this;
 }
 
@@ -227,7 +227,6 @@ DequeIterator<Deque>& DequeIterator<Deque>::operator--() {
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
 	_Ptr = _Data->_Base + Deque::circular_decrement(get_index(), _Data->_Capacity);
-
 	return *this;
 }
 
@@ -444,23 +443,40 @@ void Deque<Type>::pop_front() {
 template<class Type>
 template<class... Args>
 typename Deque<Type>::Iterator Deque<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	// size_t pos = circular_decrement(iterator.get_index(), _capacity, _front);
-	return begin();		// TODO: implement
+	size_t pos = circular_decrement(iterator.get_index(), _capacity, _front);	// position relative to front
+	emplace_back();
+	size_t index = circular_increment(_front, _capacity, pos);	// real index after (possible) realocation
+
+	for(size_t i = _back; i != index; i = circular_decrement(i, _capacity))
+		_array[i] = std::move(_array[circular_decrement(i, _capacity)]);
+
+	_alloc.destroy(&_array[index]);
+	_alloc.construct(&_array[index], std::forward<Args>(args)...);
+
+	return Iterator(&_array[index], _update_iteration_data());
 }
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::push(const Iterator& iterator, const ValueType& copyValue) {
-	return begin();		// TODO: implement
+	return emplace(iterator, copyValue);
 }
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
-	return begin();		// TODO: implement
+	return emplace(iterator, std::move(moveValue));
 }
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::pop(const Iterator& iterator) {
-	return begin();		// TODO: implement
+	if (iterator.is_end())
+		throw std::out_of_range("Array pop iterator outside range...");
+
+	size_t index = iterator.get_index();
+	for (size_t i = index; i != _back + 1; i = circular_increment(i, _capacity))
+		_array[i] = std::move(_array[circular_increment(i, _capacity)]);
+	pop_back();
+
+	return Iterator(&_array[index], _update_iteration_data());
 }
 
 template<class Type>

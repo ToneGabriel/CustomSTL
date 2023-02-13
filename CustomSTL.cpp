@@ -128,7 +128,7 @@ int main()
 
 	// =====================================================================
 
-	custom::Deque<Test> dq;
+	custom::Deque<int> dq;
 
 	dq.emplace_back(0);
 	dq.emplace_back(1);
@@ -145,7 +145,11 @@ int main()
 	dq.emplace_front(9);
 	dq.emplace_front(10);
 	dq.emplace_front(11);
-
+	dq.emplace_front(12);
+	dq.emplace_front(13);
+	dq.emplace_front(14);
+	
+	dq.emplace(++dq.begin(), 101);
 	dq.print_details();
 
 	for(auto& val : dq)
