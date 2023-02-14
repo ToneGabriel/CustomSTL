@@ -54,7 +54,8 @@ public:
 
 public:
 
-	const size_t get_index() const;							// Get the position for the element in array from iterator (relative to array address, NOT begin)
+	const size_t get_index() const;							// Get the index for the element in array from iterator (relative to array address, NOT begin)
+	const size_t get_pos() const;							// Get the position for the element in array from iterator (relative to begin)
 	const bool is_begin() const;
 	const bool is_end() const;
 }; // END Deque Iterator
@@ -212,8 +213,12 @@ DequeIterator<Deque> DequeIterator<Deque>::operator++(int) {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {
-	return *this;		// TODO: implement
+DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {	// TODO: check
+	if(get_pos() + diff > _Data->_Size)
+		throw std::out_of_range("Cannot increment end iterator...");
+
+	_Ptr = _Data->_Base + Deque::circular_increment(get_index(), _Data->_Capacity, diff);
+	return *this;
 }
 
 template<class Deque>
@@ -238,8 +243,12 @@ DequeIterator<Deque> DequeIterator<Deque>::operator--(int) {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {
-	return *this;		// TODO: implement
+DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {	// TODO: check
+	if(get_pos() < diff)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	_Ptr = _Data->_Base + Deque::circular_decrement(get_index(), _Data->_Capacity, diff);
+	return *this;
 }
 
 template<class Deque>
@@ -276,6 +285,12 @@ bool DequeIterator<Deque>::operator!=(const DequeIterator& other) const {
 template<class Deque>
 const size_t DequeIterator<Deque>::get_index() const {
 	return static_cast<size_t>(_Ptr - _Data->_Base);
+}
+
+template<class Deque>
+const size_t DequeIterator<Deque>::get_pos() const {
+	size_t frontIndex = static_cast<size_t>(_Data->_Begin - _Data->_Base);
+	return Deque::circular_decrement(get_index(), _Data->_Capacity, frontIndex);	// position relative to front
 }
 
 template<class Deque>
@@ -443,7 +458,7 @@ void Deque<Type>::pop_front() {
 template<class Type>
 template<class... Args>
 typename Deque<Type>::Iterator Deque<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	size_t pos = circular_decrement(iterator.get_index(), _capacity, _front);	// position relative to front
+	size_t pos = iterator.get_pos();							// position relative to front
 	emplace_back();
 	size_t index = circular_increment(_front, _capacity, pos);	// real index after (possible) realocation
 
@@ -705,6 +720,7 @@ typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
 	_data._Begin = _array + _front;
 	_data._End = _array + circular_increment(_front, _capacity, _size);
 	_data._Base = _array;
+	_data._Size = _size;
 	_data._Capacity = _capacity;
 
 	return &_data;
