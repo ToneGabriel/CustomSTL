@@ -130,31 +130,31 @@ int main()
 
 	// =====================================================================
 
-	custom::Deque<int> dq;
+	// custom::Deque<int> dq;
 
-	dq.emplace_back(0);
-	dq.emplace_back(1);
-	dq.emplace_back(2);
-	dq.emplace_back(3);
-	dq.emplace_back(4);
-	dq.pop_front();
-	dq.pop_front();
-	dq.emplace_front(5);
-	dq.emplace_front(6);
+	// dq.emplace_back(0);
+	// dq.emplace_back(1);
+	// dq.emplace_back(2);
+	// dq.emplace_back(3);
+	// dq.emplace_back(4);
+	// dq.pop_front();
+	// dq.pop_front();
+	// dq.emplace_front(5);
+	// dq.emplace_front(6);
 	
-	dq.emplace_front(7);
-	dq.emplace_front(8);
-	dq.emplace_front(9);
-	dq.emplace_front(10);
-	dq.emplace_front(11);
-	dq.emplace_front(12);
-	dq.emplace_front(13);
-	dq.emplace_front(14);
+	// dq.emplace_front(7);
+	// dq.emplace_front(8);
+	// dq.emplace_front(9);
+	// dq.emplace_front(10);
+	// dq.emplace_front(11);
+	// dq.emplace_front(12);
+	// dq.emplace_front(13);
+	// dq.emplace_front(14);
 	
-	dq.emplace(++dq.begin(), 101);
-	dq.print_details();
+	// dq.emplace(++dq.begin(), 101);
+	// dq.print_details();
 
-	for(auto& val : dq)
-		std::cout << val << ' ';
-	std::cout << '\n';
+	// for(auto& val : dq)
+	// 	std::cout << val << ' ';
+	// std::cout << '\n';
 }

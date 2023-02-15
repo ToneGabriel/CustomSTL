@@ -2,8 +2,9 @@
 
 Items not ready:
 
-- Deque
-- Array
-- SearchTree
-- Map
-- Set
+- Utility.h
+- Deque.h
+- Array.h
+- SearchTree.h
+- Map.h
+- Set.h
