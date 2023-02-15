@@ -65,7 +65,7 @@ public:
 	using ValueType = Type;											// Type for stored values
 	using IterType	= ValueType;									// Type for iteration (same as value)
 	using Alloc		= Allocator<ValueType>;							// Allocator type
-	using Iterator	= ArrayIterator<Array<ValueType>>;			    // Iterator type
+	using Iterator	= ArrayIterator<Array<ValueType, Size>>;		// Iterator type
 	using Data		= typename Iterator::Data;						// Iteration data
 
 private:
@@ -78,7 +78,7 @@ public:
 	// Constructors
 
 	Array();														// Default Constructor
-	Array(const size_t& newCapacity, const ValueType& copyValue);	// Add multiple copies Constructor
+	Array(const ValueType& copyValue);								// Add multiple copies Constructor
 	Array(const Array& other);									    // Copy Constructor
 	Array(Array&& other) noexcept;								    // Move Constructor
 	~Array();														// Destructor
@@ -127,7 +127,6 @@ private:
 
 	void _copy(const Array& other);											    // Generic copy function for vector
 	void _move(Array&& other);													// Generic move function for vector
-	void _clean_up_array();														// Clear and Deallocate array
 	Data* _update_iteration_data() const;										// Update the data used in Iterator
 }; // END Array Template
 
@@ -260,6 +259,184 @@ const bool ArrayIterator<Array>::is_end() const {
 // END Array Iterator
 
 // Array Template
+template<class Type, size_t Size>
+Array<Type, Size>::Array() {
+	_array = _alloc.alloc(Size);
+	_alloc.construct_range(_array, Size);
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>::Array(const ValueType& copyValue) {
+	_array = _alloc.alloc(Size);
+	_alloc.construct_range(_array, Size, copyValue);
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>::Array(const Array& other) {
+	_copy(other);
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>::Array(Array&& other) noexcept {
+	_move(std::move(other));
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>::~Array() {
+	_alloc.destroy_range(_array, Size);
+	_alloc.dealloc(_array, Size);
+}
+
+template<class Type, size_t Size>
+void Array<Type, Size>::fill(const ValueType& copyValue) {
+	for (size_t i = 0; i < Size; i++)
+		_array[i] = copyValue;
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::ValueType* Array<Type, Size>::data() {
+	return _array;
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::ValueType* Array<Type, Size>::data() const {
+	return _array;
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::ValueType& Array<Type, Size>::front() {
+	return _array[0];
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::ValueType& Array<Type, Size>::front() const {
+	return _array[0];
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::ValueType& Array<Type, Size>::back() {
+	return _array[Size - 1];
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::ValueType& Array<Type, Size>::back() const {
+	return _array[Size - 1];
+}
+
+template<class Type, size_t Size>
+const size_t Array<Type, Size>::size() const {
+	return Size;
+}
+
+template<class Type, size_t Size>
+bool Array<Type, Size>::empty() const {
+	return Size == 0;
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::ValueType& Array<Type, Size>::at(const size_t& index) const {
+	if (index < 0 || index >= Size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _array[index];
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::ValueType& Array<Type, Size>::at(const size_t& index) {
+	if (index < 0 || index >= Size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _array[index];
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::ValueType& Array<Type, Size>::operator[](const size_t& index) const {
+	assert(!(index < 0 || index >= Size));
+	return _array[index];
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::ValueType& Array<Type, Size>::operator[](const size_t& index) {
+	assert(!(index < 0 || index >= Size));
+	return _array[index];
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>& Array<Type, Size>::operator=(const Array& other) {
+	if (_array != other._array)
+	{
+		// TODO: implement
+		_copy(other);
+	}
+
+	return *this;
+}
+
+template<class Type, size_t Size>
+Array<Type, Size>& Array<Type, Size>::operator=(Array&& other) noexcept {
+	if (_array != other._array)
+	{
+		// TODO: implement
+		_move(std::move(other));
+	}
+
+	return *this;
+}
+
+template<class Type, size_t Size>
+bool Array<Type, Size>::operator==(const Array& other) const {
+	if (size() != other.size())
+		return false;
+
+	for (size_t i = 0; i < Size; i++)
+		if (_array[i] != other._array[i])
+			return false;
+
+	return true;
+}
+
+template<class Type, size_t Size>
+bool Array<Type, Size>::operator!=(const Array& other) const {
+	return !(*this == other);
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::Iterator Array<Type, Size>::begin() {
+	return Iterator(_array, _update_iteration_data());
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::Iterator Array<Type, Size>::begin() const {
+	return Iterator(_array, _update_iteration_data());
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::Iterator Array<Type, Size>::end() {
+	return Iterator(_array + Size, _update_iteration_data());
+}
+
+template<class Type, size_t Size>
+const typename Array<Type, Size>::Iterator Array<Type, Size>::end() const {
+	return Iterator(_array + Size, _update_iteration_data());
+}
+
+template<class Type, size_t Size>
+void Array<Type, Size>::_copy(const Array& other) {
+	// TODO: implement
+}
+
+template<class Type, size_t Size>
+void Array<Type, Size>::_move(Array&& other) {
+	// TODO: implement
+}
+
+template<class Type, size_t Size>
+typename Array<Type, Size>::Data* Array<Type, Size>::_update_iteration_data() const {
+	_data._Begin = _array;
+	_data._End = _array + Size;
+
+	return &_data;
+}
 // END Array Template
 
 CUSTOM_END
