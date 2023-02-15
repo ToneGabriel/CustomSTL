@@ -213,7 +213,7 @@ DequeIterator<Deque> DequeIterator<Deque>::operator++(int) {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {	// TODO: check
+DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {
 	if(get_pos() + diff > _Data->_Size)
 		throw std::out_of_range("Cannot increment end iterator...");
 
@@ -223,7 +223,9 @@ DequeIterator<Deque>& DequeIterator<Deque>::operator+=(const size_t& diff) {	// 
 
 template<class Deque>
 DequeIterator<Deque> DequeIterator<Deque>::operator+(const size_t& diff) const {
-	return *this;		// TODO: implement
+	DequeIterator temp = *this;
+	temp += diff;
+	return temp;
 }
 
 template<class Deque>
@@ -243,7 +245,7 @@ DequeIterator<Deque> DequeIterator<Deque>::operator--(int) {
 }
 
 template<class Deque>
-DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {	// TODO: check
+DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {
 	if(get_pos() < diff)
 		throw std::out_of_range("Cannot decrement begin iterator...");
 
@@ -253,7 +255,9 @@ DequeIterator<Deque>& DequeIterator<Deque>::operator-=(const size_t& diff) {	// 
 
 template<class Deque>
 DequeIterator<Deque> DequeIterator<Deque>::operator-(const size_t& diff) const {
-	return *this;		// TODO: implement
+	DequeIterator temp = *this;
+	temp -= diff;
+	return temp;
 }
 
 template<class Deque>

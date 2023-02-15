@@ -68,7 +68,7 @@ public:
 	using Iterator	= VectorIterator<Vector<ValueType>>;			// Iterator type
 	using Data		= typename Iterator::Data;						// Iteration data
 
-	static constexpr size_t default_capacity = 12;	// TODO: set 8
+	static constexpr size_t default_capacity = 8;
 
 private:
 	size_t _size		= 0;										// Number of components held by this

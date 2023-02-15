@@ -1,6 +1,7 @@
 #include "Pair.h"
 #include "Tuple.h"
 #include "String.h"
+#include "Array.h"
 #include "Vector.h"
 #include "Deque.h"
 #include "List.h"
@@ -12,6 +13,7 @@
 
 #include <iostream>
 #include <string>
+#include <array>
 #include <vector>
 #include <deque>
 #include <list>
