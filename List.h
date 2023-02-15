@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Node.h"
+#include "Utility.h"
 
 CUSTOM_BEGIN
 
@@ -269,7 +270,7 @@ List<Type>::List(const List& other) : List() {
 
 template<class Type>
 List<Type>::List(List&& other) noexcept : List() {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 template<class Type>
@@ -293,7 +294,7 @@ void List<Type>::resize(const size_t& newSize, const ValueType& copyValue) {
 template<class Type>
 template<class... Args>
 void List<Type>::emplace_back(Args&&... args) {
-	Node* newNode = new Node(std::forward<Args>(args)...);
+	Node* newNode = new Node(custom::forward<Args>(args)...);
 	_insert_node_before(_head, newNode);
 }
 
@@ -304,7 +305,7 @@ void List<Type>::push_back(const ValueType& copyValue) {
 
 template<class Type>
 void List<Type>::push_back(ValueType&& moveValue) {
-	emplace_back(std::move(moveValue));
+	emplace_back(custom::move(moveValue));
 }
 
 template<class Type>
@@ -316,7 +317,7 @@ void List<Type>::pop_back() {
 template<class Type>
 template<class... Args>
 void List<Type>::emplace_front(Args&&... args) {
-	Node* newNode = new Node(std::forward<Args>(args)...);
+	Node* newNode = new Node(custom::forward<Args>(args)...);
 	_insert_node_before(_head->_Next, newNode);
 }
 
@@ -327,7 +328,7 @@ void List<Type>::push_front(const ValueType& copyValue) {
 
 template<class Type>
 void List<Type>::push_front(ValueType&& moveValue) {
-	emplace_front(std::move(moveValue));
+	emplace_front(custom::move(moveValue));
 }
 
 template<class Type>
@@ -340,7 +341,7 @@ template<class Type>
 template<class... Args>
 typename List<Type>::Iterator List<Type>::emplace(const Iterator& iterator, Args&&... args) {
 	_workspaceNode = iterator._Ptr;
-	Node* newNode = new Node(std::forward<Args>(args)...);
+	Node* newNode = new Node(custom::forward<Args>(args)...);
 	_insert_node_before(_workspaceNode, newNode);
 
 	return Iterator(newNode, _update_iteration_data());
@@ -353,7 +354,7 @@ typename List<Type>::Iterator List<Type>::push(const Iterator& iterator, const V
 
 template<class Type>
 typename List<Type>::Iterator List<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
-	return emplace(iterator, std::move(moveValue));
+	return emplace(iterator, custom::move(moveValue));
 }
 
 template<class Type>
@@ -419,7 +420,7 @@ List<Type>& List<Type>::operator=(List&& other) noexcept {
 	if (_head != other._head)
 	{
 		clear();
-		_move(std::move(other));
+		_move(custom::move(other));
 	}
 
 	return *this;
@@ -542,7 +543,7 @@ template<class Type>
 template<class... Args>
 void List<Type>::_create_until_size(const size_t& newSize, Args&&... args) {
 	while (_size < newSize)
-		emplace_back(std::forward<Args>(args)...);
+		emplace_back(custom::forward<Args>(args)...);
 }
 
 template<class Type>

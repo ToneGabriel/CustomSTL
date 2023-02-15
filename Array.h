@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Utility.h"
 
 
 CUSTOM_BEGIN
@@ -271,7 +272,7 @@ Array<Type, Size>::Array(const Array& other) : Array() {
 
 template<class Type, size_t Size>
 Array<Type, Size>::Array(Array&& other) noexcept : Array() {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 template<class Type, size_t Size>
@@ -349,7 +350,7 @@ Array<Type, Size>& Array<Type, Size>::operator=(const Array& other) {
 template<class Type, size_t Size>
 Array<Type, Size>& Array<Type, Size>::operator=(Array&& other) noexcept {
 	if (_array != other._array)
-		_move(std::move(other));
+		_move(custom::move(other));
 
 	return *this;
 }
@@ -397,7 +398,7 @@ void Array<Type, Size>::_copy(const Array& other) {
 template<class Type, size_t Size>
 void Array<Type, Size>::_move(Array&& other) {
 	for(size_t i = 0; i < Size; i++)
-		_array[i] = std::move(other._array[i]);
+		_array[i] = custom::move(other._array[i]);
 }
 
 template<class Type, size_t Size>

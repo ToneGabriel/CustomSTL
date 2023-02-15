@@ -1,5 +1,7 @@
 #pragma once
 #include "Common.h"
+#include "Utility.h"
+
 
 CUSTOM_BEGIN
 
@@ -48,7 +50,7 @@ void Allocator<Type>::dealloc(Type* address, const size_t& capacity) {
 template<class Type>
 template<class... Args>
 void Allocator<Type>::construct(Type* address, Args&&... args) {
-	::new(address) Type(std::forward<Args>(args)...);
+	::new(address) Type(custom::forward<Args>(args)...);
 }
 
 template<class Type>

@@ -98,7 +98,7 @@ UnorderedMap<Key, Type, Hasher>::UnorderedMap(const UnorderedMap& other)
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap(UnorderedMap&& other) noexcept
-	:Base(std::move(other)) { /*Empty*/ }
+	:Base(custom::move(other)) { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::~UnorderedMap() { /*Empty*/ }
@@ -110,7 +110,7 @@ typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Ha
 
 template<class Key, class Type, class Hasher>
 typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](Key&& key) {
-	return try_emplace(std::move(key))->_Value.Second;
+	return try_emplace(custom::move(key))->_Value.Second;
 }
 
 template<class Key, class Type, class Hasher>
@@ -122,7 +122,7 @@ UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(cons
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(UnorderedMap&& other) noexcept {
-	Base::operator=(std::move(other));
+	Base::operator=(custom::move(other));
 
 	return *this;
 }
@@ -140,7 +140,7 @@ bool UnorderedMap<Key, Type, Hasher>::operator!=(const UnorderedMap& other) cons
 template<class Key, class Type, class Hasher>
 template<class _KeyType, class... Args>
 typename UnorderedMap<Key, Type, Hasher>::Iterator UnorderedMap<Key, Type, Hasher>::try_emplace(_KeyType&& key, Args&&... args) {
-	return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
+	return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 }
 
 template<class Key, class Type, class Hasher>

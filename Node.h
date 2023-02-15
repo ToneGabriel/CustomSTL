@@ -1,5 +1,7 @@
 #pragma once
 #include "Common.h"
+#include "Utility.h"
+
 
 CUSTOM_BEGIN
 
@@ -22,11 +24,11 @@ public:
 		:_Value(copyValue) { /*Empty*/ }
 
 	ForwardNode(ValueType&& moveValue)
-		:_Value(std::move(moveValue)) { /*Empty*/ }
+		:_Value(custom::move(moveValue)) { /*Empty*/ }
 
 	template<class... Args>
 	ForwardNode(Args&&... args)
-		:_Value(std::forward<Args>(args)...) { /*Empty*/ }
+		:_Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
 	ForwardNode(const ForwardNode&)				= delete;
 	ForwardNode& operator=(const ForwardNode&)	= delete;
@@ -59,11 +61,11 @@ public:
 		:_Value(copyValue) { /*Empty*/ }
 
 	DoubleNode(ValueType&& moveValue)
-		:_Value(std::move(moveValue)) { /*Empty*/ }
+		:_Value(custom::move(moveValue)) { /*Empty*/ }
 
 	template<class... Args>
 	DoubleNode(Args&&... args)
-		: _Value(std::forward<Args>(args)...) { /*Empty*/ }
+		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
 	DoubleNode(const DoubleNode&)				= delete;
 	DoubleNode& operator=(const DoubleNode&)	= delete;
@@ -105,11 +107,11 @@ public:
 		:_Value(copyValue), _Color(Black) { /*Empty*/ }
 
 	TreeNode(ValueType&& moveValue)
-		:_Value(std::move(moveValue)), _Color(Black) { /*Empty*/ }
+		:_Value(custom::move(moveValue)), _Color(Black) { /*Empty*/ }
 
 	template<class... Args>
 	TreeNode(Args&&... args)
-		: _Value(std::forward<Args>(args)...), _Color(Black) { /*Empty*/ }
+		: _Value(custom::forward<Args>(args)...), _Color(Black) { /*Empty*/ }
 
 	TreeNode(const TreeNode&)				= delete;
 	TreeNode& operator=(const TreeNode&)	= delete;

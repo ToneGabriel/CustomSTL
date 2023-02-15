@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
+#include "Utility.h"
 
 
 CUSTOM_BEGIN
@@ -326,7 +327,7 @@ Deque<Type>::Deque(const Deque& other) {
 
 template<class Type>
 Deque<Type>::Deque(Deque&& other) noexcept {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 template<class Type>
@@ -343,7 +344,7 @@ void Deque<Type>::reserve(const size_t& newCapacity) {		// TODO: check
 	size_t aux = _front;
 	for (size_t i = 0; i < _size; i++)
 	{
-		_alloc.construct(&newArray[i], std::move(_array[aux]));
+		_alloc.construct(&newArray[i], custom::move(_array[aux]));
 		aux = circular_increment(aux, _capacity);
 	}
 
@@ -403,7 +404,7 @@ void Deque<Type>::emplace_back(Args&&... args) {
 	if(!empty())
 		_back = circular_increment(_back, _capacity);
 
-	_alloc.construct(&_array[_back], std::forward<Args>(args)...);
+	_alloc.construct(&_array[_back], custom::forward<Args>(args)...);
 	++_size;
 }
 
@@ -414,7 +415,7 @@ void Deque<Type>::push_back(const ValueType& copyValue) {
 
 template<class Type>
 void Deque<Type>::push_back(ValueType&& moveValue) {
-	emplace_back(std::move(moveValue));
+	emplace_back(custom::move(moveValue));
 }
 
 template<class Type>
@@ -435,7 +436,7 @@ void Deque<Type>::emplace_front(Args&&... args) {
 	if(!empty())
 		_front = circular_decrement(_front, _capacity);
 
-	_alloc.construct(&_array[_front], std::forward<Args>(args)...);
+	_alloc.construct(&_array[_front], custom::forward<Args>(args)...);
 	++_size;
 }
 
@@ -446,7 +447,7 @@ void Deque<Type>::push_front(const ValueType& copyValue) {
 
 template<class Type>
 void Deque<Type>::push_front(ValueType&& moveValue) {
-	emplace_front(std::move(moveValue));
+	emplace_front(custom::move(moveValue));
 }
 
 template<class Type>
@@ -467,10 +468,10 @@ typename Deque<Type>::Iterator Deque<Type>::emplace(const Iterator& iterator, Ar
 	size_t index = circular_increment(_front, _capacity, pos);	// real index after (possible) realocation
 
 	for(size_t i = _back; i != index; i = circular_decrement(i, _capacity))
-		_array[i] = std::move(_array[circular_decrement(i, _capacity)]);
+		_array[i] = custom::move(_array[circular_decrement(i, _capacity)]);
 
 	_alloc.destroy(&_array[index]);
-	_alloc.construct(&_array[index], std::forward<Args>(args)...);
+	_alloc.construct(&_array[index], custom::forward<Args>(args)...);
 
 	return Iterator(&_array[index], _update_iteration_data());
 }
@@ -482,7 +483,7 @@ typename Deque<Type>::Iterator Deque<Type>::push(const Iterator& iterator, const
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
-	return emplace(iterator, std::move(moveValue));
+	return emplace(iterator, custom::move(moveValue));
 }
 
 template<class Type>
@@ -492,7 +493,7 @@ typename Deque<Type>::Iterator Deque<Type>::pop(const Iterator& iterator) {
 
 	size_t index = iterator.get_index();
 	for (size_t i = index; i != _back + 1; i = circular_increment(i, _capacity))
-		_array[i] = std::move(_array[circular_increment(i, _capacity)]);
+		_array[i] = custom::move(_array[circular_increment(i, _capacity)]);
 	pop_back();
 
 	return Iterator(&_array[index], _update_iteration_data());
@@ -599,7 +600,7 @@ Deque<Type>& Deque<Type>::operator=(Deque&& other) noexcept {
 	if (_array != other._array)
 	{
 		_clean_up_array();
-		_move(std::move(other));
+		_move(custom::move(other));
 	}
 
 	return *this;

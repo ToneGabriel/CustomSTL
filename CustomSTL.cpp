@@ -43,7 +43,7 @@ public:
 	}
 
 	Test(Test&& other) noexcept {
-		value = std::move(other.value);
+		value = custom::move(other.value);
 		std::cout << "Move Construct " << value << '\n';
 	}
 
@@ -58,7 +58,7 @@ public:
 	}
 
 	Test& operator=(Test&& other) noexcept {
-		value = std::move(other.value);
+		value = custom::move(other.value);
 		std::cout << "Move Assign " << value << '\n';
 		return *this;
 	}

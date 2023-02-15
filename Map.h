@@ -1,6 +1,7 @@
 #pragma once
 #include "SearchTree.h"
 
+
 CUSTOM_BEGIN
 
 // Map Traits ==============================================
@@ -51,7 +52,7 @@ public:
 		:Base(other) { /*Empty*/ }
 
 	Map(Map&& other) noexcept
-		:Base(std::move(other)) { /*Empty*/ }
+		:Base(custom::move(other)) { /*Empty*/ }
 
 	~Map() { /*Empty*/ }
 
@@ -63,7 +64,7 @@ public:
 	}
 
 	MappedType& operator[](Key&& key) {
-		return try_emplace(std::move(key))->_Value.Second;
+		return try_emplace(custom::move(key))->_Value.Second;
 	}
 
 	Map& operator=(const Map& other) {
@@ -73,7 +74,7 @@ public:
 	}
 
 	Map& operator=(Map&& other) noexcept {
-		Base::operator=(std::move(other));
+		Base::operator=(custom::move(other));
 
 		return *this;
 	}
@@ -91,7 +92,7 @@ public:
 
 	template<class _KeyType, class... Args>
 	Iterator try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
-		return this->_try_emplace(std::move(key), std::forward<Args>(args)...);
+		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 
 	const MappedType& at(const Key& key) const {						// Access _Value at key with check

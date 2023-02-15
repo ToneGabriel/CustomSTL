@@ -3,6 +3,7 @@
 #include "List.h"
 #include "Vector.h"
 #include "Pair.h"
+#include "Utility.h"
 
 #include <iostream>
 #include <cmath>		// std::ceil
@@ -128,7 +129,7 @@ HashTable<Traits>::HashTable(const HashTable& other) {
 
 template<class Traits>
 HashTable<Traits>::HashTable(HashTable&& other) noexcept {
-	_elems = std::move(other._elems);
+	_elems = custom::move(other._elems);
 	_force_rehash(other.bucket_count());
 }
 
@@ -152,7 +153,7 @@ template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(HashTable&& other) noexcept {
 	if (_elems._head != other._elems._head)
 	{
-		_elems = std::move(other._elems);
+		_elems = custom::move(other._elems);
 		_force_rehash(other.bucket_count());
 	}
 
@@ -182,7 +183,7 @@ bool HashTable<Traits>::operator!=(const HashTable& other) const {
 template<class Traits>
 template<class... Args>
 typename HashTable<Traits>::Iterator HashTable<Traits>::emplace(Args&&... args) {
-	Node* newNode = new Node(std::forward<Args>(args)...);
+	Node* newNode = new Node(custom::forward<Args>(args)...);
 	const KeyType& newKey = Traits::extract_key(newNode->_Value);
 	Iterator it = find(newKey);
 
@@ -324,9 +325,9 @@ typename HashTable<Traits>::Iterator HashTable<Traits>::_try_emplace(_KeyType&& 
 		return it;
 	else {
 		Node* newNode = new Node(
-						piecewise_construct,
-						forward_as_tuple(std::forward<_KeyType>(key)),
-						forward_as_tuple(std::forward<Args>(args)...)
+						custom::piecewise_construct,
+						custom::forward_as_tuple(custom::forward<_KeyType>(key)),
+						custom::forward_as_tuple(custom::forward<Args>(args)...)
 						);
 		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 

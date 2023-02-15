@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
+#include "Utility.h"
+
 #include <iostream>
 #include <cstring>
 
@@ -309,7 +311,7 @@ String::String(const String& other) {
 }
 
 String::String(String&& other) noexcept {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 String::~String() {
@@ -599,7 +601,7 @@ String& String::operator=(const String& other) {
 
 String& String::operator=(String&& other) noexcept {
 	if (_string != other._string)
-		_move(std::move(other));
+		_move(custom::move(other));
 
 	return *this;
 }

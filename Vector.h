@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Allocator.h"
+#include "Utility.h"
 
 
 CUSTOM_BEGIN
@@ -295,7 +296,7 @@ Vector<Type>::Vector(const Vector& other) {
 
 template<class Type>
 Vector<Type>::Vector(Vector&& other) noexcept {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 template<class Type>
@@ -310,7 +311,7 @@ void Vector<Type>::reserve(const size_t& newCapacity) {
 
 	ValueType* newArray = _alloc.alloc(newCapacity);
 	for (size_t i = 0; i < _size; i++)
-		_alloc.construct(&newArray[i], std::move(_array[i]));
+		_alloc.construct(&newArray[i], custom::move(_array[i]));
 
 	_clean_up_array();
 	_array = newArray;
@@ -376,7 +377,7 @@ template<class Type>
 template<class... Args>
 void Vector<Type>::emplace_back(Args&&... args) {
 	_extend_if_full();
-	_alloc.construct(&_array[_size++], std::forward<Args>(args)...);
+	_alloc.construct(&_array[_size++], custom::forward<Args>(args)...);
 }
 
 template<class Type>
@@ -386,7 +387,7 @@ void Vector<Type>::push_back(const ValueType& copyValue) {
 
 template<class Type>
 void Vector<Type>::push_back(ValueType&& moveValue) {
-	emplace_back(std::move(moveValue));
+	emplace_back(custom::move(moveValue));
 }
 
 template<class Type>
@@ -401,10 +402,10 @@ typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, 
 	size_t index = iterator.get_index();				// Don't check end()
 	emplace_back();
 	for (size_t i = _size - 1; i > index; i--)
-		_array[i] = std::move(_array[i - 1]);
+		_array[i] = custom::move(_array[i - 1]);
 
 	_alloc.destroy(&_array[index]);
-	_alloc.construct(&_array[index], std::forward<Args>(args)...);
+	_alloc.construct(&_array[index], custom::forward<Args>(args)...);
 
 	return Iterator(&_array[index], _update_iteration_data());
 }
@@ -416,7 +417,7 @@ typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, con
 
 template<class Type>
 typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
-	return emplace(iterator, std::move(moveValue));
+	return emplace(iterator, custom::move(moveValue));
 }
 
 template<class Type>
@@ -426,7 +427,7 @@ typename Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
 
 	size_t index = iterator.get_index();
 	for (size_t i = index; i < _size - 1; i++)
-		_array[i] = std::move(_array[i + 1]);
+		_array[i] = custom::move(_array[i + 1]);
 	pop_back();
 
 	return Iterator(&_array[index], _update_iteration_data());
@@ -497,7 +498,7 @@ Vector<Type>& Vector<Type>::operator=(Vector&& other) noexcept {
 	if (_array != other._array)
 	{
 		_clean_up_array();
-		_move(std::move(other));
+		_move(custom::move(other));
 	}
 
 	return *this;

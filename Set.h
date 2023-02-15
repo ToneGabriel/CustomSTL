@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "List.h"
+
 #include <iostream>
 #include <cmath>
 #include <functional>
@@ -86,7 +87,7 @@ public:
     }
 
     Set<Key>& operator=(Set&& other) {
-    	_elems = std::move(other._elems);
+    	_elems = custom::move(other._elems);
 
 
 		return *this;

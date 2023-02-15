@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Utility.h"
 
 CUSTOM_BEGIN
 
@@ -14,10 +15,10 @@ public:
 public:
 
 	Tuple(const This& first, Rest&&... rest)
-		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(first) { /*Empty*/ }
+		:Tuple<Rest...>(custom::forward<Rest>(rest)...), First(first) { /*Empty*/ }
 
 	Tuple(This&& first, Rest&&... rest)
-		:Tuple<Rest...>(std::forward<Rest>(rest)...), First(std::move(first)) { /*Empty*/ }
+		:Tuple<Rest...>(custom::forward<Rest>(rest)...), First(custom::move(first)) { /*Empty*/ }
 
 	Tuple(const Tuple&) = default;
 	Tuple(Tuple&&)		= default;
@@ -65,7 +66,7 @@ typename TupleElement<Index, Tuple<Types...>>::Type&& get(Tuple<Types...>&& tupl
 
 template <class... Types>
 Tuple<Types&&...> forward_as_tuple(Types&&... args) {	    // Forward arguments in a tuple
-	return Tuple<Types&&...>(std::forward<Types>(args)...);
+	return Tuple<Types&&...>(custom::forward<Types>(args)...);
 }
 
 CUSTOM_END

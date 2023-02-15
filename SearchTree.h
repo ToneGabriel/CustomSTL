@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "List.h"
 #include "Pair.h"
+#include "Utility.h"
 
 #include <iostream>
 #include <cmath>		// std::ceil
@@ -54,7 +55,7 @@ protected:
 	}
 
 	SearchTree(SearchTree&& other) noexcept {
-		_elems = std::move(other._elems);
+		_elems = custom::move(other._elems);
 		// TODO: complete
 
 	}
@@ -80,7 +81,7 @@ protected:
 	SearchTree& operator=(SearchTree&& other) noexcept {
 		if (_elems._head != other._elems._head)
 		{
-			_elems = std::move(other._elems);
+			_elems = custom::move(other._elems);
 			// TODO: complete
 
 		}
@@ -102,7 +103,7 @@ public:
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
-		Node* newNode = new Node(std::forward<Args>(args)...);
+		Node* newNode = new Node(custom::forward<Args>(args)...);
 		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 		_elems._insert_node_before(_elems._head, newNode);

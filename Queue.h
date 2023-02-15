@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Node.h"
+#include "Utility.h"
+
 
 CUSTOM_BEGIN
 
@@ -80,7 +82,7 @@ Queue<Type>::Queue(const Queue& other) {
 
 template<class Type>
 Queue<Type>::Queue(Queue&& other) noexcept {
-	_move(std::move(other));
+	_move(custom::move(other));
 }
 
 template<class Type>
@@ -91,7 +93,7 @@ Queue<Type>::~Queue() {
 template<class Type>
 template<class... Args>
 void Queue<Type>::emplace(Args&&... args) {
-	Node* newNode = new Node(std::forward<Args>(args)...);
+	Node* newNode = new Node(custom::forward<Args>(args)...);
 
 	if (_head == nullptr)
 		_head = _tail = newNode;	// Here head and tail are not important and can be used to store value
@@ -109,7 +111,7 @@ void Queue<Type>::push(const ValueType& copyValue) {
 
 template<class Type>
 void Queue<Type>::push(ValueType&& moveValue) {
-	emplace(std::move(moveValue));
+	emplace(custom::move(moveValue));
 }
 
 template<class Type>
@@ -185,7 +187,7 @@ Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {
 	if (_head != other._head)
 	{
 		clear();
-		_move(std::move(other));
+		_move(custom::move(other));
 	}
 
 	return *this;
@@ -214,7 +216,7 @@ template<class Type>
 template<class... Args>
 void Queue<Type>::_create_until_size(const size_t& newSize, Args&&... args) {
 	while (_size < newSize)
-		emplace(std::forward<Args>(args)...);
+		emplace(custom::forward<Args>(args)...);
 }
 // END Queue Template
 
