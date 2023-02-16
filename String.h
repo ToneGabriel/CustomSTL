@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Allocator.h"
 #include "Utility.h"
 
@@ -372,7 +371,7 @@ String& String::append(const char* cstring, const size_t nchar) {
 
 String& String::append(const size_t& nchar, const char& chr) {
 	char* seq = _alloc_string(nchar);
-	for (size_t i = 0; i < nchar; i++)
+	for (size_t i = 0; i < nchar; ++i)
 		seq[i] = chr;
 
 	_insert_from_cstring(_size, seq, 0, nchar);
@@ -409,7 +408,7 @@ String& String::insert(const size_t& pos, const char* cstring, const size_t& len
 
 String& String::insert(const size_t& pos, const size_t& nchar, const char& chr) {
 	char* seq = _alloc_string(nchar);
-	for (size_t i = 0; i < nchar; i++)
+	for (size_t i = 0; i < nchar; ++i)
 		seq[i] = chr;
 
 	_insert_from_cstring(pos, seq, 0, nchar);
@@ -571,7 +570,7 @@ char& String::back() {
 }
 
 void String::print_details() const {
-	for (size_t i = 0; i <= _capacity; i++)
+	for (size_t i = 0; i <= _capacity; ++i)
 	{
 		if (_string[i] == NULLCHR)
 			std::cout << 'N' << ' ';
@@ -723,7 +722,7 @@ size_t String::_search_for_cstring(const char* cstring, const size_t& pos, const
 	if (pos + len > _size || len > strlen(cstring))
 		throw std::out_of_range("Invalid length...");
 
-	for (size_t i = pos; i <= _size - len; i++)
+	for (size_t i = pos; i <= _size - len; ++i)
 		if (strncmp(_string + i, cstring, len) == 0)
 			return i;
 

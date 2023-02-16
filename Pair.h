@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Tuple.h"
 #include "Utility.h"    // IndexSequence, IndexSequenceFor
 
@@ -7,7 +6,7 @@ CUSTOM_BEGIN
 
 // Headings =================================================================================
 
-// Tag struct declaration for piecewise construction of custom::Pair objects
+// Tag struct declaration for piecewise construction of Pair objects
 struct PiecewiseConstruct {
 	explicit PiecewiseConstruct() = default;
 };
@@ -29,7 +28,7 @@ public:
 	Pair(Pair&& other);
 
 	template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
-	Pair(Tuple1& Val1, Tuple2& Val2, custom::IndexSequence<Indexes1...>, custom::IndexSequence<Indexes2...>);
+	Pair(Tuple1& Val1, Tuple2& Val2, IndexSequence<Indexes1...>, IndexSequence<Indexes2...>);
 
 	template <class... Types1, class... Types2>
 	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2);
@@ -80,13 +79,13 @@ Pair<Type1, Type2>::Pair(Pair&& other)
 
 template<class Type1, class Type2>  // TODO: check "custom::get"
 template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
-Pair<Type1, Type2>::Pair(Tuple1& Val1, Tuple2& Val2, custom::IndexSequence<Indexes1...>, custom::IndexSequence<Indexes2...>)
-    :First(custom::get<Indexes1>(custom::move(Val1))...), Second(custom::get<Indexes2>(custom::move(Val2))...) { /*Empty*/ }
+Pair<Type1, Type2>::Pair(Tuple1& Val1, Tuple2& Val2, IndexSequence<Indexes1...>, IndexSequence<Indexes2...>)
+    :First(get<Indexes1>(custom::move(Val1))...), Second(get<Indexes2>(custom::move(Val2))...) { /*Empty*/ }
 
 template<class Type1, class Type2>
 template <class... Types1, class... Types2>
 Pair<Type1, Type2>::Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
-    :Pair(Val1, Val2, custom::IndexSequenceFor<Types1...>{}, custom::IndexSequenceFor<Types2...>{}) { /*Empty*/ }
+    :Pair(Val1, Val2, IndexSequenceFor<Types1...>{}, IndexSequenceFor<Types2...>{}) { /*Empty*/ }
 
 template<class Type1, class Type2>
 Pair<Type1, Type2>& Pair<Type1, Type2>::operator=(const Pair& other) {

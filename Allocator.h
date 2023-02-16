@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Utility.h"
 
 
@@ -55,13 +54,13 @@ void Allocator<Type>::construct(Type* address, Args&&... args) {
 
 template<class Type>
 void Allocator<Type>::construct_range(Type* address, const size_t& length) {
-	for (size_t i = 0; i < length; i++)
+	for (size_t i = 0; i < length; ++i)
 		construct(address + i);
 }
 
 template<class Type>
 void Allocator<Type>::construct_range(Type* address, const size_t& length, const Type& value) {
-	for (size_t i = 0; i < length; i++)
+	for (size_t i = 0; i < length; ++i)
 		construct(address + i, value);
 }
 
@@ -72,7 +71,7 @@ void Allocator<Type>::destroy(Type* address) {
 
 template<class Type>
 void Allocator<Type>::destroy_range(Type* address, const size_t& length) {
-	for (size_t i = 0; i < length; i++)
+	for (size_t i = 0; i < length; ++i)
 		destroy(address + i);
 }
 // END Allocator Template

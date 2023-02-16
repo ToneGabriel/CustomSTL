@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Node.h"
 #include "Utility.h"
 
@@ -101,7 +100,7 @@ void Queue<Type>::emplace(Args&&... args) {
 		_tail->_Next = newNode;
 		_tail = newNode;
 	}
-	_size++;
+	++_size;
 }
 
 template<class Type>
@@ -124,7 +123,7 @@ void Queue<Type>::pop() {
 			_tail = nullptr;
 
 		delete _workspaceNode;
-		_size--;
+		--_size;
 	}
 }
 
@@ -165,7 +164,7 @@ void Queue<Type>::clear() {
 		_head = _head->_Next;
 
 		delete _workspaceNode;
-		_size--;
+		--_size;
 	}
 
 	_head = _tail = nullptr;

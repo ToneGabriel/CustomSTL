@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Allocator.h"
 #include "Utility.h"
 
@@ -342,7 +341,7 @@ void Deque<Type>::reserve(const size_t& newCapacity) {		// TODO: check
 
 	ValueType* newArray = _alloc_array(newCapacity);
 	size_t aux = _front;
-	for (size_t i = 0; i < _size; i++)
+	for (size_t i = 0; i < _size; ++i)
 	{
 		_alloc.construct(&newArray[i], custom::move(_array[aux]));
 		aux = circular_increment(aux, _capacity);
@@ -550,7 +549,7 @@ void Deque<Type>::print_details() {
 	std::cout << "Front= " << _front << '\n';
 	std::cout << "Back= " << _back << '\n';
 
-	for (size_t i = 0; i <= _capacity; i++)
+	for (size_t i = 0; i <= _capacity; ++i)
 		std::cout << _array[i] << ' ';
 
 	std::cout << "\n\n";

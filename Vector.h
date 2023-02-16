@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Allocator.h"
 #include "Utility.h"
 
@@ -310,7 +309,7 @@ void Vector<Type>::reserve(const size_t& newCapacity) {
 		_size = newCapacity;
 
 	ValueType* newArray = _alloc.alloc(newCapacity);
-	for (size_t i = 0; i < _size; i++)
+	for (size_t i = 0; i < _size; ++i)
 		_alloc.construct(&newArray[i], custom::move(_array[i]));
 
 	_clean_up_array();
@@ -401,7 +400,7 @@ template<class... Args>
 typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, Args&&... args) {
 	size_t index = iterator.get_index();				// Don't check end()
 	emplace_back();
-	for (size_t i = _size - 1; i > index; i--)
+	for (size_t i = _size - 1; i > index; --i)
 		_array[i] = custom::move(_array[i - 1]);
 
 	_alloc.destroy(&_array[index]);
@@ -426,7 +425,7 @@ typename Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
 		throw std::out_of_range("Array pop iterator outside range...");
 
 	size_t index = iterator.get_index();
-	for (size_t i = index; i < _size - 1; i++)
+	for (size_t i = index; i < _size - 1; ++i)
 		_array[i] = custom::move(_array[i + 1]);
 	pop_back();
 
@@ -509,7 +508,7 @@ bool Vector<Type>::operator==(const Vector& other) const {
 	if (size() != other.size())
 		return false;
 
-	for (size_t i = 0; i < _size; i++)
+	for (size_t i = 0; i < _size; ++i)
 		if (_array[i] != other._array[i])
 			return false;
 
@@ -544,7 +543,7 @@ const typename Vector<Type>::Iterator Vector<Type>::end() const {
 template<class Type>
 void Vector<Type>::_copy(const Vector& other) {
 	_array = _alloc.alloc(other._capacity);
-	for (size_t i = 0; i < other._size; i++)
+	for (size_t i = 0; i < other._size; ++i)
 		_alloc.construct(&_array[i], other._array[i]);
 
 	_size = other._size;

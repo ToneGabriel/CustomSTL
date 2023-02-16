@@ -33,12 +33,12 @@ struct IntegerSequence
 template<size_t... Vals>
 using IndexSequence = IntegerSequence<size_t, Vals...>;
 
+
 template<class Ty, Ty Size>
-#ifdef __make_integer_seq   // TODO: check
+#if __has_builtin(__make_integer_seq)
 using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
 #else
-using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
-//using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
+using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
 #endif // __make_integer_seq
 
 template<size_t Size>

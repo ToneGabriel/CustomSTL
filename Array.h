@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Utility.h"
 
 
@@ -277,7 +276,7 @@ Array<Type, Size>::Array(Array&& other) noexcept : Array() {
 
 template<class Type, size_t Size>
 void Array<Type, Size>::fill(const ValueType& copyValue) {
-	for (size_t i = 0; i < Size; i++)
+	for (size_t i = 0; i < Size; ++i)
 		_array[i] = copyValue;
 }
 
@@ -357,7 +356,7 @@ Array<Type, Size>& Array<Type, Size>::operator=(Array&& other) noexcept {
 
 template<class Type, size_t Size>
 bool Array<Type, Size>::operator==(const Array& other) const {
-	for (size_t i = 0; i < Size; i++)
+	for (size_t i = 0; i < Size; ++i)
 		if (_array[i] != other._array[i])
 			return false;
 
@@ -391,13 +390,13 @@ const typename Array<Type, Size>::Iterator Array<Type, Size>::end() const {
 
 template<class Type, size_t Size>
 void Array<Type, Size>::_copy(const Array& other) {
-	for(size_t i = 0; i < Size; i++)
+	for(size_t i = 0; i < Size; ++i)
 		_array[i] = other._array[i];
 }
 
 template<class Type, size_t Size>
 void Array<Type, Size>::_move(Array&& other) {
-	for(size_t i = 0; i < Size; i++)
+	for(size_t i = 0; i < Size; ++i)
 		_array[i] = custom::move(other._array[i]);
 }
 

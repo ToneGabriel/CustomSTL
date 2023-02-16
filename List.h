@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 #include "Node.h"
 #include "Utility.h"
 
@@ -494,7 +493,7 @@ void List<Type>::_insert_node_before(Node* beforeNode, Node* newNode) {
 	beforeNode->_Previous->_Next = newNode;
 	beforeNode->_Previous = newNode;
 
-	_size++;
+	++_size;
 }
 
 template<class Type>
@@ -503,7 +502,7 @@ void List<Type>::_remove_node(Node* junkNode) {
 	junkNode->_Next->_Previous = junkNode->_Previous;
 
 	delete junkNode;
-	_size--;
+	--_size;
 }
 
 template<class Type>
@@ -556,7 +555,7 @@ template<class Type>
 typename List<Type>::Node* List<Type>::_scroll_node(const size_t& index) const {
 	_workspaceNode = _head->_Next;
 	if (_workspaceNode != _head)
-		for (size_t i = 0; i < index; i++)
+		for (size_t i = 0; i < index; ++i)
 			_workspaceNode = _workspaceNode->_Next;
 
 	return _workspaceNode;

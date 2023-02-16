@@ -1,8 +1,7 @@
 #pragma once
-#include "Common.h"
 #include "List.h"
 #include "Vector.h"
-#include "Pair.h"
+#include "Pair.h"		// For _try_emplace
 #include "Utility.h"
 
 #include <iostream>
@@ -287,7 +286,7 @@ float HashTable<Traits>::max_load_factor() const {
 template<class Traits>
 void HashTable<Traits>::print_details() const {
 	std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
-	for (size_t i = 0; i < _buckets.size(); i++)
+	for (size_t i = 0; i < _buckets.size(); ++i)
 	{
 		std::cout << i << " : ";
 		for (const auto& val : _buckets[i])
@@ -361,7 +360,7 @@ typename HashTable<Traits>::BucketIterator HashTable<Traits>::_find_in_array(con
 	const Bucket& currentBucket = _buckets[bucket(key)];
 	BucketIterator it = currentBucket.begin();
 	while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
-		it++;
+		++it;
 
 	return it;
 }

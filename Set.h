@@ -1,10 +1,5 @@
 #pragma once
-#include "Common.h"
-#include "List.h"
-
-#include <iostream>
-#include <cmath>
-#include <functional>
+#include "SearchTree.h"
 
 CUSTOM_BEGIN
 
