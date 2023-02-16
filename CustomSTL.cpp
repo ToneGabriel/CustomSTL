@@ -70,8 +70,23 @@ public:
 
 };
 
+template<typename T, T... ints>
+void print_sequence(custom::IntegerSequence<T, ints...> int_seq)
+{
+	std::cout << "The sequence of size " << int_seq.size() << ": ";
+	((std::cout << ints << ' '), ...);
+	std::cout << '\n';
+}
+
 int main()
 {
+	//print_sequence(custom::IntegerSequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
+	//print_sequence(custom::MakeIntegerSequence<int, 20>{});
+	//print_sequence(custom::MakeIndexSequence<10>{});
+	//print_sequence(custom::IndexSequenceFor<float, std::iostream, char>{});
+
+	// =====================================================================
+
 	//std::unordered_map<int, int> umap;
 	//std::map<int, int> map;
 	//std::set<int, int> set;

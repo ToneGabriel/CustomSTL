@@ -27,10 +27,10 @@ public:
 	Pair(const Pair& other);
 	Pair(Pair&& other);
 
-	template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
+	template<class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
 	Pair(Tuple1& Val1, Tuple2& Val2, IndexSequence<Indexes1...>, IndexSequence<Indexes2...>);
 
-	template <class... Types1, class... Types2>
+	template<class... Types1, class... Types2>
 	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2);
 
 	~Pair() = default;
@@ -78,12 +78,12 @@ Pair<Type1, Type2>::Pair(Pair&& other)
     :First(custom::move(other.First)), Second(custom::move(other.Second)) { /*Empty*/ }
 
 template<class Type1, class Type2>  // TODO: check "custom::get"
-template <class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
+template<class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
 Pair<Type1, Type2>::Pair(Tuple1& Val1, Tuple2& Val2, IndexSequence<Indexes1...>, IndexSequence<Indexes2...>)
     :First(get<Indexes1>(custom::move(Val1))...), Second(get<Indexes2>(custom::move(Val2))...) { /*Empty*/ }
 
 template<class Type1, class Type2>
-template <class... Types1, class... Types2>
+template<class... Types1, class... Types2>
 Pair<Type1, Type2>::Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
     :Pair(Val1, Val2, IndexSequenceFor<Types1...>{}, IndexSequenceFor<Types2...>{}) { /*Empty*/ }
 

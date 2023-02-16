@@ -34,15 +34,15 @@ public:
 	~Tuple() 			= default;
 };
 
-template <size_t Index, class Tuple>
+template<size_t Index, class Tuple>
 struct TupleElement;                                        // TupleElement prototype for accessing Tuple members
 
 template<size_t Index, class This, class... Rest>
 struct TupleElement<Index, Tuple<This, Rest...>> 
 : public TupleElement<Index - 1, Tuple<Rest...>> {};        // Recursive TupleElement implementation
 
-template <class This, class... Rest>                        // Default TupleElement implementation
-struct TupleElement <0, Tuple<This, Rest...>>
+template<class This, class... Rest>
+struct TupleElement <0, Tuple<This, Rest...>>				// Default TupleElement implementation
 {
 	using Type = This;
 	using TupleType = Tuple<This, Rest...>;
@@ -63,7 +63,7 @@ typename TupleElement<Index, Tuple<Types...>>::Type&& get(Tuple<Types...>&& tupl
 	return static_cast<Type&&>(static_cast<TupleType&>(tuple).First);
 }
 
-template <class... Types>
+template<class... Types>
 Tuple<Types&&...> forward_as_tuple(Types&&... args) {	    // Forward arguments in a tuple
 	return Tuple<Types&&...>(custom::forward<Types>(args)...);
 }
