@@ -116,14 +116,12 @@ typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Ha
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(const UnorderedMap& other) {
 	Base::operator=(other);
-
 	return *this;
 }
 
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(UnorderedMap&& other) noexcept {
 	Base::operator=(custom::move(other));
-
 	return *this;
 }
 

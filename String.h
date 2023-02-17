@@ -347,25 +347,21 @@ void String::pop_back() {
 // Append function overload
 String& String::append(const String& string) {
 	_insert_from_cstring(_size, string._string, 0, string._size);
-
 	return *this;
 }
 
 String& String::append(const String& string, const size_t& subpos, const size_t& sublen) {
 	_insert_from_cstring(_size, string._string, subpos, sublen);
-
 	return *this;
 }
 
 String& String::append(const char* cstring) {
 	_insert_from_cstring(_size, cstring, 0, strlen(cstring));
-
 	return *this;
 }
 
 String& String::append(const char* cstring, const size_t nchar) {
 	_insert_from_cstring(_size, cstring, 0, nchar);
-
 	return *this;
 }
 
@@ -376,7 +372,6 @@ String& String::append(const size_t& nchar, const char& chr) {
 
 	_insert_from_cstring(_size, seq, 0, nchar);
 	_dealloc_string(seq, nchar);
-
 	return *this;
 }
 // end Append
@@ -384,25 +379,21 @@ String& String::append(const size_t& nchar, const char& chr) {
 // Insert function overload
 String& String::insert(const size_t& pos, const String& string) {
 	_insert_from_cstring(pos, string._string, 0, string._size);
-
 	return *this;
 }
 
 String& String::insert(const size_t& pos, const String& string, const size_t& subpos, const size_t& sublen) {
 	_insert_from_cstring(pos, string._string, subpos, sublen);
-
 	return *this;
 }
 
 String& String::insert(const size_t& pos, const char* cstring) {
 	_insert_from_cstring(pos, cstring, 0, strlen(cstring));
-
 	return *this;
 }
 
 String& String::insert(const size_t& pos, const char* cstring, const size_t& len) {
 	_insert_from_cstring(pos, cstring, 0, len);
-
 	return *this;
 }
 
@@ -413,7 +404,6 @@ String& String::insert(const size_t& pos, const size_t& nchar, const char& chr) 
 
 	_insert_from_cstring(pos, seq, 0, nchar);
 	_dealloc_string(seq, nchar);
-
 	return *this;
 }
 
@@ -442,7 +432,6 @@ typename String::Iterator String::insert(const Iterator& where, const Iterator& 
 // Erase function overload
 String& String::erase(const size_t& pos, const size_t& len) {
 	_remove_from_cstring(pos, len);
-
 	return *this;
 }
 

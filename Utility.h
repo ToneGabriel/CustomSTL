@@ -4,16 +4,6 @@
 
 CUSTOM_BEGIN
 
-// remove reference
-template<class Ty>
-struct RemoveReference { using Type = Ty; };
-
-template<class Ty>
-struct RemoveReference<Ty&> { using Type = Ty; };
-
-template<class Ty>
-struct RemoveReference<Ty&&> { using Type = Ty; };
-
 // is_lvalue_reference
 template <class>
 constexpr bool is_lvalue_reference = false;   // determine whether type argument is an lvalue reference
@@ -29,26 +19,12 @@ struct IntegerSequence
     static constexpr size_t size() noexcept { return sizeof...(Vals); }
 };
 
-// Aliases
+// Alias helpers for IntegerSequence
 template<size_t... Vals>
 using IndexSequence = IntegerSequence<size_t, Vals...>;
 
-//template<class Ty, Ty Size>
-//#ifdef __GNUG__
-//using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
-//#else
-//using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
-//#endif
-
-//template<class Ty, Ty Size>
-//#if __has_builtin(__make_integer_seq)
-//using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
-//#else
-//using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
-//#endif  // __make_integer_seq
-
 template<class Ty, Ty Size>
-#if __has_builtin(__integer_pack)
+#if __has_builtin(__integer_pack)   // or " #ifdef __GNUG__ "
 using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
 #else
 using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
@@ -59,8 +35,17 @@ using MakeIndexSequence = MakeIntegerSequence<size_t, Size>;
 
 template<class... Types>
 using IndexSequenceFor = MakeIndexSequence<sizeof...(Types)>;
+// END Alias helpers for IntegerSequence
 
+// remove reference
+template<class Ty>
+struct RemoveReference { using Type = Ty; };
 
+template<class Ty>
+struct RemoveReference<Ty&> { using Type = Ty; };
+
+template<class Ty>
+struct RemoveReference<Ty&&> { using Type = Ty; };
 
 // move
 template<class Ty>

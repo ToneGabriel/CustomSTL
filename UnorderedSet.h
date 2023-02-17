@@ -93,14 +93,12 @@ UnorderedSet<Key, Hasher>::~UnorderedSet() { /*Empty*/ }
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>& UnorderedSet<Key, Hasher>::operator=(const UnorderedSet& other) {
 	Base::operator=(other);
-
 	return *this;
 }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>& UnorderedSet<Key, Hasher>::operator=(UnorderedSet&& other) noexcept {
 	Base::operator=(custom::move(other));
-
 	return *this;
 }
 
