@@ -31,12 +31,12 @@ public:
 	using Iterator			= typename List<ValueType>::Iterator;	// Iterator for this container (identical to List iterator)
 
 protected:
-	static constexpr float _maxLoadFactor	= 0.75;		// The maximum load factor admitted before rehashing
-	static constexpr size_t _defaultBuckets = 8;		// Default number of buckets
+	Hasher _hash;													// Used for initial(non-compressed) hash value
+	IterList _elems;												// Used to iterate through container
+	HashArray _buckets;												// Used to map IterList values
 
-	Hasher _hash;										// Used for initial(non-compressed) hash value
-	IterList _elems;									// Used to iterate through container
-	HashArray _buckets;									// Used to map IterList values
+	static constexpr float table_load_factor	= 0.75;				// The maximum load factor admitted before rehashing
+	static constexpr size_t default_buckets		= 8;				// Default number of buckets
 
 protected:
     // Constructors
@@ -112,12 +112,12 @@ private:
 // HashTable Template
 template<class Traits>
 HashTable<Traits>::HashTable() {
-	rehash(_defaultBuckets);
+	rehash(default_buckets);
 }
 
 template<class Traits>
 HashTable<Traits>::HashTable(const size_t& buckets) {
-	rehash((buckets < _defaultBuckets) ? _defaultBuckets : buckets);
+	rehash((buckets < default_buckets) ? default_buckets : buckets);
 }
 
 template<class Traits>
@@ -280,7 +280,7 @@ float HashTable<Traits>::load_factor() const {
 
 template<class Traits>
 float HashTable<Traits>::max_load_factor() const {
-	return _maxLoadFactor;
+	return table_load_factor;
 }
 
 template<class Traits>
@@ -376,13 +376,13 @@ void HashTable<Traits>::_force_rehash(const size_t& buckets) {
 
 template<class Traits>
 void HashTable<Traits>::_rehash_if_overload() {
-	if (static_cast<float>(size() + 1) / static_cast<float>(bucket_count()) > _maxLoadFactor)
+	if (static_cast<float>(size() + 1) / static_cast<float>(bucket_count()) > max_load_factor())
 		_force_rehash(2 * bucket_count());
 }
 
 template<class Traits>
 size_t HashTable<Traits>::_min_load_factor_buckets(const size_t& size) const {
-	return static_cast<size_t>(std::ceil(static_cast<float>(size) / _maxLoadFactor));
+	return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 }
 // END HashTable Template
 

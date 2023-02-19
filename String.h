@@ -65,9 +65,7 @@ public:
 	using Iterator	= StringIterator<String>;			// Iterator type			
 	using Data		= typename Iterator::Data;			// Iteration data
 
-	static constexpr size_t npos				= static_cast<size_t>(-1);
-	static constexpr size_t istream_capacity	= 255;
-	static constexpr char NULLCHR 				= '\0';
+	static constexpr size_t npos = static_cast<size_t>(-1);
 
 private:
 	size_t _size		= 0;
@@ -76,6 +74,9 @@ private:
 
 	mutable Data _data;
 	mutable Alloc _alloc;
+
+	static constexpr size_t istream_capacity	= 255;
+	static constexpr char NULLCHR 				= '\0';
 
 public:
 

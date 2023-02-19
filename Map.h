@@ -1,12 +1,12 @@
 #pragma once
 #include "SearchTree.h"
 
-
 CUSTOM_BEGIN
 
-// Map Traits ==============================================
+// Headings =================================================================================
+
 template<class Key, class Type, class Compare>
-class MapTraits
+class MapTraits										// Map Traits
 {
 public:
 	using KeyType 		= Key;
@@ -18,20 +18,13 @@ public:
 
 	MapTraits() = default;
 
-	static const KeyType& extract_key(const ValueType& value) noexcept { // extract key from element value
-		return value.First;
-	}
+	static const KeyType& extract_key(const ValueType& value) noexcept;			// extract key from element value
+	static const MappedType& extract_mapval(const ValueType& value) noexcept;	// extract mapped val from element value
+}; // END Map Traits
 
-	static const MappedType& extract_mapval(const ValueType& value) noexcept { // extract mapped val from element value
-		return value.Second;
-	}
-};
-// Map Traits ==============================================
-// END
 
-// Map ========================================================
 template<class Key, class Type, class Compare = std::less<Key>>
-class Map : public SearchTree<MapTraits<Key, Type, Compare>>
+class Map : public SearchTree<MapTraits<Key, Type, Compare>>		// Map Template
 {
 private:
 	using Base = SearchTree<MapTraits<Key, Type, Compare>>;
@@ -45,66 +38,113 @@ public:
 public:
 	// Constructors
 
-	Map() 
-		:Base() { /*Empty*/ }
-
-	Map(const Map& other)
-		:Base(other) { /*Empty*/ }
-
-	Map(Map&& other) noexcept
-		:Base(custom::move(other)) { /*Empty*/ }
-
-	~Map() { /*Empty*/ }
+	Map();
+	Map(const Map& other);
+	Map(Map&& other) noexcept;
+	~Map();
 
 public:
 	// Operators
 
-	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->_Value.Second;
-	}
+	MappedType& operator[](const Key& key);					// Access value or create new one with key and assignment (no const)
+	MappedType& operator[](Key&& key);
 
-	MappedType& operator[](Key&& key) {
-		return try_emplace(custom::move(key))->_Value.Second;
-	}
+	Map& operator=(const Map& other);
+	Map& operator=(Map&& other) noexcept;
 
-	Map& operator=(const Map& other) {
-		Base::operator=(other);
-
-		return *this;
-	}
-
-	Map& operator=(Map&& other) noexcept {
-		Base::operator=(custom::move(other));
-
-		return *this;
-	}
-
-	bool operator==(const Map& other) const {		// Contains the same elems, but not the same hashtable
-		return Base::operator==(other);
-	}
-
-	bool operator!=(const Map& other) const {
-		return !operator==(other);
-	}
+	bool operator==(const Map& other) const;				// Contains the same elems, but not the same hashtable
+	bool operator!=(const Map& other) const;
 
 public:
 	// Main functions
 
 	template<class _KeyType, class... Args>
-	Iterator try_emplace(_KeyType&& key, Args&&... args) {				// Force construction with known key and given arguments for object
-		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
-	}
+	Iterator try_emplace(_KeyType&& key, Args&&... args);	// Force construction with known key and given arguments for object
 
-	const MappedType& at(const Key& key) const {						// Access _Value at key with check
-		return this->_at(key);
-	}
+	const MappedType& at(const Key& key) const;				// Access _Value at key with check
+	MappedType& at(const Key& key);
 
-	MappedType& at(const Key& key) {
-		return this->_at(key);
-	}
+};  // END Map Template
 
-};
-// Map ========================================================
-// END
 
+
+// Definitions =================================================================================
+
+// Map Traits
+template<class Key, class Type, class Compare>
+const typename MapTraits<Key, Type, Compare>::KeyType& MapTraits<Key, Type, Compare>::extract_key(const ValueType& value) noexcept {
+	return value.First;
+}
+
+template<class Key, class Type, class Compare>
+const typename MapTraits<Key, Type, Compare>::MappedType& MapTraits<Key, Type, Compare>::extract_mapval(const ValueType& value) noexcept {
+	return value.Second;
+}
+// END Map Traits
+
+
+// Map Template
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>::Map()
+	:Base() { /*Empty*/ }
+
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>::Map(const Map& other)
+	:Base(other) { /*Empty*/ }
+
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>::Map(Map&& other) noexcept
+	:Base(custom::move(other)) { /*Empty*/ }
+
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>::~Map() { /*Empty*/ }
+
+template<class Key, class Type, class Compare>
+typename Map<Key, Type, Compare>::MappedType& Map<Key, Type, Compare>::operator[](const Key& key) {
+	return try_emplace(key)->_Value.Second;
+}
+
+template<class Key, class Type, class Compare>
+typename Map<Key, Type, Compare>::MappedType& Map<Key, Type, Compare>::operator[](Key&& key) {
+	return try_emplace(custom::move(key))->_Value.Second;
+}
+
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>& Map<Key, Type, Compare>::operator=(const Map& other) {
+	Base::operator=(other);
+	return *this;
+}
+
+template<class Key, class Type, class Compare>
+Map<Key, Type, Compare>& Map<Key, Type, Compare>::operator=(Map&& other) noexcept {
+	Base::operator=(custom::move(other));
+	return *this;
+}
+
+template<class Key, class Type, class Compare>
+bool Map<Key, Type, Compare>::operator==(const Map& other) const {
+	return Base::operator==(other);
+}
+
+template<class Key, class Type, class Compare>
+bool Map<Key, Type, Compare>::operator!=(const Map& other) const {
+	return Base::operator!=(other);
+}
+
+template<class Key, class Type, class Compare>
+template<class _KeyType, class... Args>
+typename Map<Key, Type, Compare>::Iterator Map<Key, Type, Compare>::try_emplace(_KeyType&& key, Args&&... args) {
+	return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
+}
+
+template<class Key, class Type, class Compare>
+const typename Map<Key, Type, Compare>::MappedType& Map<Key, Type, Compare>::at(const Key& key) const {
+	return this->_at(key);
+}
+
+template<class Key, class Type, class Compare>
+typename Map<Key, Type, Compare>::MappedType& Map<Key, Type, Compare>::at(const Key& key) {
+	return this->_at(key);
+}
+// END Map Template
 CUSTOM_END

@@ -68,8 +68,6 @@ public:
 	using Iterator	= VectorIterator<Vector<ValueType>>;			// Iterator type
 	using Data		= typename Iterator::Data;						// Iteration data
 
-	static constexpr size_t default_capacity = 8;
-
 private:
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
@@ -77,6 +75,8 @@ private:
 
 	mutable Data _data;												// Stores the ends of the array
 	mutable Alloc _alloc;											// Allocator
+
+	static constexpr size_t default_capacity = 8;
 
 public:
 	// Constructors

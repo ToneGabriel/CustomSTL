@@ -71,8 +71,6 @@ public:
 	using Iterator 	= DequeIterator<Deque<ValueType>>;		// Iterator type
 	using Data		= typename Iterator::Data;				// Iteration data
 
-	static constexpr size_t default_capacity = 8;
-
 private:
 	size_t _size 		= 0;								// Number of components held by this
 	size_t _capacity 	= 0;								// Allocated momory of type ValueType
@@ -82,6 +80,8 @@ private:
 
 	mutable Alloc _alloc;									// Allocator
 	mutable Data _data;										// Stores the ends of the array, array address, capacity
+	
+	static constexpr size_t default_capacity = 8;
 
 public:
 	// Constructors

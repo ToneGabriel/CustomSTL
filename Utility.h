@@ -32,13 +32,6 @@ using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
 #error No "MakeIntegerSequence" implementation
 #endif  // MakeIntegerSequence
 
-// template<class Ty, Ty Size>
-// #if __has_builtin(__integer_pack)   // or " #ifdef __GNUG__ "
-// using MakeIntegerSequence = IntegerSequence<Ty, __integer_pack(Size)...>;
-// #else
-// using MakeIntegerSequence = __make_integer_seq<IntegerSequence, Ty, Size>;
-// #endif  // __integer_pack
-
 template<size_t Size>
 using MakeIndexSequence = MakeIntegerSequence<size_t, Size>;
 

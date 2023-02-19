@@ -3,127 +3,108 @@
 
 CUSTOM_BEGIN
 
-// Set ========================================================
-template<class Key, class Compare = std::less<Key>>
-class Set 
+// Headings =================================================================================
+
+template<class Key, class Type, class Compare>
+class SetTraits										// Set Traits
 {
-    public:
-	using ValueType = Key;                                      // Type of values stored in container
-	using Iterator	= typename List<ValueType>::Iterator;		// Iterator for this container (identical to List iterator)
+public:
+	using KeyType		= Key;
+	using MappedType	= Type;
+	using KeyCompare	= Compare;
+	using ValueType		= Pair<Key, Type>;
 
-private:
-	using IterList			= List<ValueType>;					// List of ValueType used for iterating
-	using Node				= typename IterList::Node;			// Node component from List
+public:
 
+	SetTraits() = default;
+
+	static const KeyType& extract_key(const ValueType& value) noexcept;			// extract key from element value
+	static const MappedType& extract_mapval(const ValueType& value) noexcept;	// extract mapped val from element value
+}; // END Set Traits
+
+
+template<class Key, class Compare = std::less<Key>>
+class Set : public SearchTree<SetTraits<Key, Key, Compare>>		// Set Template
+{
 private:
-	Compare _comp;                                              // Used for comparison of objects
-	IterList _elems;											// Used to iterate through container
+	using Base = SearchTree<SetTraits<Key, Key, Compare>>;
+
+public:
+	using KeyType		= typename Base::KeyType;
+	using MappedType	= typename Base::MappedType;
+	using ValueType		= typename Base::ValueType;
+	using Iterator		= typename Base::Iterator;
 
 public:
     // Constructors
 
-    Set() {
-
-    }
-
-    Set(const Set& other) {
-        
-    }
-
-    Set(Set&& other) {
-        
-    }
-
-    ~Set() {
-        clear();
-    }
-
-public:
-	// Main functions
-
-	template<class... Args>
-	Iterator emplace(Args&&... args) {									// Constructs Node first with any given arguments
-
-    }
-    
-	Iterator erase(const Key& key) {
-    
-    }
-
-	Iterator erase(const Iterator& iterator) {
-    
-    }
-
-	Iterator find(const Key& key) const {
-    
-    }
-
-    void clear() {
-		_elems.clear();													// Delete all Node* with values
-        
-    }
-
-    bool empty() const {
-		return _elems.empty();
-	}
-
-	size_t size() const {
-		return _elems.size();
-	}
+	Set();
+	Set(const Set& other);
+	Set(Set&& other) noexcept;
+	~Set();
 
 public:
     // Operators
 
-	Set<Key>& operator=(const Set& other) {
-		_elems = other._elems;
+	Set& operator=(const Set& other);
+	Set& operator=(Set&& other) noexcept;
+
+	bool operator==(const Set& other) const;
+	bool operator!=(const Set& other) const;
+}; // END Set Template
 
 
-		return *this;
-    }
 
-    Set<Key>& operator=(Set&& other) {
-    	_elems = custom::move(other._elems);
+// Definitions =================================================================================
 
+// Set Traits
+template<class Key, class Type, class Compare>
+const typename SetTraits<Key, Type, Compare>::KeyType& SetTraits<Key, Type, Compare>::extract_key(const ValueType& value) noexcept {
+	return value;
+}
 
-		return *this;
-    }
+template<class Key, class Type, class Compare>
+const typename SetTraits<Key, Type, Compare>::MappedType& SetTraits<Key, Type, Compare>::extract_mapval(const ValueType& value) noexcept {
+	return value;
+}
+// END Set Traits
 
-	bool operator==(const Set& other) const {
-    	if (size() != other.size())
-			return false;
+// Set Template
+template<class Key, class Compare>
+Set<Key, Compare>::Set()
+	:Base() { /*Empty*/ }
 
+template<class Key, class Compare>
+Set<Key, Compare>::Set(const Set& other)
+	: Base(other) { /*Empty*/ }
 
-		return true;
-    }
+template<class Key, class Compare>
+Set<Key, Compare>::Set(Set&& other) noexcept
+	: Base(custom::move(other)) { /*Empty*/ }
 
-    bool operator!=(const Set& other) const {
-		return !operator==(other);
-	}
+template<class Key, class Compare>
+Set<Key, Compare>::~Set() { /*Empty*/ }
 
-public:
-	// Iterator functions
+template<class Key, class Compare>
+Set<Key, Compare>& Set<Key, Compare>::operator=(const Set& other) {
+	Base::operator=(other);
+	return *this;
+}
 
-	Iterator begin() {
-		return _elems.begin();
-	}
+template<class Key, class Compare>
+Set<Key, Compare>& Set<Key, Compare>::operator=(Set&& other) noexcept {
+	Base::operator=(custom::move(other));
+	return *this;
+}
 
-	const Iterator begin() const {
-		return _elems.begin();
-	}
+template<class Key, class Compare>
+bool Set<Key, Compare>::operator==(const Set& other) const {
+	return Base::operator==(other);
+}
 
-	Iterator end() {
-		return _elems.end();
-	}
-
-	const Iterator end() const {
-		return _elems.end();
-	}
-
-private:
-    // Others
-
-};
-// Set ========================================================
-// END
-
+template<class Key, class Compare>
+bool Set<Key, Compare>::operator!=(const Set& other) const {
+	return Base::operator!=(other);
+}
+// END Set Template
 CUSTOM_END
