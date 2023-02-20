@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cmath>		// std::ceil
 #include <functional>	// std::less
+#include <queue>
 
 CUSTOM_BEGIN
 
@@ -23,6 +24,7 @@ protected:
     using Node          = typename IterList::Node;				// Node component from List
 	using TreeNode 		= TreeNode<Node*>;						// Node component from Tree
 
+public:
 	enum Colors 
 	{
 		Red,
@@ -70,6 +72,8 @@ public:
 	size_t size() const;
 	bool empty() const;
 
+	void printDetails();
+
 public:
 	// Iterator functions
 
@@ -99,6 +103,9 @@ private:
 	void _fix_inserted(TreeNode* newNode);
 
 	TreeNode* _find_in_tree(const KeyType& key) const;
+
+	bool _has_parent(TreeNode* node);
+	bool _has_grandparent(TreeNode* node);
 }; // END SearchTree Template
 
 
@@ -173,7 +180,8 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::emplace(Args&&... args
 	const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 	_elems._insert_node_before(_elems._head, newNode);
-	_insert(new TreeNode(newNode));
+	TreeNode* newTreeNode = new TreeNode(newNode);
+	_insert(newTreeNode);
 
 	return Iterator(newNode, _elems._update_iteration_data());
 }
@@ -193,13 +201,40 @@ void SearchTree<Traits>::clear() {
 }
 
 template<class Traits>
+size_t SearchTree<Traits>::size() const {
+	return _elems.size();
+}
+
+template<class Traits>
 bool SearchTree<Traits>::empty() const {
 	return _elems.empty();
 }
 
 template<class Traits>
-size_t SearchTree<Traits>::size() const {
-	return _elems.size();
+void SearchTree<Traits>::printDetails() {
+	if(_head == nullptr)
+		return;
+	
+	std::queue<TreeNode*> q;
+	q.push(_head);
+
+	while(!q.empty())
+	{
+		int count = q.size();
+
+		while(count > 0)
+		{
+			TreeNode* node = q.front();
+			std::cout << Traits::extract_key(node->_Value->_Value) << (int)node->_Color << ' ';
+			q.pop();
+			if(node->_Left != nullptr)
+				q.push(node->_Left);
+			if(node->_Right != nullptr)
+				q.push(node->_Right);
+			--count;
+		}
+		std::cout << '\n';
+	}
 }
 
 template<class Traits>
@@ -230,20 +265,20 @@ void SearchTree<Traits>::_rotate_left(TreeNode* subroot) {
 	if (promotedNode->_Left != nullptr)
 		promotedNode->_Left->_Parent = subroot;		// subroot-right-left parent set
 
-	promotedNode->_Parent = subroot->_Parent;			// promoted takes subroot parent
+	promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
 	if (subroot == _head)							// special case when tree root is chosen for rotation
 	{
 		_head = promotedNode;
 		promotedNode->_Parent = nullptr;
 	}
-	else if (subroot == subroot->_Parent->_Left)		// parent links his new promoted child
+	else if (subroot == subroot->_Parent->_Left)	// parent links his new promoted child
 		subroot->_Parent->_Left = promotedNode;
 	else
 		subroot->_Parent->_Right = promotedNode;
 
 	promotedNode->_Left = subroot;					// promoted takes subroot as left child
-	subroot->_Parent = promotedNode;					// subroot has promoted as new parent
+	subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 }
 
 template<class Traits>
@@ -252,9 +287,9 @@ void SearchTree<Traits>::_rotate_right(TreeNode* subroot) {
 	subroot->_Left = promotedNode->_Right;			// subroot adopt right child of promoted
 
 	if (promotedNode->_Right != nullptr)
-		promotedNode->_Right->_Parent = subroot;		// subroot-left-right parent set
+		promotedNode->_Right->_Parent = subroot;	// subroot-left-right parent set
 
-	promotedNode->_Parent = subroot->_Parent;			// promoted takes subroot parent
+	promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
 	if (subroot == _head)							// special case when tree root is chosen for rotation
 	{
@@ -267,7 +302,7 @@ void SearchTree<Traits>::_rotate_right(TreeNode* subroot) {
 		subroot->_Parent->_Right = promotedNode;
 
 	promotedNode->_Right = subroot;					// promoted takes subroot as right child
-	subroot->_Parent = promotedNode;					// subroot has promoted as new parent
+	subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 }
 
 template<class Traits>
@@ -283,30 +318,24 @@ void SearchTree<Traits>::_insert(TreeNode* newNode) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_insert_raw(TreeNode* newNode) {
+void SearchTree<Traits>::_insert_raw(TreeNode* newNode) {	// TODO: ok here
 	TreeNode* futureParent = nullptr;
 
-	for (_workspaceNode = _head;;)					// find parent for newly created node
+	for (_workspaceNode = _head; _workspaceNode != nullptr;)					// find parent for newly created node
 	{
 		futureParent = _workspaceNode;
 
-		if (_less(Traits::extract_key(newNode->_Value->_Value), Traits::extract_key(futureParent->_Value->_Value)))	// TODO: value is pointer here!!!
+		if (_less(Traits::extract_key(newNode->_Value->_Value), Traits::extract_key(futureParent->_Value->_Value)))
 		{
 			_workspaceNode = _workspaceNode->_Left;
 			if (_workspaceNode == nullptr)
-			{
 				futureParent->_Left = newNode;
-				break;
-			}
 		}
 		else
 		{
 			_workspaceNode = _workspaceNode->_Right;
 			if (_workspaceNode == nullptr)
-			{
 				futureParent->_Right = newNode;
-				break;
-			}
 		}
 	}
 
@@ -315,54 +344,62 @@ void SearchTree<Traits>::_insert_raw(TreeNode* newNode) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_fix_inserted(TreeNode* newNode) {
+void SearchTree<Traits>::_fix_inserted(TreeNode* newNode) {		// TODO: check
+	TreeNode* uncle = nullptr;
+	TreeNode* _workspaceNode = newNode;							// initialize violation with newly inserted node
 
-	while (newNode->_Parent->_Color == Red)
+	while (_has_grandparent(_workspaceNode) && _workspaceNode->_Parent->_Color == Red)
 	{
-		if (newNode->_Parent == newNode->_Parent->_Parent->_Left)
+		if (_workspaceNode->_Parent == _workspaceNode->_Parent->_Parent->_Left)
 		{
-			_workspaceNode = newNode->_Parent->_Parent->_Right;
-			if (_workspaceNode->_Color == Red)						// case1
+			uncle = _workspaceNode->_Parent->_Parent->_Right;
+			if(uncle == nullptr || uncle->_Color == Black)		// uncle black
 			{
-				newNode->_Parent->_Color = Black;
-				_workspaceNode->_Color = Black;
-				newNode->_Parent->_Parent->_Color = Red;
-				newNode = newNode->_Parent->_Parent;
-			}
-			else
-			{
-				if (newNode == newNode->_Parent->_Right)				// case2
+				if (_workspaceNode == _workspaceNode->_Parent->_Right)		// case 2 = uncle black (triangle)
 				{
-					newNode = newNode->_Parent;
-					_rotate_left(newNode);
-				}
+					_workspaceNode = _workspaceNode->_Parent;
+					_rotate_left(_workspaceNode);
+				}	
 
-				newNode->_Parent->_Color = Black;						// case3
-				newNode->_Parent->_Parent->_Color = Red;
-				_rotate_right(newNode->_Parent->_Parent);
+				_workspaceNode->_Parent->_Color = Black;
+				_workspaceNode->_Parent->_Parent->_Color = Red;
+
+				//if (_workspaceNode == _workspaceNode->_Parent->_Left)		// case 3 = uncle black (line)
+				if (_has_grandparent(_workspaceNode))
+					_rotate_right(_workspaceNode->_Parent->_Parent);
+			}
+			else															// case 1 = uncle red
+			{
+				_workspaceNode->_Parent->_Color = Black;
+				uncle->_Color = Black;
+				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode = _workspaceNode->_Parent->_Parent;
 			}
 		}
 		else
 		{
-			_workspaceNode = newNode->_Parent->_Parent->_Left;
-			if (_workspaceNode->_Color == Red)
+			uncle = _workspaceNode->_Parent->_Parent->_Left;
+			if(uncle == nullptr || uncle->_Color == Black)
 			{
-				newNode->_Parent->_Color = Black;
-				_workspaceNode->_Color = Black;
-				newNode->_Parent->_Parent->_Color = Red;
-				newNode = newNode->_Parent->_Parent;
+				if (_workspaceNode == _workspaceNode->_Parent->_Left)
+				{
+					_workspaceNode = _workspaceNode->_Parent;
+					_rotate_right(_workspaceNode->_Parent);
+				}
+
+				_workspaceNode->_Parent->_Color = Black;
+				_workspaceNode->_Parent->_Parent->_Color = Red;
+
+				//if (_workspaceNode == _workspaceNode->_Parent->_Right)
+				if (_has_grandparent(_workspaceNode))
+					_rotate_left(_workspaceNode->_Parent->_Parent);
 			}
 			else
 			{
-				if (newNode == newNode->_Parent->_Left)
-				{
-					newNode = newNode->_Parent;
-					_rotate_right(newNode);
-				}
-
-				newNode->_Parent->_Color = Black;
-				newNode->_Parent->_Parent->_Color = Red;
-				_rotate_left(newNode->_Parent->_Parent);
+				_workspaceNode->_Parent->_Color = Black;
+				uncle->_Color = Black;
+				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode = _workspaceNode->_Parent->_Parent;
 			}
 		}
 	}
@@ -389,6 +426,16 @@ typename SearchTree<Traits>::TreeNode* SearchTree<Traits>::_find_in_tree(const K
 	}
 
 	return found;
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_has_parent(TreeNode* node) {
+	return node->_Parent != nullptr;
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_has_grandparent(TreeNode* node) {
+	return (_has_parent(node) && node->_Parent->_Parent != nullptr);
 }
 // END SearchTree Template
 

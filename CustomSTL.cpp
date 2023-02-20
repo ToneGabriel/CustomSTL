@@ -137,11 +137,20 @@ int main()
 
 	// =====================================================================
 
-	//custom::Map<int,int> map;
+	custom::Map<int,int> map;
 
-	//map.emplace(1,11);
-	//map.emplace(2,12);
-	//map.emplace(3,13);
+	map.emplace(2,12);
+	map.emplace(5,15);
+	map.emplace(1,11);
+	map.emplace(4,14);
+	map.emplace(9,19);
+	map.emplace(7,17);
+	map.emplace(3,13);
+	map.emplace(0,10);
+
+	map.printDetails();
+	// for(auto& val : map)
+	// 	std::cout << val.First << ' ' << val.Second << '\n';
 
 	// =====================================================================
 
