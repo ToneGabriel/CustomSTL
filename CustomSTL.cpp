@@ -147,6 +147,8 @@ int main()
 	map.emplace(7,17);
 	map.emplace(3,13);
 	map.emplace(0,10);
+	map.emplace(10, 0);
+	map.emplace(11, 0);
 
 	map.printDetails();
 	// for(auto& val : map)
