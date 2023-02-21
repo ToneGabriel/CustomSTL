@@ -104,6 +104,8 @@ private:
 	void _force_rehash(const size_t& buckets);
 	void _rehash_if_overload();										// Check load factor and rehash if needed
 	size_t _min_load_factor_buckets(const size_t& size) const;		// returns the minimum number of buckets necessary for the elements in List
+	void _copy(const HashTable& other);
+	void _move(HashTable&& other);
 }; // END HashTable Template
 
 
@@ -140,10 +142,7 @@ HashTable<Traits>::~HashTable() {
 template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(const HashTable& other) {
 	if (_elems._head != other._elems._head)
-	{
-		_elems = other._elems;
-		_force_rehash(other.bucket_count());
-	}
+		_copy(other);
 
 	return *this;
 }
@@ -151,10 +150,7 @@ HashTable<Traits>& HashTable<Traits>::operator=(const HashTable& other) {
 template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(HashTable&& other) noexcept {
 	if (_elems._head != other._elems._head)
-	{
-		_elems = custom::move(other._elems);
-		_force_rehash(other.bucket_count());
-	}
+		_move(custom::move(other));
 
 	return *this;
 }
@@ -384,6 +380,19 @@ template<class Traits>
 size_t HashTable<Traits>::_min_load_factor_buckets(const size_t& size) const {
 	return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 }
+
+template<class Traits>
+void HashTable<Traits>::_copy(const HashTable& other) {
+	_elems = other._elems;
+	_force_rehash(other.bucket_count());
+}
+
+template<class Traits>
+void HashTable<Traits>::_move(HashTable&& other) {
+	_elems = custom::move(other._elems);
+	_force_rehash(other.bucket_count());
+}
+
 // END HashTable Template
 
 CUSTOM_END

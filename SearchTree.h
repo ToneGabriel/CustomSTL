@@ -103,11 +103,12 @@ public:
 	Iterator erase(const Iterator& iterator);
 	Iterator find(const KeyType& key) const;
 	
-	void clear();
 	size_t size() const;
 	bool empty() const;
+	void clear();
 
 	void print_details() const;
+
 public:
 	// Iterator functions
 
@@ -135,13 +136,16 @@ private:
 	void _rotate_right(Node* subroot);								// promotes subroot left
 
 	void _insert(Node* newNode);
-	void _insert_raw(Node* newNode);
-	void _fix_inserted(Node* newNode);
+	void _raw_insert(Node* newNode);
+	void _fix_insert(Node* newNode);
 
 	Node* _find_in_tree(const KeyType& key) const;
 
 	bool _has_parent(Node* node);
 	bool _has_grandparent(Node* node);
+
+	void _copy(const SearchTree& other);
+	void _move(SearchTree&& other);
 
 	Data* _update_iteration_data() const;							// Update the data used in Iterator
 }; // END SearchTree Template
@@ -168,6 +172,7 @@ SearchTreeIterator<SearchTree>::~SearchTreeIterator() {
 
 template<class SearchTree>
 SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator++() {
+	// TODO: implement
 	return *this;
 }
 
@@ -180,6 +185,7 @@ SearchTreeIterator<SearchTree> SearchTreeIterator<SearchTree>::operator++(int) {
 
 template<class SearchTree>
 SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator--() {
+	// TODO: implement
 	return *this;
 }
 
@@ -192,11 +198,13 @@ SearchTreeIterator<SearchTree> SearchTreeIterator<SearchTree>::operator--(int) {
 
 template<class SearchTree>
 typename SearchTreeIterator<SearchTree>::IterType* SearchTreeIterator<SearchTree>::operator->() {
+	// TODO: implement check
 	return _Ptr;
 }
 
 template<class SearchTree>
 typename SearchTreeIterator<SearchTree>::ValueType& SearchTreeIterator<SearchTree>::operator*() {
+	// TODO: implement check
 	return _Ptr->_Value;
 }
 
@@ -234,13 +242,17 @@ SearchTree<Traits>::~SearchTree() {
 
 template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(const SearchTree& other) {
-	// TODO
+	if (_head != other._head)
+		_copy(other);
+
 	return *this;
 }
 
 template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(SearchTree&& other) noexcept {
-	// TODO
+	if (_head != other._head)
+		_move(custom::move(other));
+
 	return *this;
 }
 
@@ -280,9 +292,18 @@ template<class... Args>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::emplace(Args&&... args) {
 	Node* newNode = new Node(custom::forward<Args>(args)...);
 	const KeyType& newKey = Traits::extract_key(newNode->_Value);
+	Iterator it = find(newKey);
 
-	_insert(newNode);	// TODO: check
-	return Iterator(newNode, &_data);
+	if (it != end())
+	{
+		delete newNode;
+		return it;
+	}
+	else
+	{
+		_insert(newNode);
+		return Iterator(newNode, _update_iteration_data());
+	}
 }
 
 template<class Traits>
@@ -296,8 +317,12 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const Iterator& 
 }
 
 template<class Traits>
-typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& key) const {
-	// TODO: complete
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& key) const {	// TODO: check
+	Node* foundNode = _find_in_tree(key);
+	if (foundNode != nullptr)
+		return Iterator(foundNode, _update_iteration_data());
+
+	return end();
 }
 
 template<class Traits>
@@ -323,22 +348,61 @@ void SearchTree<Traits>::print_details() const {
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() {	// TODO: implement
-	return Iterator(_head, &_data);
+	return Iterator(_head, _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() const {
-	return Iterator(_head, &_data);
+	return Iterator(_head, _update_iteration_data());
 }
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() {
-	return Iterator(_head, &_data);
+	return Iterator(_head, _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() const {
-	return Iterator(_head, &_data);
+	return Iterator(_head, _update_iteration_data());
+}
+
+template<class Traits>
+template<class _KeyType, class... Args>
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::_try_emplace(_KeyType&& key, Args&&... args) {
+	Iterator it = find(key);
+
+	if (it != end())
+		return it;
+	else 
+	{
+		Node* newNode = new Node(
+			custom::piecewise_construct,
+			custom::forward_as_tuple(custom::forward<_KeyType>(key)),
+			custom::forward_as_tuple(custom::forward<Args>(args)...)
+		);
+		const KeyType& newKey = Traits::extract_key(newNode->_Value);
+
+		_insert(newNode);
+		return Iterator(newNode, _update_iteration_data());
+	}
+}
+
+template<class Traits>
+const typename SearchTree<Traits>::MappedType& SearchTree<Traits>::_at(const KeyType& key) const {
+	Iterator it = find(key);
+	if (it == end())
+		throw std::out_of_range("Invalid key...");
+
+	return Traits::extract_mapval((*it)->_Value);
+}
+
+template<class Traits>
+typename SearchTree<Traits>::MappedType& SearchTree<Traits>::_at(const KeyType& key) {
+	Iterator it = find(key);
+	if (it == end())
+		throw std::out_of_range("Invalid key...");
+
+	return Traits::extract_mapval((*it)->_Value);
 }
 
 template<class Traits>
@@ -410,15 +474,15 @@ void SearchTree<Traits>::_insert(Node* newNode) {
 		_head = newNode;
 	else
 	{
-		_insert_raw(newNode);
-		_fix_inserted(newNode);
+		_raw_insert(newNode);
+		_fix_insert(newNode);
 	}
 
 	++_size;
 }
 
 template<class Traits>
-void SearchTree<Traits>::_insert_raw(Node* newNode) {
+void SearchTree<Traits>::_raw_insert(Node* newNode) {
 	Node* futureParent = nullptr;
 
 	for (_workspaceNode = _head; _workspaceNode != nullptr;)	// find parent for newly created node
@@ -444,7 +508,7 @@ void SearchTree<Traits>::_insert_raw(Node* newNode) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_fix_inserted(Node* newNode) {		// TODO: check (should work now...)
+void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should work now...)
 	Node* uncle = nullptr;
 	_workspaceNode = newNode;													// initialize violation with newly inserted node
 
@@ -510,13 +574,9 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyTy
 		if (key == Traits::extract_key(_workspaceNode->_Value))
 			found = _workspaceNode;
 		else if (_less(key, Traits::extract_key(_workspaceNode->_Value)))
-		{
 			_workspaceNode = _workspaceNode->_Left;
-		}
 		else
-		{
 			_workspaceNode = _workspaceNode->_Right;
-		}
 	}
 
 	return found;
@@ -530,6 +590,24 @@ bool SearchTree<Traits>::_has_parent(Node* node) {
 template<class Traits>
 bool SearchTree<Traits>::_has_grandparent(Node* node) {
 	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_copy(const SearchTree& other) {
+	// TODO: implement
+}
+
+template<class Traits>
+void SearchTree<Traits>::_move(SearchTree&& other) {
+	// TODO: implement
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Data* SearchTree<Traits>::_update_iteration_data() const {	// TODO: implement
+	_data._Begin = _head;
+	_data._End = _head;
+
+	return &_data;
 }
 // END SearchTree Template
 

@@ -24,10 +24,10 @@ public:
 
 
 template<class Key, class Compare = std::less<Key>>
-class Set : public SearchTree<SetTraits<Key, Key, Compare>>		// Set Template
+class Set : public SearchTree<SetTraits<Key, Compare>>		// Set Template
 {
 private:
-	using Base = SearchTree<SetTraits<Key, Key, Compare>>;
+	using Base = SearchTree<SetTraits<Key, Compare>>;
 
 public:
 	using KeyType		= typename Base::KeyType;
