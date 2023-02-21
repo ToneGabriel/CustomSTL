@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cmath>		// std::ceil
 #include <functional>	// std::less
-#include <queue>		// for printDetails() (remove after)
+
 
 CUSTOM_BEGIN
 
@@ -59,18 +59,12 @@ protected:
     using MappedType    = typename Traits::MappedType;			// Type of Mapped _Value
     using KeyCompare    = typename Traits::KeyCompare;			// Comparison struct
 
-	enum Colors 
-	{
-		Red,
-		Black
-	};
-
 public:
     using ValueType     = typename Traits::ValueType;				// Type of values stored in container
 	using Node 			= TreeNode<ValueType>;						// Node component from Tree
 	using IterType		= Node;										// Type of iterating element
 	using Iterator		= SearchTreeIterator<SearchTree<Traits>>;	// Iterator type
-	using Data			= typename Iterator::Data;						// Iteration data
+	using Data			= typename Iterator::Data;					// Iteration data
 
 protected:
 	size_t _size		= 0;										// Number of Nodes held by this
@@ -113,8 +107,7 @@ public:
 	size_t size() const;
 	bool empty() const;
 
-	void printDetails();
-
+	void print_details() const;
 public:
 	// Iterator functions
 
@@ -135,6 +128,8 @@ protected:
 
 private:
 	// Helpers
+
+	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
 
 	void _rotate_left(Node* subroot);								// promotes subroot right
 	void _rotate_right(Node* subroot);								// promotes subroot left
@@ -291,6 +286,16 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::emplace(Args&&... args
 }
 
 template<class Traits>
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const KeyType& key) {
+	// TODO: implement
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const Iterator& iterator) {
+	// TODO: implement
+}
+
+template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& key) const {
 	// TODO: complete
 }
@@ -311,30 +316,9 @@ bool SearchTree<Traits>::empty() const {
 }
 
 template<class Traits>
-void SearchTree<Traits>::printDetails() {
-	if(_head == nullptr)
-		return;
-	
-	std::queue<Node*> q;
-	q.push(_head);
-
-	while(!q.empty())
-	{
-		int count = q.size();
-
-		while(count > 0)
-		{
-			Node* node = q.front();
-			std::cout << Traits::extract_key(node->_Value) << (int)node->_Color << ' ';
-			q.pop();
-			if(node->_Left != nullptr)
-				q.push(node->_Left);
-			if(node->_Right != nullptr)
-				q.push(node->_Right);
-			--count;
-		}
-		std::cout << '\n';
-	}
+void SearchTree<Traits>::print_details() const {
+	std::cout << "Size= " << _size << '\n';
+	_print_graph(0, _head, "HEAD");
 }
 
 template<class Traits>
@@ -355,6 +339,20 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() {
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() const {
 	return Iterator(_head, &_data);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const {
+	custom::String str;
+	str.append(ident, '\t');
+
+	std::cout << str << Traits::extract_key(root->_Value) << " [" << ((int)root->_Color ? "black" : "red") << " " << rlFlag << "]\n";
+
+	if (root->_Left)
+		_print_graph(ident + 1, root->_Left, "LEFT");
+
+	if (root->_Right)
+		_print_graph(ident + 1, root->_Right, "RIGHT");
 }
 
 template<class Traits>
@@ -442,43 +440,43 @@ void SearchTree<Traits>::_insert_raw(Node* newNode) {
 	}
 
 	newNode->_Parent = futureParent;
-	newNode->_Color = Red;
+	newNode->_Color = Node::Colors::Red;
 }
 
 template<class Traits>
 void SearchTree<Traits>::_fix_inserted(Node* newNode) {		// TODO: check (should work now...)
 	Node* uncle = nullptr;
-	Node* _workspaceNode = newNode;							// initialize violation with newly inserted node
+	_workspaceNode = newNode;													// initialize violation with newly inserted node
 
-	while (_has_grandparent(_workspaceNode) && _workspaceNode->_Parent->_Color == Red)
+	while (_has_grandparent(_workspaceNode) && _workspaceNode->_Parent->_Color == Node::Colors::Red)
 	{
 		if (_workspaceNode->_Parent == _workspaceNode->_Parent->_Parent->_Left)
 		{
 			uncle = _workspaceNode->_Parent->_Parent->_Right;
-			if(uncle == nullptr || uncle->_Color == Black)	// uncle black
+			if(uncle == nullptr || uncle->_Color == Node::Colors::Black)		// uncle black
 			{
-				if (_workspaceNode == _workspaceNode->_Parent->_Right)	// case 2 = uncle black (triangle)
+				if (_workspaceNode == _workspaceNode->_Parent->_Right)			// case 2 = uncle black (triangle)
 				{
 					_workspaceNode = _workspaceNode->_Parent;
 					_rotate_left(_workspaceNode);
 				}	
 
-				_workspaceNode->_Parent->_Color = Black;				// case 3 = uncle black (line)
-				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode->_Parent->_Color = Node::Colors::Black;			// case 3 = uncle black (line)
+				_workspaceNode->_Parent->_Parent->_Color = Node::Colors::Red;
 				_rotate_right(_workspaceNode->_Parent->_Parent);
 			}
-			else														// case 1 = uncle red
+			else																// case 1 = uncle red
 			{
-				_workspaceNode->_Parent->_Color = Black;
-				uncle->_Color = Black;
-				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode->_Parent->_Color = Node::Colors::Black;
+				uncle->_Color = Node::Colors::Black;
+				_workspaceNode->_Parent->_Parent->_Color = Node::Colors::Red;
 				_workspaceNode = _workspaceNode->_Parent->_Parent;
 			}
 		}
-		else
+		else																	// simetrical situation
 		{
 			uncle = _workspaceNode->_Parent->_Parent->_Left;
-			if(uncle == nullptr || uncle->_Color == Black)
+			if(uncle == nullptr || uncle->_Color == Node::Colors::Black)
 			{
 				if (_workspaceNode == _workspaceNode->_Parent->_Left)
 				{
@@ -486,21 +484,21 @@ void SearchTree<Traits>::_fix_inserted(Node* newNode) {		// TODO: check (should 
 					_rotate_right(_workspaceNode->_Parent);
 				}
 
-				_workspaceNode->_Parent->_Color = Black;
-				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode->_Parent->_Color = Node::Colors::Black;
+				_workspaceNode->_Parent->_Parent->_Color = Node::Colors::Red;
 				_rotate_left(_workspaceNode->_Parent->_Parent);
 			}
 			else
 			{
-				_workspaceNode->_Parent->_Color = Black;
-				uncle->_Color = Black;
-				_workspaceNode->_Parent->_Parent->_Color = Red;
+				_workspaceNode->_Parent->_Color = Node::Colors::Black;
+				uncle->_Color = Node::Colors::Black;
+				_workspaceNode->_Parent->_Parent->_Color = Node::Colors::Red;
 				_workspaceNode = _workspaceNode->_Parent->_Parent;
 			}
 		}
 	}
 
-	_head->_Color = Black;
+	_head->_Color = Node::Colors::Black;
 }
 
 template<class Traits>

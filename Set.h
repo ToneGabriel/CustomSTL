@@ -5,14 +5,14 @@ CUSTOM_BEGIN
 
 // Headings =================================================================================
 
-template<class Key, class Type, class Compare>
+template<class Key, class Compare>
 class SetTraits										// Set Traits
 {
 public:
 	using KeyType		= Key;
-	using MappedType	= Type;
+	using MappedType	= Key;
 	using KeyCompare	= Compare;
-	using ValueType		= Pair<Key, Type>;
+	using ValueType		= MappedType;
 
 public:
 
@@ -58,13 +58,13 @@ public:
 // Definitions =================================================================================
 
 // Set Traits
-template<class Key, class Type, class Compare>
-const typename SetTraits<Key, Type, Compare>::KeyType& SetTraits<Key, Type, Compare>::extract_key(const ValueType& value) noexcept {
+template<class Key, class Compare>
+const typename SetTraits<Key, Compare>::KeyType& SetTraits<Key, Compare>::extract_key(const ValueType& value) noexcept {
 	return value;
 }
 
-template<class Key, class Type, class Compare>
-const typename SetTraits<Key, Type, Compare>::MappedType& SetTraits<Key, Type, Compare>::extract_mapval(const ValueType& value) noexcept {
+template<class Key, class Compare>
+const typename SetTraits<Key, Compare>::MappedType& SetTraits<Key, Compare>::extract_mapval(const ValueType& value) noexcept {
 	return value;
 }
 // END Set Traits
