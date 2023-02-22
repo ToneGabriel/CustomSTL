@@ -120,6 +120,37 @@ public:
 		_Left	= nullptr;
 		_Right	= nullptr;
 	}
+
+public:
+
+	bool is_red() {
+		return this->_Color == Red;
+	}
+
+	bool is_black() {
+		return this->_Color == Black;
+	}
+
+	bool is_leaf() {
+		return (this->_Left == nullptr && this->_Right == nullptr);
+	}
+
+	TreeNode* parent() {
+		return this->_Parent;
+	}
+
+	TreeNode* grandparent() {
+		return this->_Parent->_Parent;
+	}
+
+	TreeNode* sibling() {
+		return (this == this->_Parent->_Left) ? this->_Parent->_Right : this->_Parent->_Left;
+	}
+
+	TreeNode* uncle() {
+		return (this->_Parent == this->_Parent->_Parent->_Left) ? this->_Parent->_Parent->_Right : this->_Parent->_Parent->_Left;
+	}
+
 };
 // Tree Node ========================================================
 // END

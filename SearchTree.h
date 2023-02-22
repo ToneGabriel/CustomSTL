@@ -130,8 +130,6 @@ protected:
 private:
 	// Helpers
 
-	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
-
 	void _rotate_left(Node* subroot);								// promotes subroot right
 	void _rotate_right(Node* subroot);								// promotes subroot left
 
@@ -139,11 +137,18 @@ private:
 	void _raw_insert(Node* newNode);
 	void _fix_insert(Node* newNode);
 
+	void _transplant(Node* oldNode, Node* other);
+	void _destroy(Node* oldNode);
+	void _fix_destroy(Node* node);
+
+	void _destroy_all(Node* subroot);								// DFS Postorder
+
 	Node* _find_in_tree(const KeyType& key) const;
 
 	bool _has_parent(Node* node);
 	bool _has_grandparent(Node* node);
 
+	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
 	void _copy(const SearchTree& other);
 	void _move(SearchTree&& other);
 
@@ -308,12 +313,18 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::emplace(Args&&... args
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const KeyType& key) {
-	// TODO: implement
+	Node* nodeToErase = _find_in_tree(key);
+	_destroy(nodeToErase);
+
+	return Iterator(_head, _update_iteration_data());	// TODO: not ok
 }
 
 template<class Traits>
-typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const Iterator& iterator) {
-	// TODO: implement
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const Iterator& iterator) {	// TODO: check
+	if (iterator == end())
+		throw std::out_of_range("Map erase iterator outside range...");
+
+	return erase(Traits::extract_key(iterator._Ptr->_Value));
 }
 
 template<class Traits>
@@ -327,7 +338,8 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& ke
 
 template<class Traits>
 void SearchTree<Traits>::clear() {
-	// TODO: complete
+	_destroy_all(_head);
+	_size = 0;
 }
 
 template<class Traits>
@@ -468,6 +480,17 @@ void SearchTree<Traits>::_rotate_right(Node* subroot) {
 }
 
 template<class Traits>
+void SearchTree<Traits>::_destroy_all(Node* subroot) {
+	if (subroot == nullptr)
+		return;
+	
+	_destroy_all(subroot->_Left);
+	_destroy_all(subroot->_Right);
+	
+	delete subroot;
+}
+
+template<class Traits>
 void SearchTree<Traits>::_insert(Node* newNode) {
 
 	if (_head == nullptr)
@@ -566,13 +589,92 @@ void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should wo
 }
 
 template<class Traits>
+void SearchTree<Traits>::_transplant(Node* oldNode, Node* other) {	// TODO: check if needed
+	if (oldNode == _head)
+		_head = other;
+	else if (oldNode == oldNode->_Parent->_Left)
+		oldNode->_Parent->_Left = other;
+	else
+		oldNode->_Parent->_Right = other;
+
+	other->_Parent = oldNode->_Parent;
+}
+
+template<class Traits>
+void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
+	_workspaceNode = oldNode;
+
+	if (!_workspaceNode->is_leaf())
+	{
+		if (_workspaceNode->_Right != nullptr)
+			_workspaceNode = leftmost(_workspaceNode->_Right);
+		else
+			_workspaceNode = leftmost(_workspaceNode);
+	}
+
+	if (_workspaceNode->is_red())
+	{
+		// TODO: switch and delete
+	}
+	else
+	{
+		// TODO: rebalance
+	}
+
+	// Node* minOfRightNode = nullptr;
+	// char minOfRightNodeColor;
+
+	// if (oldNode->_Left == nullptr)
+	// {
+	// 	_workspaceNode = oldNode->_Right;
+	// 	_transplant(oldNode, oldNode->_Right);
+	// }
+	// else if (oldNode->_Right == nullptr)
+	// {
+	// 	_workspaceNode = oldNode->_Left;
+	// 	_transplant(oldNode, oldNode->_Left);
+	// }
+	// else	// both NOT null
+	// {
+	// 	minOfRightNode = leftmost(oldNode->_Right);
+	// 	minOfRightNodeColor = minOfRightNode->_Color;
+	// 	_workspaceNode = minOfRightNode->_Right;
+
+	// 	if (minOfRightNode->_Parent == oldNode)
+	// 		_workspaceNode->_Parent = minOfRightNode;
+	// 	else
+	// 	{
+	// 		_transplant(minOfRightNode, minOfRightNode->_Right);
+	// 		minOfRightNode->_Right = oldNode->_Right;
+	// 		minOfRightNode->_Right->_Parent = minOfRightNode;
+	// 	}
+
+	// 	_transplant(oldNode, minOfRightNode);
+	// 	minOfRightNode->_Left = oldNode->_Left;
+	// 	minOfRightNode->_Left->_Parent = minOfRightNode;
+	// 	minOfRightNode->_Color = oldNode->_Color;
+	// }
+
+	// if (minOfRightNodeColor == Node::Colors::Black)
+	// 	_fix_destroy(_workspaceNode);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_fix_destroy(Node* node) {
+
+}
+
+template<class Traits>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyType& key) const {
 	Node* found = nullptr;
 
 	for (_workspaceNode = _head; _workspaceNode != nullptr; )
 	{
 		if (key == Traits::extract_key(_workspaceNode->_Value))
+		{
 			found = _workspaceNode;
+			_workspaceNode = nullptr;
+		}
 		else if (_less(key, Traits::extract_key(_workspaceNode->_Value)))
 			_workspaceNode = _workspaceNode->_Left;
 		else

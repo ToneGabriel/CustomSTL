@@ -142,12 +142,13 @@ void unordered_set_test() {
 }
 
 void map_test() {
-	custom::Map<int, int> map;
+	custom::Map<int, Test> map;
 
 	for (size_t i = 0; i < 20; i++)
 		map.emplace(i, 0);
 
 	map.print_details();
+	map.erase(11);
 }
 
 void deque_test() {
