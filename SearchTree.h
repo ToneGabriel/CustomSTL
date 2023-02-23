@@ -55,9 +55,9 @@ template<class Traits>
 class SearchTree			// SearchTree Template implemented as Red-Black Tree
 {
 protected:
-    using KeyType       = typename Traits::KeyType;				// Type of Key
-    using MappedType    = typename Traits::MappedType;			// Type of Mapped _Value
-    using KeyCompare    = typename Traits::KeyCompare;			// Comparison struct
+    using KeyType       = typename Traits::KeyType;					// Type of Key
+    using MappedType    = typename Traits::MappedType;				// Type of Mapped _Value
+    using KeyCompare    = typename Traits::KeyCompare;				// Comparison struct
 
 public:
     using ValueType     = typename Traits::ValueType;				// Type of values stored in container
@@ -143,12 +143,20 @@ private:
 
 	Node* _find_in_tree(const KeyType& key) const;
 
+	Node* _parent(Node* node);
+	Node* _grandparent(Node* node);
+	Node* _sibling(Node* node);
+	Node* _uncle(Node* node);
 	bool _has_parent(Node* node);
 	bool _has_grandparent(Node* node);
+	bool _is_red(Node* node);
+	bool _is_black(Node* node);
+	bool _is_leaf(Node* node);
 
 	void _transplant(Node* first, Node* second);
 	void _swap_parents(Node* first, Node* second);
 	void _swap_children(Node* first, Node* second);
+	void _swap_colors(Node* first, Node* second);
 
 	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
 	void _copy(const SearchTree& other);
@@ -318,6 +326,11 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::erase(const KeyType& k
 	Node* nodeToErase = _find_in_tree(key);
 	_destroy(nodeToErase);
 
+	// TODO: remove after testing
+	//Node* first = _find_in_tree(19);
+	//Node* second = _find_in_tree(7);
+	//_transplant(first, second);
+
 	return Iterator(_head, _update_iteration_data());	// TODO: not ok
 }
 
@@ -482,17 +495,6 @@ void SearchTree<Traits>::_rotate_right(Node* subroot) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_destroy_all(Node* subroot) {
-	if (subroot == nullptr)
-		return;
-	
-	_destroy_all(subroot->_Left);
-	_destroy_all(subroot->_Right);
-	
-	delete subroot;
-}
-
-template<class Traits>
 void SearchTree<Traits>::_insert(Node* newNode) {
 
 	if (_head == nullptr)
@@ -594,7 +596,7 @@ template<class Traits>
 void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 	_workspaceNode = oldNode;
 
-	if (!_workspaceNode->is_leaf())
+	if (!_is_leaf(_workspaceNode))
 	{
 		if (_workspaceNode->_Right != nullptr)
 			_workspaceNode = leftmost(_workspaceNode->_Right);
@@ -603,7 +605,7 @@ void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 	}
 
 	// Now _workspaceNode is leaf (TODO: not realy...)
-	if (_workspaceNode->is_red())
+	if (_is_red(_workspaceNode))
 	{
 		// TODO: switch and delete
 		
@@ -659,6 +661,17 @@ void SearchTree<Traits>::_fix_destroy(Node* node) {
 }
 
 template<class Traits>
+void SearchTree<Traits>::_destroy_all(Node* subroot) {
+	if (subroot == nullptr)
+		return;
+
+	_destroy_all(subroot->_Left);
+	_destroy_all(subroot->_Right);
+
+	delete subroot;
+}
+
+template<class Traits>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyType& key) const {
 	Node* found = nullptr;
 
@@ -679,6 +692,41 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyTy
 }
 
 template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_parent(Node* node) {
+	return node->_Parent;
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_grandparent(Node* node) {
+	return node->_Parent->_Parent;
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_sibling(Node* node) {
+	return (node == node->_Parent->_Left) ? node->_Parent->_Right : node->_Parent->_Left;
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_uncle(Node* node) {
+	return (node->_Parent == node->_Parent->_Parent->_Left) ? node->_Parent->_Parent->_Right : node->_Parent->_Parent->_Left;
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_is_red(Node* node) {
+	return (node != nullptr && node->_Color == Node::Colors::Red);
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_is_black(Node* node) {
+	return (node == nullptr || node->_Color == Node::Colors::Black);
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_is_leaf(Node* node) {
+	return (node->_Left == nullptr && node->_Right == nullptr);
+}
+
+template<class Traits>
 bool SearchTree<Traits>::_has_parent(Node* node) {
 	return node->_Parent != nullptr;
 }
@@ -692,21 +740,28 @@ template<class Traits>
 void SearchTree<Traits>::_transplant(Node* first, Node* second) {	// TODO: check if needed
 	_swap_parents(first, second);	
 	_swap_children(first, second);
+	_swap_colors(first, second);
 }
 
 template<class Traits>
 void SearchTree<Traits>::_swap_parents(Node* first, Node* second) {
 	Node* aux;
 
-	if (first == first->_Parent->_Left)
-		first->_Parent->_Left = second;
+	if (_has_parent(first))		// check head first
+		if (first == first->_Parent->_Left)
+			first->_Parent->_Left = second;
+		else
+			first->_Parent->_Right = second;
 	else
-		first->_Parent->_Right = second;
+		_head = second;
 
-	if (second == second->_Parent->_Left)
-		second->_Parent->_Left = first;
+	if (_has_parent(second))	// check head second
+		if (second == second->_Parent->_Left)
+			second->_Parent->_Left = first;
+		else
+			second->_Parent->_Right = first;
 	else
-		second->_Parent->_Right = first;
+		_head = first;
 
 	aux = first->_Parent;
 	first->_Parent = second->_Parent;
@@ -739,13 +794,22 @@ void SearchTree<Traits>::_swap_children(Node* first, Node* second) {
 }
 
 template<class Traits>
+void SearchTree<Traits>::_swap_colors(Node* first, Node* second) {
+	std::swap(first->_Color, second->_Color);
+}
+
+template<class Traits>
 void SearchTree<Traits>::_copy(const SearchTree& other) {
 	// TODO: implement
 }
 
 template<class Traits>
-void SearchTree<Traits>::_move(SearchTree&& other) {
-	// TODO: implement
+void SearchTree<Traits>::_move(SearchTree&& other) {	// TODO: check
+	_head = other._head;
+	_size = other._size;
+
+	other._head = nullptr;
+	other._size = 0;
 }
 
 template<class Traits>
