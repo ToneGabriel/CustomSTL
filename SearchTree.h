@@ -137,16 +137,18 @@ private:
 	void _raw_insert(Node* newNode);
 	void _fix_insert(Node* newNode);
 
-	void _transplant(Node* oldNode, Node* other);
 	void _destroy(Node* oldNode);
 	void _fix_destroy(Node* node);
-
 	void _destroy_all(Node* subroot);								// DFS Postorder
 
 	Node* _find_in_tree(const KeyType& key) const;
 
 	bool _has_parent(Node* node);
 	bool _has_grandparent(Node* node);
+
+	void _transplant(Node* first, Node* second);
+	void _swap_parents(Node* first, Node* second);
+	void _swap_children(Node* first, Node* second);
 
 	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
 	void _copy(const SearchTree& other);
@@ -589,18 +591,6 @@ void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should wo
 }
 
 template<class Traits>
-void SearchTree<Traits>::_transplant(Node* oldNode, Node* other) {	// TODO: check if needed
-	if (oldNode == _head)
-		_head = other;
-	else if (oldNode == oldNode->_Parent->_Left)
-		oldNode->_Parent->_Left = other;
-	else
-		oldNode->_Parent->_Right = other;
-
-	other->_Parent = oldNode->_Parent;
-}
-
-template<class Traits>
 void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 	_workspaceNode = oldNode;
 
@@ -612,56 +602,60 @@ void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 			_workspaceNode = leftmost(_workspaceNode);
 	}
 
+	// Now _workspaceNode is leaf (TODO: not realy...)
 	if (_workspaceNode->is_red())
 	{
 		// TODO: switch and delete
+		
+		delete _workspaceNode;
 	}
 	else
 	{
 		// TODO: rebalance
 	}
 
-	// Node* minOfRightNode = nullptr;
-	// char minOfRightNodeColor;
-
-	// if (oldNode->_Left == nullptr)
-	// {
-	// 	_workspaceNode = oldNode->_Right;
-	// 	_transplant(oldNode, oldNode->_Right);
-	// }
-	// else if (oldNode->_Right == nullptr)
-	// {
-	// 	_workspaceNode = oldNode->_Left;
-	// 	_transplant(oldNode, oldNode->_Left);
-	// }
-	// else	// both NOT null
-	// {
-	// 	minOfRightNode = leftmost(oldNode->_Right);
-	// 	minOfRightNodeColor = minOfRightNode->_Color;
-	// 	_workspaceNode = minOfRightNode->_Right;
-
-	// 	if (minOfRightNode->_Parent == oldNode)
-	// 		_workspaceNode->_Parent = minOfRightNode;
-	// 	else
-	// 	{
-	// 		_transplant(minOfRightNode, minOfRightNode->_Right);
-	// 		minOfRightNode->_Right = oldNode->_Right;
-	// 		minOfRightNode->_Right->_Parent = minOfRightNode;
-	// 	}
-
-	// 	_transplant(oldNode, minOfRightNode);
-	// 	minOfRightNode->_Left = oldNode->_Left;
-	// 	minOfRightNode->_Left->_Parent = minOfRightNode;
-	// 	minOfRightNode->_Color = oldNode->_Color;
-	// }
-
-	// if (minOfRightNodeColor == Node::Colors::Black)
-	// 	_fix_destroy(_workspaceNode);
+	--_size;
 }
 
 template<class Traits>
 void SearchTree<Traits>::_fix_destroy(Node* node) {
+	// while (node != _head && node->is_black())
+	// {
+	// 	if (node == node->_Parent->_Left)
+	// 	{
+	// 		_workspaceNode = node->_Parent->_Right;
+	// 		if (_workspaceNode->is_red())
+	// 		{
+	// 			_workspaceNode->_Color = Node::Colors::Black;
+	// 			node->_Parent->_Color = Node::Colors::Red;
+	// 			_rotate_left(node->_Parent);
+	// 			_workspaceNode = node->_Parent->_Right;
+	// 		}
+	// 		if (_workspaceNode->_Left->is_black() && _workspaceNode->_Right->is_black())
+	// 		{
+	// 			_workspaceNode->_Color = Node::Colors::Red;
+	// 			node = node->_Parent;
+	// 		}
+	// 		else
+	// 		{
+	// 			if (_workspaceNode->_Right->is_black())
+	// 			{
+	// 				_workspaceNode->_Left->_Color = Node::Colors::Black;
+	// 				_workspaceNode->_Color = Node::Colors::Red;
+	// 				_rotate_right(_workspaceNode);
+	// 				_workspaceNode = node->_Parent->_Right;
+	// 			}
 
+	// 			_workspaceNode->_Color = node->_Parent->_Color;
+	// 			node->_Parent->_Color = Node::Colors::Black;
+	// 			_workspaceNode->_Right->_Color = Node::Colors::Black;
+	// 			_rotate_left(node->_Parent);
+	// 			node = _head;
+	// 		}
+	// 	}
+	// }
+
+	// node->_Color = Node::Colors::Black;
 }
 
 template<class Traits>
@@ -692,6 +686,56 @@ bool SearchTree<Traits>::_has_parent(Node* node) {
 template<class Traits>
 bool SearchTree<Traits>::_has_grandparent(Node* node) {
 	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_transplant(Node* first, Node* second) {	// TODO: check if needed
+	_swap_parents(first, second);	
+	_swap_children(first, second);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_swap_parents(Node* first, Node* second) {
+	Node* aux;
+
+	if (first == first->_Parent->_Left)
+		first->_Parent->_Left = second;
+	else
+		first->_Parent->_Right = second;
+
+	if (second == second->_Parent->_Left)
+		second->_Parent->_Left = first;
+	else
+		second->_Parent->_Right = first;
+
+	aux = first->_Parent;
+	first->_Parent = second->_Parent;
+	second->_Parent = aux;
+}
+
+template<class Traits>
+void SearchTree<Traits>::_swap_children(Node* first, Node* second) {
+	Node* aux;
+
+	// left child
+	aux = first->_Left;
+	first->_Left = second->_Left;
+	second->_Left = aux;
+
+	if (first->_Left != nullptr)
+		first->_Left->_Parent = first;
+	if (second->_Left != nullptr)
+		second->_Left->_Parent = second;
+
+	// right child
+	aux = first->_Right;
+	first->_Right = second->_Right;
+	second->_Right = aux;
+
+	if (first->_Right != nullptr)
+		first->_Right->_Parent = first;
+	if (second->_Right != nullptr)
+		second->_Right->_Parent = second;
 }
 
 template<class Traits>

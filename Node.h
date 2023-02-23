@@ -124,11 +124,11 @@ public:
 public:
 
 	bool is_red() {
-		return this->_Color == Red;
+		return (this != nullptr && this->_Color == Red);
 	}
 
 	bool is_black() {
-		return this->_Color == Black;
+		return (this == nullptr || this->_Color == Black);
 	}
 
 	bool is_leaf() {
