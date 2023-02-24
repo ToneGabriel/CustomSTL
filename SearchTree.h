@@ -108,6 +108,7 @@ public:
 	void clear();
 
 	void print_details() const;
+	void test();
 
 public:
 	// Iterator functions
@@ -130,6 +131,8 @@ protected:
 private:
 	// Helpers
 
+	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
+	
 	void _rotate_left(Node* subroot);								// promotes subroot right
 	void _rotate_right(Node* subroot);								// promotes subroot left
 
@@ -137,10 +140,16 @@ private:
 	void _raw_insert(Node* newNode);
 	void _fix_insert(Node* newNode);
 
+	void _destroy_all(Node* subroot);								// DFS Postorder
 	void _destroy(Node* oldNode);
 	void _fix_destroy(Node* node);
-	void _destroy_all(Node* subroot);								// DFS Postorder
+	void _transplant(Node* first, Node* second);
+	void _swap_parents(Node* first, Node* second);
+	void _swap_children(Node* first, Node* second);
+	void _swap_colors(Node* first, Node* second);
+	void _detach(Node* node);
 
+	Node* _in_order_successor(Node* node);
 	Node* _find_in_tree(const KeyType& key) const;
 
 	Node* _parent(Node* node);
@@ -153,12 +162,6 @@ private:
 	bool _is_black(Node* node);
 	bool _is_leaf(Node* node);
 
-	void _transplant(Node* first, Node* second);
-	void _swap_parents(Node* first, Node* second);
-	void _swap_children(Node* first, Node* second);
-	void _swap_colors(Node* first, Node* second);
-
-	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const;
 	void _copy(const SearchTree& other);
 	void _move(SearchTree&& other);
 
@@ -247,7 +250,7 @@ SearchTree<Traits>::SearchTree(const SearchTree& other) {
 
 template<class Traits>
 SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept {
-	// TODO: complete
+	_move(custom::move(other));		// TODO: check
 }
 
 template<class Traits>
@@ -371,6 +374,13 @@ template<class Traits>
 void SearchTree<Traits>::print_details() const {
 	std::cout << "Size= " << _size << '\n';
 	_print_graph(0, _head, "HEAD");
+}
+
+template<class Traits>
+void SearchTree<Traits>::test() {
+	Node* f = _find_in_tree(19);
+	Node* s = _find_in_tree(7);
+	_transplant(f,s);
 }
 
 template<class Traits>
@@ -593,23 +603,25 @@ void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should wo
 }
 
 template<class Traits>
+void SearchTree<Traits>::_destroy_all(Node* subroot) {
+	if (subroot == nullptr)
+		return;
+
+	_destroy_all(subroot->_Left);
+	_destroy_all(subroot->_Right);
+
+	delete subroot;
+}
+
+template<class Traits>
 void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
-	_workspaceNode = oldNode;
+	_workspaceNode = _in_order_successor(oldNode);	// Now _workspaceNode is leaf
 
-	if (!_is_leaf(_workspaceNode))
-	{
-		if (_workspaceNode->_Right != nullptr)
-			_workspaceNode = leftmost(_workspaceNode->_Right);
-		else
-			_workspaceNode = leftmost(_workspaceNode);
-	}
-
-	// Now _workspaceNode is leaf (TODO: not realy...)
 	if (_is_red(_workspaceNode))
 	{
-		// TODO: switch and delete
-		
-		delete _workspaceNode;
+		_transplant(oldNode, _workspaceNode);	// TODO: check
+		_detach(oldNode);
+		delete oldNode;
 	}
 	else
 	{
@@ -661,14 +673,89 @@ void SearchTree<Traits>::_fix_destroy(Node* node) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_destroy_all(Node* subroot) {
-	if (subroot == nullptr)
+void SearchTree<Traits>::_transplant(Node* first, Node* second) {	// TODO: check if needed
+	if(first == second)
 		return;
 
-	_destroy_all(subroot->_Left);
-	_destroy_all(subroot->_Right);
+	_swap_parents(first, second);	
+	_swap_children(first, second);
+	_swap_colors(first, second);
+}
 
-	delete subroot;
+template<class Traits>
+void SearchTree<Traits>::_swap_parents(Node* first, Node* second) {
+	Node* aux;
+
+	if (_has_parent(first))		// check head first
+		if (first == first->_Parent->_Left)
+			first->_Parent->_Left = second;
+		else
+			first->_Parent->_Right = second;
+	else
+		_head = second;
+
+	if (_has_parent(second))	// check head second
+		if (second == second->_Parent->_Left)
+			second->_Parent->_Left = first;
+		else
+			second->_Parent->_Right = first;
+	else
+		_head = first;
+
+	aux = first->_Parent;
+	first->_Parent = second->_Parent;
+	second->_Parent = aux;
+}
+
+template<class Traits>
+void SearchTree<Traits>::_swap_children(Node* first, Node* second) {
+	Node* aux;
+
+	// left child
+	aux = first->_Left;
+	first->_Left = second->_Left;
+	second->_Left = aux;
+
+	if (first->_Left != nullptr)
+		first->_Left->_Parent = first;
+	if (second->_Left != nullptr)
+		second->_Left->_Parent = second;
+
+	// right child
+	aux = first->_Right;
+	first->_Right = second->_Right;
+	second->_Right = aux;
+
+	if (first->_Right != nullptr)
+		first->_Right->_Parent = first;
+	if (second->_Right != nullptr)
+		second->_Right->_Parent = second;
+}
+
+template<class Traits>
+void SearchTree<Traits>::_swap_colors(Node* first, Node* second) {
+	std::swap(first->_Color, second->_Color);
+}
+
+template<class Traits>
+void SearchTree<Traits>::_detach(Node* node) {
+	if (node == node->_Parent->_Left)
+		node->_Parent->_Left = nullptr;
+	else
+		node->_Parent->_Right = nullptr;
+
+	node->_Parent = nullptr;
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_in_order_successor(Node* node) {
+	while (!_is_leaf(node))
+		if (node->_Right != nullptr)
+			node = leftmost(node->_Right);
+		else
+			node = leftmost(node);
+
+	return node;
 }
 
 template<class Traits>
@@ -734,68 +821,6 @@ bool SearchTree<Traits>::_has_parent(Node* node) {
 template<class Traits>
 bool SearchTree<Traits>::_has_grandparent(Node* node) {
 	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
-}
-
-template<class Traits>
-void SearchTree<Traits>::_transplant(Node* first, Node* second) {	// TODO: check if needed
-	_swap_parents(first, second);	
-	_swap_children(first, second);
-	_swap_colors(first, second);
-}
-
-template<class Traits>
-void SearchTree<Traits>::_swap_parents(Node* first, Node* second) {
-	Node* aux;
-
-	if (_has_parent(first))		// check head first
-		if (first == first->_Parent->_Left)
-			first->_Parent->_Left = second;
-		else
-			first->_Parent->_Right = second;
-	else
-		_head = second;
-
-	if (_has_parent(second))	// check head second
-		if (second == second->_Parent->_Left)
-			second->_Parent->_Left = first;
-		else
-			second->_Parent->_Right = first;
-	else
-		_head = first;
-
-	aux = first->_Parent;
-	first->_Parent = second->_Parent;
-	second->_Parent = aux;
-}
-
-template<class Traits>
-void SearchTree<Traits>::_swap_children(Node* first, Node* second) {
-	Node* aux;
-
-	// left child
-	aux = first->_Left;
-	first->_Left = second->_Left;
-	second->_Left = aux;
-
-	if (first->_Left != nullptr)
-		first->_Left->_Parent = first;
-	if (second->_Left != nullptr)
-		second->_Left->_Parent = second;
-
-	// right child
-	aux = first->_Right;
-	first->_Right = second->_Right;
-	second->_Right = aux;
-
-	if (first->_Right != nullptr)
-		first->_Right->_Parent = first;
-	if (second->_Right != nullptr)
-		second->_Right->_Parent = second;
-}
-
-template<class Traits>
-void SearchTree<Traits>::_swap_colors(Node* first, Node* second) {
-	std::swap(first->_Color, second->_Color);
 }
 
 template<class Traits>

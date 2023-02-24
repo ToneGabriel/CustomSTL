@@ -148,7 +148,8 @@ void map_test() {
 		map.emplace(i, 0);
 
 	map.print_details();
-	map.erase(11);
+	map.erase(17);
+	map.print_details();
 }
 
 void deque_test() {
