@@ -147,7 +147,7 @@ private:
 	void _swap_parents(Node* first, Node* second);
 	void _swap_children(Node* first, Node* second);
 	void _swap_colors(Node* first, Node* second);
-	void _detach(Node* node);
+	void _detach_parent(Node* node);
 
 	Node* _in_order_successor(Node* node);
 	Node* _find_in_tree(const KeyType& key) const;
@@ -357,6 +357,7 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& ke
 template<class Traits>
 void SearchTree<Traits>::clear() {
 	_destroy_all(_head);
+	_head = nullptr;
 	_size = 0;
 }
 
@@ -449,10 +450,10 @@ void SearchTree<Traits>::_print_graph(const size_t& ident, Node* root, const cus
 
 	std::cout << str << Traits::extract_key(root->_Value) << " [" << ((int)root->_Color ? "black" : "red") << " " << rlFlag << "]\n";
 
-	if (root->_Left)
+	if (root->_Left != nullptr)
 		_print_graph(ident + 1, root->_Left, "LEFT");
 
-	if (root->_Right)
+	if (root->_Right != nullptr)
 		_print_graph(ident + 1, root->_Right, "RIGHT");
 }
 
@@ -620,7 +621,7 @@ void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 	if (_is_red(_workspaceNode))
 	{
 		_transplant(oldNode, _workspaceNode);	// TODO: check
-		_detach(oldNode);
+		_detach_parent(oldNode);
 		delete oldNode;
 	}
 	else
@@ -738,7 +739,7 @@ void SearchTree<Traits>::_swap_colors(Node* first, Node* second) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_detach(Node* node) {
+void SearchTree<Traits>::_detach_parent(Node* node) {
 	if (node == node->_Parent->_Left)
 		node->_Parent->_Left = nullptr;
 	else
