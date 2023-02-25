@@ -148,8 +148,12 @@ void map_test() {
 		map.emplace(i, 0);
 
 	map.print_details();
-	map.erase(17);
-	map.print_details();
+
+	for (auto& val : map)
+		std::cout << val.First << ' ' << val.Second << '\n';
+
+	//map.erase(17);
+	//map.print_details();
 }
 
 void deque_test() {

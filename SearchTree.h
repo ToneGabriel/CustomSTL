@@ -189,8 +189,20 @@ SearchTreeIterator<SearchTree>::~SearchTreeIterator() {
 }
 
 template<class SearchTree>
-SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator++() {
-	// TODO: implement
+SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator++() {	// TODO: check and implement Link Node
+	if (_Ptr->_Right == nullptr)
+	{
+		IterType* node = _Ptr->_Parent;
+		while (node != nullptr && _Ptr == node->_Right)
+		{
+			_Ptr = node;
+			node = _Ptr->_Parent;
+		}
+		_Ptr = node;
+	}
+	else
+		_Ptr = SearchTree::leftmost(_Ptr->_Right);
+
 	return *this;
 }
 
@@ -202,8 +214,24 @@ SearchTreeIterator<SearchTree> SearchTreeIterator<SearchTree>::operator++(int) {
 }
 
 template<class SearchTree>
-SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator--() {
-	// TODO: implement
+SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator--() {	// TODO: check and implement Link Node
+	if (_Ptr == _Data->_End)
+		_Ptr = _Ptr->_Right;
+	else if (_Ptr->_Left == nullptr)
+	{
+		IterType* node = _Ptr->_Parent;
+		while (node != nullptr && _Ptr == node->_Left)
+		{
+			_Ptr = node;
+			node = _Ptr->_Parent;
+		}
+
+		if (_Ptr != nullptr)	// decrement non-begin
+			_Ptr = node;
+	}
+	else
+		_Ptr = SearchTree::rightmost(_Ptr->_Left);
+
 	return *this;
 }
 
@@ -291,6 +319,9 @@ bool SearchTree<Traits>::operator!=(const SearchTree& other) const {
 
 template<class Traits>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::leftmost(Node* node) noexcept {
+	if (node == nullptr)
+		return node;
+
 	while (node->_Left != nullptr)
 		node = node->_Left;
 
@@ -299,6 +330,9 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::leftmost(Node* node) noex
 
 template<class Traits>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::rightmost(Node* node) noexcept {
+	if (node == nullptr)
+		return node;
+
 	while (node->_Right != nullptr)
 		node = node->_Right;
 
@@ -374,6 +408,8 @@ bool SearchTree<Traits>::empty() const {
 template<class Traits>
 void SearchTree<Traits>::print_details() const {
 	std::cout << "Size= " << _size << '\n';
+	std::cout << begin()._Ptr->_Value.First << '\n';
+	std::cout << end()._Ptr->_Value.First << '\n';
 	_print_graph(0, _head, "HEAD");
 }
 
@@ -386,22 +422,22 @@ void SearchTree<Traits>::test() {
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() {	// TODO: implement
-	return Iterator(_head, _update_iteration_data());
+	return Iterator(leftmost(_head), _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() const {
-	return Iterator(_head, _update_iteration_data());
+	return Iterator(leftmost(_head), _update_iteration_data());
 }
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() {
-	return Iterator(_head, _update_iteration_data());
+	return Iterator(rightmost(_head), _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() const {
-	return Iterator(_head, _update_iteration_data());
+	return Iterator(rightmost(_head), _update_iteration_data());
 }
 
 template<class Traits>
