@@ -19,8 +19,6 @@ private:
 	Node* _head		= nullptr;								// Head of this list
 	Node* _tail		= nullptr;								// Tail of this list
 
-	mutable Node* _workspaceNode = nullptr;					// Auxiliary Node for work
-
 public:
 	// Constructors
 
@@ -116,13 +114,13 @@ void Queue<Type>::push(ValueType&& moveValue) {
 template<class Type>
 void Queue<Type>::pop() {
 	if (_head) {
-		_workspaceNode = _head;
+		Node* toDelete = _head;
 		_head = _head->_Next;
 
 		if (_head == nullptr)
 			_tail = nullptr;
 
-		delete _workspaceNode;
+		delete toDelete;
 		--_size;
 	}
 }
@@ -159,11 +157,13 @@ bool Queue<Type>::empty() const {
 
 template<class Type>
 void Queue<Type>::clear() {
+	Node* toDelete;
+
 	while (_size) {
-		_workspaceNode = _head;
+		toDelete = _head;
 		_head = _head->_Next;
 
-		delete _workspaceNode;
+		delete toDelete;
 		--_size;
 	}
 
@@ -194,10 +194,10 @@ Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {
 
 template<class Type>
 void Queue<Type>::_copy(const Queue& other) {
-	_workspaceNode = other._head;
+	Node* temp = other._head;
 	while (_size < other._size) {
-		enqueue(_workspaceNode->_Value);
-		_workspaceNode = _workspaceNode->_Next;
+		enqueue(temp->_Value);
+		temp = temp->_Next;
 	}
 }
 

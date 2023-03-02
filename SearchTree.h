@@ -68,7 +68,7 @@ public:
 
 protected:
 	size_t _size		= 0;										// Number of Nodes held by this
-	Node* _head			= nullptr;									// Head of the Tree
+	Node* _head			= nullptr;									// Helper node used to link min and max elems for iteration (root == head->parent)
     KeyCompare _less;												// Used for comparison
 
 	mutable Data _data;
@@ -162,6 +162,9 @@ private:
 	bool _is_black(Node* node);
 	bool _is_leaf(Node* node);
 
+	void _init_head();
+	void _destroy_head();
+
 	void _copy(const SearchTree& other);
 	void _move(SearchTree&& other);
 
@@ -190,6 +193,9 @@ SearchTreeIterator<SearchTree>::~SearchTreeIterator() {
 
 template<class SearchTree>
 SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator++() {	// TODO: check and implement Link Node
+	if (_Ptr == _Data->_End)
+		throw std::out_of_range("Cannot increment end iterator...");
+
 	if (_Ptr->_Right == nullptr)
 	{
 		IterType* node = _Ptr->_Parent;
@@ -268,6 +274,7 @@ bool SearchTreeIterator<SearchTree>::operator!=(const SearchTreeIterator& other)
 // SearchTree Template
 template<class Traits>
 SearchTree<Traits>::SearchTree() {
+	// _init_head();
 	// TODO: complete
 }
 
@@ -284,6 +291,7 @@ SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept {
 template<class Traits>
 SearchTree<Traits>::~SearchTree() {
 	clear();
+	// _destroy_head();
 }
 
 template<class Traits>
@@ -408,8 +416,6 @@ bool SearchTree<Traits>::empty() const {
 template<class Traits>
 void SearchTree<Traits>::print_details() const {
 	std::cout << "Size= " << _size << '\n';
-	std::cout << begin()._Ptr->_Value.First << '\n';
-	std::cout << end()._Ptr->_Value.First << '\n';
 	_print_graph(0, _head, "HEAD");
 }
 
@@ -422,22 +428,22 @@ void SearchTree<Traits>::test() {
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() {	// TODO: implement
-	return Iterator(leftmost(_head), _update_iteration_data());
+	return Iterator(_head->_Left, _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() const {
-	return Iterator(leftmost(_head), _update_iteration_data());
+	return Iterator(_head->_Left, _update_iteration_data());
 }
 
 template<class Traits>
 typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() {
-	return Iterator(rightmost(_head), _update_iteration_data());
+	return Iterator(_head, _update_iteration_data());
 }
 
 template<class Traits>
 const typename SearchTree<Traits>::Iterator SearchTree<Traits>::end() const {
-	return Iterator(rightmost(_head), _update_iteration_data());
+	return Iterator(_head, _update_iteration_data());
 }
 
 template<class Traits>
@@ -542,7 +548,16 @@ void SearchTree<Traits>::_rotate_right(Node* subroot) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_insert(Node* newNode) {
+void SearchTree<Traits>::_insert(Node* newNode) {	// TODO
+
+	//if (_head->_Parent == _head)
+	//{
+	//	newNode->_Parent = _head;
+
+	//	_head->_Parent = newNode;
+	//	_head->_Left = newNode;
+	//	_head->_Right = newNode;
+	//}
 
 	if (_head == nullptr)
 		_head = newNode;
@@ -836,6 +851,16 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::_uncle(Node* node) {
 }
 
 template<class Traits>
+bool SearchTree<Traits>::_has_parent(Node* node) {
+	return node->_Parent != nullptr;
+}
+
+template<class Traits>
+bool SearchTree<Traits>::_has_grandparent(Node* node) {
+	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
+}
+
+template<class Traits>
 bool SearchTree<Traits>::_is_red(Node* node) {
 	return (node != nullptr && node->_Color == Node::Colors::Red);
 }
@@ -851,13 +876,19 @@ bool SearchTree<Traits>::_is_leaf(Node* node) {
 }
 
 template<class Traits>
-bool SearchTree<Traits>::_has_parent(Node* node) {
-	return node->_Parent != nullptr;
+void SearchTree<Traits>::_init_head() {
+	if (_head == nullptr)
+		_head = new Node();
+
+	_head->_Parent = _head;
+	_head->_Left = _head;
+	_head->_Right = _head;
 }
 
 template<class Traits>
-bool SearchTree<Traits>::_has_grandparent(Node* node) {
-	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
+void SearchTree<Traits>::_destroy_head() {
+	delete _head;
+	_head = nullptr;
 }
 
 template<class Traits>
@@ -876,7 +907,7 @@ void SearchTree<Traits>::_move(SearchTree&& other) {	// TODO: check
 
 template<class Traits>
 typename SearchTree<Traits>::Data* SearchTree<Traits>::_update_iteration_data() const {	// TODO: implement
-	_data._Begin = _head;
+	_data._Begin = _head->_Left;
 	_data._End = _head;
 
 	return &_data;

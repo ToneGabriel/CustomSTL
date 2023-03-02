@@ -76,7 +76,6 @@ private:
 	Node* _head		= nullptr;										// Head of this list
 
 	mutable Data _data;
-	mutable Node* _workspaceNode = nullptr;							// Auxiliary Node for work
 
 public:
 	// Constructors
@@ -149,8 +148,8 @@ private:
 	void _remove_node(Node* junkNode);										// Remove Node and relink
 	void _copy(const List& other);											// Generic copy function for list
 	void _move(List&& other);												// Generic move function for list
-	void _reset_head();
-	void _clear_head();
+	void _init_head();
+	void _destroy_head();
 
 	template<class... Args>
 	void _create_until_size(const size_t& newSize, Args&&... args);			// Add elements until current size equals newSize
@@ -254,7 +253,7 @@ const bool ListIterator<List>::is_end() const {
 // Linked List
 template<class Type>
 List<Type>::List() {
-	_reset_head();
+	_init_head();
 }
 
 template<class Type>
@@ -275,7 +274,7 @@ List<Type>::List(List&& other) noexcept : List() {
 template<class Type>
 List<Type>::~List() {
 	clear();
-	_clear_head();
+	_destroy_head();
 }
 
 template<class Type>
@@ -339,9 +338,9 @@ void List<Type>::pop_front() {
 template<class Type>
 template<class... Args>
 typename List<Type>::Iterator List<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	_workspaceNode = iterator._Ptr;
+	Node* temp = iterator._Ptr;
 	Node* newNode = new Node(custom::forward<Args>(args)...);
-	_insert_node_before(_workspaceNode, newNode);
+	_insert_node_before(temp, newNode);
 
 	return Iterator(newNode, _update_iteration_data());
 }
@@ -361,9 +360,9 @@ typename List<Type>::Iterator List<Type>::pop(const Iterator& iterator) {
 	if (iterator.is_end())
 		throw std::out_of_range("Cannot pop end iterator...");
 
-	_workspaceNode = iterator._Ptr;
-	Iterator prevIterator = Iterator(_workspaceNode->_Previous, _update_iteration_data());
-	_remove_node(_workspaceNode);
+	Node* temp = iterator._Ptr;
+	Iterator prevIterator = Iterator(temp->_Previous, _update_iteration_data());
+	_remove_node(temp);
 
 	return prevIterator;
 }
@@ -515,10 +514,10 @@ typename List<Type>::Data* List<Type>::_update_iteration_data() const {
 
 template<class Type>
 void List<Type>::_copy(const List& other) {
-	_workspaceNode = other._head->_Next;
+	Node* temp = other._head->_Next;
 	while (_size < other._size) {
-		push_back(_workspaceNode->_Value);
-		_workspaceNode = _workspaceNode->_Next;
+		push_back(temp->_Value);
+		temp = temp->_Next;
 	}
 }
 
@@ -533,7 +532,7 @@ void List<Type>::_move(List&& other) {
 	_data = other._data;
 
 	// link old head with itself
-	other._reset_head();
+	other._init_head();
 	other._size = 0;
 	other._update_iteration_data();
 }
@@ -553,16 +552,20 @@ void List<Type>::_delete_until_size(const size_t& newSize) {
 
 template<class Type>
 typename List<Type>::Node* List<Type>::_scroll_node(const size_t& index) const {
-	_workspaceNode = _head->_Next;
-	if (_workspaceNode != _head)
+	if (index < _size)
+	{
+		Node* temp = _head->_Next;
 		for (size_t i = 0; i < index; ++i)
-			_workspaceNode = _workspaceNode->_Next;
+			temp = temp->_Next;
 
-	return _workspaceNode;
+		return temp;
+	}
+
+	return _head;
 }
 
 template<class Type>
-void List<Type>::_reset_head() {
+void List<Type>::_init_head() {
 	if (_head == nullptr)
 		_head = new Node();
 
@@ -571,7 +574,7 @@ void List<Type>::_reset_head() {
 }
 
 template<class Type>
-void List<Type>::_clear_head() {
+void List<Type>::_destroy_head() {
 	delete _head;
 	_head = nullptr;
 }
