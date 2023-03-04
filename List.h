@@ -9,9 +9,6 @@ CUSTOM_BEGIN
 template <class Traits>
 class HashTable;
 
-template<class>
-class SearchTree;
-
 template<class Type>
 struct ListIterationData {		// Data used for iterating List
 	Type* _Begin	= nullptr;
@@ -61,20 +58,19 @@ private:
 	template<class>
 	friend class HashTable;
 
-	template<class>
-	friend class SearchTree;
-
 public:
 	using ValueType = Type;											// Type for stored values
 	using Node		= DoubleNode<ValueType>;						// Node type
 	using IterType	= Node;											// Type of iterating element
 	using Iterator	= ListIterator<List<ValueType>>;				// Iterator type
+	using Alloc		= Allocator<Node>;								// Allocator for Node type
 	using Data		= typename Iterator::Data;						// Iteration data
 
 private:
 	size_t _size	= 0;											// Number of Nodes held by this
 	Node* _head		= nullptr;										// Head of this list
 
+	mutable Alloc _alloc;											// Allocator
 	mutable Data _data;
 
 public:
@@ -148,8 +144,6 @@ private:
 	void _remove_node(Node* junkNode);										// Remove Node and relink
 	void _copy(const List& other);											// Generic copy function for list
 	void _move(List&& other);												// Generic move function for list
-	void _init_head();
-	void _destroy_head();
 
 	template<class... Args>
 	void _create_until_size(const size_t& newSize, Args&&... args);			// Add elements until current size equals newSize
@@ -253,7 +247,7 @@ const bool ListIterator<List>::is_end() const {
 // Linked List
 template<class Type>
 List<Type>::List() {
-	_init_head();
+	_head = Node::create_head(_alloc);
 }
 
 template<class Type>
@@ -274,7 +268,7 @@ List<Type>::List(List&& other) noexcept : List() {
 template<class Type>
 List<Type>::~List() {
 	clear();
-	_destroy_head();
+	Node::free_head(_alloc, _head);
 }
 
 template<class Type>
@@ -505,14 +499,6 @@ void List<Type>::_remove_node(Node* junkNode) {
 }
 
 template<class Type>
-typename List<Type>::Data* List<Type>::_update_iteration_data() const {
-	_data._Begin = _head->_Next;
-	_data._End = _head;
-
-	return &_data;
-}
-
-template<class Type>
 void List<Type>::_copy(const List& other) {
 	Node* temp = other._head->_Next;
 	while (_size < other._size) {
@@ -532,7 +518,8 @@ void List<Type>::_move(List&& other) {
 	_data = other._data;
 
 	// link old head with itself
-	other._init_head();
+	other._head->_Next = other._head;
+	other._head->_Previous = other._head;
 	other._size = 0;
 	other._update_iteration_data();
 }
@@ -565,18 +552,11 @@ typename List<Type>::Node* List<Type>::_scroll_node(const size_t& index) const {
 }
 
 template<class Type>
-void List<Type>::_init_head() {
-	if (_head == nullptr)
-		_head = new Node();
+typename List<Type>::Data* List<Type>::_update_iteration_data() const {
+	_data._Begin = _head->_Next;
+	_data._End = _head;
 
-	_head->_Next = _head;
-	_head->_Previous = _head;
-}
-
-template<class Type>
-void List<Type>::_destroy_head() {
-	delete _head;
-	_head = nullptr;
+	return &_data;
 }
 // END Linked List
 

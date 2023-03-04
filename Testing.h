@@ -114,6 +114,18 @@ void tuple_test() {
 	}
 }
 
+void list_test() {
+	custom::List<Test> list;
+
+	list.emplace_back(1);
+	list.emplace_back(2);
+	list.emplace_back(3);
+	list.emplace_front(4);
+
+	for (auto it = list.begin(); it != list.end(); ++it)
+		std::cout << *it << '\n';
+}
+
 void unordered_map_test() {
 	custom::UnorderedMap<int, custom::String> map;
 
@@ -149,8 +161,8 @@ void map_test() {
 
 	map.print_details();
 
-	for (auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
+	//for (auto& val : map)
+	//	std::cout << val.First << ' ' << val.Second << '\n';
 
 	//map.erase(17);
 	//map.print_details();

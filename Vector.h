@@ -73,7 +73,7 @@ private:
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
 	ValueType* _array	= nullptr;									// Actual container array
 
-	mutable Data _data;												// Stores the ends of the array
+	mutable Data _data;
 	mutable Alloc _alloc;											// Allocator
 
 	static constexpr size_t default_capacity = 8;

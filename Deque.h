@@ -79,7 +79,7 @@ private:
 	ValueType* _array 	= nullptr;							// Actual container array
 
 	mutable Alloc _alloc;									// Allocator
-	mutable Data _data;										// Stores the ends of the array, array address, capacity
+	mutable Data _data;
 	
 	static constexpr size_t default_capacity = 8;
 

@@ -69,7 +69,7 @@ public:
 
 private:
 	ValueType _array[Size];											// Actual container array
-	mutable Data _data;												// Stores the ends of the array
+	mutable Data _data;
 
 public:
 	// Constructors
