@@ -140,6 +140,9 @@ public:
 private:
 	// Others
 
+	void _create_head();
+	void _free_head();
+
 	void _insert_node_before(Node* beforeNode, Node* newNode);				// Insert Node ferore another
 	void _remove_node(Node* junkNode);										// Remove Node and relink
 	void _copy(const List& other);											// Generic copy function for list
@@ -247,7 +250,7 @@ const bool ListIterator<List>::is_end() const {
 // Linked List
 template<class Type>
 List<Type>::List() {
-	_head = Node::create_head(_alloc);
+	_create_head();
 }
 
 template<class Type>
@@ -268,7 +271,7 @@ List<Type>::List(List&& other) noexcept : List() {
 template<class Type>
 List<Type>::~List() {
 	clear();
-	Node::free_head(_alloc, _head);
+	_free_head();
 }
 
 template<class Type>
@@ -476,6 +479,20 @@ typename List<Type>::Iterator List<Type>::at(const size_t& index) {
 		throw std::out_of_range("Invalid Index...");
 
 	return Iterator(_scroll_node(index), _update_iteration_data());
+}
+
+template<class Type>
+void List<Type>::_create_head() {
+	_head = _alloc.alloc(1);
+	_head->_Next = _head;
+	_head->_Previous = _head;
+}
+
+template<class Type>
+void List<Type>::_free_head() {
+	_head->_Next = nullptr;
+	_head->_Previous = nullptr;
+	_alloc.dealloc(_head, 1);
 }
 
 template<class Type>

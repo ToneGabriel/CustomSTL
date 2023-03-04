@@ -16,26 +16,18 @@ struct ForwardNode														// Struct that holds data and references to next
 	ForwardNode(const ForwardNode&)				= delete;
 	ForwardNode& operator=(const ForwardNode&)	= delete;
 
+	ForwardNode(const ValueType& copyVal)
+		:_Value(copyVal) { /*Empty*/ }
+
+	ForwardNode(ValueType&& moveVal)
+		:_Value(custom::move(moveVal)) { /*Empty*/ }
+
 	template<class... Args>
 	ForwardNode(Args&&... args)
 		:_Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
 	~ForwardNode() {
 		_Next = nullptr;
-	}
-
-	template<class AllocNode>
-	static ForwardNode* create_head(AllocNode& al) {
-		ForwardNode* newNode = al.alloc(1);
-		newNode->_Next = newNode;
-
-		return newNode;
-	}
-
-	template<class AllocNode>
-	static void free_head(AllocNode& al, ForwardNode* node) {
-		node->_Next = nullptr;
-		al.dealloc(node, 1);
 	}
 };
 // Forward Node ========================================================
@@ -55,6 +47,12 @@ struct DoubleNode														// Struct that holds data and references to next 
 	DoubleNode(const DoubleNode&)				= delete;
 	DoubleNode& operator=(const DoubleNode&)	= delete;
 
+	DoubleNode(const ValueType& copyVal)
+		:_Value(copyVal) { /*Empty*/ }
+
+	DoubleNode(ValueType&& moveVal)
+		:_Value(custom::move(moveVal)) { /*Empty*/ }
+
 	template<class... Args>
 	DoubleNode(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
@@ -62,22 +60,6 @@ struct DoubleNode														// Struct that holds data and references to next 
 	~DoubleNode() {
 		_Previous	= nullptr;
 		_Next		= nullptr;
-	}
-
-	template<class AllocNode>
-	static DoubleNode* create_head(AllocNode& al) {
-		DoubleNode* newNode = al.alloc(1);
-		newNode->_Next = newNode;
-		newNode->_Previous = newNode;
-
-		return newNode;
-	}
-
-	template<class AllocNode>
-	static void free_head(AllocNode& al, DoubleNode* node) {
-		node->_Next		= nullptr;
-		node->_Previous = nullptr;
-		al.dealloc(node, 1);
 	}
 };
 // Double Node ========================================================
@@ -93,7 +75,7 @@ struct TreeNode
 	TreeNode* _Parent	= nullptr;									// Reference to parent
 	TreeNode* _Left		= nullptr;									// Reference to left
 	TreeNode* _Right	= nullptr;									// Reference to right
-	char _Color;
+	char _Color			= Black;
 
 	enum Colors 
 	{
@@ -101,38 +83,24 @@ struct TreeNode
 		Black
 	};
 
-	TreeNode()
-		:_Value(), _Color(Black) { /*Empty*/ }
-
+	TreeNode() = default;
 	TreeNode(const TreeNode&)				= delete;
 	TreeNode& operator=(const TreeNode&)	= delete;
 
+	TreeNode(const ValueType& copyVal)
+		:_Value(copyVal) { /*Empty*/ }
+
+	TreeNode(ValueType&& moveVal)
+		:_Value(custom::move(moveVal)) { /*Empty*/ }
+
 	template<class... Args>
 	TreeNode(Args&&... args)
-		: _Value(custom::forward<Args>(args)...), _Color(Black) { /*Empty*/ }
+		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
 	~TreeNode() {
 		_Parent	= nullptr;
 		_Left	= nullptr;
 		_Right	= nullptr;
-	}
-
-	template<class AllocNode>
-	static TreeNode* create_head(AllocNode& al) {
-		TreeNode* newNode = al.alloc(1);
-		newNode->_Parent = newNode;
-		newNode->_Next = newNode;
-		newNode->_Previous = newNode;
-
-		return newNode;
-	}
-
-	template<class AllocNode>
-	static void free_head(AllocNode& al, TreeNode* node) {
-		node->_Parent	= nullptr;
-		node->_Next		= nullptr;
-		node->_Previous = nullptr;
-		al.dealloc(node, 1);
 	}
 };
 // Tree Node ========================================================
