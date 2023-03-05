@@ -156,8 +156,31 @@ void unordered_set_test() {
 void map_test() {
 	custom::Map<int, Test> map;
 	
-	for (size_t i = 0; i < 20; ++i)
-		map.emplace(i, 0);
+	//for (size_t i = 0; i < 20; ++i)
+	//	map.emplace(i, 0);
+
+	map.emplace(0, 0);
+	map.emplace(5, 0);
+	map.emplace(7, 0);
+	map.emplace(1, 0);
+	map.emplace(10, 0);
+	map.emplace(21, 0);
+	map.emplace(44, 0);
+	map.emplace(6, 0);
+	map.emplace(8, 0);
+	map.emplace(15, 0);
+	map.emplace(14, 0);
+	map.emplace(96, 0);
+	map.emplace(2, 0);
+	map.emplace(50, 0);
+	map.emplace(69, 0);
+	map.emplace(19, 0);
+	map.emplace(29, 0);
+	map.emplace(101, 0);
+	map.emplace(40, 0);
+	map.emplace(51, 0);
+	map.emplace(99, 0);
+	map.emplace(99, 0);
 
 	map.print_details();
 

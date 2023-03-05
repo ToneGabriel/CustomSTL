@@ -407,10 +407,10 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::find(const KeyType& ke
 template<class Traits>
 void SearchTree<Traits>::clear() {
 	_destroy_all(_head->_Parent);
-	_head->_Parent = _head;
-	_head->_Left = _head;
-	_head->_Right = _head;
-	_size = 0;
+	_head->_Parent	= _head;
+	_head->_Left	= _head;
+	_head->_Right	= _head;
+	_size			= 0;
 }
 
 template<class Traits>
@@ -588,9 +588,9 @@ void SearchTree<Traits>::_insert(Node* newNode, const TreeNodeID<Node>& position
 
 	if (position._Parent == _head)					// first node
 	{
-		_head->_Parent = newNode;
-		_head->_Left = newNode;
-		_head->_Right = newNode;
+		_head->_Parent	= newNode;
+		_head->_Left	= newNode;
+		_head->_Right	= newNode;
 		newNode->_Color = Node::Colors::Black;
 	}
 	else if (position._Child == TreeChild::Left)	// add to left
@@ -623,16 +623,16 @@ void SearchTree<Traits>::_insert(Node* newNode, const TreeNodeID<Node>& position
 					_rotate_left(tempNode);
 				}
 
-				tempNode->_Parent->_Color = Node::Colors::Black;				// case 3 = uncle black (line)
-				tempNode->_Parent->_Parent->_Color = Node::Colors::Red;
+				tempNode->_Parent->_Color			= Node::Colors::Black;		// case 3 = uncle black (line)
+				tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
 				_rotate_right(tempNode->_Parent->_Parent);
 			}
 			else																// case 1 = uncle red
 			{
-				tempNode->_Parent->_Color = Node::Colors::Black;
-				uncle->_Color = Node::Colors::Black;
-				tempNode->_Parent->_Parent->_Color = Node::Colors::Red;
-				tempNode = tempNode->_Parent->_Parent;
+				tempNode->_Parent->_Color			= Node::Colors::Black;
+				uncle->_Color						= Node::Colors::Black;
+				tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+				tempNode							= tempNode->_Parent->_Parent;
 			}
 		}
 		else																	// simetrical situation
@@ -646,16 +646,16 @@ void SearchTree<Traits>::_insert(Node* newNode, const TreeNodeID<Node>& position
 					_rotate_right(tempNode);
 				}
 
-				tempNode->_Parent->_Color = Node::Colors::Black;
-				tempNode->_Parent->_Parent->_Color = Node::Colors::Red;
+				tempNode->_Parent->_Color			= Node::Colors::Black;
+				tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
 				_rotate_left(tempNode->_Parent->_Parent);
 			}
 			else
 			{
-				tempNode->_Parent->_Color = Node::Colors::Black;
-				uncle->_Color = Node::Colors::Black;
-				tempNode->_Parent->_Parent->_Color = Node::Colors::Red;
-				tempNode = tempNode->_Parent->_Parent;
+				tempNode->_Parent->_Color			= Node::Colors::Black;
+				uncle->_Color						= Node::Colors::Black;
+				tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+				tempNode							= tempNode->_Parent->_Parent;
 			}
 		}
 	}
@@ -823,10 +823,13 @@ template<class Traits>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyType& key) const {
 	Node* found = nullptr;
 
-	for (Node* iterNode = _head->_Parent; found != nullptr && !iterNode->_IsNil; )
+	for (Node* iterNode = _head->_Parent; !iterNode->_IsNil; )	// TODO: check warning
 	{
 		if (key == Traits::extract_key(iterNode->_Value))
+		{
 			found = iterNode;
+			iterNode = _head;
+		}
 		else if (_less(key, Traits::extract_key(iterNode->_Value)))
 			iterNode = iterNode->_Left;
 		else
@@ -844,16 +847,18 @@ bool SearchTree<Traits>::_is_leaf(Node* node) {
 template<class Traits>
 void SearchTree<Traits>::_create_head() {
 	_head = _alloc.alloc(1);
-	_head->_Parent = _head;
-	_head->_Left = _head;
-	_head->_Right = _head;
+	_head->_Parent	= _head;
+	_head->_Left	= _head;
+	_head->_Right	= _head;
+	_head->_IsNil	= true;
+	_head->_Color	= Node::Colors::Black;
 }
 
 template<class Traits>
 void SearchTree<Traits>::_free_head() {
-	_head->_Parent = nullptr;
-	_head->_Left = nullptr;
-	_head->_Right = nullptr;
+	_head->_Parent	= nullptr;
+	_head->_Left	= nullptr;
+	_head->_Right	= nullptr;
 	_alloc.dealloc(_head, 1);
 }
 
@@ -878,27 +883,27 @@ void SearchTree<Traits>::_copy(const SearchTree& other) {
 template<class Traits>
 void SearchTree<Traits>::_move(SearchTree&& other) {	// TODO: check
 	// link current head with the other "body"
-	_head->_Parent = other._head->_Parent;
+	_head->_Parent			= other._head->_Parent;
 	_head->_Parent->_Parent = _head;
-	_head->_Left = other._head->_Left;
-	_head->_Left->_Left = _head;
-	_head->_Right = other._head->_Right;
-	_head->_Right->_Right = _head;
-	_size = other._size;
-	_data = other._data;
+	_head->_Left			= other._head->_Left;
+	_head->_Left->_Left		= _head;
+	_head->_Right			= other._head->_Right;
+	_head->_Right->_Right	= _head;
+	_size					= other._size;
+	_data					= other._data;
 
 	// link old head with itself
-	other._head->_Parent = other._head;
-	other._head->_Left = other._head;
-	other._head->_Right = other._head;
-	other._size = 0;
+	other._head->_Parent	= other._head;
+	other._head->_Left		= other._head;
+	other._head->_Right		= other._head;
+	other._size				= 0;
 	other._update_iteration_data();
 }
 
 template<class Traits>
 typename SearchTree<Traits>::Data* SearchTree<Traits>::_update_iteration_data() const {	// TODO: implement
-	_data._Begin = _head->_Left;
-	_data._End = _head;
+	_data._Begin	= _head->_Left;
+	_data._End		= _head;
 
 	return &_data;
 }
