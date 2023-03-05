@@ -71,11 +71,12 @@ template<class Type>
 struct TreeNode
 {
 	using ValueType = Type;
-	ValueType _Value;												// Data
-	TreeNode* _Parent	= nullptr;									// Reference to parent
-	TreeNode* _Left		= nullptr;									// Reference to left
-	TreeNode* _Right	= nullptr;									// Reference to right
-	char _Color			= Black;
+	ValueType _Value;		// Data
+	TreeNode* _Parent;		// Reference to parent
+	TreeNode* _Left;		// Reference to left
+	TreeNode* _Right;		// Reference to right
+	char _Color;			// Used for balancing
+	bool _IsNil;			// True for Head only
 
 	enum Colors 
 	{
@@ -83,7 +84,7 @@ struct TreeNode
 		Black
 	};
 
-	TreeNode() = default;
+	TreeNode()								= default;
 	TreeNode(const TreeNode&)				= delete;
 	TreeNode& operator=(const TreeNode&)	= delete;
 

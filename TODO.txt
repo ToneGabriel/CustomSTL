@@ -1,3 +1,5 @@
 1. Implement Link Node
 2. Check ++ and --
 3. Check insert and refactor if needed
+4. Add construct in place
+5. All nodes are created and linked to head first, then relinked
