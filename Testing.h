@@ -155,24 +155,14 @@ void unordered_set_test() {
 
 void map_test() {
 	custom::Map<int, Test> map;
-
-	size_t i = 9;
-	size_t j = 10;
-	while (i > 0)
-	{
-		map.emplace(i, 0);
-		map.emplace(j, 0);
-		--i;
-		++j;
-	}
 	
-	//for (size_t i = 0; i < 20; i++)
-	//	map.emplace(i, 0);
+	for (size_t i = 0; i < 20; ++i)
+		map.emplace(i, 0);
 
 	map.print_details();
 
-	//for (auto& val : map)
-	//	std::cout << val.First << ' ' << val.Second << '\n';
+	for (auto& val : map)
+		std::cout << val.First << ' ' << val.Second << '\n';
 
 	//map.erase(17);
 	//map.print_details();

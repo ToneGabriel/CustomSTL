@@ -148,9 +148,8 @@ private:
 	void _rotate_left(Node* subroot);								// promotes subroot right
 	void _rotate_right(Node* subroot);								// promotes subroot left
 
-	void _insert(Node* newNode);
-	void _raw_insert(Node* newNode, const TreeNodeID<Node>& position);
-	void _fix_insert(Node* newNode);
+	TreeNodeID<Node> _find_insertion_slot(Node* node) const;
+	void _insert(Node* newNode, const TreeNodeID<Node>& position);
 
 	void _destroy_all(Node* subroot);								// DFS Postorder
 	void _destroy(Node* oldNode);
@@ -163,23 +162,14 @@ private:
 
 	Node* _in_order_successor(Node* node);
 	Node* _find_in_tree(const KeyType& key) const;
-	TreeNodeID<Node> _find_insertion_slot(Node* node) const;
 
-	Node* _parent(Node* node);
-	Node* _grandparent(Node* node);
-	Node* _sibling(Node* node);
-	Node* _uncle(Node* node);
-	bool _has_parent(Node* node);
-	bool _has_grandparent(Node* node);
-	bool _is_red(Node* node);
-	bool _is_black(Node* node);
 	bool _is_leaf(Node* node);
-
-	void _create_head();
-	void _free_head();
 
 	template<class... Args>
 	Node* _create_common_node(Args&&... args);
+	void _create_head();
+	void _free_head();
+
 
 	void _copy(const SearchTree& other);
 	void _move(SearchTree&& other);
@@ -212,10 +202,10 @@ SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator++() {	/
 	if (_Ptr == _Data->_End)
 		throw std::out_of_range("Cannot increment end iterator...");
 
-	if (_Ptr->_Right == nullptr)
+	if (_Ptr->_Right->_IsNil)
 	{
 		IterType* node = _Ptr->_Parent;
-		while (node != nullptr && _Ptr == node->_Right)
+		while (!node->_IsNil && _Ptr == node->_Right)
 		{
 			_Ptr = node;
 			node = _Ptr->_Parent;
@@ -237,18 +227,21 @@ SearchTreeIterator<SearchTree> SearchTreeIterator<SearchTree>::operator++(int) {
 
 template<class SearchTree>
 SearchTreeIterator<SearchTree>& SearchTreeIterator<SearchTree>::operator--() {	// TODO: check and implement Link Node
-	if (_Ptr == _Data->_End)
+	if (_Ptr == _Data->_Begin)
+		throw std::out_of_range("Cannot decrement begin iterator...");
+
+	if (_Ptr->_IsNil)
 		_Ptr = _Ptr->_Right;
-	else if (_Ptr->_Left == nullptr)
+	else if (_Ptr->_Left->_IsNil)
 	{
 		IterType* node = _Ptr->_Parent;
-		while (node != nullptr && _Ptr == node->_Left)
+		while (!node->_IsNil && _Ptr == node->_Left)
 		{
 			_Ptr = node;
 			node = _Ptr->_Parent;
 		}
 
-		if (_Ptr != nullptr)	// decrement non-begin
+		if (!_Ptr->_IsNil)	// decrement non-begin
 			_Ptr = node;
 	}
 	else
@@ -266,13 +259,17 @@ SearchTreeIterator<SearchTree> SearchTreeIterator<SearchTree>::operator--(int) {
 
 template<class SearchTree>
 typename SearchTreeIterator<SearchTree>::IterType* SearchTreeIterator<SearchTree>::operator->() {
-	// TODO: implement check
+	if (_Ptr == _Data->_End)
+		throw std::out_of_range("Cannot access end iterator...");
+
 	return _Ptr;
 }
 
 template<class SearchTree>
 typename SearchTreeIterator<SearchTree>::ValueType& SearchTreeIterator<SearchTree>::operator*() {
-	// TODO: implement check
+	if (_Ptr == _Data->_End)
+		throw std::out_of_range("Cannot dereference end iterator...");
+
 	return _Ptr->_Value;
 }
 
@@ -376,7 +373,8 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::emplace(Args&&... args
 	}
 	else
 	{
-		_insert(newNode);
+		auto insertPosition = _find_insertion_slot(newNode);
+		_insert(newNode, insertPosition);
 		return Iterator(newNode, _update_iteration_data());
 	}
 }
@@ -439,7 +437,7 @@ void SearchTree<Traits>::test() {	// TODO: remove after testing
 }
 
 template<class Traits>
-typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() {	// TODO: implement
+typename SearchTree<Traits>::Iterator SearchTree<Traits>::begin() {
 	return Iterator(_head->_Left, _update_iteration_data());
 }
 
@@ -472,9 +470,9 @@ typename SearchTree<Traits>::Iterator SearchTree<Traits>::_try_emplace(_KeyType&
 			custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 			custom::forward_as_tuple(custom::forward<Args>(args)...)
 		);
-		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
-		_insert(newNode);
+		auto insertPosition = _find_insertion_slot(newNode);
+		_insert(newNode, insertPosition);
 		return Iterator(newNode, _update_iteration_data());
 	}
 }
@@ -555,18 +553,40 @@ void SearchTree<Traits>::_rotate_right(Node* subroot) {
 }
 
 template<class Traits>
-void SearchTree<Traits>::_insert(Node* newNode) {	// TODO: fix insert
-	_raw_insert(newNode, _find_insertion_slot(newNode));
-	//_fix_insert(newNode);
+TreeNodeID<typename SearchTree<Traits>::Node> SearchTree<Traits>::_find_insertion_slot(Node* newNode) const {
+	TreeNodeID<Node> position;
 
-	++_size;
+	if (_head->_Parent == _head)
+		position._Parent = _head;
+	else
+		for (Node* iterNode = _head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
+		{
+			position._Parent = iterNode;
+			if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
+			{
+				iterNode = iterNode->_Left;
+				if (iterNode->_IsNil)
+					position._Child = TreeChild::Left;
+			}
+			else
+			{
+				iterNode = iterNode->_Right;
+				if (iterNode->_IsNil)
+					position._Child = TreeChild::Right;
+			}
+		}
+
+	return position;
 }
 
 template<class Traits>
-void SearchTree<Traits>::_raw_insert(Node* newNode, const TreeNodeID<Node>& position) {
+void SearchTree<Traits>::_insert(Node* newNode, const TreeNodeID<Node>& position) {
+	++_size;
+
+	// Raw Insert
 	newNode->_Parent = position._Parent;
 
-	if (position._Parent == _head)	// first node
+	if (position._Parent == _head)					// first node
 	{
 		_head->_Parent = newNode;
 		_head->_Left = newNode;
@@ -585,27 +605,25 @@ void SearchTree<Traits>::_raw_insert(Node* newNode, const TreeNodeID<Node>& posi
 		if (position._Parent == _head->_Right)
 			_head->_Right = newNode;
 	}
-}
 
-template<class Traits>
-void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should work now...)
+	// Fix Insert
 	Node* uncle = nullptr;
 	Node* tempNode = newNode;													// initialize violation with newly inserted node
 
-	while (_has_grandparent(tempNode) && tempNode->_Parent->_Color == Node::Colors::Red)
+	while (tempNode->_Parent->_Color == Node::Colors::Red)
 	{
 		if (tempNode->_Parent == tempNode->_Parent->_Parent->_Left)
 		{
 			uncle = tempNode->_Parent->_Parent->_Right;
-			if(uncle == nullptr || uncle->_Color == Node::Colors::Black)		// uncle black
+			if (uncle->_Color == Node::Colors::Black)							// uncle black
 			{
-				if (tempNode == tempNode->_Parent->_Right)			// case 2 = uncle black (triangle)
+				if (tempNode == tempNode->_Parent->_Right)						// case 2 = uncle black (triangle)
 				{
 					tempNode = tempNode->_Parent;
 					_rotate_left(tempNode);
-				}	
+				}
 
-				tempNode->_Parent->_Color = Node::Colors::Black;			// case 3 = uncle black (line)
+				tempNode->_Parent->_Color = Node::Colors::Black;				// case 3 = uncle black (line)
 				tempNode->_Parent->_Parent->_Color = Node::Colors::Red;
 				_rotate_right(tempNode->_Parent->_Parent);
 			}
@@ -620,12 +638,12 @@ void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should wo
 		else																	// simetrical situation
 		{
 			uncle = tempNode->_Parent->_Parent->_Left;
-			if(uncle == nullptr || uncle->_Color == Node::Colors::Black)
+			if (uncle->_Color == Node::Colors::Black)
 			{
 				if (tempNode == tempNode->_Parent->_Left)
 				{
 					tempNode = tempNode->_Parent;
-					_rotate_right(tempNode->_Parent);
+					_rotate_right(tempNode);
 				}
 
 				tempNode->_Parent->_Color = Node::Colors::Black;
@@ -642,7 +660,7 @@ void SearchTree<Traits>::_fix_insert(Node* newNode) {		// TODO: check (should wo
 		}
 	}
 
-	_head->_Color = Node::Colors::Black;
+	_head->_Parent->_Color = Node::Colors::Black;
 }
 
 template<class Traits>
@@ -660,7 +678,7 @@ template<class Traits>
 void SearchTree<Traits>::_destroy(Node* oldNode) {	// TODO: questionable code...
 	Node* tempNode = _in_order_successor(oldNode);	// Now tempNode is leaf
 
-	if (_is_red(tempNode))
+	if (tempNode->_Color == Node::Colors::Red)
 	{
 		_transplant(oldNode, tempNode);	// TODO: check
 		_detach_parent(oldNode);
@@ -816,73 +834,6 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyTy
 	}
 
 	return found;
-}
-
-template<class Traits>
-TreeNodeID<typename SearchTree<Traits>::Node> SearchTree<Traits>::_find_insertion_slot(Node* newNode) const {
-	TreeNodeID<Node> position;
-
-	if (_head->_Parent == _head)
-		position._Parent = _head;
-	else
-		for (Node* iterNode = _head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
-		{
-			position._Parent = iterNode;
-			if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
-			{
-				iterNode = iterNode->_Left;
-				if (iterNode->_IsNil)
-					position._Child = TreeChild::Left;
-			}
-			else
-			{
-				iterNode = iterNode->_Right;
-				if (iterNode->_IsNil)
-					position._Child = TreeChild::Right;
-			}
-		}
-
-	return position;
-}
-
-template<class Traits>
-typename SearchTree<Traits>::Node* SearchTree<Traits>::_parent(Node* node) {
-	return node->_Parent;
-}
-
-template<class Traits>
-typename SearchTree<Traits>::Node* SearchTree<Traits>::_grandparent(Node* node) {
-	return node->_Parent->_Parent;
-}
-
-template<class Traits>
-typename SearchTree<Traits>::Node* SearchTree<Traits>::_sibling(Node* node) {
-	return (node == node->_Parent->_Left) ? node->_Parent->_Right : node->_Parent->_Left;
-}
-
-template<class Traits>
-typename SearchTree<Traits>::Node* SearchTree<Traits>::_uncle(Node* node) {
-	return (node->_Parent == node->_Parent->_Parent->_Left) ? node->_Parent->_Parent->_Right : node->_Parent->_Parent->_Left;
-}
-
-template<class Traits>
-bool SearchTree<Traits>::_has_parent(Node* node) {
-	return node->_Parent != nullptr;
-}
-
-template<class Traits>
-bool SearchTree<Traits>::_has_grandparent(Node* node) {
-	return (node->_Parent != nullptr && node->_Parent->_Parent != nullptr);
-}
-
-template<class Traits>
-bool SearchTree<Traits>::_is_red(Node* node) {
-	return (node != nullptr && node->_Color == Node::Colors::Red);
-}
-
-template<class Traits>
-bool SearchTree<Traits>::_is_black(Node* node) {
-	return (node == nullptr || node->_Color == Node::Colors::Black);
 }
 
 template<class Traits>
