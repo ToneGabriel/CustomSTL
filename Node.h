@@ -39,9 +39,9 @@ template<class Type>
 struct DoubleNode														// Struct that holds data and references to next and previous struct
 {
 	using ValueType = Type;
-	ValueType _Value;													// Data
-	DoubleNode* _Previous	= nullptr;									// Reference to previous 
-	DoubleNode* _Next		= nullptr;									// Reference to next
+	ValueType _Value;		// Data
+	DoubleNode* _Previous;	// Reference to previous 
+	DoubleNode* _Next;		// Reference to next
 
 	DoubleNode()								= default;
 	DoubleNode(const DoubleNode&)				= delete;

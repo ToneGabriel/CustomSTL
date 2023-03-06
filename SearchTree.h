@@ -148,11 +148,15 @@ private:
 	void _rotate_left(Node* subroot);								// promotes subroot right
 	void _rotate_right(Node* subroot);								// promotes subroot left
 
+	Node* _copy_all(Node* subroot);									// DFS Preorder
+	void _destroy_all(Node* subroot);								// DFS Postorder
+
+	bool _is_leaf(Node* node) const;
+	Node* _in_order_successor(Node* node) const;
+	Node* _find_in_tree(const KeyType& key) const;
 	TreeNodeID<Node> _find_insertion_slot(Node* node) const;
 	void _insert(Node* newNode, const TreeNodeID<Node>& position);
 
-	Node* _copy_all(Node* subroot);
-	void _destroy_all(Node* subroot);								// DFS Postorder
 	void _destroy(Node* oldNode);
 	void _fix_destroy(Node* node);
 	void _transplant(Node* first, Node* second);
@@ -160,11 +164,6 @@ private:
 	void _swap_children(Node* first, Node* second);
 	void _swap_colors(Node* first, Node* second);
 	void _detach_parent(Node* node);
-
-	Node* _in_order_successor(Node* node) const;
-	Node* _find_in_tree(const KeyType& key) const;
-
-	bool _is_leaf(Node* node) const;
 
 	template<class... Args>
 	Node* _create_common_node(Args&&... args);

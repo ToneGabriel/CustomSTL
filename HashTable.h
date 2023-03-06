@@ -142,7 +142,7 @@ HashTable<Traits>::~HashTable() {
 template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(const HashTable& other) {
 	if (_elems._head != other._elems._head)
-		_copy(other);
+		_copy(other);	// List and Vector call clear internally (no need here)
 
 	return *this;
 }
@@ -150,7 +150,7 @@ HashTable<Traits>& HashTable<Traits>::operator=(const HashTable& other) {
 template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(HashTable&& other) noexcept {
 	if (_elems._head != other._elems._head)
-		_move(custom::move(other));
+		_move(custom::move(other));		// List and Vector call clear internally (no need here)
 
 	return *this;
 }
@@ -383,14 +383,14 @@ size_t HashTable<Traits>::_min_load_factor_buckets(const size_t& size) const {
 
 template<class Traits>
 void HashTable<Traits>::_copy(const HashTable& other) {
-	_elems = other._elems;
-	_force_rehash(other.bucket_count());
+	_elems 		= other._elems;
+	_buckets 	= other._buckets;
 }
 
 template<class Traits>
 void HashTable<Traits>::_move(HashTable&& other) {
-	_elems = custom::move(other._elems);
-	_force_rehash(other.bucket_count());
+	_elems 		= custom::move(other._elems);
+	_buckets 	= custom::move(other._buckets);
 }
 
 // END HashTable Template

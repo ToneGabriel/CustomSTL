@@ -546,25 +546,25 @@ void Vector<Type>::_copy(const Vector& other) {
 	for (size_t i = 0; i < other._size; ++i)
 		_alloc.construct(&_array[i], other._array[i]);
 
-	_size = other._size;
-	_capacity = other._capacity;
+	_size 		= other._size;
+	_capacity 	= other._capacity;
 }
 
 template<class Type>
 void Vector<Type>::_move(Vector&& other) {
-	_array = other._array;
-	_size = other._size;
-	_capacity = other._capacity;
+	_array 		= other._array;
+	_size 		= other._size;
+	_capacity 	= other._capacity;
 
-	other._size = 0;
+	other._size 	= 0;
 	other._capacity = 0;
-	other._array = nullptr;
+	other._array 	= nullptr;
 }
 
 template<class Type>
 typename Vector<Type>::Data* Vector<Type>::_update_iteration_data() const {
-	_data._Begin = _array;
-	_data._End = _array + _size;
+	_data._Begin 	= _array;
+	_data._End 		= _array + _size;
 
 	return &_data;
 }

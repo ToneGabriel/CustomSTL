@@ -116,18 +116,22 @@ void tuple_test() {
 
 void list_test() {
 	custom::List<Test> list;
+	custom::List<Test> list1;
 
 	list.emplace_back(1);
 	list.emplace_back(2);
 	list.emplace_back(3);
 	list.emplace_front(4);
 
-	for (auto it = list.begin(); it != list.end(); ++it)
+	list1 = custom::move(list);
+
+	for (auto it = list1.begin(); it != list1.end(); ++it)
 		std::cout << *it << '\n';
 }
 
 void unordered_map_test() {
 	custom::UnorderedMap<int, custom::String> map;
+	custom::UnorderedMap<int, custom::String> map1;
 
 	map[10] = "abc";
 	map[11] = "gsa";
@@ -137,7 +141,18 @@ void unordered_map_test() {
 	map[1] = "A bv";
 	map.emplace(3, "abc");
 	map.try_emplace(56, custom::String("shmecher"));
+
+	map1[10] = "abc";
+	map1[11] = "gsa";
+	map1[26] = "af";
+
+	map1 = custom::move(map);
+	map = custom::move(map1);
+	map[0] = "ZERO";
+
 	map.print_details();
+	for(auto& val : map)
+		std::cout << val.First << ' ' << val.Second << '\n';
 }
 
 void unordered_set_test() {
@@ -148,9 +163,10 @@ void unordered_set_test() {
 	set.emplace("def");
 	set.emplace("ghi");
 	set.emplace("jkl");
-	set1 = set;
-	set == set1;
-	set.print_details();
+	set1 = custom::move(set);
+	set = custom::move(set1);
+
+	set1.print_details();
 }
 
 void map_test() {

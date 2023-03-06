@@ -254,17 +254,20 @@ List<Type>::List() {
 }
 
 template<class Type>
-List<Type>::List(const size_t& newSize, const ValueType& value) : List() {
+List<Type>::List(const size_t& newSize, const ValueType& value) {
+	_create_head();
 	_create_until_size(newSize, value);
 }
 
 template<class Type>
-List<Type>::List(const List& other) : List() {
+List<Type>::List(const List& other) {
+	_create_head();
 	_copy(other);
 }
 
 template<class Type>
-List<Type>::List(List&& other) noexcept : List() {
+List<Type>::List(List&& other) noexcept {
+	// Don't call _create_head here. Will copy the other._head
 	_move(custom::move(other));
 }
 
@@ -415,6 +418,7 @@ List<Type>& List<Type>::operator=(List&& other) noexcept {
 	if (_head != other._head)
 	{
 		clear();
+		_free_head();
 		_move(custom::move(other));
 	}
 
@@ -483,15 +487,15 @@ typename List<Type>::Iterator List<Type>::at(const size_t& index) {
 
 template<class Type>
 void List<Type>::_create_head() {
-	_head = _alloc.alloc(1);
-	_head->_Next = _head;
-	_head->_Previous = _head;
+	_head 				= _alloc.alloc(1);
+	_head->_Next 		= _head;
+	_head->_Previous 	= _head;
 }
 
 template<class Type>
 void List<Type>::_free_head() {
-	_head->_Next = nullptr;
-	_head->_Previous = nullptr;
+	_head->_Next 		= nullptr;
+	_head->_Previous 	= nullptr;
 	_alloc.dealloc(_head, 1);
 }
 
@@ -522,21 +526,17 @@ void List<Type>::_copy(const List& other) {
 		push_back(temp->_Value);
 		temp = temp->_Next;
 	}
+	
+	_update_iteration_data();
 }
 
 template<class Type>
-void List<Type>::_move(List&& other) {
-	// link current head with the other "body"
-	_head->_Next = other._head->_Next;
-	_head->_Next->_Previous = _head;
-	_head->_Previous = other._head->_Previous;
-	_head->_Previous->_Next = _head;
+void List<Type>::_move(List&& other) {	// Current _head is free of memory
+	_head = other._head;
 	_size = other._size;
-	_data = other._data;
+	_update_iteration_data();
 
-	// link old head with itself
-	other._head->_Next = other._head;
-	other._head->_Previous = other._head;
+	other._create_head();
 	other._size = 0;
 	other._update_iteration_data();
 }
