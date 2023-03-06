@@ -250,4 +250,15 @@ void deque_test() {
 	std::cout << '\n';
 }
 
+void queue_test() {
+	custom::Queue<Test> q;
+	custom::Queue<Test> q1;
+
+	q.emplace();
+	q.emplace();
+	q.emplace();
+
+	q1 = q;
+}
+
 TEST_END

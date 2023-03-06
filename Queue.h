@@ -1,5 +1,6 @@
 #pragma once
-#include "Node.h"
+#include "Deque.h"
+#include "Vector.h"
 #include "Utility.h"
 
 
@@ -8,25 +9,21 @@ CUSTOM_BEGIN
 // Headings =================================================================================
 
 template<class Type>
-class Queue				// Queue Template
+class Queue			// Queue template implemented as Deque wrapper
 {
 public:
 	using ValueType = Type;									// Type for stored values
-	using Node		= ForwardNode<ValueType>;				// Node type
 
 private:
-	size_t _size	= 0;									// Number of Nodes held by this
-	Node* _head		= nullptr;								// Head of this list
-	Node* _tail		= nullptr;								// Tail of this list
+	Deque<ValueType> _baseContainer;
 
 public:
 	// Constructors
 
 	Queue() = default;
-	Queue(const size_t& newSize, const ValueType& value);	// Add multiple copies Constructor
 	Queue(const Queue& other);								// Copy Constructor
 	Queue(Queue&& other) noexcept;							// Move Constructor
-	~Queue();												// Destructor
+	~Queue() = default;										// Destructor
 
 public:
 	// Main functions
@@ -52,15 +49,17 @@ public:
 	Queue& operator=(const Queue& other);					// Assign operator using reference
 	Queue& operator=(Queue&& other) noexcept;				// Assign operator using temporary
 
-private:
-	// Others
-
-	void _copy(const Queue& other);							// Generic copy function for queue
-	void _move(Queue&& other);								// Generic move function for queue
-
-	template<class... Args>
-	void _create_until_size(const size_t& newSize, Args&&... args); // Add elements until current size equals newSize
+	bool operator==(const Queue& other) const;
+	bool operator!=(const Queue& other) const;
 }; // END Queue Template
+
+
+template<class Type>
+class PriorityQueue		// Priority Queue Template implemented as array heap (probably)
+{
+	// TODO: implement
+
+}; // END PriorityQueue Template
 
 
 
@@ -68,37 +67,17 @@ private:
 
 // Queue Template
 template<class Type>
-Queue<Type>::Queue(const size_t& newSize, const ValueType& value) {
-	_create_until_size(newSize, value);
-}
+Queue<Type>::Queue(const Queue& other)
+	: _baseContainer(other._baseContainer) { /*Empty*/ }
 
 template<class Type>
-Queue<Type>::Queue(const Queue& other) {
-	_copy(other);
-}
-
-template<class Type>
-Queue<Type>::Queue(Queue&& other) noexcept {
-	_move(custom::move(other));
-}
-
-template<class Type>
-Queue<Type>::~Queue() {
-	clear();
-}
+Queue<Type>::Queue(Queue&& other) noexcept 
+	: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
 template<class Type>
 template<class... Args>
 void Queue<Type>::emplace(Args&&... args) {
-	Node* newNode = new Node(custom::forward<Args>(args)...);
-
-	if (_head == nullptr)
-		_head = _tail = newNode;	// Here head and tail are not important and can be used to store value
-	else {
-		_tail->_Next = newNode;
-		_tail = newNode;
-	}
-	++_size;
+	_baseContainer.emplace_back(custom::forward<Args>(args)...);
 }
 
 template<class Type>
@@ -113,110 +92,71 @@ void Queue<Type>::push(ValueType&& moveValue) {
 
 template<class Type>
 void Queue<Type>::pop() {
-	if (_head) {
-		Node* toDelete = _head;
-		_head = _head->_Next;
-
-		if (_head == nullptr)
-			_tail = nullptr;
-
-		delete toDelete;
-		--_size;
-	}
+	_baseContainer.pop_front();
 }
 
 template<class Type>
 typename Queue<Type>::ValueType& Queue<Type>::front() {
-	return _head->_Value;
+	return _baseContainer.front();
 }
 
 template<class Type>
 const typename Queue<Type>::ValueType& Queue<Type>::front() const {
-	return _head->_Value;
+	return _baseContainer.front();
 }
 
 template<class Type>
 typename Queue<Type>::ValueType& Queue<Type>::back() {
-	return _tail->_Value;
+	return _baseContainer.back();
 }
 
 template<class Type>
 const typename Queue<Type>::ValueType& Queue<Type>::back() const {
-	return _tail->_Value;
+	return _baseContainer.back();
 }
 
 template<class Type>
 const size_t Queue<Type>::size() const {
-	return _size;
+	return _baseContainer.size();
 }
 
 template<class Type>
 bool Queue<Type>::empty() const {
-	return _size == 0;
+	return _baseContainer.empty();
 }
 
 template<class Type>
 void Queue<Type>::clear() {
-	Node* toDelete;
-
-	while (_size) {
-		toDelete = _head;
-		_head = _head->_Next;
-
-		delete toDelete;
-		--_size;
-	}
-
-	_head = _tail = nullptr;
+	return _baseContainer.clear();
 }
 
 template<class Type>
 Queue<Type>& Queue<Type>::operator=(const Queue& other) {
-	if (_head != other._head)
-	{
-		clear();
-		_copy(other);
-	}
+	_baseContainer = other._baseContainer;
 
 	return *this;
 }
 
 template<class Type>
 Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {
-	if (_head != other._head)
-	{
-		clear();
-		_move(custom::move(other));
-	}
+	_baseContainer = custom::move(other._baseContainer);
 
 	return *this;
 }
 
 template<class Type>
-void Queue<Type>::_copy(const Queue& other) {
-	Node* temp = other._head;
-	while (_size < other._size) {
-		enqueue(temp->_Value);
-		temp = temp->_Next;
-	}
+bool Queue<Type>::operator==(const Queue& other) const {
+	return _baseContainer == other._baseContainer;
 }
 
 template<class Type>
-void Queue<Type>::_move(Queue&& other) {
-	_head = other._head;
-	_tail = other._tail;
-	_size = other._size;
-
-	other._head = other._tail = nullptr;
-	other._size = 0;
-}
-
-template<class Type>
-template<class... Args>
-void Queue<Type>::_create_until_size(const size_t& newSize, Args&&... args) {
-	while (_size < newSize)
-		emplace(custom::forward<Args>(args)...);
+bool Queue<Type>::operator!=(const Queue& other) const {
+	return !(*this == other);
 }
 // END Queue Template
 
+
+// PriorityQueue Template
+
+// END PriorityQueue Template
 CUSTOM_END

@@ -1,4 +1,5 @@
 1. Change Queue as wrapper to Deque
 2. Deque resize implement
+   Deque check destroy array (back+1)
 3. SearchTree erase elem
 4. PriorityQueue as vector???
