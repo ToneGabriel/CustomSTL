@@ -151,6 +151,7 @@ private:
 	TreeNodeID<Node> _find_insertion_slot(Node* node) const;
 	void _insert(Node* newNode, const TreeNodeID<Node>& position);
 
+	Node* _copy_all(Node* subroot);
 	void _destroy_all(Node* subroot);								// DFS Postorder
 	void _destroy(Node* oldNode);
 	void _fix_destroy(Node* node);
@@ -160,10 +161,10 @@ private:
 	void _swap_colors(Node* first, Node* second);
 	void _detach_parent(Node* node);
 
-	Node* _in_order_successor(Node* node);
+	Node* _in_order_successor(Node* node) const;
 	Node* _find_in_tree(const KeyType& key) const;
 
-	bool _is_leaf(Node* node);
+	bool _is_leaf(Node* node) const;
 
 	template<class... Args>
 	Node* _create_common_node(Args&&... args);
@@ -291,18 +292,20 @@ SearchTree<Traits>::SearchTree() {
 }
 
 template<class Traits>
-SearchTree<Traits>::SearchTree(const SearchTree& other) : SearchTree() {
+SearchTree<Traits>::SearchTree(const SearchTree& other) {
+	_create_head();
 	_copy(other);
 }
 
 template<class Traits>
-SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept : SearchTree() {
+SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept {
+	// Don't call _create_head here. Will copy the other._head
 	_move(custom::move(other));
 }
 
 template<class Traits>
 SearchTree<Traits>::~SearchTree() {
-	clear();
+	_destroy_all(_head->_Parent);
 	_free_head();
 }
 
@@ -310,7 +313,7 @@ template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(const SearchTree& other) {
 	if (_head != other._head)
 	{
-		clear();
+		_destroy_all(_head->_Parent);
 		_copy(other);
 	}
 
@@ -321,7 +324,8 @@ template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(SearchTree&& other) noexcept {
 	if (_head != other._head)
 	{
-		clear();
+		_destroy_all(_head->_Parent);
+		_free_head();
 		_move(custom::move(other));
 	}
 
@@ -556,7 +560,7 @@ template<class Traits>
 TreeNodeID<typename SearchTree<Traits>::Node> SearchTree<Traits>::_find_insertion_slot(Node* newNode) const {
 	TreeNodeID<Node> position;
 
-	if (_head->_Parent == _head)
+	if (_head->_Parent == _head)	// First node
 		position._Parent = _head;
 	else
 		for (Node* iterNode = _head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
@@ -661,6 +665,26 @@ void SearchTree<Traits>::_insert(Node* newNode, const TreeNodeID<Node>& position
 	}
 
 	_head->_Parent->_Color = Node::Colors::Black;
+}
+
+template<class Traits>
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_copy_all(Node* subroot) {
+	if (subroot->_IsNil)
+		return _head;
+
+	Node* newNode 		= new Node(subroot->_Value);
+	newNode->_IsNil		= false;
+	newNode->_Color		= subroot->_Color;
+
+	newNode->_Left = _copy_all(subroot->_Left);
+	if (!newNode->_Left->_IsNil)
+		newNode->_Left->_Parent = newNode;
+
+	newNode->_Right = _copy_all(subroot->_Right);
+	if (!newNode->_Right->_IsNil)
+		newNode->_Right->_Parent = newNode;
+
+	return newNode;
 }
 
 template<class Traits>
@@ -809,7 +833,7 @@ void SearchTree<Traits>::_detach_parent(Node* node) {
 }
 
 template<class Traits>
-typename SearchTree<Traits>::Node* SearchTree<Traits>::_in_order_successor(Node* node) {
+typename SearchTree<Traits>::Node* SearchTree<Traits>::_in_order_successor(Node* node) const {
 	while (!_is_leaf(node))
 		if (!node->_Right->_IsNil)
 			node = leftmost(node->_Right);
@@ -840,13 +864,13 @@ typename SearchTree<Traits>::Node* SearchTree<Traits>::_find_in_tree(const KeyTy
 }
 
 template<class Traits>
-bool SearchTree<Traits>::_is_leaf(Node* node) {
+bool SearchTree<Traits>::_is_leaf(Node* node) const {
 	return (node->_Left->_IsNil && node->_Right->_IsNil);
 }
 
 template<class Traits>
 void SearchTree<Traits>::_create_head() {
-	_head = _alloc.alloc(1);
+	_head 			= _alloc.alloc(1);
 	_head->_Parent	= _head;
 	_head->_Left	= _head;
 	_head->_Right	= _head;
@@ -865,38 +889,34 @@ void SearchTree<Traits>::_free_head() {
 template<class Traits>
 template<class... Args>
 typename SearchTree<Traits>::Node* SearchTree<Traits>::_create_common_node(Args&&... args) {
-	Node* newNode = new Node(custom::forward<Args>(args)...);
+	Node* newNode 		= new Node(custom::forward<Args>(args)...);
 	newNode->_Parent	= _head;
 	newNode->_Left		= _head;
 	newNode->_Right		= _head;
-	newNode->_Color		= Node::Colors::Red;
 	newNode->_IsNil		= false;
+	newNode->_Color		= Node::Colors::Red;
 
 	return newNode;
 }
 
 template<class Traits>
 void SearchTree<Traits>::_copy(const SearchTree& other) {
-	// TODO: implement
+	_head->_Parent 				= _copy_all(other._head->_Parent);
+	_head->_Left 				= leftmost(_head->_Parent);
+	_head->_Right 				= rightmost(_head->_Parent);
+	_head->_Parent->_Parent 	= _head;
+	_size 						= other._size;
+	_update_iteration_data();
 }
 
 template<class Traits>
-void SearchTree<Traits>::_move(SearchTree&& other) {	// TODO: check
-	// link current head with the other "body"
-	_head->_Parent			= other._head->_Parent;
-	_head->_Parent->_Parent = _head;
-	_head->_Left			= other._head->_Left;
-	_head->_Left->_Left		= _head;
-	_head->_Right			= other._head->_Right;
-	_head->_Right->_Right	= _head;
-	_size					= other._size;
-	_data					= other._data;
+void SearchTree<Traits>::_move(SearchTree&& other) {	// Current _head is free of memory
+	_head = other._head;
+	_size = other._size;
+	_update_iteration_data();
 
-	// link old head with itself
-	other._head->_Parent	= other._head;
-	other._head->_Left		= other._head;
-	other._head->_Right		= other._head;
-	other._size				= 0;
+	other._create_head();
+	other._size = 0;
 	other._update_iteration_data();
 }
 
