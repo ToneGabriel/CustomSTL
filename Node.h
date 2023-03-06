@@ -9,8 +9,8 @@ template<class Type>
 struct ForwardNode														// Struct that holds data and references to next struct
 {
 	using ValueType = Type;
-	ValueType _Value;													// Data
-	ForwardNode* _Next = nullptr;										// Reference to next
+	ValueType _Value;		// Data
+	ForwardNode* _Next;		// Reference to next
 
 	ForwardNode()								= default;
 	ForwardNode(const ForwardNode&)				= delete;

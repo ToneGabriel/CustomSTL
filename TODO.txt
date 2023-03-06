@@ -1,3 +1,4 @@
-1. Change Queue nodes and copy/move
+1. Change Queue as wrapper to Deque
 2. Deque resize implement
 3. SearchTree erase elem
+4. PriorityQueue as vector???
