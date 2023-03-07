@@ -491,7 +491,7 @@ typename Deque<Type>::Iterator Deque<Type>::pop(const Iterator& iterator) {
 		throw std::out_of_range("Array pop iterator outside range...");
 
 	size_t index = iterator.get_index();
-	for (size_t i = index; i != _back + 1; i = circular_increment(i, _capacity))
+	for (size_t i = index; i != circular_increment(_back, _capacity) && _size > 0; i = circular_increment(i, _capacity))
 		_array[i] = custom::move(_array[circular_increment(i, _capacity)]);
 	pop_back();
 
@@ -641,12 +641,12 @@ const typename Deque<Type>::Iterator Deque<Type>::begin() const {
 
 template<class Type>
 typename Deque<Type>::Iterator Deque<Type>::end() {
-	return Iterator(_array + _back + 1, _update_iteration_data());
+	return Iterator(_array + circular_increment(_front, _capacity, _size), _update_iteration_data());
 }
 
 template<class Type>
 const typename Deque<Type>::Iterator Deque<Type>::end() const {
-	return Iterator(_array + _back + 1, _update_iteration_data());
+	return Iterator(_array + circular_increment(_front, _capacity, _size), _update_iteration_data());
 }
 
 template<class Type>
@@ -671,14 +671,14 @@ void Deque<Type>::_dealloc_array() {
 
 template<class Type>
 void Deque<Type>::_destroy_array() {
-	for (size_t i = _front; i != _back + 1; i = circular_increment(i, _capacity))
+	for (size_t i = _front; i != circular_increment(_back, _capacity) && _size > 0; i = circular_increment(i, _capacity))
 		_alloc.destroy(_array + i);
 }
 
 template<class Type>
 void Deque<Type>::_copy(const Deque& other) {
 	_array = _alloc_array(other._capacity);
-	for (size_t i = other._front; i != other._back + 1; i = circular_increment(i, other._capacity))
+	for (size_t i = other._front; i != circular_increment(other._back, other._capacity) && other._size > 0; i = circular_increment(i, other._capacity))
 		_alloc.construct(&_array[i], other._array[i]);
 
 	_size 		= other._size;
