@@ -420,9 +420,9 @@ typename String::Iterator String::insert(const Iterator& where, const Iterator& 
 		first._Data->_Begin != last._Data->_Begin)	// Check if pos string != first/last string
 		throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
 
-	size_t pos = where.get_index();
-	size_t posFrom = first.get_index();
-	size_t posTo = last.get_index();
+	size_t pos 			= where.get_index();
+	size_t posFrom 		= first.get_index();
+	size_t posTo 		= last.get_index();
 	const char* cstring = first._Data->_Begin;
 	_insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
@@ -525,8 +525,8 @@ const bool String::empty() const {
 }
 
 void String::clear() {
-	_size = 0;
-	_string[0] = NULLCHR;
+	_size 		= 0;
+	_string[0] 	= NULLCHR;
 }
 
 const char& String::at(const size_t& index) const {
@@ -658,10 +658,10 @@ void String::_dealloc_string(char* address, const size_t& capacity) {
 }
 
 void String::_alloc_empty(const size_t& capacity) {
-	_string = _alloc_string(capacity);
-	_size = 0;
-	_capacity = capacity;
-	_string[_size] = NULLCHR;
+	_string 		= _alloc_string(capacity);
+	_size 			= 0;
+	_capacity 		= capacity;
+	_string[_size] 	= NULLCHR;
 }
 
 void String::_initialize_from_cstring(const char* cstring) {
@@ -734,25 +734,25 @@ void String::_copy(const String& other) {
 
 	_alloc_empty(other._capacity);
 	memcpy(_string, other._string, other._size);
-	_size = other._size;
-	_capacity = other._capacity;
-	_string[_size] = NULLCHR;
+	_size 			= other._size;
+	_capacity 		= other._capacity;
+	_string[_size] 	= NULLCHR;
 }
 
 void String::_move(String&& other) {
 	if (_string != nullptr)
 		_dealloc_string(_string, _capacity);
 
-	_string = other._string;
-	_size = other._size;
-	_capacity = other._capacity;
+	_string 	= other._string;
+	_size 		= other._size;
+	_capacity 	= other._capacity;
 
 	other._initialize_from_cstring(nullptr);
 }
 
 typename String::Data* String::_update_iteration_data() const {
-	_data._Begin = _string;
-	_data._End = _string + _size;
+	_data._Begin 	= _string;
+	_data._End 		= _string + _size;
 
 	return &_data;
 }

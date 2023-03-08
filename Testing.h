@@ -124,8 +124,9 @@ void list_test() {
 	list.emplace_front(4);
 
 	list1 = custom::move(list);
+	list = custom::move(list1);
 
-	for (auto it = list1.begin(); it != list1.end(); ++it)
+	for (auto it = list.begin(); it != list.end(); ++it)
 		std::cout << *it << '\n';
 }
 

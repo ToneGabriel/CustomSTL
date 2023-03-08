@@ -348,10 +348,10 @@ void Deque<Type>::reserve(const size_t& newCapacity) {		// TODO: check
 	}
 
 	_clean_up_array();
-	_array = newArray;
-	_capacity = newCapacity;
-	_front = 0;
-	_back = (_size == 0) ? 0 : _size - 1;	// TODO: check modulo variant
+	_array 		= newArray;
+	_capacity 	= newCapacity;
+	_front 		= 0;
+	_back 		= (_size == 0) ? 0 : _size - 1;	// TODO: check modulo variant
 }
 
 template<class Type>
@@ -363,12 +363,12 @@ template<class Type>
 void Deque<Type>::realloc(const size_t& newCapacity) {
 	_clean_up_array();
 
-	_capacity = newCapacity;
-	_size = _capacity;
-	_front = 0;
-	_back = (_size == 0) ? 0 : _size - 1;
+	_capacity 	= newCapacity;
+	_size 		= _capacity;
+	_front 		= 0;
+	_back 		= (_size == 0) ? 0 : _size - 1;
 
-	_array = _alloc_array(_capacity);
+	_array 		= _alloc_array(_capacity);
 	_alloc.construct_range(_array, _capacity);
 }
 
@@ -376,12 +376,12 @@ template<class Type>
 void Deque<Type>::realloc(const size_t& newCapacity, const ValueType& copyValue) {
 	_clean_up_array();
 
-	_capacity = newCapacity;
-	_size = _capacity;
-	_front = 0;
-	_back = (_size == 0) ? 0 : _size - 1;
+	_capacity 	= newCapacity;
+	_size 		= _capacity;
+	_front 		= 0;
+	_back 		= (_size == 0) ? 0 : _size - 1;
 
-	_array = _alloc.alloc(_capacity);
+	_array 		= _alloc.alloc(_capacity);
 	_alloc.construct_range(_array, _capacity, copyValue);
 }
 
@@ -532,9 +532,9 @@ const size_t Deque<Type>::size() const {
 template<class Type>
 void Deque<Type>::clear() {
 	_destroy_array();
-	_size = 0;
-	_front = 0;
-	_back = 0;
+	_size 	= 0;
+	_front 	= 0;
+	_back 	= 0;
 }
 
 template<class Type>
@@ -721,10 +721,10 @@ void Deque<Type>::_clean_up_array()
 
 template<class Type>
 typename Deque<Type>::Data* Deque<Type>::_update_iteration_data() const {
-	_data._Begin = _array + _front;
-	_data._End = _array + circular_increment(_front, _capacity, _size);
-	_data._Base = _array;
-	_data._Size = _size;
+	_data._Begin 	= _array + _front;
+	_data._End 		= _array + circular_increment(_front, _capacity, _size);
+	_data._Base 	= _array;
+	_data._Size 	= _size;
 	_data._Capacity = _capacity;
 
 	return &_data;

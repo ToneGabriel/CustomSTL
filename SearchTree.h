@@ -4,7 +4,6 @@
 #include "Utility.h"
 
 #include <iostream>
-#include <cmath>		// std::ceil
 #include <functional>	// std::less
 
 
@@ -291,14 +290,12 @@ SearchTree<Traits>::SearchTree() {
 }
 
 template<class Traits>
-SearchTree<Traits>::SearchTree(const SearchTree& other) {
-	_create_head();
+SearchTree<Traits>::SearchTree(const SearchTree& other) : SearchTree() {
 	_copy(other);
 }
 
 template<class Traits>
-SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept {
-	// Don't call _create_head here. Will copy the other._head
+SearchTree<Traits>::SearchTree(SearchTree&& other) noexcept : SearchTree() {
 	_move(custom::move(other));
 }
 
@@ -312,7 +309,7 @@ template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(const SearchTree& other) {
 	if (_head != other._head)
 	{
-		_destroy_all(_head->_Parent);
+		clear();
 		_copy(other);
 	}
 
@@ -323,8 +320,7 @@ template<class Traits>
 SearchTree<Traits>& SearchTree<Traits>::operator=(SearchTree&& other) noexcept {
 	if (_head != other._head)
 	{
-		_destroy_all(_head->_Parent);
-		_free_head();
+		clear();
 		_move(custom::move(other));
 	}
 
@@ -910,12 +906,12 @@ void SearchTree<Traits>::_copy(const SearchTree& other) {
 
 template<class Traits>
 void SearchTree<Traits>::_move(SearchTree&& other) {	// Current _head is free of memory
-	_head = other._head;
-	_size = other._size;
-	_update_iteration_data();
+	std::swap(_head, other._head);
 
-	other._create_head();
+	_size = other._size;
 	other._size = 0;
+
+	_update_iteration_data();
 	other._update_iteration_data();
 }
 

@@ -254,20 +254,17 @@ List<Type>::List() {
 }
 
 template<class Type>
-List<Type>::List(const size_t& newSize, const ValueType& value) {
-	_create_head();
+List<Type>::List(const size_t& newSize, const ValueType& value) : List() {
 	_create_until_size(newSize, value);
 }
 
 template<class Type>
-List<Type>::List(const List& other) {
-	_create_head();
+List<Type>::List(const List& other) : List() {
 	_copy(other);
 }
 
 template<class Type>
-List<Type>::List(List&& other) noexcept {
-	// Don't call _create_head here. Will copy the other._head
+List<Type>::List(List&& other) noexcept : List() {
 	_move(custom::move(other));
 }
 
@@ -418,7 +415,6 @@ List<Type>& List<Type>::operator=(List&& other) noexcept {
 	if (_head != other._head)
 	{
 		clear();
-		_free_head();
 		_move(custom::move(other));
 	}
 
@@ -532,12 +528,12 @@ void List<Type>::_copy(const List& other) {
 
 template<class Type>
 void List<Type>::_move(List&& other) {	// Current _head is free of memory
-	_head = other._head;
-	_size = other._size;
-	_update_iteration_data();
+	std::swap(_head, other._head);
 
-	other._create_head();
+	_size = other._size;
 	other._size = 0;
+
+	_update_iteration_data();
 	other._update_iteration_data();
 }
 
@@ -570,8 +566,8 @@ typename List<Type>::Node* List<Type>::_scroll_node(const size_t& index) const {
 
 template<class Type>
 typename List<Type>::Data* List<Type>::_update_iteration_data() const {
-	_data._Begin = _head->_Next;
-	_data._End = _head;
+	_data._Begin 	= _head->_Next;
+	_data._End 		= _head;
 
 	return &_data;
 }

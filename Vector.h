@@ -556,9 +556,9 @@ void Vector<Type>::_move(Vector&& other) {
 	_size 		= other._size;
 	_capacity 	= other._capacity;
 
+	other._array 	= nullptr;
 	other._size 	= 0;
 	other._capacity = 0;
-	other._array 	= nullptr;
 }
 
 template<class Type>

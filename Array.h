@@ -402,8 +402,8 @@ void Array<Type, Size>::_move(Array&& other) {
 
 template<class Type, size_t Size>
 void Array<Type, Size>::_update_iteration_data() const {
-	_data._Begin = const_cast<ValueType*>(&_array[0]);
-	_data._End = const_cast<ValueType*>(&_array[Size]);
+	_data._Begin 	= const_cast<ValueType*>(&_array[0]);
+	_data._End 		= const_cast<ValueType*>(&_array[Size]);
 }
 // END Array Template
 
