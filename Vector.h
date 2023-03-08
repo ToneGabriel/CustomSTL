@@ -116,6 +116,10 @@ public:
 
 	const ValueType& at(const size_t& index) const;								// Acces object at index with check (read only)
 	ValueType& at(const size_t& index);											// Acces object at index with check
+	const ValueType& front() const;
+	ValueType& front();                                                     	// Get the value of the first component
+	const ValueType& back() const;
+	ValueType& back();                                                      	// Get the value of the last component
 
 public:
 	// Operators
@@ -467,6 +471,26 @@ typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) {
 		throw std::out_of_range("Invalid Index...");
 
 	return _array[index];
+}
+
+template<class Type>
+const typename Vector<Type>::ValueType& Vector<Type>::front() const {
+	return *begin();
+}
+
+template<class Type>
+typename Vector<Type>::ValueType& Vector<Type>::front() {
+	return *begin();
+}
+
+template<class Type>
+const typename Vector<Type>::ValueType& Vector<Type>::back() const {
+	return *(end() - 1);
+}
+
+template<class Type>
+typename Vector<Type>::ValueType& Vector<Type>::back() {
+	return *(end() - 1);
 }
 
 template<class Type>

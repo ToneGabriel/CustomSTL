@@ -263,3 +263,14 @@ void queue_test() {
 }
 
 TEST_END
+
+
+
+STD_BEGIN
+template<>
+struct less<test::Test> {
+	bool operator()(const test::Test& left, const test::Test& right) const {
+		return left.value < right.value;
+	}
+};
+STD_END
