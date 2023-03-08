@@ -23,7 +23,7 @@ protected:
 	using IterList			= List<typename Traits::ValueType>;		// List of ValueType used for iterating
 	using Node				= typename IterList::Node;				// Node component from List
 	using Bucket			= List<Node*>;							// List of Node* (as _Value) from Iteration list
-	using HashArray			= Vector<Bucket>;						// Array of lists of Node*
+	using HashArray			= Vector<Bucket>;						// Vector of lists of Node*
 	using BucketIterator	= typename Bucket::Iterator;			// Iterator for Buckets
 
 public:
@@ -33,7 +33,7 @@ public:
 protected:
 	Hasher _hash;													// Used for initial(non-compressed) hash value
 	IterList _elems;												// Used to iterate through container
-	HashArray _buckets;												// Used to map IterList values
+	HashArray _buckets;												// Used to map elems from IterList
 
 	static constexpr float table_load_factor	= 0.75;				// The maximum load factor admitted before rehashing
 	static constexpr size_t default_buckets		= 8;				// Default number of buckets
@@ -45,7 +45,7 @@ protected:
 	HashTable(const size_t& buckets);
 	HashTable(const HashTable& other);
 	HashTable(HashTable&& other) noexcept;
-	virtual ~HashTable();
+	virtual ~HashTable() = default;
 
 protected:
 	// Operators
@@ -123,21 +123,12 @@ HashTable<Traits>::HashTable(const size_t& buckets) {
 }
 
 template<class Traits>
-HashTable<Traits>::HashTable(const HashTable& other) {
-	_elems = other._elems;
-	_force_rehash(other.bucket_count());
-}
+HashTable<Traits>::HashTable(const HashTable& other) 
+	: _elems(other._elems), _buckets(other._buckets) { /*Empty*/ }
 
 template<class Traits>
-HashTable<Traits>::HashTable(HashTable&& other) noexcept {
-	_elems = custom::move(other._elems);
-	_force_rehash(other.bucket_count());
-}
-
-template<class Traits>
-HashTable<Traits>::~HashTable() {
-	clear();
-}
+HashTable<Traits>::HashTable(HashTable&& other) noexcept 
+	: _elems(custom::move(other._elems)), _buckets(custom::move(other._buckets)) { /*Empty*/ }
 
 template<class Traits>
 HashTable<Traits>& HashTable<Traits>::operator=(const HashTable& other) {

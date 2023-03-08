@@ -42,7 +42,7 @@ public:
 	UnorderedSet(const size_t& buckets);
 	UnorderedSet(const UnorderedSet& other);
 	UnorderedSet(UnorderedSet&& other) noexcept;
-	~UnorderedSet();
+	~UnorderedSet() = default;
 	
 public:
 	// Operators
@@ -86,9 +86,6 @@ UnorderedSet<Key, Hasher>::UnorderedSet(const UnorderedSet& other)
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>::UnorderedSet(UnorderedSet&& other) noexcept
 	:Base(custom::move(other)) { /*Empty*/ }
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>::~UnorderedSet() { /*Empty*/ }
 
 template<class Key, class Hasher>
 UnorderedSet<Key, Hasher>& UnorderedSet<Key, Hasher>::operator=(const UnorderedSet& other) {

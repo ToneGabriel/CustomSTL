@@ -133,14 +133,12 @@ void Queue<Type>::clear() {
 template<class Type>
 Queue<Type>& Queue<Type>::operator=(const Queue& other) {
 	_baseContainer = other._baseContainer;
-
 	return *this;
 }
 
 template<class Type>
 Queue<Type>& Queue<Type>::operator=(Queue&& other) noexcept {
 	_baseContainer = custom::move(other._baseContainer);
-
 	return *this;
 }
 

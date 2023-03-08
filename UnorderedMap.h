@@ -42,7 +42,7 @@ public:
 	UnorderedMap(const size_t& buckets);
 	UnorderedMap(const UnorderedMap& other);
 	UnorderedMap(UnorderedMap&& other) noexcept;
-	~UnorderedMap();
+	~UnorderedMap() = default;
 
 public:
 	// Operators
@@ -99,9 +99,6 @@ UnorderedMap<Key, Type, Hasher>::UnorderedMap(const UnorderedMap& other)
 template<class Key, class Type, class Hasher>
 UnorderedMap<Key, Type, Hasher>::UnorderedMap(UnorderedMap&& other) noexcept
 	:Base(custom::move(other)) { /*Empty*/ }
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>::~UnorderedMap() { /*Empty*/ }
 
 template<class Key, class Type, class Hasher>
 typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](const Key& key) {
