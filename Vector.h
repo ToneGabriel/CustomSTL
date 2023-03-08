@@ -475,22 +475,26 @@ typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) {
 
 template<class Type>
 const typename Vector<Type>::ValueType& Vector<Type>::front() const {
-	return *begin();
+	assert(_size > 0);
+	return _array[0];
 }
 
 template<class Type>
 typename Vector<Type>::ValueType& Vector<Type>::front() {
-	return *begin();
+	assert(_size > 0);
+	return _array[0];
 }
 
 template<class Type>
 const typename Vector<Type>::ValueType& Vector<Type>::back() const {
-	return *(end() - 1);
+	assert(_size > 0);
+	return _array[_size - 1];
 }
 
 template<class Type>
 typename Vector<Type>::ValueType& Vector<Type>::back() {
-	return *(end() - 1);
+	assert(_size > 0);
+	return _array[_size - 1];
 }
 
 template<class Type>
