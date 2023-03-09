@@ -280,19 +280,17 @@ bool PriorityQueue<Type, Compare>::operator!=(const PriorityQueue& other) const 
 
 template<class Type, class Compare>
 void PriorityQueue<Type, Compare>::_heap_push() {	// TODO: implement
-	size_t i = _baseContainer.size() - 1;
-	size_t parent;
+	if (_baseContainer.size() == 0)
+		return;
 
-	while (i > 0)
+	size_t i 		= _baseContainer.size() - 1;
+	size_t parent 	= static_cast<size_t>(i/2);  
+
+	while (i > 0 && _less(_baseContainer[parent], _baseContainer[i]))
 	{
-		parent = std::floor(i/2);
-		if (_baseContainer[parent] < _baseContainer[i])
-		{
-			std::swap(_baseContainer[parent], _baseContainer[i]);
-			i = parent;
-		}
-		else
-			return;
+		std::swap(_baseContainer[parent], _baseContainer[i]);
+		i = parent;
+		parent = static_cast<size_t>(i/2);
 	}
 }
 
