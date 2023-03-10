@@ -57,7 +57,7 @@ public:
 
 
 template<class Type, class Compare = std::less<Type>>
-class PriorityQueue		// Priority Queue Template implemented as array heap (probably)
+class PriorityQueue		// Priority Queue Template implemented as array heap
 {
 public:
 	using ValueType 	= Type;									// Type for stored values
@@ -84,12 +84,12 @@ public:
 	void push(ValueType&& moveValue);
 	void pop();												// Remove first elem from queue
 
-	ValueType& front();
 	const ValueType& front() const;
-
 	const size_t size() const;								// Get size
-	bool empty() const;										// Check if list is empty
+	bool empty() const;										// Check if container is empty
 	void clear();											// Remove ALL components
+
+	void print_details();
 
 public:
 	// Operators
@@ -102,8 +102,8 @@ public:
 
 private:
 	// Helpers
-	void _heap_push();
-	void _heap_pop();
+	void _heap_push_adjust();								// Adjust from last elem
+	void _heap_pop_adjust();								// Adjust from first elem
 }; // END PriorityQueue Template
 
 
@@ -212,7 +212,7 @@ template<class Type, class Compare>
 template<class... Args>
 void PriorityQueue<Type, Compare>::emplace(Args&&... args) {
 	_baseContainer.emplace_back(custom::forward<Args>(args)...);
-	_heap_push();
+	_heap_push_adjust();
 }
 
 template<class Type, class Compare>
@@ -227,13 +227,12 @@ void PriorityQueue<Type, Compare>::push(ValueType&& moveValue) {
 
 template<class Type, class Compare>
 void PriorityQueue<Type, Compare>::pop() {
-	_heap_pop();
-	_baseContainer.pop_back();
-}
-
-template<class Type, class Compare>
-typename PriorityQueue<Type, Compare>::ValueType& PriorityQueue<Type, Compare>::front() {
-	return _baseContainer.front();
+	if (_baseContainer.size() > 0)
+	{
+		std::swap(_baseContainer[0], _baseContainer[_baseContainer.size() - 1]);
+		_baseContainer.pop_back();
+		_heap_pop_adjust();
+	}
 }
 
 template<class Type, class Compare>
@@ -254,6 +253,13 @@ bool PriorityQueue<Type, Compare>::empty() const {
 template<class Type, class Compare>
 void PriorityQueue<Type, Compare>::clear() {
 	return _baseContainer.clear();
+}
+
+template<class Type, class Compare>
+void PriorityQueue<Type, Compare>::print_details() {
+	for(auto& val : _baseContainer)
+		std::cout << val << ' ';
+	std::cout << '\n';
 }
 
 template<class Type, class Compare>
@@ -279,24 +285,48 @@ bool PriorityQueue<Type, Compare>::operator!=(const PriorityQueue& other) const 
 }
 
 template<class Type, class Compare>
-void PriorityQueue<Type, Compare>::_heap_push() {	// TODO: implement
+void PriorityQueue<Type, Compare>::_heap_push_adjust() {	// TODO: implement
 	if (_baseContainer.size() == 0)
 		return;
 
 	size_t i 		= _baseContainer.size() - 1;
-	size_t parent 	= static_cast<size_t>(i/2);  
+	size_t parent 	= static_cast<size_t>((i+1)/2) - 1;
 
 	while (i > 0 && _less(_baseContainer[parent], _baseContainer[i]))
 	{
 		std::swap(_baseContainer[parent], _baseContainer[i]);
 		i = parent;
-		parent = static_cast<size_t>(i/2);
+		parent 	= static_cast<size_t>((i+1)/2) - 1;
 	}
 }
 
 template<class Type, class Compare>
-void PriorityQueue<Type, Compare>::_heap_pop() {	// TODO: implement
-	
+void PriorityQueue<Type, Compare>::_heap_pop_adjust() {	// TODO: implement
+	if (_baseContainer.size() == 0)
+		return;
+
+	size_t i 			= 0;
+	size_t leftChild 	= (i+1)*2 - 1;
+	size_t rightChild 	= leftChild + 1;
+	size_t maxChild;
+
+	while (i < _baseContainer.size())
+	{
+		if (_baseContainer[leftChild] > _baseContainer[rightChild])
+			maxChild = leftChild;
+		else
+			maxChild = rightChild;
+
+		if (_baseContainer[i] < _baseContainer[maxChild])
+		{
+			std::swap(_baseContainer[i], _baseContainer[maxChild]);
+			i = maxChild;
+			leftChild 	= (i+1)*2 - 1;
+			rightChild 	= leftChild + 1;
+		}
+		else
+			return;
+	}
 }
 // END PriorityQueue Template
 

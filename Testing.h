@@ -262,6 +262,28 @@ void queue_test() {
 	q1 = q;
 }
 
+void priority_queue_test() {
+	custom::PriorityQueue<int> pq;
+
+	pq.emplace(0);
+	pq.emplace(5);
+	pq.emplace(1);
+	pq.emplace(45);
+	pq.emplace(101);
+	pq.emplace(56);
+	pq.emplace(12);
+	pq.emplace(7);
+	pq.emplace(11);
+
+	while(!pq.empty())
+	{
+		std::cout << pq.front() << ' ';
+		pq.pop();
+	}
+
+	//pq.print_details();
+}
+
 TEST_END
 
 
