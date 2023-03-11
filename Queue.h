@@ -102,8 +102,10 @@ public:
 
 private:
 	// Helpers
+	void _print_graph(const size_t& ident, const size_t& index, const custom::String& rlFlag) const;
 	void _heap_push_adjust();								// Adjust from last elem
 	void _heap_pop_adjust();								// Adjust from first elem
+	size_t _heap_get_max_child(const size_t& index);
 }; // END PriorityQueue Template
 
 
@@ -256,10 +258,9 @@ void PriorityQueue<Type, Compare>::clear() {
 }
 
 template<class Type, class Compare>
-void PriorityQueue<Type, Compare>::print_details() {
-	for(auto& val : _baseContainer)
-		std::cout << val << ' ';
-	std::cout << '\n';
+void PriorityQueue<Type, Compare>::print_details() {	
+	std::cout << "Size= " << size() << '\n';
+	_print_graph(0, 0, "HEAD");
 }
 
 template<class Type, class Compare>
@@ -285,48 +286,73 @@ bool PriorityQueue<Type, Compare>::operator!=(const PriorityQueue& other) const 
 }
 
 template<class Type, class Compare>
-void PriorityQueue<Type, Compare>::_heap_push_adjust() {	// TODO: implement
-	if (_baseContainer.size() == 0)
+void PriorityQueue<Type, Compare>::_heap_push_adjust() {
+	if (size() == 0)
 		return;
 
-	size_t i 		= _baseContainer.size() - 1;
-	size_t parent 	= static_cast<size_t>((i+1)/2) - 1;
+	size_t index	= size() - 1;
+	size_t parent	= static_cast<size_t>((index + 1) / 2) - 1;
 
-	while (i > 0 && _less(_baseContainer[parent], _baseContainer[i]))
+	while (index > 0 && _less(_baseContainer[parent], _baseContainer[index]))
 	{
-		std::swap(_baseContainer[parent], _baseContainer[i]);
-		i = parent;
-		parent 	= static_cast<size_t>((i+1)/2) - 1;
+		std::swap(_baseContainer[parent], _baseContainer[index]);
+		index	= parent;
+		parent	= static_cast<size_t>((index + 1) / 2) - 1;
 	}
 }
 
 template<class Type, class Compare>
-void PriorityQueue<Type, Compare>::_heap_pop_adjust() {	// TODO: implement
-	if (_baseContainer.size() == 0)
+void PriorityQueue<Type, Compare>::_heap_pop_adjust() {
+	if (size() == 0)
 		return;
 
-	size_t i 			= 0;
-	size_t leftChild 	= (i+1)*2 - 1;
-	size_t rightChild 	= leftChild + 1;
+	size_t index = 0;
 	size_t maxChild;
 
-	while (i < _baseContainer.size())
+	while (index < size())
 	{
-		if (_baseContainer[leftChild] > _baseContainer[rightChild])
-			maxChild = leftChild;
-		else
-			maxChild = rightChild;
+		maxChild = _heap_get_max_child(index);
 
-		if (_baseContainer[i] < _baseContainer[maxChild])
+		if (_less(_baseContainer[index], _baseContainer[maxChild]))
 		{
-			std::swap(_baseContainer[i], _baseContainer[maxChild]);
-			i = maxChild;
-			leftChild 	= (i+1)*2 - 1;
-			rightChild 	= leftChild + 1;
+			std::swap(_baseContainer[index], _baseContainer[maxChild]);
+			index = maxChild;
 		}
 		else
 			return;
 	}
+}
+
+template<class Type, class Compare>
+size_t PriorityQueue<Type, Compare>::_heap_get_max_child(const size_t& index) {
+	size_t leftChild	= (index + 1) * 2 - 1;
+	size_t rightChild	= leftChild + 1;
+
+	if (leftChild + rightChild >= 2 * size())								// no child exists
+		return index;
+	else if (leftChild < size() && rightChild >= size())					// just left exists
+		return leftChild;
+	else if (rightChild < size() && leftChild >= size())					// just right exists
+		return rightChild;
+	else if (_less(_baseContainer[rightChild], _baseContainer[leftChild]))	// compare values
+		return leftChild;
+	else
+		return rightChild;
+}
+
+template<class Type, class Compare>
+void PriorityQueue<Type, Compare>::_print_graph(const size_t& ident, const size_t& index, const custom::String& rlFlag) const {
+	custom::String str;
+	str.append(ident, '\t');
+
+	if (index < size())
+		std::cout << str << _baseContainer[index] << ' ' << rlFlag << '\n';
+
+	if ((index + 1) * 2 - 1 < size())
+		_print_graph(ident + 1, (index + 1) * 2 - 1, "LEFT");
+
+	if ((index + 1) * 2 < size())
+		_print_graph(ident + 1, (index + 1) * 2, "RIGHT");
 }
 // END PriorityQueue Template
 

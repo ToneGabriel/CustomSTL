@@ -275,13 +275,13 @@ void priority_queue_test() {
 	pq.emplace(7);
 	pq.emplace(11);
 
-	while(!pq.empty())
+	pq.print_details();
+
+	while (!pq.empty())
 	{
-		std::cout << pq.front() << ' ';
+		std::cout << pq.front() << '\n';
 		pq.pop();
 	}
-
-	//pq.print_details();
 }
 
 TEST_END
