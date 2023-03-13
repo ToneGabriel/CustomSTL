@@ -1,5 +1,3 @@
-1. Change List at() from iterator to value
-2. Deque resize implement
+1. Deque resize implement
    Deque check destroy array (back+1)
-3. SearchTree erase elem
-4. PriorityQueue as vector???
+2. SearchTree erase elem

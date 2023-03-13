@@ -111,7 +111,9 @@ public:
 	const ValueType& front() const;
 	ValueType& back();                                                      // Get the value of the last component
 	const ValueType& back() const;
-	
+	ValueType& at(const size_t& index);
+	const ValueType& at(const size_t& index) const;
+
 	const size_t size() const;                                              // Get size
 	bool empty() const;                                                     // Check if list is empty
 	void clear();                                                           // Remove ALL components
@@ -133,9 +135,6 @@ public:
 
 	Iterator end();
 	const Iterator end() const;
-
-	const Iterator at(const size_t& index) const;
-	Iterator at(const size_t& index);
 
 private:
 	// Others
@@ -385,6 +384,22 @@ const typename List<Type>::ValueType& List<Type>::back() const {
 }
 
 template<class Type>
+const typename List<Type>::ValueType& List<Type>::at(const size_t& index) const {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _scroll_node(index)->_Value;
+}
+
+template<class Type>
+typename List<Type>::ValueType& List<Type>::at(const size_t& index) {
+	if (index < 0 || index >= _size)
+		throw std::out_of_range("Invalid Index...");
+
+	return _scroll_node(index)->_Value;
+}
+
+template<class Type>
 const size_t List<Type>::size() const {
 	return _size;
 }
@@ -463,22 +478,6 @@ typename List<Type>::Iterator List<Type>::end() {
 template<class Type>
 const typename List<Type>::Iterator List<Type>::end() const {
 	return Iterator(_head, _update_iteration_data());
-}
-
-template<class Type>
-const typename List<Type>::Iterator List<Type>::at(const size_t& index) const {
-	if (index < 0 || index >= _size)
-		throw std::out_of_range("Invalid Index...");
-
-	return Iterator(_scroll_node(index), _update_iteration_data());
-}
-
-template<class Type>
-typename List<Type>::Iterator List<Type>::at(const size_t& index) {
-	if (index < 0 || index >= _size)
-		throw std::out_of_range("Invalid Index...");
-
-	return Iterator(_scroll_node(index), _update_iteration_data());
 }
 
 template<class Type>
