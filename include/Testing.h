@@ -8,6 +8,7 @@
 #include "Deque.h"
 #include "List.h"
 #include "Queue.h"
+#include "Stack.h"
 #include "UnorderedMap.h"
 #include "UnorderedSet.h"
 #include "Map.h"
@@ -20,6 +21,7 @@
 #include <deque>
 #include <list>
 #include <queue>
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 #include <map>
@@ -281,6 +283,21 @@ void priority_queue_test() {
 	{
 		std::cout << pq.front() << '\n';
 		pq.pop();
+	}
+}
+
+void stack_test() {
+	custom::Stack<int> s;
+
+	s.push(0);
+	s.push(3);
+	s.push(1);
+	s.push(2);
+
+	while (!s.empty())
+	{
+		std::cout << s.top() << '\n';
+		s.pop();
 	}
 }
 
