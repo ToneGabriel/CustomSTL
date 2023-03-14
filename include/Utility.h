@@ -67,4 +67,61 @@ constexpr Ty&& forward(typename RemoveReference<Ty>::Type&& val) noexcept {
     return static_cast<Ty&&>(val);
 }
 
+template<class Iterator>
+class ReverseIterator {
+public:
+    using BaseIterator  = Iterator;
+    using ValueType     = BaseIterator::ValueType;
+    using IterType      = BaseIterator::IterType;
+
+    BaseIterator _Base;
+
+public:
+
+    explicit ReverseIterator(const Iterator& base)
+        : _Base(base) { /*Empty*/ }
+
+    ~ReverseIterator() = default;
+
+    ReverseIterator& operator++() {
+        --_Base;
+        return *this;
+    }
+
+    ReverseIterator operator++(int) {
+        ReverseIterator temp = *this;
+        --_Base;
+        return temp;
+    }
+
+    ReverseIterator& operator--() {
+        ++_Base;
+        return *this;
+    }
+
+    ReverseIterator operator--(int) {
+        ReverseIterator temp = *this;
+        ++_Base;
+        return temp;
+    }
+
+    IterType* operator->() {
+        BaseIterator temp = _Base;
+        return (--temp).operator->();
+    }
+
+    ValueType& operator*() {
+        BaseIterator temp = _Base;
+        return *(--temp);
+    }
+
+    bool operator==(const SearchTreeIterator& other) const {
+
+    }
+
+    bool operator!=(const SearchTreeIterator& other) const {
+
+    }
+};
+
 CUSTOM_END
