@@ -13,7 +13,10 @@ struct VectorIterationData {		// Data used for iterating Vector
 	Type* _End		= nullptr;
 
 	VectorIterationData() = default;
-	~VectorIterationData();
+	~VectorIterationData() {
+		_Begin	= nullptr;
+		_End	= nullptr;
+	}
 };
 
 template<class Vector>
@@ -29,32 +32,107 @@ public:
 
 public:
 
-	explicit VectorIterator(IterType* ptr, Data* data);
-	~VectorIterator();
+	explicit VectorIterator(IterType* ptr, Data* data)
+		:_Ptr(ptr), _Data(data) { /*Empty*/ }
+
+	~VectorIterator() {
+		_Ptr	= nullptr;
+		_Data	= nullptr;
+	}
 
 public:
 
-	VectorIterator& operator++();							// ++it
-	VectorIterator operator++(int);							// it++
-	VectorIterator& operator+=(const size_t& diff);
-	VectorIterator operator+(const size_t& diff) const;
+	VectorIterator& operator++() {
+		if (_Ptr >= _Data->_End)
+			throw std::out_of_range("Cannot increment end iterator...");
 
-	VectorIterator& operator--();							// --it
-	VectorIterator operator--(int);							// it--
-	VectorIterator& operator-=(const size_t& diff);
-	VectorIterator operator-(const size_t& diff) const;
+		++_Ptr;
+		return *this;
+	}
 
-	IterType* operator->();
-	ValueType& operator*();
+	VectorIterator operator++(int) {
+		VectorIterator temp = *this;
+		++(*this);
+		return temp;
+	}
 
-	bool operator==(const VectorIterator& other) const;
-	bool operator!=(const VectorIterator& other) const;
+	VectorIterator& operator+=(const size_t& diff) {
+		if (_Ptr + diff >= _Data->_End)
+			throw std::out_of_range("Cannot increment end iterator...");
+
+		_Ptr += diff;
+		return *this;
+	}
+
+	VectorIterator operator+(const size_t& diff) const {
+		VectorIterator temp = *this;
+		temp += diff;
+		return temp;
+	}
+
+	VectorIterator& operator--() {
+		if (_Ptr <= _Data->_Begin)
+			throw std::out_of_range("Cannot decrement begin iterator...");
+
+		--_Ptr;
+		return *this;
+	}
+
+	VectorIterator operator--(int) {
+		VectorIterator temp = *this;
+		--(*this);
+		return temp;
+	}
+
+	VectorIterator& operator-=(const size_t& diff) {
+		if (_Ptr - diff <= _Data->_Begin)
+			throw std::out_of_range("Cannot decrement begin iterator...");
+
+		_Ptr -= diff;
+		return *this;
+	}
+
+	VectorIterator operator-(const size_t& diff) const {
+		VectorIterator temp = *this;
+		temp -= diff;
+		return temp;
+	}
+
+	IterType* operator->() {
+		if (_Ptr >= _Data->_End)
+			throw std::out_of_range("Cannot access end iterator...");
+
+		return _Ptr;
+	}
+
+	ValueType& operator*() {
+		if (_Ptr >= _Data->_End)
+			throw std::out_of_range("Cannot dereference end iterator...");
+
+		return *_Ptr;
+	}
+
+	bool operator==(const VectorIterator& other) const {
+		return _Ptr == other._Ptr;
+	}
+
+	bool operator!=(const VectorIterator& other) const {
+		return !(*this == other);
+	}
 
 public:
 
-	const size_t get_index() const;							// Get the position for the element in array from iterator
-	const bool is_begin() const;
-	const bool is_end() const;
+	const size_t get_index() const {						// Get the position for the element in array from iterator
+		return static_cast<size_t>(_Ptr - _Data->_Begin);
+	}
+
+	const bool is_begin() const {
+		return _Ptr == _Data->_Begin;
+	}
+
+	const bool is_end() const {
+		return _Ptr == _Data->_End;
+	}
 }; // END Vector Iterator
 
 
@@ -62,556 +140,339 @@ template<class Type>
 class Vector			// Vector Template
 {
 public:
-	using ValueType = Type;											// Type for stored values
-	using IterType	= ValueType;									// Type for iteration (same as value)
-	using Alloc		= Allocator<ValueType>;							// Allocator type
-	using Iterator	= VectorIterator<Vector<ValueType>>;			// Iterator type
-	using Data		= typename Iterator::Data;						// Iteration data
+	using ValueType 		= Type;									// Type for stored values
+	using IterType			= ValueType;							// Type for iteration (same as value)
+	using Alloc				= Allocator<ValueType>;					// Allocator type
+	using Iterator			= VectorIterator<Vector<ValueType>>;	// Iterator type
+	using Data				= typename Iterator::Data;				// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
 
 private:
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
 	ValueType* _array	= nullptr;									// Actual container array
-
+	Alloc _alloc;													// Allocator
 	mutable Data _data;
-	mutable Alloc _alloc;											// Allocator
 
 	static constexpr size_t default_capacity = 8;
 
 public:
 	// Constructors
 
-	Vector();														// Default Constructor
-	Vector(const size_t& newCapacity, const ValueType& copyValue);	// Add multiple copies Constructor
-	Vector(const Vector& other);									// Copy Constructor
-	Vector(Vector&& other) noexcept;								// Move Constructor
-	~Vector();														// Destructor
+	Vector() {														// Default Constructor
+		reserve(default_capacity);
+	}
+
+	Vector(const size_t& newCapacity, const ValueType& copyValue) {	// Add multiple copies Constructor
+		realloc(newCapacity, copyValue);
+	}
+
+	Vector(const Vector& other) {									// Copy Constructor
+		_copy(other);
+	}
+
+	Vector(Vector&& other) noexcept {								// Move Constructor
+		_move(custom::move(other));
+	}
+
+	~Vector() {														// Destructor
+		_clean_up_array();
+	}
 
 public:
 	// Main functions
 
-	void reserve(const size_t& newCapacity);									// Allocate memory and move values if needed
-	void shrink_to_fit();														// Allocate memory with capacity equal to size and move values there
-	void realloc(const size_t& newCapacity);									// Allocate memory and populate it with default values (delete old)
-	void realloc(const size_t& newCapacity, const ValueType& copyValue);		// Allocate memory and populate it with given reference (delete old)
-	void resize(const size_t& newSize);											// Change size and Construct/Destruct objects with default value if needed
-	void resize(const size_t& newSize, const ValueType& copyValue);				// Change size and Construct/Destruct objects with given reference if needed
+	void reserve(const size_t& newCapacity) {									// Allocate memory and move values if needed
+		if (newCapacity < _size)
+			_size = newCapacity;
+
+		ValueType* newArray = _alloc.alloc(newCapacity);
+		for (size_t i = 0; i < _size; ++i)
+			_alloc.construct(&newArray[i], custom::move(_array[i]));
+
+		_clean_up_array();
+		_array = newArray;
+		_capacity = newCapacity;
+	}
+
+	void shrink_to_fit() {														// Allocate memory with capacity equal to size and move values there
+		reserve(_size);
+	}
+
+	void realloc(const size_t& newCapacity) {									// Allocate memory and populate it with default values (delete old)
+		_clean_up_array();
+
+		_capacity = newCapacity;
+		_size = _capacity;
+
+		_array = _alloc.alloc(_capacity);
+		_alloc.construct_range(_array, _capacity);
+	}
+
+	void realloc(const size_t& newCapacity, const ValueType& copyValue) {		// Allocate memory and populate it with given reference (delete old)
+		_clean_up_array();
+
+		_capacity = newCapacity;
+		_size = _capacity;
+
+		_array = _alloc.alloc(_capacity);
+		_alloc.construct_range(_array, _capacity, copyValue);
+	}
+	
+	void resize(const size_t& newSize) {										// Change size and Construct/Destruct objects with default value if needed
+		if (newSize < _size)
+			_alloc.destroy_range(&_array[newSize], _size - newSize);
+		else {
+			if (newSize > _capacity)
+				reserve(newSize);
+
+			_alloc.construct_range(&_array[_size], newSize - _size);
+		}
+
+		_size = newSize;
+	}
+
+	void resize(const size_t& newSize, const ValueType& copyValue) {			// Change size and Construct/Destruct objects with given reference if needed
+		if (newSize < _size)
+			_alloc.destroy_range(&_array[newSize], _size - newSize);
+		else {
+			if (newSize > _capacity)
+				reserve(newSize);
+
+			_alloc.construct_range(&_array[_size], newSize - _size, copyValue);
+		}
+
+		_size = newSize;
+	}
 
 	template<class... Args>
-	void emplace_back(Args&&... args);											// Construct object using arguments (Args) and add it to the tail
-	void push_back(const ValueType& copyValue);									// Construct object using reference and add it to the tail
-	void push_back(ValueType&& moveValue);										// Construct object using temporary and add it to the tail
-	void pop_back();															// Remove last component
+	void emplace_back(Args&&... args) {											// Construct object using arguments (Args) and add it to the tail
+		_extend_if_full();
+		_alloc.construct(&_array[_size++], custom::forward<Args>(args)...);
+	}
+
+	void push_back(const ValueType& copyValue) {								// Construct object using reference and add it to the tail
+		emplace_back(copyValue);
+	}
+
+	void push_back(ValueType&& moveValue) {										// Construct object using temporary and add it to the tail
+		emplace_back(custom::move(moveValue));
+	}
+
+	void pop_back() {															// Remove last component
+		if (_size > 0)
+			_alloc.destroy(&_array[--_size]);
+	}
 
 	template<class... Args>
-	Iterator emplace(const Iterator& iterator, Args&&... args);					// Emplace object at iterator position with given arguments
-	Iterator push(const Iterator& iterator, const ValueType& copyValue);		// Push copy object at iterator position
-	Iterator push(const Iterator& iterator, ValueType&& moveValue);				// Push temporary object at iterator position
-	Iterator pop(const Iterator& iterator);										// Remove component at iterator position
+	Iterator emplace(const Iterator& iterator, Args&&... args) {				// Emplace object at iterator position with given arguments
+		size_t index = iterator.get_index();				// Don't check end()
+		emplace_back();
+		for (size_t i = _size - 1; i > index; --i)
+			_array[i] = custom::move(_array[i - 1]);
 
-	const size_t capacity() const;												// Get capacity
-	const size_t size() const;													// Get size
-	void clear();																// Remove ALL components but keep memory
-	bool empty() const;															// Check if array is empty
+		_alloc.destroy(&_array[index]);
+		_alloc.construct(&_array[index], custom::forward<Args>(args)...);
 
-	const ValueType& at(const size_t& index) const;								// Acces object at index with check (read only)
-	ValueType& at(const size_t& index);											// Acces object at index with check
-	const ValueType& front() const;
-	ValueType& front();                                                     	// Get the value of the first component
-	const ValueType& back() const;
-	ValueType& back();                                                      	// Get the value of the last component
+		return Iterator(&_array[index], _update_iteration_data());
+	}
+
+	Iterator push(const Iterator& iterator, const ValueType& copyValue) {		// Push copy object at iterator position
+		return emplace(iterator, copyValue);
+	}
+
+	Iterator push(const Iterator& iterator, ValueType&& moveValue) {			// Push temporary object at iterator position
+		return emplace(iterator, custom::move(moveValue));
+	}
+
+	Iterator pop(const Iterator& iterator) {									// Remove component at iterator position
+		if (iterator.is_end())
+			throw std::out_of_range("Array pop iterator outside range...");
+
+		size_t index = iterator.get_index();
+		for (size_t i = index; i < _size - 1; ++i)
+			_array[i] = custom::move(_array[i + 1]);
+		pop_back();
+
+		return Iterator(&_array[index], _update_iteration_data());
+	}
+
+	const size_t capacity() const {												// Get capacity
+		return _capacity;
+	}
+
+	const size_t size() const {													// Get size
+		return _size;
+	}
+
+	bool empty() const {														// Check if array is empty
+		return _size == 0;
+	}
+	
+	void clear() {																// Remove ALL components but keep memory
+		_alloc.destroy_range(_array, _size);
+		_size = 0;
+	}
+
+	const ValueType& at(const size_t& index) const {							// Acces object at index with check (read only)
+		if (index < 0 || index >= _size)
+			throw std::out_of_range("Invalid Index...");
+
+		return _array[index];
+	}
+
+	ValueType& at(const size_t& index) {										// Acces object at index with check
+		if (index < 0 || index >= _size)
+			throw std::out_of_range("Invalid Index...");
+
+		return _array[index];
+	}
+
+	const ValueType& front() const {
+		assert(_size > 0);
+		return _array[0];
+	}
+
+	ValueType& front() {                                                     	// Get the value of the first component
+		assert(_size > 0);
+		return _array[0];
+	}
+
+	const ValueType& back() const {
+		assert(_size > 0);
+		return _array[_size - 1];
+	}
+
+	ValueType& back() {                                                      	// Get the value of the last component
+		assert(_size > 0);
+		return _array[_size - 1];
+	}
 
 public:
 	// Operators
 
-	const ValueType& operator[](const size_t& index) const;						// Acces object at index (read only)
-	ValueType& operator[](const size_t& index);									// Acces object at index
-	
-	Vector& operator=(const Vector& other);										// Assign operator using reference
-	Vector& operator=(Vector&& other) noexcept;									// Assign operator using temporary
+	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
+		assert(!(index < 0 || index >= _size));
+		return _array[index];
+	}
 
-	bool operator==(const Vector& other) const;
-	bool operator!=(const Vector& other) const;
+	ValueType& operator[](const size_t& index) {								// Acces object at index
+		assert(!(index < 0 || index >= _size));
+		return _array[index];
+	}
+
+	Vector& operator=(const Vector& other) {									// Assign operator using reference
+		if (_array != other._array)
+		{
+			_clean_up_array();
+			_copy(other);
+		}
+
+		return *this;
+	}
+
+	Vector& operator=(Vector&& other) noexcept {								// Assign operator using temporary
+		if (_array != other._array)
+		{
+			_clean_up_array();
+			_move(custom::move(other));
+		}
+
+		return *this;
+	}
+
+	bool operator==(const Vector& other) const {
+		if (size() != other.size())
+			return false;
+
+		for (size_t i = 0; i < _size; ++i)
+			if (_array[i] != other._array[i])
+				return false;
+
+		return true;
+	}
+
+	bool operator!=(const Vector& other) const {
+		return !(*this == other);
+	}
 
 public:
 	// Iterator specific functions
 
-	Iterator begin();
-	const Iterator begin() const;
+	Iterator begin() {
+		return Iterator(_array, _update_iteration_data());
+	}
 
-	Iterator end();
-	const Iterator end() const;
+	const Iterator begin() const {
+		return Iterator(_array, _update_iteration_data());
+	}
+
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
+	}
+
+	Iterator end() {
+		return Iterator(_array + _size, _update_iteration_data());
+	}
+
+	const Iterator end() const {
+		return Iterator(_array + _size, _update_iteration_data());
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
+	}
 
 private:
-	// Others
+	// Helpers
 
-	void _copy(const Vector& other);											// Generic copy function for vector
-	void _move(Vector&& other);													// Generic move function for vector
-	void _extend_if_full();														// Reserve 50% more capacity when full
-	void _clean_up_array();														// Clear and Deallocate array
-	Data* _update_iteration_data() const;										// Update the data used in Iterator
+	void _copy(const Vector& other) {											// Generic copy function for vector
+		_array = _alloc.alloc(other._capacity);
+		for (size_t i = 0; i < other._size; ++i)
+			_alloc.construct(&_array[i], other._array[i]);
+
+		_size 		= other._size;
+		_capacity 	= other._capacity;
+	}
+
+	void _move(Vector&& other) {												// Generic move function for vector
+		_array 		= other._array;
+		_size 		= other._size;
+		_capacity 	= other._capacity;
+
+		other._array 	= nullptr;
+		other._size 	= 0;
+		other._capacity = 0;
+	}
+
+	void _extend_if_full() {													// Reserve 50% more capacity when full
+		if (_size >= _capacity)
+			reserve(_capacity + _capacity / 2 + 1);
+	}
+
+	void _clean_up_array() {													// Clear and Deallocate array
+		if (_array != nullptr)
+		{
+			_alloc.destroy_range(_array, _size);
+			_alloc.dealloc(_array, _capacity);
+			_array = nullptr;
+		}
+	}
+
+	Data* _update_iteration_data() const {										// Update the data used in Iterator
+		_data._Begin 	= _array;
+		_data._End 		= _array + _size;
+
+		return &_data;
+	}
 }; // END Vector Template
-
-
-
-// Definitions =================================================================================
-
-// Vector Iterator Data
-template<class Type>
-VectorIterationData<Type>::~VectorIterationData() {
-	_Begin	= nullptr;
-	_End	= nullptr;
-}
-
-// Vector Iterator
-template<class Vector>
-VectorIterator<Vector>::VectorIterator(IterType* ptr, Data* data)
-	:_Ptr(ptr), _Data(data) { /*Empty*/ }
-
-template<class Vector>
-VectorIterator<Vector>::~VectorIterator() {
-	_Ptr	= nullptr;
-	_Data	= nullptr;
-}
-
-template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator++() {
-	if (_Ptr >= _Data->_End)
-		throw std::out_of_range("Cannot increment end iterator...");
-
-	++_Ptr;
-	return *this;
-}
-
-template<class Vector>
-VectorIterator<Vector> VectorIterator<Vector>::operator++(int) {
-	VectorIterator temp = *this;
-	++(*this);
-	return temp;
-}
-
-template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator+=(const size_t& diff) {
-	if (_Ptr + diff >= _Data->_End)
-		throw std::out_of_range("Cannot increment end iterator...");
-
-	_Ptr += diff;
-	return *this;
-}
-
-template<class Vector>
-VectorIterator<Vector> VectorIterator<Vector>::operator+(const size_t& diff) const {
-	VectorIterator temp = *this;
-	temp += diff;
-	return temp;
-}
-
-template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator--() {
-	if (_Ptr <= _Data->_Begin)
-		throw std::out_of_range("Cannot decrement begin iterator...");
-
-	--_Ptr;
-	return *this;
-}
-
-template<class Vector>
-VectorIterator<Vector> VectorIterator<Vector>::operator--(int) {
-	VectorIterator temp = *this;
-	--(*this);
-	return temp;
-}
-
-template<class Vector>
-VectorIterator<Vector>& VectorIterator<Vector>::operator-=(const size_t& diff) {
-	if (_Ptr - diff <= _Data->_Begin)
-		throw std::out_of_range("Cannot decrement begin iterator...");
-
-	_Ptr -= diff;
-	return *this;
-}
-
-template<class Vector>
-VectorIterator<Vector> VectorIterator<Vector>::operator-(const size_t& diff) const {
-	VectorIterator temp = *this;
-	temp -= diff;
-	return temp;
-}
-
-template<class Vector>
-typename VectorIterator<Vector>::IterType* VectorIterator<Vector>::operator->() {
-	if (_Ptr >= _Data->_End)
-		throw std::out_of_range("Cannot access end iterator...");
-
-	return _Ptr;
-}
-
-template<class Vector>
-typename VectorIterator<Vector>::ValueType& VectorIterator<Vector>::operator*() {
-	if (_Ptr >= _Data->_End)
-		throw std::out_of_range("Cannot dereference end iterator...");
-
-	return *_Ptr;
-}
-
-template<class Vector>
-bool VectorIterator<Vector>::operator==(const VectorIterator& other) const {
-	return _Ptr == other._Ptr;
-}
-
-template<class Vector>
-bool VectorIterator<Vector>::operator!=(const VectorIterator& other) const {
-	return !(*this == other);
-}
-
-template<class Vector>
-const size_t VectorIterator<Vector>::get_index() const {
-	return static_cast<size_t>(_Ptr - _Data->_Begin);
-}
-
-template<class Vector>
-const bool VectorIterator<Vector>::is_begin() const {
-	return _Ptr == _Data->_Begin;
-}
-
-template<class Vector>
-const bool VectorIterator<Vector>::is_end() const {
-	return _Ptr == _Data->_End;
-}
-// END Vector Iterator
-
-
-// Vector Template
-template<class Type>
-Vector<Type>::Vector() {
-	reserve(default_capacity);
-}
-
-template<class Type>
-Vector<Type>::Vector(const size_t& newCapacity, const ValueType& copyValue) {
-	realloc(newCapacity, copyValue);
-}
-
-template<class Type>
-Vector<Type>::Vector(const Vector& other) {
-	_copy(other);
-}
-
-template<class Type>
-Vector<Type>::Vector(Vector&& other) noexcept {
-	_move(custom::move(other));
-}
-
-template<class Type>
-Vector<Type>::~Vector() {
-	_clean_up_array();
-}
-
-template<class Type>
-void Vector<Type>::reserve(const size_t& newCapacity) {
-	if (newCapacity < _size)
-		_size = newCapacity;
-
-	ValueType* newArray = _alloc.alloc(newCapacity);
-	for (size_t i = 0; i < _size; ++i)
-		_alloc.construct(&newArray[i], custom::move(_array[i]));
-
-	_clean_up_array();
-	_array = newArray;
-	_capacity = newCapacity;
-}
-
-template<class Type>
-void Vector<Type>::shrink_to_fit() {
-	reserve(_size);
-}
-
-template<class Type>
-void Vector<Type>::realloc(const size_t& newCapacity) {
-	_clean_up_array();
-
-	_capacity = newCapacity;
-	_size = _capacity;
-
-	_array = _alloc.alloc(_capacity);
-	_alloc.construct_range(_array, _capacity);
-}
-
-template<class Type>
-void Vector<Type>::realloc(const size_t& newCapacity, const ValueType& copyValue) {
-	_clean_up_array();
-
-	_capacity = newCapacity;
-	_size = _capacity;
-
-	_array = _alloc.alloc(_capacity);
-	_alloc.construct_range(_array, _capacity, copyValue);
-}
-
-template<class Type>
-void Vector<Type>::resize(const size_t& newSize) {
-	if (newSize < _size)
-		_alloc.destroy_range(&_array[newSize], _size - newSize);
-	else {
-		if (newSize > _capacity)
-			reserve(newSize);
-
-		_alloc.construct_range(&_array[_size], newSize - _size);
-	}
-
-	_size = newSize;
-}
-
-template<class Type>
-void Vector<Type>::resize(const size_t& newSize, const ValueType& copyValue) {
-	if (newSize < _size)
-		_alloc.destroy_range(&_array[newSize], _size - newSize);
-	else {
-		if (newSize > _capacity)
-			reserve(newSize);
-
-		_alloc.construct_range(&_array[_size], newSize - _size, copyValue);
-	}
-
-	_size = newSize;
-}
-
-template<class Type>
-template<class... Args>
-void Vector<Type>::emplace_back(Args&&... args) {
-	_extend_if_full();
-	_alloc.construct(&_array[_size++], custom::forward<Args>(args)...);
-}
-
-template<class Type>
-void Vector<Type>::push_back(const ValueType& copyValue) {
-	emplace_back(copyValue);
-}
-
-template<class Type>
-void Vector<Type>::push_back(ValueType&& moveValue) {
-	emplace_back(custom::move(moveValue));
-}
-
-template<class Type>
-void Vector<Type>::pop_back() {
-	if (_size > 0)
-		_alloc.destroy(&_array[--_size]);
-}
-
-template<class Type>
-template<class... Args>
-typename Vector<Type>::Iterator Vector<Type>::emplace(const Iterator& iterator, Args&&... args) {
-	size_t index = iterator.get_index();				// Don't check end()
-	emplace_back();
-	for (size_t i = _size - 1; i > index; --i)
-		_array[i] = custom::move(_array[i - 1]);
-
-	_alloc.destroy(&_array[index]);
-	_alloc.construct(&_array[index], custom::forward<Args>(args)...);
-
-	return Iterator(&_array[index], _update_iteration_data());
-}
-
-template<class Type>
-typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, const ValueType& copyValue) {
-	return emplace(iterator, copyValue);
-}
-
-template<class Type>
-typename Vector<Type>::Iterator Vector<Type>::push(const Iterator& iterator, ValueType&& moveValue) {
-	return emplace(iterator, custom::move(moveValue));
-}
-
-template<class Type>
-typename Vector<Type>::Iterator Vector<Type>::pop(const Iterator& iterator) {
-	if (iterator.is_end())
-		throw std::out_of_range("Array pop iterator outside range...");
-
-	size_t index = iterator.get_index();
-	for (size_t i = index; i < _size - 1; ++i)
-		_array[i] = custom::move(_array[i + 1]);
-	pop_back();
-
-	return Iterator(&_array[index], _update_iteration_data());
-}
-
-template<class Type>
-const size_t Vector<Type>::capacity() const {
-	return _capacity;
-}
-
-template<class Type>
-const size_t Vector<Type>::size() const {
-	return _size;
-}
-
-template<class Type>
-void Vector<Type>::clear() {
-	_alloc.destroy_range(_array, _size);
-	_size = 0;
-}
-
-template<class Type>
-bool Vector<Type>::empty() const {
-	return _size == 0;
-}
-
-template<class Type>
-const typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) const {
-	if (index < 0 || index >= _size)
-		throw std::out_of_range("Invalid Index...");
-
-	return _array[index];
-}
-
-template<class Type>
-typename Vector<Type>::ValueType& Vector<Type>::at(const size_t& index) {
-	if (index < 0 || index >= _size)
-		throw std::out_of_range("Invalid Index...");
-
-	return _array[index];
-}
-
-template<class Type>
-const typename Vector<Type>::ValueType& Vector<Type>::front() const {
-	assert(_size > 0);
-	return _array[0];
-}
-
-template<class Type>
-typename Vector<Type>::ValueType& Vector<Type>::front() {
-	assert(_size > 0);
-	return _array[0];
-}
-
-template<class Type>
-const typename Vector<Type>::ValueType& Vector<Type>::back() const {
-	assert(_size > 0);
-	return _array[_size - 1];
-}
-
-template<class Type>
-typename Vector<Type>::ValueType& Vector<Type>::back() {
-	assert(_size > 0);
-	return _array[_size - 1];
-}
-
-template<class Type>
-const typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) const {
-	assert(!(index < 0 || index >= _size));
-	return _array[index];
-}
-
-template<class Type>
-typename Vector<Type>::ValueType& Vector<Type>::operator[](const size_t& index) {
-	assert(!(index < 0 || index >= _size));
-	return _array[index];
-}
-
-template<class Type>
-Vector<Type>& Vector<Type>::operator=(const Vector& other) {
-	if (_array != other._array)
-	{
-		_clean_up_array();
-		_copy(other);
-	}
-
-	return *this;
-}
-
-template<class Type>
-Vector<Type>& Vector<Type>::operator=(Vector&& other) noexcept {
-	if (_array != other._array)
-	{
-		_clean_up_array();
-		_move(custom::move(other));
-	}
-
-	return *this;
-}
-
-template<class Type>
-bool Vector<Type>::operator==(const Vector& other) const {
-	if (size() != other.size())
-		return false;
-
-	for (size_t i = 0; i < _size; ++i)
-		if (_array[i] != other._array[i])
-			return false;
-
-	return true;
-}
-
-template<class Type>
-bool Vector<Type>::operator!=(const Vector& other) const {
-	return !(*this == other);
-}
-
-template<class Type>
-typename Vector<Type>::Iterator Vector<Type>::begin() {
-	return Iterator(_array, _update_iteration_data());
-}
-
-template<class Type>
-const typename Vector<Type>::Iterator Vector<Type>::begin() const {
-	return Iterator(_array, _update_iteration_data());
-}
-
-template<class Type>
-typename Vector<Type>::Iterator Vector<Type>::end() {
-	return Iterator(_array + _size, _update_iteration_data());
-}
-
-template<class Type>
-const typename Vector<Type>::Iterator Vector<Type>::end() const {
-	return Iterator(_array + _size, _update_iteration_data());
-}
-
-template<class Type>
-void Vector<Type>::_copy(const Vector& other) {
-	_array = _alloc.alloc(other._capacity);
-	for (size_t i = 0; i < other._size; ++i)
-		_alloc.construct(&_array[i], other._array[i]);
-
-	_size 		= other._size;
-	_capacity 	= other._capacity;
-}
-
-template<class Type>
-void Vector<Type>::_move(Vector&& other) {
-	_array 		= other._array;
-	_size 		= other._size;
-	_capacity 	= other._capacity;
-
-	other._array 	= nullptr;
-	other._size 	= 0;
-	other._capacity = 0;
-}
-
-template<class Type>
-typename Vector<Type>::Data* Vector<Type>::_update_iteration_data() const {
-	_data._Begin 	= _array;
-	_data._End 		= _array + _size;
-
-	return &_data;
-}
-
-template<class Type>
-void Vector<Type>::_clean_up_array() {
-	if (_array != nullptr)
-	{
-		_alloc.destroy_range(_array, _size);
-		_alloc.dealloc(_array, _capacity);
-		_array = nullptr;
-	}
-}
-
-template<class Type>
-void Vector<Type>::_extend_if_full() {
-	if (_size >= _capacity)
-		reserve(_capacity + _capacity / 2 + 1);
-}
-// END Vector Template
 
 CUSTOM_END

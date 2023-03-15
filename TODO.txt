@@ -1,3 +1,4 @@
 1. Deque resize implement
    Deque check destroy array (back+1)
 2. SearchTree erase elem
+3. Add reverse iterator to all

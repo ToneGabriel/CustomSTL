@@ -3,8 +3,6 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Key, class Hasher>
 class UsetTraits					// UnorderedSet Traits
 {
@@ -18,8 +16,13 @@ public:
 
 	UsetTraits() = default;
 
-	static const KeyType& extract_key(const ValueType& value);			// extract key from element value
-	static const MappedType& extract_mapval(const ValueType& value);	// extract key from element value
+	static const KeyType& extract_key(const ValueType& value) {			// extract key from element value
+		return value;
+	}
+
+	static const MappedType& extract_mapval(const ValueType& value) {	// extract key from element value
+		return value;
+	}
 }; // END UnorderedSet Traits
 
 
@@ -38,76 +41,40 @@ public:
 public:
 	// Constructors
 
-	UnorderedSet();
-	UnorderedSet(const size_t& buckets);
-	UnorderedSet(const UnorderedSet& other);
-	UnorderedSet(UnorderedSet&& other) noexcept;
+	UnorderedSet()
+		:Base() { /*Empty*/ }
+
+	UnorderedSet(const size_t& buckets)
+		:Base(buckets) { /*Empty*/ }
+
+	UnorderedSet(const UnorderedSet& other)
+		:Base(other) { /*Empty*/ }
+
+	UnorderedSet(UnorderedSet&& other) noexcept
+		:Base(custom::move(other)) { /*Empty*/ }
+
 	~UnorderedSet() = default;
 	
 public:
 	// Operators
 
-	UnorderedSet& operator=(const UnorderedSet& other);
-	UnorderedSet& operator=(UnorderedSet&& other) noexcept;
+	UnorderedSet& operator=(const UnorderedSet& other) {
+		Base::operator=(other);
+		return *this;
+	}
 
-	bool operator==(const UnorderedSet& other) const;				// Contains the same elems, but not the same hashtable
-	bool operator!=(const UnorderedSet& other) const;
+	UnorderedSet& operator=(UnorderedSet&& other) noexcept {
+		Base::operator=(custom::move(other));
+		return *this;
+	}
+
+	bool operator==(const UnorderedSet& other) const {				// Contains the same elems, but not the same hashtable
+		return Base::operator==(other);
+	}
+
+	bool operator!=(const UnorderedSet& other) const {
+		return Base::operator!=(other);
+	}
 }; // END UnorderedSet Template
-
-
-
-// Definitions =================================================================================
-
-// UnorderedSet Traits
-template<class Key, class Hasher>
-const typename UsetTraits<Key, Hasher>::KeyType& UsetTraits<Key, Hasher>::extract_key(const ValueType& value) {
-	return value;
-}
-
-template<class Key, class Hasher>
-const typename UsetTraits<Key, Hasher>::MappedType& UsetTraits<Key, Hasher>::extract_mapval(const ValueType& value) {
-	return value;
-}
-// END UnorderedSet Traits
-
-// UnorderedSet Template
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>::UnorderedSet()
-	:Base() { /*Empty*/ }
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>::UnorderedSet(const size_t& buckets)
-	:Base(buckets) { /*Empty*/ }
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>::UnorderedSet(const UnorderedSet& other)
-	:Base(other) { /*Empty*/ }
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>::UnorderedSet(UnorderedSet&& other) noexcept
-	:Base(custom::move(other)) { /*Empty*/ }
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>& UnorderedSet<Key, Hasher>::operator=(const UnorderedSet& other) {
-	Base::operator=(other);
-	return *this;
-}
-
-template<class Key, class Hasher>
-UnorderedSet<Key, Hasher>& UnorderedSet<Key, Hasher>::operator=(UnorderedSet&& other) noexcept {
-	Base::operator=(custom::move(other));
-	return *this;
-}
-
-template<class Key, class Hasher>
-bool UnorderedSet<Key, Hasher>::operator==(const UnorderedSet& other) const {				// Contains the same elems, but not the same hashtable
-	return Base::operator==(other);
-}
-
-template<class Key, class Hasher>
-bool UnorderedSet<Key, Hasher>::operator!=(const UnorderedSet& other) const {
-	return Base::operator!=(other);
-}
-// END UnorderedSet Template
 
 CUSTOM_END

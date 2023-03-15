@@ -4,9 +4,8 @@
 
 CUSTOM_BEGIN
 
-// Forward Node ========================================================
 template<class Type>
-struct ForwardNode														// Struct that holds data and references to next struct
+struct ForwardNode			// Struct that holds data and references to next struct
 {
 	using ValueType = Type;
 	ValueType _Value;		// Data
@@ -29,14 +28,11 @@ struct ForwardNode														// Struct that holds data and references to next
 	~ForwardNode() {
 		_Next = nullptr;
 	}
-};
-// Forward Node ========================================================
-// END
+}; // END ForwardNode
 
 
-// Double Node ========================================================
 template<class Type>
-struct DoubleNode														// Struct that holds data and references to next and previous struct
+struct DoubleNode			// Struct that holds data and references to next and previous struct
 {
 	using ValueType = Type;
 	ValueType _Value;		// Data
@@ -61,14 +57,11 @@ struct DoubleNode														// Struct that holds data and references to next 
 		_Previous	= nullptr;
 		_Next		= nullptr;
 	}
-};
-// Double Node ========================================================
-// END
+}; // END DoubleNode
 
 
-// Tree Node ========================================================
 template<class Type>
-struct TreeNode
+struct TreeNode				// Used in SearchTree
 {
 	using ValueType = Type;
 	ValueType _Value;		// Data
@@ -103,7 +96,6 @@ struct TreeNode
 		_Left	= nullptr;
 		_Right	= nullptr;
 	}
-};
-// Tree Node ========================================================
-// END
+}; // END Tree Node
+
 CUSTOM_END

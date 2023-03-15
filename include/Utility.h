@@ -1,5 +1,15 @@
 #pragma once
-#include "Common.h"
+#include <cstddef>      // std::size_t
+#include <stdexcept>    // exceptions
+#include <cassert>      // assert
+
+#define CUSTOM_BEGIN namespace custom {
+#define CUSTOM_END }
+
+#define STD_BEGIN namespace std {
+#define STD_END }
+
+
 
 
 CUSTOM_BEGIN
@@ -68,11 +78,12 @@ constexpr Ty&& forward(typename RemoveReference<Ty>::Type&& val) noexcept {
 }
 
 template<class Iterator>
-class ReverseIterator {
+class ReverseIterator       // Adaptor for backwards iteration
+{
 public:
     using BaseIterator  = Iterator;
-    using ValueType     = BaseIterator::ValueType;
-    using IterType      = BaseIterator::IterType;
+    using ValueType     = typename BaseIterator::ValueType;
+    using IterType      = typename BaseIterator::IterType;
 
     BaseIterator _Base;
 
@@ -82,6 +93,8 @@ public:
         : _Base(base) { /*Empty*/ }
 
     ~ReverseIterator() = default;
+
+public:
 
     ReverseIterator& operator++() {
         --_Base;
@@ -115,13 +128,13 @@ public:
         return *(--temp);
     }
 
-    bool operator==(const SearchTreeIterator& other) const {
-
+    bool operator==(const ReverseIterator& other) const {
+        return _Base == other._Base;
     }
 
-    bool operator!=(const SearchTreeIterator& other) const {
-
+    bool operator!=(const ReverseIterator& other) const {
+	    return !(*this == other);
     }
-};
+}; // END ReverseIterator
 
 CUSTOM_END

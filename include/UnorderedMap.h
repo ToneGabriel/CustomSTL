@@ -3,8 +3,6 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Key, class Type, class Hasher>
 class UmapTraits								// UnorderedMap Traits
 {
@@ -18,8 +16,13 @@ public:
 
 	UmapTraits() = default;
 
-	static const KeyType& extract_key(const ValueType& value) noexcept;			// extract key from element value
-	static const MappedType& extract_mapval(const ValueType& value) noexcept;	// extract mapped val from element value
+	static const KeyType& extract_key(const ValueType& value) noexcept {		// extract key from element value
+		return value.First;
+	}
+
+	static const MappedType& extract_mapval(const ValueType& value) noexcept {	// extract mapped val from element value
+		return value.Second;
+	}
 }; // END UnorderedMap Traits
 
 
@@ -38,115 +41,64 @@ public:
 public:
 	// Constructors
 
-	UnorderedMap();
-	UnorderedMap(const size_t& buckets);
-	UnorderedMap(const UnorderedMap& other);
-	UnorderedMap(UnorderedMap&& other) noexcept;
+	UnorderedMap()
+		:Base() { /*Empty*/ }
+
+	UnorderedMap(const size_t& buckets)
+		:Base(buckets) { /*Empty*/ }
+
+	UnorderedMap(const UnorderedMap& other)
+		:Base(other) { /*Empty*/ }
+
+	UnorderedMap(UnorderedMap&& other) noexcept
+		:Base(custom::move(other)) { /*Empty*/ }
+
 	~UnorderedMap() = default;
 
 public:
 	// Operators
 
-	MappedType& operator[](const Key& key);					// Access value or create new one with key and assignment (no const)
-	MappedType& operator[](Key&& key);
+	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
+		return try_emplace(key)->_Value.Second;
+	}
 
-	UnorderedMap& operator=(const UnorderedMap& other);
-	UnorderedMap& operator=(UnorderedMap&& other) noexcept;
+	MappedType& operator[](Key&& key) {
+		return try_emplace(custom::move(key))->_Value.Second;
+	}
 
-	bool operator==(const UnorderedMap& other) const;		// Contains the same elems, but not the same hashtable
-	bool operator!=(const UnorderedMap& other) const;
+	UnorderedMap& operator=(const UnorderedMap& other) {
+		Base::operator=(other);
+		return *this;
+	}
+
+	UnorderedMap& operator=(UnorderedMap&& other) noexcept {
+		Base::operator=(custom::move(other));
+		return *this;
+	}
+
+	bool operator==(const UnorderedMap& other) const {		// Contains the same elems, but not the same hashtable
+		return Base::operator==(other);
+	}
+
+	bool operator!=(const UnorderedMap& other) const {
+		return Base::operator!=(other);
+	}
 
 public:
 	// Main functions
 
 	template<class _KeyType, class... Args>
-	Iterator try_emplace(_KeyType&& key, Args&&... args);	// Force construction with known key and given arguments for object
+	Iterator try_emplace(_KeyType&& key, Args&&... args) {	// Force construction with known key and given arguments for object
+		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
+	}
 
-	const MappedType& at(const Key& key) const;				// Access value at key with check
-	MappedType& at(const Key& key);
+	const MappedType& at(const Key& key) const {			// Access value at key with check
+		return this->_at(key);
+	}
+
+	MappedType& at(const Key& key) {
+		return this->_at(key);
+	}
 }; // END UnorderedMap Template
-
-
-
-// Definitions =================================================================================
-
-// UnorderedMap Traits
-template<class Key, class Type, class Hasher>
-const typename UmapTraits<Key, Type, Hasher>::KeyType& UmapTraits<Key, Type, Hasher>::extract_key(const ValueType& value) noexcept {
-	return value.First;
-}
-
-template<class Key, class Type, class Hasher>
-const typename UmapTraits<Key, Type, Hasher>::MappedType& UmapTraits<Key, Type, Hasher>::extract_mapval(const ValueType& value) noexcept {
-	return value.Second;
-}
-// END UnorderedMap Traits
-
-
-// UnorderedMap Template
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>::UnorderedMap()
-	:Base() { /*Empty*/ }
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>::UnorderedMap(const size_t& buckets)
-	:Base(buckets) { /*Empty*/ }
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>::UnorderedMap(const UnorderedMap& other)
-	:Base(other) { /*Empty*/ }
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>::UnorderedMap(UnorderedMap&& other) noexcept
-	:Base(custom::move(other)) { /*Empty*/ }
-
-template<class Key, class Type, class Hasher>
-typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](const Key& key) {
-	return try_emplace(key)->_Value.Second;
-}
-
-template<class Key, class Type, class Hasher>
-typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::operator[](Key&& key) {
-	return try_emplace(custom::move(key))->_Value.Second;
-}
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(const UnorderedMap& other) {
-	Base::operator=(other);
-	return *this;
-}
-
-template<class Key, class Type, class Hasher>
-UnorderedMap<Key, Type, Hasher>& UnorderedMap<Key, Type, Hasher>::operator=(UnorderedMap&& other) noexcept {
-	Base::operator=(custom::move(other));
-	return *this;
-}
-
-template<class Key, class Type, class Hasher>
-bool UnorderedMap<Key, Type, Hasher>::operator==(const UnorderedMap& other) const {
-	return Base::operator==(other);
-}
-
-template<class Key, class Type, class Hasher>
-bool UnorderedMap<Key, Type, Hasher>::operator!=(const UnorderedMap& other) const {
-	return Base::operator!=(other);
-}
-
-template<class Key, class Type, class Hasher>
-template<class _KeyType, class... Args>
-typename UnorderedMap<Key, Type, Hasher>::Iterator UnorderedMap<Key, Type, Hasher>::try_emplace(_KeyType&& key, Args&&... args) {
-	return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
-}
-
-template<class Key, class Type, class Hasher>
-const typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::at(const Key& key) const {
-	return this->_at(key);
-}
-
-template<class Key, class Type, class Hasher>
-typename UnorderedMap<Key, Type, Hasher>::MappedType& UnorderedMap<Key, Type, Hasher>::at(const Key& key) {
-	return this->_at(key);
-}
-// END UnorderedMap Template
 
 CUSTOM_END
