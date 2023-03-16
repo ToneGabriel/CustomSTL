@@ -10,10 +10,8 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Traits>
-class HashTable				// HashTable Template implemented vector of lists
+class HashTable				// HashTable Template implemented as vector of lists
 {
 protected:
     using KeyType           = typename Traits::KeyType;				// Type of Key

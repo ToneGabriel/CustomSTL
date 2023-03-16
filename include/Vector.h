@@ -5,8 +5,6 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Type>
 struct VectorIterationData {		// Data used for iterating Vector
 	Type* _Begin	= nullptr;
@@ -148,10 +146,10 @@ public:
 	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
 
 private:
+	Alloc _alloc;													// Allocator
 	size_t _size		= 0;										// Number of components held by this
 	size_t _capacity	= 0;										// Allocated momory of type ValueType
 	ValueType* _array	= nullptr;									// Actual container array
-	Alloc _alloc;													// Allocator
 	mutable Data _data;
 
 	static constexpr size_t default_capacity = 8;

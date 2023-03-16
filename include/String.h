@@ -68,12 +68,12 @@ public:
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
 private:
+	Alloc _alloc;
 	size_t _size		= 0;
 	size_t _capacity	= 0;
 	char* _string		= nullptr;
 
 	mutable Data _data;
-	mutable Alloc _alloc;
 
 	static constexpr size_t istream_capacity	= 255;
 	static constexpr char NULLCHR 				= '\0';

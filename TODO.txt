@@ -2,3 +2,5 @@
    Deque check destroy array (back+1)
 2. SearchTree erase elem
 3. Add reverse iterator to all
+4. Find solution to iteration data
+5. String, SearchTree to refactor

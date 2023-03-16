@@ -5,8 +5,6 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Type>
 class Stack				// Stack Template implemented as Vector wrapper
 {
@@ -20,115 +18,75 @@ public:
 	// Constructors
 
 	Stack() = default;
-	Stack(const Stack& other);
-	Stack(Stack&& other);
+
+	Stack(const Stack& other)
+		: _baseContainer(other._baseContainer) { /*Empty*/ }
+
+	Stack(Stack&& other)
+		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
+
 	~Stack() = default;
 
 public:
 	// Main Functions
 
 	template<class... Args>
-	void emplace(Args&&... args);
-	void push(const ValueType& copyValue);
-	void push(ValueType&& moveValue);
-	void pop();												// Remove first elem from stack
+	void emplace(Args&&... args) {
+		_baseContainer.emplace_back(custom::forward<Args>(args)...);
+	}
 
-	const ValueType& top() const;
-	ValueType& top();
-	const size_t size() const;								// Get size
-	bool empty() const;										// Check if container is empty
-	void clear();											// Remove ALL components
+	void push(const ValueType& copyValue) {
+		emplace(copyValue);
+	}
+
+	void push(ValueType&& moveValue) {
+		emplace(custom::move(moveValue));
+	}
+
+	void pop() {											// Remove first elem from stack
+		_baseContainer.pop_back();
+	}
+
+	const ValueType& top() const {
+		return _baseContainer.back();
+	}
+
+	ValueType& top() {
+		return _baseContainer.back();
+	}
+
+	const size_t size() const {
+		return _baseContainer.size();
+	}
+
+	bool empty() const {
+		return _baseContainer.empty();
+	}
+
+	void clear() {
+		_baseContainer.clear();
+	}
 
 public:
 	// Operators
 
-	Stack& operator=(const Stack& other);					// Assign operator using reference
-	Stack& operator=(Stack&& other) noexcept;				// Assign operator using temporary
+	Stack& operator=(const Stack& other) {
+		_baseContainer = other._baseContainer;
+		return *this;
+	}
 
-	bool operator==(const Stack& other) const;
-	bool operator!=(const Stack& other) const;
+	Stack& operator=(Stack&& other) noexcept {
+		_baseContainer = custom::move(other._baseContainer);
+		return *this;
+	}
+
+	bool operator==(const Stack& other) const {
+		return _baseContainer == other._baseContainer;
+	}
+
+	bool operator!=(const Stack& other) const {
+		return !(*this == other);
+	}
 }; // END Stack Template
-
-
-
-// Definitions =================================================================================
-
-// Stack Template
-template<class Type>
-Stack<Type>::Stack(const Stack& other)
-	: _baseContainer(other._baseContainer) { /*Empty*/ }
-
-template<class Type>
-Stack<Type>::Stack(Stack&& other)
-	: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
-
-template<class Type>
-template<class... Args>
-void Stack<Type>::emplace(Args&&... args) {
-	_baseContainer.emplace_back(custom::forward<Args>(args)...);
-}
-
-template<class Type>
-void Stack<Type>::push(const ValueType& copyValue) {
-	emplace(copyValue);
-}
-
-template<class Type>
-void Stack<Type>::push(ValueType&& moveValue) {
-	emplace(custom::move(moveValue));
-}
-
-template<class Type>
-void Stack<Type>::pop() {
-	_baseContainer.pop_back();
-}
-
-template<class Type>
-const typename Stack<Type>::ValueType& Stack<Type>::top() const {
-	return _baseContainer.back();
-}
-
-template<class Type>
-typename Stack<Type>::ValueType& Stack<Type>::top() {
-	return _baseContainer.back();
-}
-
-template<class Type>
-const size_t Stack<Type>::size() const {
-	return _baseContainer.size();
-}
-
-template<class Type>
-bool Stack<Type>::empty() const {
-	return _baseContainer.empty();
-}
-
-template<class Type>
-void Stack<Type>::clear() {
-	_baseContainer.clear();
-}
-
-template<class Type>
-Stack<Type>& Stack<Type>::operator=(const Stack& other) {
-	_baseContainer = other._baseContainer;
-	return *this;
-}
-
-template<class Type>
-Stack<Type>& Stack<Type>::operator=(Stack&& other) noexcept {
-	_baseContainer = custom::move(other._baseContainer);
-	return *this;
-}
-
-template<class Type>
-bool Stack<Type>::operator==(const Stack& other) const {
-	return _baseContainer == other._baseContainer;
-}
-
-template<class Type>
-bool Stack<Type>::operator!=(const Stack& other) const {
-	return !(*this == other);
-}
-// END Stack Template
 
 CUSTOM_END

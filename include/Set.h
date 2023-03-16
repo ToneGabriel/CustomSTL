@@ -3,8 +3,6 @@
 
 CUSTOM_BEGIN
 
-// Headings =================================================================================
-
 template<class Key, class Compare>
 class SetTraits										// Set Traits
 {
@@ -18,8 +16,13 @@ public:
 
 	SetTraits() = default;
 
-	static const KeyType& extract_key(const ValueType& value) noexcept;			// extract key from element value
-	static const MappedType& extract_mapval(const ValueType& value) noexcept;	// extract mapped val from element value
+	static const KeyType& extract_key(const ValueType& value) noexcept {		// extract key from element value
+		return value;
+	}
+
+	static const MappedType& extract_mapval(const ValueType& value) noexcept {	// extract mapped val from element value
+		return value;
+	}
 }; // END Set Traits
 
 
@@ -38,73 +41,37 @@ public:
 public:
     // Constructors
 
-	Set();
-	Set(const Set& other);
-	Set(Set&& other) noexcept;
-	~Set();
+	Set()
+		:Base() { /*Empty*/ }
+
+	Set(const Set& other)
+		: Base(other) { /*Empty*/ }
+
+	Set(Set&& other) noexcept
+		: Base(custom::move(other)) { /*Empty*/ }
+
+	~Set() { /*Empty*/ }
 
 public:
     // Operators
 
-	Set& operator=(const Set& other);
-	Set& operator=(Set&& other) noexcept;
+	Set& operator=(const Set& other) {
+		Base::operator=(other);
+		return *this;
+	}
 
-	bool operator==(const Set& other) const;
-	bool operator!=(const Set& other) const;
+	Set& operator=(Set&& other) noexcept {
+		Base::operator=(custom::move(other));
+		return *this;
+	}
+
+	bool operator==(const Set& other) const {
+		return Base::operator==(other);
+	}
+
+	bool operator!=(const Set& other) const {
+		return Base::operator!=(other);
+	}
 }; // END Set Template
 
-
-
-// Definitions =================================================================================
-
-// Set Traits
-template<class Key, class Compare>
-const typename SetTraits<Key, Compare>::KeyType& SetTraits<Key, Compare>::extract_key(const ValueType& value) noexcept {
-	return value;
-}
-
-template<class Key, class Compare>
-const typename SetTraits<Key, Compare>::MappedType& SetTraits<Key, Compare>::extract_mapval(const ValueType& value) noexcept {
-	return value;
-}
-// END Set Traits
-
-// Set Template
-template<class Key, class Compare>
-Set<Key, Compare>::Set()
-	:Base() { /*Empty*/ }
-
-template<class Key, class Compare>
-Set<Key, Compare>::Set(const Set& other)
-	: Base(other) { /*Empty*/ }
-
-template<class Key, class Compare>
-Set<Key, Compare>::Set(Set&& other) noexcept
-	: Base(custom::move(other)) { /*Empty*/ }
-
-template<class Key, class Compare>
-Set<Key, Compare>::~Set() { /*Empty*/ }
-
-template<class Key, class Compare>
-Set<Key, Compare>& Set<Key, Compare>::operator=(const Set& other) {
-	Base::operator=(other);
-	return *this;
-}
-
-template<class Key, class Compare>
-Set<Key, Compare>& Set<Key, Compare>::operator=(Set&& other) noexcept {
-	Base::operator=(custom::move(other));
-	return *this;
-}
-
-template<class Key, class Compare>
-bool Set<Key, Compare>::operator==(const Set& other) const {
-	return Base::operator==(other);
-}
-
-template<class Key, class Compare>
-bool Set<Key, Compare>::operator!=(const Set& other) const {
-	return Base::operator!=(other);
-}
-// END Set Template
 CUSTOM_END
