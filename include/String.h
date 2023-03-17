@@ -395,9 +395,9 @@ public:
 	}
 
 	String substr(const size_t& pos, const size_t& len) const {		// Create substring from current string
-		if (pos < 0 || pos > _size)
+		if (pos > _size)
 			throw std::out_of_range("Invalid starting position...");
-		if (len < 0 || len + pos > _size)
+		if (len + pos > _size)
 			throw std::out_of_range("Invalid length...");
 
 		String sub(len);	// empty string with _capacity = len
@@ -553,7 +553,7 @@ private:
 	}
 
 	void _insert_from_cstring(const size_t& pos, const char* cstring, const size_t& subpos, const size_t& sublen) {
-		if (pos < 0 || pos > _size)		// pos = start pos
+		if (pos > _size)		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
 		if (subpos + sublen > strlen(cstring))
 			throw std::out_of_range("Invalid length...");
@@ -570,7 +570,7 @@ private:
 	}
 
 	void _remove_from_cstring(const size_t& pos, const size_t& len) {	// TODO: check
-		if (pos < 0 || pos > _size)		// pos = start pos
+		if (pos > _size)		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
 		if (pos + len > _size)
 			throw std::out_of_range("Invalid length...");
@@ -581,11 +581,11 @@ private:
 	}
 
 	int _compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
-		return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));		// TODO: check why max	
+		return strncmp(_string + pos, cstring + subpos, std::max(len, sublen));
 	}
 
 	size_t _search_for_cstring(const char* cstring, const size_t& pos, const size_t& len) const {
-		if (pos < 0 || pos > _size)		// pos = start pos
+		if (pos > _size)		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
 		if (pos + len > _size || len > strlen(cstring))
 			throw std::out_of_range("Invalid length...");

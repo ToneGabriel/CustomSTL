@@ -51,15 +51,15 @@ public:
     // Operators
 
 	Pair& operator=(const Pair& other) {
-        First = other.First;
-        Second = other.Second;
+        First   = other.First;
+        Second  = other.Second;
 
         return *this;
     }
 
 	Pair& operator=(Pair&& other) {
-        First = custom::move(other.First);
-        Second = custom::move(other.Second);
+        First   = custom::move(other.First);
+        Second  = custom::move(other.Second);
     }
 
 	bool operator==(const Pair& other) {

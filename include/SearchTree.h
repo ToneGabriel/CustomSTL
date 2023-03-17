@@ -205,7 +205,16 @@ protected:
 		if (size() != other.size())
 			return false;
 
-		// TODO: complete
+		Iterator it1 = begin();
+		Iterator it2 = other.begin();
+		while (it1 != end())
+		{
+			if (*it1 != *it2)	// mapping is the same
+				return false;
+
+			++it1;
+			++it2;
+		}
 
 		return true;
 	}

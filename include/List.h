@@ -277,23 +277,23 @@ public:
 	// Operators
 
 	List& operator=(const List& other) {
-	if (_head != other._head)
-	{
-		clear();
-		_copy(other);
-	}
+		if (_head != other._head)
+		{
+			clear();
+			_copy(other);
+		}
 
-	return *this;
+		return *this;
 	}
 
 	List& operator=(List&& other) noexcept {
-	if (_head != other._head)
-	{
-		clear();
-		_move(custom::move(other));
-	}
+		if (_head != other._head)
+		{
+			clear();
+			_move(custom::move(other));
+		}
 
-	return *this;
+		return *this;
 	}
 
 	bool operator==(const List& other) const {
