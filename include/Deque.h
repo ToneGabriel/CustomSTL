@@ -146,11 +146,12 @@ template<class Type>
 class Deque					// Deque Template implemented as circular array
 {
 public:
-	using ValueType = Type;									// Type for stored values
-	using IterType 	= ValueType;							// Type for iteration (same as value)
-	using Alloc 	= Allocator<ValueType>;					// Allocator type
-	using Iterator 	= DequeIterator<Deque<ValueType>>;		// Iterator type
-	using Data		= typename Iterator::Data;				// Iteration data
+	using ValueType 		= Type;									// Type for stored values
+	using IterType 			= ValueType;							// Type for iteration (same as value)
+	using Alloc 			= Allocator<ValueType>;					// Allocator type
+	using Iterator 			= DequeIterator<Deque<ValueType>>;		// Iterator type
+	using Data				= typename Iterator::Data;				// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
 
 private:
 	Alloc _alloc;											// Allocator
@@ -468,11 +469,19 @@ public:
 	// Iterator specific functions
 
 	Iterator begin() {
-	return Iterator(_array + _front, _update_iteration_data());
+		return Iterator(_array + _front, _update_iteration_data());
 	}
 
 	const Iterator begin() const {
-	return Iterator(_array + _front, _update_iteration_data());
+		return Iterator(_array + _front, _update_iteration_data());
+	}
+
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
 	}
 
 	Iterator end() {
@@ -481,6 +490,14 @@ public:
 
 	const Iterator end() const {
 		return Iterator(_array + circular_increment(_front, _capacity, _size), _update_iteration_data());
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
 	}
 
 private:

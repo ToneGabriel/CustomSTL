@@ -114,11 +114,12 @@ public:
 class String	// String
 {
 public:
-	using ValueType = char;
-	using IterType	= ValueType;
-	using Alloc		= Allocator<char>;					// Allocator type
-	using Iterator	= StringIterator<String>;			// Iterator type			
-	using Data		= typename Iterator::Data;			// Iteration data
+	using ValueType 		= char;
+	using IterType			= ValueType;
+	using Alloc				= Allocator<char>;					// Allocator type
+	using Iterator			= StringIterator<String>;			// Iterator type			
+	using Data				= typename Iterator::Data;			// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;		// ReverseIterator type
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -495,12 +496,28 @@ public:
 		return Iterator(_string, _update_iteration_data());
 	}
 
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
+	}
+
 	Iterator end() {
 		return Iterator(_string + _size, _update_iteration_data());
 	}
 
 	const Iterator end() const {
 		return Iterator(_string + _size, _update_iteration_data());
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
 	}
 
 private:

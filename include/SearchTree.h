@@ -137,23 +137,24 @@ template<class Traits>
 class SearchTree			// SearchTree Template implemented as Red-Black Tree
 {
 protected:
-    using KeyType       = typename Traits::KeyType;					// Type of Key
-    using MappedType    = typename Traits::MappedType;				// Type of Mapped _Value
-    using KeyCompare    = typename Traits::KeyCompare;				// Comparison struct
+    using KeyType       	= typename Traits::KeyType;					// Type of Key
+    using MappedType    	= typename Traits::MappedType;				// Type of Mapped _Value
+    using KeyCompare    	= typename Traits::KeyCompare;				// Comparison struct
 
 public:
-    using ValueType     = typename Traits::ValueType;				// Type of values stored in container
-	using Node 			= TreeNode<ValueType>;						// Node component from Tree
-	using IterType		= Node;										// Type of iterating element
-	using Iterator		= SearchTreeIterator<SearchTree<Traits>>;	// Iterator type
-	using Alloc			= Allocator<Node>;							// Allocator for Node type
-	using Data			= typename Iterator::Data;					// Iteration data
+    using ValueType     	= typename Traits::ValueType;				// Type of values stored in container
+	using Node 				= TreeNode<ValueType>;						// Node component from Tree
+	using IterType			= Node;										// Type of iterating element
+	using Alloc				= Allocator<Node>;							// Allocator for Node type
+	using Iterator			= SearchTreeIterator<SearchTree<Traits>>;	// Iterator type
+	using Data				= typename Iterator::Data;					// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;				// ReverseIterator type
 
 protected:
 	Alloc _alloc;
-	size_t _size		= 0;										// Number of Nodes held by this
-	Node* _head			= nullptr;									// Helper node used to link min and max elems for iteration (root == head->parent)
-    KeyCompare _less;												// Used for comparison
+	size_t _size			= 0;										// Number of Nodes held by this
+	Node* _head				= nullptr;									// Helper node used to link min and max elems for iteration (root == head->parent)
+    KeyCompare _less;													// Used for comparison
 
 	mutable Data _data;
 
@@ -309,12 +310,28 @@ public:
 		return Iterator(_head->_Left, _update_iteration_data());
 	}
 
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
+	}
+
 	Iterator end() {
 		return Iterator(_head, _update_iteration_data());
 	}
 
 	const Iterator end() const {
 		return Iterator(_head, _update_iteration_data());
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
 	}
 
 protected:

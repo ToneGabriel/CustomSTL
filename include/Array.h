@@ -137,11 +137,12 @@ template<class Type, size_t Size>
 class Array							// Array Template
 {
 public:
-	using ValueType = Type;											// Type for stored values
-	using IterType	= ValueType;									// Type for iteration (same as value)
-	using Alloc		= Allocator<ValueType>;							// Allocator type
-	using Iterator	= ArrayIterator<Array<ValueType, Size>>;		// Iterator type
-	using Data		= typename Iterator::Data;						// Iteration data
+	using ValueType 		= Type;											// Type for stored values
+	using IterType			= ValueType;									// Type for iteration (same as value)
+	using Alloc				= Allocator<ValueType>;							// Allocator type
+	using Iterator			= ArrayIterator<Array<ValueType, Size>>;		// Iterator type
+	using Data				= typename Iterator::Data;						// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;					// ReverseIterator type
 
 private:
 	ValueType _array[Size];											// Actual container array
@@ -268,12 +269,28 @@ public:
 		return Iterator(&_array[0], &_data);
 	}
 
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
+	}
+
 	Iterator end() {
 		return Iterator(&_array[Size], &_data);
 	}
 
 	const Iterator end() const {
 		return Iterator(&_array[Size], &_data);
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
 	}
 
 private:

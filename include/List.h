@@ -109,12 +109,13 @@ private:
 	friend class HashTable;
 
 public:
-	using ValueType = Type;											// Type for stored values
-	using Node		= DoubleNode<ValueType>;						// Node type
-	using IterType	= Node;											// Type of iterating element
-	using Iterator	= ListIterator<List<ValueType>>;				// Iterator type
-	using Alloc		= Allocator<Node>;								// Allocator for Node type
-	using Data		= typename Iterator::Data;						// Iteration data
+	using ValueType 		= Type;									// Type for stored values
+	using Node				= DoubleNode<ValueType>;				// Node type
+	using IterType			= Node;									// Type of iterating element
+	using Alloc				= Allocator<Node>;						// Allocator for Node type
+	using Iterator			= ListIterator<List<ValueType>>;		// Iterator type
+	using Data				= typename Iterator::Data;				// Iteration data
+	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
 
 private:
 	Alloc _alloc;													// Allocator
@@ -328,12 +329,28 @@ public:
 		return Iterator(_head->_Next, _update_iteration_data());
 	}
 
+	ReverseIterator rbegin() {
+		return ReverseIterator(end());
+	}
+
+	const ReverseIterator rbegin() const {
+		return ReverseIterator(end());
+	}
+
 	Iterator end() {
 		return Iterator(_head, _update_iteration_data());
 	}
 
 	const Iterator end() const {
 		return Iterator(_head, _update_iteration_data());
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(begin());
+	}
+
+	const ReverseIterator rend() const {
+		return ReverseIterator(begin());
 	}
 
 private:
