@@ -227,30 +227,34 @@ public:
 	}
 
 	ValueType& front() {                                                    // Get the value of the first component
+		assert(_size > 0);
 		return _head->_Next->_Value;
 	}
 
 	const ValueType& front() const {
+		assert(_size > 0);
 		return _head->_Next->_Value;
 	}
 
 	ValueType& back() {                                                     // Get the value of the last component
+		assert(_size > 0);
 		return _head->_Previous->_Value;
 	}
 
 	const ValueType& back() const {
+		assert(_size > 0);
 		return _head->_Previous->_Value;
 	}
 
 	ValueType& at(const size_t& index) {
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _scroll_node(index)->_Value;
 	}
 
 	const ValueType& at(const size_t& index) const {
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _scroll_node(index)->_Value;

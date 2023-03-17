@@ -313,14 +313,14 @@ public:
 	}
 
 	const ValueType& at(const size_t& index) const {							// Acces object at index with check (read only)
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _array[index];
 	}
 
 	ValueType& at(const size_t& index) {										// Acces object at index with check
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _array[index];
@@ -350,12 +350,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
-		assert(!(index < 0 || index >= _size));
+		assert(!(index >= _size));
 		return _array[index];
 	}
 
 	ValueType& operator[](const size_t& index) {								// Acces object at index
-		assert(!(index < 0 || index >= _size));
+		assert(!(index >= _size));
 		return _array[index];
 	}
 

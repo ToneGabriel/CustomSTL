@@ -345,18 +345,22 @@ public:
 	}
 
 	ValueType& front() {                                                     	// Get the value of the first component
+		assert(_size > 0);
 		return _array[_front];
 	}
 
 	const ValueType& front() const {
+		assert(_size > 0);
 		return _array[_front];
 	}
 
 	ValueType& back() {                                                      	// Get the value of the last component
+		assert(_size > 0);
 		return _array[_back];
 	}
 
 	const ValueType& back() const {
+		assert(_size > 0);
 		return _array[_back];
 	}
 
@@ -380,14 +384,14 @@ public:
 	}
 
 	const ValueType& at(const size_t& index) const {							// Acces object at index with check (read only)
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _array[circular_increment(_front, _capacity, index)];
 	}
 
 	ValueType& at(const size_t& index) {										// Acces object at index with check
-		if (index < 0 || index >= _size)
+		if (index >= _size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _array[circular_increment(_front, _capacity, index)];
@@ -409,12 +413,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
-		assert(!(index < 0 || index >= _size));
+		assert(!(index >= _size));
 		return _array[circular_increment(_front, _capacity, index)];
 	}
 
 	ValueType& operator[](const size_t& index) {								// Acces object at index
-		assert(!(index < 0 || index >= _size));
+		assert(!(index >= _size));
 		return _array[circular_increment(_front, _capacity, index)];
 	}
 
