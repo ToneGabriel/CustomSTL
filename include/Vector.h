@@ -1,7 +1,6 @@
 #pragma once
 #include "Allocator.h"
 #include "Utility.h"
-#include <iostream>
 
 
 CUSTOM_BEGIN
@@ -183,7 +182,8 @@ public:
 			_data._Last = _data._First + newCapacity;
 
 		ValueType* newArray = _alloc.alloc(newCapacity);
-		size_t newSize = size();
+		size_t newSize		= size();
+
 		for (size_t i = 0; i < newSize; ++i)
 			_alloc.construct(&newArray[i], custom::move(_data._First[i]));
 
@@ -244,8 +244,7 @@ public:
 	template<class... Args>
 	void emplace_back(Args&&... args) {											// Construct object using arguments (Args) and add it to the tail
 		_extend_if_full();
-		_alloc.construct(_data._Last, custom::forward<Args>(args)...);
-		++_data._Last;
+		_alloc.construct(_data._Last++, custom::forward<Args>(args)...);
 	}
 
 	void push_back(const ValueType& copyValue) {								// Construct object using reference and add it to the tail
@@ -261,38 +260,41 @@ public:
 			_alloc.destroy(--_data._Last);
 	}
 
-	//template<class... Args>
-	//Iterator emplace(const Iterator& iterator, Args&&... args) {				// Emplace object at iterator position with given arguments
-	//	size_t index = iterator.get_index();				// Don't check end()
-	//	emplace_back();
-	//	for (size_t i = _size - 1; i > index; --i)
-	//		_array[i] = custom::move(_array[i - 1]);
+	template<class... Args>
+	Iterator emplace(const Iterator& iterator, Args&&... args) {				// Emplace object at iterator position with given arguments
+		size_t index = iterator.get_index();				// Don't check end()
+		emplace_back();
 
-	//	_alloc.destroy(&_array[index]);
-	//	_alloc.construct(&_array[index], custom::forward<Args>(args)...);
+		for (size_t i = size() - 1; i > index; --i)
+			_data._First[i] = custom::move(_data._First[i - 1]);
 
-	//	return Iterator(&_array[index], _update_iteration_data());
-	//}
+		_alloc.destroy(_data._First + index);
+		_alloc.construct(_data._First + index, custom::forward<Args>(args)...);
 
-	//Iterator push(const Iterator& iterator, const ValueType& copyValue) {		// Push copy object at iterator position
-	//	return emplace(iterator, copyValue);
-	//}
+		return Iterator(_data._First + index, &_data);
+	}
 
-	//Iterator push(const Iterator& iterator, ValueType&& moveValue) {			// Push temporary object at iterator position
-	//	return emplace(iterator, custom::move(moveValue));
-	//}
+	Iterator push(const Iterator& iterator, const ValueType& copyValue) {		// Push copy object at iterator position
+		return emplace(iterator, copyValue);
+	}
 
-	//Iterator pop(const Iterator& iterator) {									// Remove component at iterator position
-	//	if (iterator.is_end())
-	//		throw std::out_of_range("Array pop iterator outside range...");
+	Iterator push(const Iterator& iterator, ValueType&& moveValue) {			// Push temporary object at iterator position
+		return emplace(iterator, custom::move(moveValue));
+	}
 
-	//	size_t index = iterator.get_index();
-	//	for (size_t i = index; i < _size - 1; ++i)
-	//		_array[i] = custom::move(_array[i + 1]);
-	//	pop_back();
+	Iterator pop(const Iterator& iterator) {									// Remove component at iterator position
+		if (iterator.is_end())
+			throw std::out_of_range("Array pop iterator outside range...");
 
-	//	return Iterator(&_array[index], _update_iteration_data());
-	//}
+		size_t index = iterator.get_index();
+		size_t beforeLast = size() - 1;
+
+		for (size_t i = index; i < beforeLast; ++i)
+			_data._First[i] = custom::move(_data._First[i + 1]);
+		pop_back();
+
+		return Iterator(_data._First + index, &_data);
+	}
 
 	const size_t capacity() const {												// Get capacity
 		return static_cast<size_t>(_data._Final - _data._First);
@@ -443,7 +445,7 @@ private:
 		size_t newSize	= other.size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_alloc.construct(_data._First + i, *(other._data._First + i));
+			_alloc.construct(&_data._First[i], other._data._First[i]));
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
