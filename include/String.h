@@ -435,14 +435,20 @@ public:
 
 	String& operator=(const String& other) {
 		if (_string != other._string)
+		{
+			_dealloc_string(_string, _capacity);
 			_copy(other);
+		}
 
 		return *this;
 	}
 
 	String& operator=(String&& other) noexcept {
 		if (_string != other._string)
+		{
+			_dealloc_string(_string, _capacity);
 			_move(custom::move(other));
+		}
 
 		return *this;
 	}
@@ -603,9 +609,6 @@ private:
 	}
 
 	void _copy(const String& other) {									// Generic copy function for string
-		if (_string != nullptr)
-			_dealloc_string(_string, _capacity);
-
 		_alloc_empty(other._capacity);
 		memcpy(_string, other._string, other._size);
 		_size 			= other._size;
@@ -613,10 +616,7 @@ private:
 		_string[_size] 	= NULLCHR;
 	}
 
-	void _move(String&& other) {											// Generic move function for string
-		if (_string != nullptr)
-			_dealloc_string(_string, _capacity);
-
+	void _move(String&& other) {										// Generic move function for string
 		_string 	= other._string;
 		_size 		= other._size;
 		_capacity 	= other._capacity;

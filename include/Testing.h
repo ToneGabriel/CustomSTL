@@ -301,6 +301,21 @@ void stack_test() {
 	}
 }
 
+void vector_test() {
+	custom::Vector<int> v;
+	v.emplace_back(0);
+	v.emplace_back(1);
+	v.emplace_back(2);
+
+	custom::Vector<int> v1(v);
+
+
+	for (auto& val : v1)
+		std::cout << val << '\n';
+
+	std::cout << v1.size() << ' ' << v1.capacity() << '\n';
+}
+
 TEST_END
 
 
