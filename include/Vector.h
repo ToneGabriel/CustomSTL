@@ -17,29 +17,22 @@ struct VectorData {
 };
 
 template<class Vector>
-class VectorIterator			// Vector Iterator
+class VectorConstIterator
 {
 public:
-	using ValueType = typename Vector::ValueType;
-	using IterType	= typename Vector::IterType;
-	using Data		= typename Vector::Data;
+	using Data			= typename Vector::Data;
+	using ValueType		= typename Vector::ValueType;
+	using IterType		= typename Vector::IterType;
 
-	IterType* _Ptr	= nullptr;
-	Data* _Data		= nullptr;
+	IterType* _Ptr		= nullptr;
+	const Data* _Data	= nullptr;
 
 public:
 
-	explicit VectorIterator(IterType* ptr, Data* data)
+	explicit VectorConstIterator(IterType* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
-	~VectorIterator() {
-		_Ptr	= nullptr;
-		_Data	= nullptr;
-	}
-
-public:
-
-	VectorIterator& operator++() {
+	VectorConstIterator& operator++() {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot increment end iterator...");
 
@@ -47,13 +40,13 @@ public:
 		return *this;
 	}
 
-	VectorIterator operator++(int) {
-		VectorIterator temp = *this;
+	VectorConstIterator operator++(int) {
+		VectorConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	VectorIterator& operator+=(const size_t& diff) {
+	VectorConstIterator& operator+=(const size_t& diff) {
 		if (_Ptr + diff >= _Data->_Last)
 			throw std::out_of_range("Cannot increment end iterator...");
 
@@ -61,13 +54,13 @@ public:
 		return *this;
 	}
 
-	VectorIterator operator+(const size_t& diff) const {
-		VectorIterator temp = *this;
+	VectorConstIterator operator+(const size_t& diff) const {
+		VectorConstIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	VectorIterator& operator--() {
+	VectorConstIterator& operator--() {
 		if (_Ptr <= _Data->_First)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
@@ -75,13 +68,13 @@ public:
 		return *this;
 	}
 
-	VectorIterator operator--(int) {
-		VectorIterator temp = *this;
+	VectorConstIterator operator--(int) {
+		VectorConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	VectorIterator& operator-=(const size_t& diff) {
+	VectorConstIterator& operator-=(const size_t& diff) {
 		if (_Ptr - diff <= _Data->_First)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
@@ -89,31 +82,31 @@ public:
 		return *this;
 	}
 
-	VectorIterator operator-(const size_t& diff) const {
-		VectorIterator temp = *this;
+	VectorConstIterator operator-(const size_t& diff) const {
+		VectorConstIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	IterType* operator->() {
+	const IterType* operator->() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	ValueType& operator*() {
+	const ValueType& operator*() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return *_Ptr;
 	}
 
-	bool operator==(const VectorIterator& other) const {
+	bool operator==(const VectorConstIterator& other) const {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const VectorIterator& other) const {
+	bool operator!=(const VectorConstIterator& other) const {
 		return !(*this == other);
 	}
 
@@ -130,6 +123,74 @@ public:
 	const bool is_end() const {
 		return _Ptr == _Data->_Last;
 	}
+
+};
+
+template<class Vector>
+class VectorIterator : public VectorConstIterator<Vector>			// Vector Iterator
+{
+public:
+	using Base		= VectorConstIterator<Vector>;
+	using Data		= typename Vector::Data;
+	using ValueType = typename Vector::ValueType;
+	using IterType	= typename Vector::IterType;
+
+public:
+
+	explicit VectorIterator(IterType* ptr, const Data* data) noexcept
+		:Base(ptr, data) { /*Empty*/ }
+
+	VectorIterator& operator++() {
+		Base::operator++();
+		return *this;
+	}
+
+	VectorIterator operator++(int) {
+		VectorIterator temp = *this;
+		Base::operator++();
+		return temp;
+	}
+
+	VectorIterator& operator+=(const size_t& diff) {
+		Base::operator+=(diff);
+		return *this;
+	}
+
+	VectorIterator operator+(const size_t& diff) const {
+		VectorIterator temp = *this;
+		temp += diff;
+		return temp;
+	}
+
+	VectorIterator& operator--() {
+		Base::operator--();
+		return *this;
+	}
+
+	VectorIterator operator--(int) {
+		VectorIterator temp = *this;
+		Base::operator--();
+		return temp;
+	}
+
+	VectorIterator& operator-=(const size_t& diff) {
+		Base::operator-=(diff);
+		return *this;
+	}
+
+	VectorIterator operator-(const size_t& diff) const {
+		VectorIterator temp = *this;
+		temp -= diff;
+		return temp;
+	}
+
+	IterType* operator->() const {
+		return const_cast<IterType*>(Base::operator->());
+	}
+
+	ValueType& operator*() const {
+		return const_cast<ValueType&>(Base::operator*());
+	}
 }; // END Vector Iterator
 
 
@@ -137,12 +198,14 @@ template<class Type>
 class Vector			// Vector Template
 {
 public:
-	using Data				= VectorData<Type>;						// Members that are modified
-	using ValueType 		= typename Data::ValueType;				// Type for stored values
-	using IterType			= typename Data::IterType;				// Type for iteration (same as value)
-	using Alloc				= typename Data::Alloc;					// Allocator type
-	using Iterator			= VectorIterator<Vector<ValueType>>;	// Iterator type
-	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
+	using Data					= VectorData<Type>;							// Members that are modified
+	using ValueType 			= typename Data::ValueType;					// Type for stored values
+	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
+	using Alloc					= typename Data::Alloc;						// Allocator type
+	using Iterator				= VectorIterator<Vector<ValueType>>;		// Iterator type
+	using ConstIterator			= VectorConstIterator<Vector<ValueType>>;	// Const Iterator type
+	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
+	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
 	Alloc _alloc;													// Allocator
@@ -383,8 +446,8 @@ public:
 		if (size() != other.size())
 			return false;
 
-		Iterator it1 = begin();
-		Iterator it2 = other.begin();
+		auto it1 = begin();
+		auto it2 = other.begin();
 		while (it1 != end())
 		{
 			if (*it1 != *it2)
@@ -408,32 +471,32 @@ public:
 		return Iterator(_data._First, &_data);
 	}
 
-	const Iterator begin() const {
-		return Iterator(_data._First, &_data);
+	ConstIterator begin() const {
+		return ConstIterator(_data._First, &_data);
 	}
 
 	ReverseIterator rbegin() {
 		return ReverseIterator(end());
 	}
 
-	const ReverseIterator rbegin() const {
-		return ReverseIterator(end());
+	ConstReverseIterator rbegin() const {
+		return ConstReverseIterator(end());
 	}
 
 	Iterator end() {
 		return Iterator(_data._Last, &_data);
 	}
 
-	const Iterator end() const {
-		return Iterator(_data._Last, &_data);
+	ConstIterator end() const {
+		return ConstIterator(_data._Last, &_data);
 	}
 
 	ReverseIterator rend() {
 		return ReverseIterator(begin());
 	}
 
-	const ReverseIterator rend() const {
-		return ReverseIterator(begin());
+	ConstReverseIterator rend() const {
+		return ConstReverseIterator(begin());
 	}
 
 private:

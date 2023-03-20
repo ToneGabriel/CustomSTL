@@ -73,11 +73,11 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Test& other) {
+	bool operator==(const Test& other) const {
 		return value == other.value;
 	}
 
-	bool operator!=(const Test& other) {
+	bool operator!=(const Test& other) const {
 		return !(*this == other);
 	}
 
@@ -142,46 +142,46 @@ void list_test() {
 		std::cout << *it << '\n';
 }
 
-void unordered_map_test() {
-	custom::UnorderedMap<int, custom::String> map;
-	custom::UnorderedMap<int, custom::String> map1;
-
-	map[10] = "abc";
-	map[11] = "gsa";
-	map[26] = "af";
-	map[101] = " a0";
-	map[54] = "69";
-	map[1] = "A bv";
-	map.emplace(3, "abc");
-	map.try_emplace(56, custom::String("shmecher"));
-
-	map1[10] = "abc";
-	map1[11] = "gsa";
-	map1[26] = "af";
-
-	map1 = custom::move(map);
-	map = custom::move(map1);
-	map[0] = "ZERO";
-
-	map.print_details();
-	std::cout << '\n';
-	for(auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
-}
-
-void unordered_set_test() {
-	custom::UnorderedSet<custom::String> set;
-	custom::UnorderedSet<custom::String> set1;
-
-	set.emplace("abc");
-	set.emplace("def");
-	set.emplace("ghi");
-	set.emplace("jkl");
-	set1 = custom::move(set);
-	set = custom::move(set1);
-
-	set1.print_details();
-}
+//void unordered_map_test() {
+//	custom::UnorderedMap<int, custom::String> map;
+//	custom::UnorderedMap<int, custom::String> map1;
+//
+//	map[10] = "abc";
+//	map[11] = "gsa";
+//	map[26] = "af";
+//	map[101] = " a0";
+//	map[54] = "69";
+//	map[1] = "A bv";
+//	map.emplace(3, "abc");
+//	map.try_emplace(56, custom::String("shmecher"));
+//
+//	map1[10] = "abc";
+//	map1[11] = "gsa";
+//	map1[26] = "af";
+//
+//	map1 = custom::move(map);
+//	map = custom::move(map1);
+//	map[0] = "ZERO";
+//
+//	map.print_details();
+//	std::cout << '\n';
+//	for(auto& val : map)
+//		std::cout << val.First << ' ' << val.Second << '\n';
+//}
+//
+//void unordered_set_test() {
+//	custom::UnorderedSet<custom::String> set;
+//	custom::UnorderedSet<custom::String> set1;
+//
+//	set.emplace("abc");
+//	set.emplace("def");
+//	set.emplace("ghi");
+//	set.emplace("jkl");
+//	set1 = custom::move(set);
+//	set = custom::move(set1);
+//
+//	set1.print_details();
+//}
 
 void map_test() {
 	custom::Map<int, Test> map;

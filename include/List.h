@@ -14,32 +14,27 @@ struct ListData {
 	using IterType		= Node;									// Type for iteration
 	using Alloc			= Allocator<Node>;						// Allocator type
 
-	size_t _Size	= 0;										// Number of Nodes held
-	Node* _Head		= nullptr;									// Head of list
+	size_t _Size		= 0;									// Number of Nodes held
+	Node* _Head			= nullptr;								// Head of list
 };
 
 template<class List>
-class ListIterator		// Linked List Iterator
+class ListConstIterator
 {
 public:
-	using Data		= typename List::Data;
-	using ValueType = typename List::ValueType;
-	using IterType	= typename List::IterType;
+	using Data			= typename List::Data;
+	using ValueType		= typename List::ValueType;
+	using IterType		= typename List::IterType;
 
-	IterType* _Ptr	= nullptr;
-	Data* _Data		= nullptr;
+	IterType* _Ptr		= nullptr;
+	const Data* _Data	= nullptr;
 
 public:
 
-	explicit ListIterator(IterType* nodePtr, Data* data)
+	explicit ListConstIterator(IterType* nodePtr, const Data* data)
 		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
 
-	~ListIterator() {
-		_Ptr	= nullptr;
-		_Data	= nullptr;
-	}
-
-	ListIterator& operator++() {
+	ListConstIterator& operator++() {
 		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot increment end iterator...");
 
@@ -47,13 +42,13 @@ public:
 		return *this;
 	}
 
-	ListIterator operator++(int) {
-		ListIterator temp = *this;
+	ListConstIterator operator++(int) {
+		ListConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ListIterator& operator--() {
+	ListConstIterator& operator--() {
 		if (_Ptr == _Data->_Head->_Next)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
@@ -61,31 +56,31 @@ public:
 		return *this;
 	}
 
-	ListIterator operator--(int) {
-		ListIterator temp = *this;
+	ListConstIterator operator--(int) {
+		ListConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	IterType* operator->() {
+	const IterType* operator->() const {
 		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	ValueType& operator*() {
+	const ValueType& operator*() const {
 		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ListIterator& other) const {
+	bool operator==(const ListConstIterator& other) const {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ListIterator& other) const {
+	bool operator!=(const ListConstIterator& other) const {
 		return !(*this == other);
 	}
 
@@ -96,6 +91,51 @@ public:
 
 	const bool is_end() const {
 		return _Ptr == _Data->_Head;
+	}
+};
+
+template<class List>
+class ListIterator : public ListConstIterator<List>		// Linked List Iterator
+{
+public:
+	using Base		= ListConstIterator <List>;
+	using Data		= typename List::Data;
+	using ValueType = typename List::ValueType;
+	using IterType	= typename List::IterType;
+
+public:
+
+	explicit ListIterator(IterType* nodePtr, Data* data)
+		:Base(nodePtr, data) { /*Empty*/ }
+
+	ListIterator& operator++() {
+		Base::operator++();
+		return *this;
+	}
+
+	ListIterator operator++(int) {
+		ListIterator temp = *this;
+		Base::operator++();
+		return temp;
+	}
+
+	ListIterator& operator--() {
+		Base::operator--();
+		return *this;
+	}
+
+	ListIterator operator--(int) {
+		ListIterator temp = *this;
+		Base::operator--();
+		return temp;
+	}
+
+	IterType* operator->() const {
+		return const_cast<IterType*>(Base::operator->());
+	}
+
+	ValueType& operator*() const {
+		return const_cast<ValueType&>(Base::operator*());
 	}
 }; // END Linked List Iterator
 
@@ -108,17 +148,19 @@ private:
 	friend class HashTable;
 
 public:
-	using Data 				= ListData<Type>;						// Members that are modified
-	using ValueType 		= typename Data::ValueType;				// Type for stored values
-	using Node 				= typename Data::Node;					// Node in list
-	using IterType			= typename Data::IterType;				// Type of iterating element
-	using Alloc				= typename Data::Alloc;					// Allocator type
-	using Iterator			= ListIterator<List<ValueType>>;		// Iterator type
-	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
+	using Data 					= ListData<Type>;							// Members that are modified
+	using ValueType 			= typename Data::ValueType;					// Type for stored values
+	using Node 					= typename Data::Node;						// Node in list
+	using IterType				= typename Data::IterType;					// Type of iterating element
+	using Alloc					= typename Data::Alloc;						// Allocator type
+	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
+	using ConstIterator			= ListConstIterator<List<ValueType>>;		// Const Iterator type
+	using ReverseIterator		= custom::ReverseIterator<Iterator>;		// Reverse Iterator type
+	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
 	Alloc _alloc;													// Allocator
-	mutable Data _data;														// Actual container data
+	Data _data;														// Actual container data
 
 public:
 	// Constructors
@@ -321,15 +363,15 @@ public:
 		return Iterator(_data._Head->_Next, &_data);
 	}
 
-	const Iterator begin() const {
-		return Iterator(_data._Head->_Next, &_data);
+	ConstIterator begin() const {
+		return ConstIterator(_data._Head->_Next, &_data);
 	}
 
 	ReverseIterator rbegin() {
 		return ReverseIterator(end());
 	}
 
-	const ReverseIterator rbegin() const {
+	ConstReverseIterator rbegin() const {
 		return ReverseIterator(end());
 	}
 
@@ -337,15 +379,15 @@ public:
 		return Iterator(_data._Head, &_data);
 	}
 
-	const Iterator end() const {
-		return Iterator(_data._Head, &_data);
+	ConstIterator end() const {
+		return ConstIterator(_data._Head, &_data);
 	}
 
 	ReverseIterator rend() {
 		return ReverseIterator(begin());
 	}
 
-	const ReverseIterator rend() const {
+	ConstReverseIterator rend() const {
 		return ReverseIterator(begin());
 	}
 
