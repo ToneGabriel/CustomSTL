@@ -2,3 +2,4 @@
    Deque check destroy array (back+1)
 2. SearchTree erase elem
 3. Find solution to iteration data
+4. Check const in begin/end for Vector, List, HashTable

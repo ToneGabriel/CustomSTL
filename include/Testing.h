@@ -73,6 +73,14 @@ public:
 		return *this;
 	}
 
+	bool operator==(const Test& other) {
+		return value == other.value;
+	}
+
+	bool operator!=(const Test& other) {
+		return !(*this == other);
+	}
+
 	friend std::ostream& operator<<(std::ostream& os, const Test& test) {
 		os << "Test val = " << test.value;
 		return os;
@@ -128,6 +136,8 @@ void list_test() {
 	list1 = custom::move(list);
 	list = custom::move(list1);
 
+	list == list1;
+
 	for (auto it = list.begin(); it != list.end(); ++it)
 		std::cout << *it << '\n';
 }
@@ -154,6 +164,7 @@ void unordered_map_test() {
 	map[0] = "ZERO";
 
 	map.print_details();
+	std::cout << '\n';
 	for(auto& val : map)
 		std::cout << val.First << ' ' << val.Second << '\n';
 }

@@ -59,7 +59,7 @@ protected:
 	// Operators
 
 	HashTable& operator=(const HashTable& other) {
-		if (_elems._head != other._elems._head)
+		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= other._elems;
 			_buckets 	= other._buckets;
@@ -69,7 +69,7 @@ protected:
 	}
 
 	HashTable& operator=(HashTable&& other) noexcept {
-		if (_elems._head != other._elems._head)
+		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= custom::move(other._elems);
 			_buckets 	= custom::move(other._buckets);
@@ -111,9 +111,9 @@ public:
 		}
 		else {
 			_rehash_if_overload();
-			_elems._insert_node_before(_elems._head, newNode);
+			_elems._insert_node_before(_elems._data._Head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, _elems._update_iteration_data());
+			return Iterator(newNode, &_elems._data);
 		}
 	}
 
@@ -126,7 +126,7 @@ public:
 
 		Node* nodeToErase = (*it);
 		_buckets[index].pop(it);													// Remove reference from array of lists
-		return _elems.pop(Iterator(nodeToErase, _elems._update_iteration_data()));	// Remove value from iteration list and return next Node iterator
+		return _elems.pop(Iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
 	}
 
 	Iterator erase(const Iterator& iterator) {
@@ -141,7 +141,7 @@ public:
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
-		return Iterator(*it, _elems._update_iteration_data());
+		return Iterator(*it, &_elems._data);
 	}
 
 	void rehash(const size_t& buckets) {							// rebuild table with at least buckets
@@ -187,12 +187,12 @@ public:
 		return table_load_factor;
 	}
 
-	void print_details() const {									// For Debugging
+	void print_details()  {									// For Debugging
 		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
 		for (size_t i = 0; i < _buckets.size(); ++i)
 		{
 			std::cout << i << " : ";
-			for (const auto& val : _buckets[i])
+			for ( auto& val : _buckets[i])
 				std::cout << Traits::extract_key(val->_Value) << ' ' << Traits::extract_mapval(val->_Value) << '\\';
 			std::cout << '\n';
 		}
@@ -235,9 +235,9 @@ protected:
 			const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 			_rehash_if_overload();
-			_elems._insert_node_before(_elems._head, newNode);
+			_elems._insert_node_before(_elems._data._Head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, _elems._update_iteration_data());
+			return Iterator(newNode, &_elems._data);
 		}
 	}
 

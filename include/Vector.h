@@ -24,7 +24,6 @@ public:
 	using IterType	= typename Vector::IterType;
 	using Data		= typename Vector::Data;
 
-private:
 	IterType* _Ptr	= nullptr;
 	Data* _Data		= nullptr;
 
@@ -138,7 +137,7 @@ template<class Type>
 class Vector			// Vector Template
 {
 public:
-	using Data				= VectorData<Type>;
+	using Data				= VectorData<Type>;						// Members that are modified
 	using ValueType 		= typename Data::ValueType;				// Type for stored values
 	using IterType			= typename Data::IterType;				// Type for iteration (same as value)
 	using Alloc				= typename Data::Alloc;					// Allocator type
@@ -445,7 +444,7 @@ private:
 		size_t newSize	= other.size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_alloc.construct(&_data._First[i], other._data._First[i]));
+			_alloc.construct(&_data._First[i], other._data._First[i]);
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();

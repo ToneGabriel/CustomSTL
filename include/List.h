@@ -8,24 +8,23 @@ template <class Traits>
 class HashTable;
 
 template<class Type>
-struct ListIterationData {		// Data used for iterating List
-	Type* _Begin	= nullptr;
-	Type* _End		= nullptr;
+struct ListData {
+	using ValueType		= Type;									// Type for stored values
+	using Node			= DoubleNode<ValueType>;				// Node type
+	using IterType		= Node;									// Type for iteration
+	using Alloc			= Allocator<Node>;						// Allocator type
 
-	ListIterationData() = default;
-	~ListIterationData() {
-		_Begin	= nullptr;
-		_End	= nullptr;
-	}
+	size_t _Size	= 0;										// Number of Nodes held
+	Node* _Head		= nullptr;									// Head of list
 };
 
 template<class List>
 class ListIterator		// Linked List Iterator
 {
 public:
+	using Data		= typename List::Data;
 	using ValueType = typename List::ValueType;
 	using IterType	= typename List::IterType;
-	using Data		= ListIterationData<IterType>;
 
 	IterType* _Ptr	= nullptr;
 	Data* _Data		= nullptr;
@@ -41,7 +40,7 @@ public:
 	}
 
 	ListIterator& operator++() {
-		if (_Ptr == _Data->_End)
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		_Ptr = _Ptr->_Next;
@@ -55,7 +54,7 @@ public:
 	}
 
 	ListIterator& operator--() {
-		if (_Ptr == _Data->_Begin)
+		if (_Ptr == _Data->_Head->_Next)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		_Ptr = _Ptr->_Previous;
@@ -69,14 +68,14 @@ public:
 	}
 
 	IterType* operator->() {
-		if (_Ptr == _Data->_End)
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
 	ValueType& operator*() {
-		if (_Ptr == _Data->_End)
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return _Ptr->_Value;
@@ -92,11 +91,11 @@ public:
 
 public:
 	const bool is_begin() const {
-		return _Ptr == _Data->_Begin;
+		return _Ptr == _Data->_Head->_Next;
 	}
 
 	const bool is_end() const {
-		return _Ptr == _Data->_End;
+		return _Ptr == _Data->_Head;
 	}
 }; // END Linked List Iterator
 
@@ -109,20 +108,17 @@ private:
 	friend class HashTable;
 
 public:
-	using ValueType 		= Type;									// Type for stored values
-	using Node				= DoubleNode<ValueType>;				// Node type
-	using IterType			= Node;									// Type of iterating element
-	using Alloc				= Allocator<Node>;						// Allocator for Node type
+	using Data 				= ListData<Type>;						// Members that are modified
+	using ValueType 		= typename Data::ValueType;				// Type for stored values
+	using Node 				= typename Data::Node;					// Node in list
+	using IterType			= typename Data::IterType;				// Type of iterating element
+	using Alloc				= typename Data::Alloc;					// Allocator type
 	using Iterator			= ListIterator<List<ValueType>>;		// Iterator type
-	using Data				= typename Iterator::Data;				// Iteration data
 	using ReverseIterator 	= ReverseIterator<Iterator>;			// ReverseIterator type
 
 private:
 	Alloc _alloc;													// Allocator
-	size_t _size	= 0;											// Number of Nodes held by this
-	Node* _head		= nullptr;										// Head of this list
-
-	mutable Data _data;
+	mutable Data _data;														// Actual container data
 
 public:
 	// Constructors
@@ -164,7 +160,7 @@ public:
 	template<class... Args>
 	void emplace_back(Args&&... args) {									// Construct object using arguments (Args) and add it to the tail
 		Node* newNode = new Node(custom::forward<Args>(args)...);
-		_insert_node_before(_head, newNode);
+		_insert_node_before(_data._Head, newNode);
 	}
 
 	void push_back(const ValueType& copyValue) {						// Construct object using reference and add it to the tail
@@ -176,14 +172,14 @@ public:
 	}
 	
 	void pop_back() {													// Remove last component
-		if (_size > 0)
-			_remove_node(_head->_Previous);
+		if (_data._Size > 0)
+			_remove_node(_data._Head->_Previous);
 	}
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {                                // Construct object using arguments (Args) and add it to the head
 		Node* newNode = new Node(custom::forward<Args>(args)...);
-		_insert_node_before(_head->_Next, newNode);
+		_insert_node_before(_data._Head->_Next, newNode);
 	}
 
 	void push_front(const ValueType& copyValue) {                       // Construct object using reference and add it to the head
@@ -195,8 +191,8 @@ public:
 	}
 
 	void pop_front() {                                                  // Remove first component
-		if (_size > 0)
-			_remove_node(_head->_Next);
+		if (_data._Size > 0)
+			_remove_node(_data._Head->_Next);
 	}
 
 	template<class... Args>
@@ -205,7 +201,7 @@ public:
 		Node* newNode = new Node(custom::forward<Args>(args)...);
 		_insert_node_before(temp, newNode);
 
-		return Iterator(newNode, _update_iteration_data());
+		return Iterator(newNode, &_data);
 	}
 
 	Iterator push(const Iterator& iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
@@ -221,52 +217,52 @@ public:
 			throw std::out_of_range("Cannot pop end iterator...");
 
 		Node* temp = iterator._Ptr;
-		Iterator prevIterator = Iterator(temp->_Previous, _update_iteration_data());	// TODO: check iter
+		Iterator prevIterator = Iterator(temp->_Previous, &_data);	// TODO: check iter
 		_remove_node(temp);
 
 		return prevIterator;
 	}
 
 	ValueType& front() {                                                    // Get the value of the first component
-		assert(_size > 0);
-		return _head->_Next->_Value;
+		assert(_data._Size > 0);
+		return _data._Head->_Next->_Value;
 	}
 
 	const ValueType& front() const {
-		assert(_size > 0);
-		return _head->_Next->_Value;
+		assert(_data._Size > 0);
+		return _data._Head->_Next->_Value;
 	}
 
 	ValueType& back() {                                                     // Get the value of the last component
-		assert(_size > 0);
-		return _head->_Previous->_Value;
+		assert(_data._Size > 0);
+		return _data._Head->_Previous->_Value;
 	}
 
 	const ValueType& back() const {
-		assert(_size > 0);
-		return _head->_Previous->_Value;
+		assert(_data._Size > 0);
+		return _data._Head->_Previous->_Value;
 	}
 
 	ValueType& at(const size_t& index) {
-		if (index >= _size)
+		if (index >= _data._Size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _scroll_node(index)->_Value;
 	}
 
 	const ValueType& at(const size_t& index) const {
-		if (index >= _size)
+		if (index >= _data._Size)
 			throw std::out_of_range("Invalid Index...");
 
 		return _scroll_node(index)->_Value;
 	}
 
 	const size_t size() const {
-		return _size;
+		return _data._Size;
 	}
 
 	bool empty() const {
-		return _size == 0;
+		return _data._Size == 0;
 	}
 
 	void clear() {
@@ -277,7 +273,7 @@ public:
 	// Operators
 
 	List& operator=(const List& other) {
-		if (_head != other._head)
+		if (_data._Head != other._data._Head)
 		{
 			clear();
 			_copy(other);
@@ -287,7 +283,7 @@ public:
 	}
 
 	List& operator=(List&& other) noexcept {
-		if (_head != other._head)
+		if (_data._Head != other._data._Head)
 		{
 			clear();
 			_move(custom::move(other));
@@ -300,8 +296,8 @@ public:
 		if (size() != other.size())
 			return false;
 
-		Iterator it1 = begin();
-		Iterator it2 = other.begin();
+		auto it1 = begin();
+		auto it2 = other.begin();
 		while (it1 != end())
 		{
 			if (*it1 != *it2)
@@ -322,11 +318,11 @@ public:
 	// Iterator specific functions
 
 	Iterator begin() {
-		return Iterator(_head->_Next, _update_iteration_data());
+		return Iterator(_data._Head->_Next, &_data);
 	}
 
 	const Iterator begin() const {
-		return Iterator(_head->_Next, _update_iteration_data());
+		return Iterator(_data._Head->_Next, &_data);
 	}
 
 	ReverseIterator rbegin() {
@@ -338,11 +334,11 @@ public:
 	}
 
 	Iterator end() {
-		return Iterator(_head, _update_iteration_data());
+		return Iterator(_data._Head, &_data);
 	}
 
 	const Iterator end() const {
-		return Iterator(_head, _update_iteration_data());
+		return Iterator(_data._Head, &_data);
 	}
 
 	ReverseIterator rend() {
@@ -357,15 +353,15 @@ private:
 	// Others
 
 	void _create_head() {
-		_head 				= _alloc.alloc(1);
-		_head->_Next 		= _head;
-		_head->_Previous 	= _head;
+		_data._Head 				= _alloc.alloc(1);
+		_data._Head->_Next 		= _data._Head;
+		_data._Head->_Previous 	= _data._Head;
 	}
 
 	void _free_head() {
-		_head->_Next 		= nullptr;
-		_head->_Previous 	= nullptr;
-		_alloc.dealloc(_head, 1);
+		_data._Head->_Next 		= nullptr;
+		_data._Head->_Previous 	= nullptr;
+		_alloc.dealloc(_data._Head, 1);
 	}
 
 	void _insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node before another
@@ -375,7 +371,7 @@ private:
 		beforeNode->_Previous->_Next = newNode;
 		beforeNode->_Previous = newNode;
 
-		++_size;
+		++_data._Size;
 	}
 
 	void _remove_node(Node* junkNode) {										// Remove Node and relink
@@ -383,58 +379,51 @@ private:
 		junkNode->_Next->_Previous = junkNode->_Previous;
 
 		delete junkNode;
-		--_size;
+		--_data._Size;
 	}
 
 	void _copy(const List& other) {											// Generic copy function for list
-		Node* temp = other._head->_Next;
-		while (_size < other._size) {
+		Node* temp = other._data._Head->_Next;
+		while (_data._Size < other._data._Size) {
 			push_back(temp->_Value);
 			temp = temp->_Next;
 		}
 		
-		_update_iteration_data();
+		// &_data;
 	}
 
 	void _move(List&& other) {												// Generic move function for list
-		std::swap(_head, other._head);		// Current _head is free of memory
+		std::swap(_data._Head, other._data._Head);
 
-		_size = other._size;
-		other._size = 0;
+		_data._Size = other._data._Size;
+		other._data._Size = 0;
 
-		_update_iteration_data();
-		other._update_iteration_data();
+		// &_data;
+		// other.&_data;
 	}
 
 	template<class... Args>
 	void _create_until_size(const size_t& newSize, Args&&... args) {		// Add elements until current size equals newSize
-		while (_size < newSize)
+		while (_data._Size < newSize)
 			emplace_back(custom::forward<Args>(args)...);
 	}
 
 	void _delete_until_size(const size_t& newSize) {						// Remove elements until current size equals newSize
-		while (_size > newSize)
+		while (_data._Size > newSize)
 			pop_back();
 	}
 
 	Node* _scroll_node(const size_t& index) const {							// Get object in the list at index position by going through all components
-		if (index < _size)
+		if (index < _data._Size)
 		{
-			Node* temp = _head->_Next;
+			Node* temp = _data._Head->_Next;
 			for (size_t i = 0; i < index; ++i)
 				temp = temp->_Next;
 
 			return temp;
 		}
 
-		return _head;
-	}
-
-	Data* _update_iteration_data() const {									// Update data and sent it to iterator
-		_data._Begin 	= _head->_Next;
-		_data._End 		= _head;
-
-		return &_data;
+		return _data._Head;
 	}
 }; // END Linked List
 
