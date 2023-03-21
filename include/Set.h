@@ -33,10 +33,14 @@ private:
 	using Base = SearchTree<SetTraits<Key, Compare>>;
 
 public:
-	using KeyType		= typename Base::KeyType;
-	using MappedType	= typename Base::MappedType;
-	using ValueType		= typename Base::ValueType;
-	using Iterator		= typename Base::Iterator;
+	using KeyType				= typename Base::KeyType;
+	using MappedType			= typename Base::MappedType;
+	using ValueType				= typename Base::ValueType;
+
+	using Iterator				= typename Base::Iterator;
+	using ConstIterator			= typename Base::ConstIterator;
+	using ReverseIterator		= typename Base::ReverseIterator;
+	using ConstReverseIterator	= typename Base::ConstReverseIterator;
 
 public:
     // Constructors

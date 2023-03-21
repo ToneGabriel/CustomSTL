@@ -1,8 +1,5 @@
-0. Change iteration data to all containers (continue with SearchTree)
-0.1 Remove IterType and make aliases public for all
-
 1. Deque resize implement
    Deque check destroy array (back+1)
 2. SearchTree erase elem
-3. Check HashTable at() for const_cast
+3. Check SearchTree at() for const
 4. Check list pop(iterator)

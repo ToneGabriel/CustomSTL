@@ -253,12 +253,13 @@ public:
 		if (newCapacity < size())						// Can also shrink
 			_data._Last = _data._First + newCapacity;
 
+		size_t newSize	= size();
 		char* newString = _alloc_string(newCapacity);
 		memcpy(newString, _data._First, size());
 		_dealloc_string(_data._First, capacity());
 
 		_data._First 	= newString;
-		_data._Last 	= _data._First + size();	// TODO: check
+		_data._Last		= _data._First + newSize;
 		_data._Final 	= _data._First + newCapacity;
 		_data._Last[0] 	= NULLCHR;
 	}
@@ -269,12 +270,12 @@ public:
 
 	void push_back(const char& chr) {
 		_extend_if_full();
-		_data._Last[0] 		= chr;
-		++_data._Last[0] 	= NULLCHR;
+		*(_data._Last++)	= chr;
+		_data._Last[0] 		= NULLCHR;
 	}
 
 	void pop_back() {
-		--_data._Last[0] = NULLCHR;
+		*(--_data._Last) = NULLCHR;
 	}
 
 	// Append function overload
@@ -382,8 +383,8 @@ public:
 		if (first.is_end())
 			throw std::out_of_range("String erase iterator outside range...");
 
-		size_t posFrom = first.get_index();
-		size_t posTo = last.get_index();
+		size_t posFrom	= first.get_index();
+		size_t posTo	= last.get_index();
 		_remove_from_cstring(posFrom, posTo - posFrom);
 
 		return Iterator(_data._First + posFrom, &_data);
@@ -489,8 +490,8 @@ public:
 
 		String sub(len);	// empty string with _capacity = len
 		memcpy(sub._data._First, _data._First + pos, len);
-		sub._data._Last = sub._data._Final;
-		sub._data._Last[0] = NULLCHR;
+		sub._data._Last		= sub._data._Final;
+		sub._data._Last[0]	= NULLCHR;
 
 		return sub;
 	}
@@ -499,6 +500,7 @@ public:
 		size_t currentSize 		= size();
 		size_t currentCapacity 	= capacity();
 
+		std::cout << '\n';
 		for (size_t i = 0; i <= currentCapacity; ++i)
 		{
 			if (_data._First[i] == NULLCHR)
@@ -554,7 +556,7 @@ public:
 	}
 
 	String& operator+=(const char& chr) {
-		append(1, chr);
+		push_back(chr);
 		return *this;
 	}
 

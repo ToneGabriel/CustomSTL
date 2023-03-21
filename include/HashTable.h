@@ -263,7 +263,7 @@ protected:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return const_cast<MappedType&>(Traits::extract_mapval((*it)->_Value));	// TODO: check why cast?
+		return const_cast<MappedType&>(Traits::extract_mapval((*it)->_Value));
 	}
 
 private:

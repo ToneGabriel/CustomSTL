@@ -176,7 +176,7 @@ public:
 template<class Traits>
 class SearchTree			// SearchTree Template implemented as Red-Black Tree
 {
-public:		// TODO: make protected, but check iterator
+public:
     using KeyType       		= typename Traits::KeyType;						// Type of Key
     using MappedType    		= typename Traits::MappedType;					// Type of Mapped values
     using ValueType     		= typename Traits::ValueType;					// Type of values stored in container (raw or pair)
