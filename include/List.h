@@ -8,7 +8,8 @@ template <class Traits>
 class HashTable;
 
 template<class Type>
-struct ListData {
+struct ListData 
+{
 	using ValueType		= Type;									// Type for stored values
 	using Node			= DoubleNode<ValueType>;				// Node type
 	using IterType		= Node;									// Type for iteration
@@ -97,8 +98,10 @@ public:
 template<class List>
 class ListIterator : public ListConstIterator<List>		// Linked List Iterator
 {
+private:
+	using Base		= ListConstIterator<List>;
+
 public:
-	using Base		= ListConstIterator <List>;
 	using Data		= typename List::Data;
 	using ValueType = typename List::ValueType;
 	using IterType	= typename List::IterType;
@@ -153,14 +156,15 @@ public:
 	using Node 					= typename Data::Node;						// Node in list
 	using IterType				= typename Data::IterType;					// Type of iterating element
 	using Alloc					= typename Data::Alloc;						// Allocator type
+	
 	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
 	using ConstIterator			= ListConstIterator<List<ValueType>>;		// Const Iterator type
 	using ReverseIterator		= custom::ReverseIterator<Iterator>;		// Reverse Iterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Alloc _alloc;													// Allocator
 	Data _data;														// Actual container data
+	Alloc _alloc;													// Allocator
 
 public:
 	// Constructors
@@ -341,13 +345,8 @@ public:
 		auto it1 = begin();
 		auto it2 = other.begin();
 		while (it1 != end())
-		{
-			if (*it1 != *it2)
+			if (*(it1++) != *(it2++))
 				return false;
-
-			++it1;
-			++it2;
-		}
 
 		return true;
 	}
@@ -430,8 +429,6 @@ private:
 			push_back(temp->_Value);
 			temp = temp->_Next;
 		}
-		
-		// &_data;
 	}
 
 	void _move(List&& other) {												// Generic move function for list
@@ -439,9 +436,6 @@ private:
 
 		_data._Size = other._data._Size;
 		other._data._Size = 0;
-
-		// &_data;
-		// other.&_data;
 	}
 
 	template<class... Args>

@@ -20,41 +20,35 @@ struct TreeNodeID {
 	TreeChild _Child	= TreeChild::Left;
 };
 
-template<class Type>
-struct SearchTreeIterationData {	// Data used for iterating SearchTree
-	Type* _Begin	= nullptr;
-	Type* _End		= nullptr;
+template<class Traits>
+struct SearchTreeData
+{
+	using ValueType		= typename Traits::ValueType;			// Type for stored values
+	using Node			= TreeNode<ValueType>;					// Node type
+	using IterType		= Node;									// Type for iteration
+	using Alloc			= Allocator<Node>;						// Allocator type
 
-	SearchTreeIterationData() = default;
-	~SearchTreeIterationData() {
-		_Begin	= nullptr;
-		_End	= nullptr;
-	}
+	size_t _Size		= 0;									// Number of Nodes held
+	Node* _Head			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
 };
 
-
 template<class SearchTree>
-class SearchTreeIterator			// SearchTree Iterator
+class ConstSearchTreeIterator
 {
 public:
-	using ValueType = typename SearchTree::ValueType;
-	using IterType	= typename SearchTree::IterType;
-	using Data		= SearchTreeIterationData<IterType>;
+	using Data			= typename SearchTree::Data;
+	using ValueType 	= typename SearchTree::ValueType;
+	using IterType		= typename SearchTree::IterType;
 
-	IterType* _Ptr	= nullptr;
-	Data* _Data		= nullptr;
+	IterType* _Ptr		= nullptr;
+	const Data* _Data	= nullptr;
 
 public:
-	explicit SearchTreeIterator(IterType* ptr, Data* data)
+	explicit ConstSearchTreeIterator(IterType* ptr, Data* data)
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
-	~SearchTreeIterator() {
-		_Ptr	= nullptr;
-		_Data	= nullptr;
-	}
-
-	SearchTreeIterator& operator++() {
-		if (_Ptr == _Data->_End)
+	ConstSearchTreeIterator& operator++() {
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot increment end iterator...");
 
 		if (_Ptr->_Right->_IsNil)
@@ -73,14 +67,14 @@ public:
 		return *this;
 	}
 
-	SearchTreeIterator operator++(int) {
-		SearchTreeIterator temp = *this;
+	ConstSearchTreeIterator operator++(int) {
+		ConstSearchTreeIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	SearchTreeIterator& operator--() {
-		if (_Ptr == _Data->_Begin)
+	ConstSearchTreeIterator& operator--() {
+		if (_Ptr == _Data->_Head->_Left)
 			throw std::out_of_range("Cannot decrement begin iterator...");
 
 		if (_Ptr->_IsNil)
@@ -103,32 +97,78 @@ public:
 		return *this;
 	}
 
-	SearchTreeIterator operator--(int) {
-		SearchTreeIterator temp = *this;
+	ConstSearchTreeIterator operator--(int) {
+		ConstSearchTreeIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	IterType* operator->() {
-		if (_Ptr == _Data->_End)
+	const IterType* operator->() {
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	ValueType& operator*() {
-		if (_Ptr == _Data->_End)
+	const ValueType& operator*() {
+		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const SearchTreeIterator& other) const {
+	bool operator==(const ConstSearchTreeIterator& other) const {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const SearchTreeIterator& other) const {
+	bool operator!=(const ConstSearchTreeIterator& other) const {
 		return !(*this == other);
+	}
+};
+
+template<class SearchTree>
+class SearchTreeIterator : public ConstSearchTreeIterator<SearchTree>			// SearchTree Iterator
+{
+private:
+	using Base		= ConstSearchTreeIterator<SearchTree>;
+
+public:
+	using Data		= typename SearchTree::Data;
+	using ValueType = typename SearchTree::ValueType;
+	using IterType	= typename SearchTree::IterType;
+
+public:
+	explicit SearchTreeIterator(IterType* ptr, Data* data)
+		:Base(ptr, data) { /*Empty*/ }
+
+	SearchTreeIterator& operator++() {
+		Base::operator++();
+		return *this;
+	}
+
+	SearchTreeIterator operator++(int) {
+		SearchTreeIterator temp = *this;
+		Base::operator++();
+		return temp;
+	}
+
+	SearchTreeIterator& operator--() {
+		Base::operator--();
+		return *this;
+	}
+
+	SearchTreeIterator operator--(int) {
+		SearchTreeIterator temp = *this;
+		Base::operator--();
+		return temp;
+	}
+
+	IterType* operator->() {
+		return const_cast<IterType*>(Base::operator->());
+	}
+
+	ValueType& operator*() {
+		return const_cast<ValueType&>(Base::operator*());
 	}
 }; // END SearchTree Iterator
 
@@ -136,27 +176,26 @@ public:
 template<class Traits>
 class SearchTree			// SearchTree Template implemented as Red-Black Tree
 {
-protected:
-    using KeyType       	= typename Traits::KeyType;					// Type of Key
-    using MappedType    	= typename Traits::MappedType;				// Type of Mapped _Value
-    using KeyCompare    	= typename Traits::KeyCompare;				// Comparison struct
+public:		// TODO: make protected, but check iterator
+    using KeyType       		= typename Traits::KeyType;						// Type of Key
+    using MappedType    		= typename Traits::MappedType;					// Type of Mapped values
+    using ValueType     		= typename Traits::ValueType;					// Type of values stored in container (raw or pair)
+    using KeyCompare    		= typename Traits::KeyCompare;					// Comparison struct
 
-public:
-    using ValueType     	= typename Traits::ValueType;				// Type of values stored in container
-	using Node 				= TreeNode<ValueType>;						// Node component from Tree
-	using IterType			= Node;										// Type of iterating element
-	using Alloc				= Allocator<Node>;							// Allocator for Node type
-	using Iterator			= SearchTreeIterator<SearchTree<Traits>>;	// Iterator type
-	using Data				= typename Iterator::Data;					// Iteration data
-	using ReverseIterator 	= ReverseIterator<Iterator>;				// ReverseIterator type
+	using Data					= SearchTreeData<Traits>;
+	using Node 					= typename Data::Node;							// Node component from Tree
+	using IterType				= typename Data::IterType;						// Type of iterating element
+	using Alloc					= typename Data::Alloc;							// Allocator for Node type
+	
+	using Iterator				= SearchTreeIterator<SearchTree<Traits>>;		// Iterator type
+	using ConstIterator			= ConstSearchTreeIterator<SearchTree<Traits>>;
+	using ReverseIterator 		= custom::ReverseIterator<Iterator>;			// ReverseIterator type
+	using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
 
 protected:
+	Data _data;
 	Alloc _alloc;
-	size_t _size			= 0;										// Number of Nodes held by this
-	Node* _head				= nullptr;									// Helper node used to link min and max elems for iteration (root == head->parent)
     KeyCompare _less;													// Used for comparison
-
-	mutable Data _data;
 
 protected:
 	// Constructors
@@ -174,7 +213,7 @@ protected:
 	}
 
 	virtual ~SearchTree() {
-		_destroy_all(_head->_Parent);
+		_destroy_all(_data._Head->_Parent);
 		_free_head();
 	}
 
@@ -182,7 +221,7 @@ protected:
 	// Operators
 
 	SearchTree& operator=(const SearchTree& other) {
-		if (_head != other._head)
+		if (_data._Head != other._data._Head)
 		{
 			clear();
 			_copy(other);
@@ -192,7 +231,7 @@ protected:
 	}
 
 	SearchTree& operator=(SearchTree&& other) noexcept {
-		if (_head != other._head)
+		if (_data._Head != other._data._Head)
 		{
 			clear();
 			_move(custom::move(other));
@@ -208,13 +247,8 @@ protected:
 		Iterator it1 = begin();
 		Iterator it2 = other.begin();
 		while (it1 != end())
-		{
-			if (*it1 != *it2)	// mapping is the same
+			if (*(it1++) != *(it2++))
 				return false;
-
-			++it1;
-			++it2;
-		}
 
 		return true;
 	}
@@ -255,7 +289,7 @@ public:
 		{
 			auto insertPosition = _find_insertion_slot(newNode);
 			_insert(newNode, insertPosition);
-			return Iterator(newNode, _update_iteration_data());
+			return Iterator(newNode, &_data);
 		}
 	}
 
@@ -263,7 +297,7 @@ public:
 		Node* nodeToErase = _find_in_tree(key);
 		_destroy(nodeToErase);
 
-		return Iterator(_head, _update_iteration_data());	// TODO: not ok
+		return Iterator(_data._Head, &_data);	// TODO: not ok
 	}
 
 	Iterator erase(const Iterator& iterator) {
@@ -273,33 +307,33 @@ public:
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
 
-	Iterator find(const KeyType& key) const {
+	Iterator find(const KeyType& key) {
 		Node* foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
-			return Iterator(foundNode, _update_iteration_data());
+			return Iterator(foundNode, &_data);
 
 		return end();
 	}
 
 	size_t size() const {
-		return _size;
+		return _data._Size;
 	}
 
 	bool empty() const {
-		return _size == 0;
+		return _data._Size == 0;
 	}
 
 	void clear() {
-		_destroy_all(_head->_Parent);
-		_head->_Parent	= _head;
-		_head->_Left	= _head;
-		_head->_Right	= _head;
-		_size			= 0;
+		_destroy_all(_data._Head->_Parent);
+		_data._Head->_Parent	= _data._Head;
+		_data._Head->_Left	= _data._Head;
+		_data._Head->_Right	= _data._Head;
+		_data._Size			= 0;
 	}
 
 	void print_details() const {									// For Debugging
-		std::cout << "Size= " << _size << '\n';
-		_print_graph(0, _head->_Parent, "HEAD");
+		std::cout << "Size= " << _data._Size << '\n';
+		_print_graph(0, _data._Head->_Parent, "HEAD");
 	}
 
 	void test() {	// TODO: remove after testing
@@ -312,35 +346,35 @@ public:
 	// Iterator functions
 
 	Iterator begin() {
-		return Iterator(_head->_Left, _update_iteration_data());
+		return Iterator(_data._Head->_Left, &_data);
 	}
 
-	const Iterator begin() const {
-		return Iterator(_head->_Left, _update_iteration_data());
+	ConstIterator begin() const {
+		return ConstIterator(_data._Head->_Left, &_data);
 	}
 
 	ReverseIterator rbegin() {
 		return ReverseIterator(end());
 	}
 
-	const ReverseIterator rbegin() const {
-		return ReverseIterator(end());
+	ConstReverseIterator rbegin() const {
+		return ConstReverseIterator(end());
 	}
 
 	Iterator end() {
-		return Iterator(_head, _update_iteration_data());
+		return Iterator(_data._Head, &_data);
 	}
 
-	const Iterator end() const {
-		return Iterator(_head, _update_iteration_data());
+	ConstIterator end() const {
+		return ConstIterator(_data._Head, &_data);
 	}
 
 	ReverseIterator rend() {
 		return ReverseIterator(begin());
 	}
 
-	const ReverseIterator rend() const {
-		return ReverseIterator(begin());
+	ConstReverseIterator rend() const {
+		return ConstReverseIterator(begin());
 	}
 
 protected:
@@ -362,7 +396,7 @@ protected:
 
 			auto insertPosition = _find_insertion_slot(newNode);
 			_insert(newNode, insertPosition);
-			return Iterator(newNode, _update_iteration_data());
+			return Iterator(newNode, &_data);
 		}
 	}
 
@@ -408,8 +442,8 @@ private:
 
 		promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
-		if (subroot == _head->_Parent)					// special case when tree root is chosen for rotation
-			_head->_Parent = promotedNode;
+		if (subroot == _data._Head->_Parent)					// special case when tree root is chosen for rotation
+			_data._Head->_Parent = promotedNode;
 		else if (subroot == subroot->_Parent->_Left)	// parent links his new promoted child
 			subroot->_Parent->_Left = promotedNode;
 		else
@@ -428,8 +462,8 @@ private:
 
 		promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
-		if (subroot == _head->_Parent)					// special case when tree root is chosen for rotation
-			_head->_Parent = promotedNode;
+		if (subroot == _data._Head->_Parent)					// special case when tree root is chosen for rotation
+			_data._Head->_Parent = promotedNode;
 		else if (subroot == subroot->_Parent->_Left)
 			subroot->_Parent->_Left = promotedNode;		// parent links his new promoted child
 		else
@@ -441,7 +475,7 @@ private:
 
 	Node* _copy_all(Node* subroot) {								// DFS Preorder
 		if (subroot->_IsNil)
-			return _head;
+			return _data._Head;
 
 		Node* newNode 		= new Node(subroot->_Value);
 		newNode->_IsNil		= false;
@@ -482,15 +516,15 @@ private:
 		return node;
 	}
 
-	Node* _find_in_tree(const KeyType& key) const {
+	Node* _find_in_tree(const KeyType& key) {
 		Node* found = nullptr;
 
-		for (Node* iterNode = _head->_Parent; !iterNode->_IsNil; )	// TODO: check warning
+		for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil; )	// TODO: check warning
 		{
 			if (key == Traits::extract_key(iterNode->_Value))
 			{
 				found = iterNode;
-				iterNode = _head;
+				iterNode = _data._Head;
 			}
 			else if (_less(key, Traits::extract_key(iterNode->_Value)))
 				iterNode = iterNode->_Left;
@@ -504,10 +538,10 @@ private:
 	TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {
 		TreeNodeID<Node> position;
 
-		if (_head->_Parent == _head)	// First node
-			position._Parent = _head;
+		if (_data._Head->_Parent == _data._Head)	// First node
+			position._Parent = _data._Head;
 		else
-			for (Node* iterNode = _head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
+			for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
 			{
 				position._Parent = iterNode;
 				if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
@@ -528,29 +562,29 @@ private:
 	}
 
 	void _insert(Node* newNode, const TreeNodeID<Node>& position) {
-		++_size;
+		++_data._Size;
 
 		// Raw Insert
 		newNode->_Parent = position._Parent;
 
-		if (position._Parent == _head)					// first node
+		if (position._Parent == _data._Head)					// first node
 		{
-			_head->_Parent	= newNode;
-			_head->_Left	= newNode;
-			_head->_Right	= newNode;
+			_data._Head->_Parent	= newNode;
+			_data._Head->_Left	= newNode;
+			_data._Head->_Right	= newNode;
 			newNode->_Color = Node::Colors::Black;
 		}
 		else if (position._Child == TreeChild::Left)	// add to left
 		{
 			position._Parent->_Left = newNode;
-			if (position._Parent == _head->_Left)
-				_head->_Left = newNode;
+			if (position._Parent == _data._Head->_Left)
+				_data._Head->_Left = newNode;
 		}
 		else											// add to right
 		{
 			position._Parent->_Right = newNode;
-			if (position._Parent == _head->_Right)
-				_head->_Right = newNode;
+			if (position._Parent == _data._Head->_Right)
+				_data._Head->_Right = newNode;
 		}
 
 		// Fix Insert
@@ -607,7 +641,7 @@ private:
 			}
 		}
 
-		_head->_Parent->_Color = Node::Colors::Black;								// root is black
+		_data._Head->_Parent->_Color = Node::Colors::Black;								// root is black
 	}
 
 	void _destroy(Node* oldNode) {
@@ -624,7 +658,7 @@ private:
 			// TODO: rebalance
 		}
 
-		--_size;
+		--_data._Size;
 	}
 
 	void _fix_destroy(Node* node) {
@@ -685,7 +719,7 @@ private:
 			else
 				first->_Parent->_Right = second;
 		else
-			_head = second;
+			_data._Head = second;
 
 		if (_has_parent(second))	// check head second
 			if (second == second->_Parent->_Left)
@@ -693,7 +727,7 @@ private:
 			else
 				second->_Parent->_Right = first;
 		else
-			_head = first;
+			_data._Head = first;
 
 		aux = first->_Parent;
 		first->_Parent = second->_Parent;
@@ -738,27 +772,27 @@ private:
 	}
 
 	void _create_head() {
-		_head 			= _alloc.alloc(1);
-		_head->_Parent	= _head;
-		_head->_Left	= _head;
-		_head->_Right	= _head;
-		_head->_IsNil	= true;
-		_head->_Color	= Node::Colors::Black;
+		_data._Head 			= _alloc.alloc(1);
+		_data._Head->_Parent	= _data._Head;
+		_data._Head->_Left	= _data._Head;
+		_data._Head->_Right	= _data._Head;
+		_data._Head->_IsNil	= true;
+		_data._Head->_Color	= Node::Colors::Black;
 	}
 
 	void _free_head() {
-		_head->_Parent	= nullptr;
-		_head->_Left	= nullptr;
-		_head->_Right	= nullptr;
-		_alloc.dealloc(_head, 1);
+		_data._Head->_Parent	= nullptr;
+		_data._Head->_Left	= nullptr;
+		_data._Head->_Right	= nullptr;
+		_alloc.dealloc(_data._Head, 1);
 	}
 
 	template<class... Args>
 	Node* _create_common_node(Args&&... args) {
 		Node* newNode 		= new Node(custom::forward<Args>(args)...);
-		newNode->_Parent	= _head;
-		newNode->_Left		= _head;
-		newNode->_Right		= _head;
+		newNode->_Parent	= _data._Head;
+		newNode->_Left		= _data._Head;
+		newNode->_Right		= _data._Head;
 		newNode->_IsNil		= false;
 		newNode->_Color		= Node::Colors::Red;
 
@@ -766,29 +800,18 @@ private:
 	}
 
 	void _copy(const SearchTree& other) {
-		_head->_Parent 				= _copy_all(other._head->_Parent);
-		_head->_Left 				= leftmost(_head->_Parent);
-		_head->_Right 				= rightmost(_head->_Parent);
-		_head->_Parent->_Parent 	= _head;
-		_size 						= other._size;
-		_update_iteration_data();
+		_data._Head->_Parent 				= _copy_all(other._data._Head->_Parent);
+		_data._Head->_Left 				= leftmost(_data._Head->_Parent);
+		_data._Head->_Right 				= rightmost(_data._Head->_Parent);
+		_data._Head->_Parent->_Parent 	= _data._Head;
+		_data._Size 						= other._data._Size;
 	}
 
 	void _move(SearchTree&& other) {
-		std::swap(_head, other._head);
+		std::swap(_data._Head, other._data._Head);
 
-		_size = other._size;
-		other._size = 0;
-
-		_update_iteration_data();
-		other._update_iteration_data();
-	}
-
-	Data* _update_iteration_data() const {
-		_data._Begin	= _head->_Left;
-		_data._End		= _head;
-
-		return &_data;
+		_data._Size = other._data._Size;
+		other._data._Size = 0;
 	}
 }; // END SearchTree Template
 

@@ -14,19 +14,20 @@ template<class Traits>
 class HashTable				// HashTable Template implemented as vector of lists
 {
 protected:
-    using KeyType           = typename Traits::KeyType;				// Type of Key
-    using MappedType        = typename Traits::MappedType;			// Type of Mapped _Value
-    using Hasher            = typename Traits::HasherType;			// Hash struct
+    using KeyType           	= typename Traits::KeyType;				// Type of Key
+    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
+	using ValueType				= typename Traits::ValueType;			// Type of values stored in container
+    using Hasher            	= typename Traits::HasherType;			// Hash struct
 
-	using IterList			= List<typename Traits::ValueType>;		// List of ValueType used for iterating
-	using Node				= typename IterList::Node;				// Node component from List
-	using Bucket			= List<Node*>;							// List of Node* (as _Value) from Iteration list
-	using HashArray			= Vector<Bucket>;						// Vector of lists of Node*
-	using BucketIterator	= typename Bucket::Iterator;			// Iterator for Buckets
+	using IterList				= List<ValueType>;						// List of ValueType used for iterating
+	using Node					= typename IterList::Node;				// Node component from List
+	using Bucket				= List<Node*>;							// List of Node* (as _Value) from Iteration list
+	using HashArray				= Vector<Bucket>;						// Vector of lists of Node*
+	using BucketIterator		= typename Bucket::Iterator;			// Iterator for Buckets
+	using ConstBucketIterator 	= typename Bucket::ConstIterator;
 
-public:
-	using ValueType			= typename Traits::ValueType;			// Type of values stored in container
-	using Iterator			= typename List<ValueType>::Iterator;	// Iterator for this container (identical to List iterator)
+	using Iterator				= typename IterList::Iterator;			// Iterator for this container (identical to List iterator)
+	using ConstIterator			= typename IterList::ConstIterator;
 
 protected:
 	Hasher _hash;													// Used for initial(non-compressed) hash value
@@ -84,7 +85,7 @@ protected:
 
 		for (const ValueType& val : other)
 		{
-			Iterator it = find(Traits::extract_key(val));	// Search for key
+			ConstIterator it = find(Traits::extract_key(val));	// Search for key
 			if (it == end() || Traits::extract_mapval(*it) != Traits::extract_mapval(val))
 				return false;
 		}
@@ -136,12 +137,20 @@ public:
 		return erase(iterator._Ptr->_Value);
 	}
 
-	Iterator find(const KeyType& key) const {
+	Iterator find(const KeyType& key) {
 		BucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
 		return Iterator(*it, &_elems._data);
+	}
+
+	ConstIterator find(const KeyType& key) const {
+		ConstBucketIterator it = _find_in_array(key);
+		if (it == _buckets[bucket(key)].end())
+			return end();
+
+		return ConstIterator(*it, &_elems._data);
 	}
 
 	void rehash(const size_t& buckets) {							// rebuild table with at least buckets
@@ -205,7 +214,7 @@ public:
 		return _elems.begin();
 	}
 
-	const Iterator begin() const {
+	ConstIterator begin() const {
 		return _elems.begin();
 	}
 
@@ -213,7 +222,7 @@ public:
 		return _elems.end();
 	}
 
-	const Iterator end() const {
+	ConstIterator end() const {
 		return _elems.end();
 	}
 
@@ -242,7 +251,7 @@ protected:
 	}
 
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
-		BucketIterator it = _find_in_array(key);
+		ConstBucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
@@ -254,15 +263,24 @@ protected:
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
-		return Traits::extract_mapval((*it)->_Value);
+		return const_cast<MappedType&>(Traits::extract_mapval((*it)->_Value));	// TODO: check why cast?
 	}
 
 private:
 	// Helpers
 
-	BucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
-		const Bucket& currentBucket = _buckets[bucket(key)];
+	BucketIterator _find_in_array(const KeyType& key) {
+		Bucket& currentBucket = _buckets[bucket(key)];
 		BucketIterator it = currentBucket.begin();
+		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
+			++it;
+
+		return it;
+	}
+
+	ConstBucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
+		const Bucket& currentBucket = _buckets[bucket(key)];
+		ConstBucketIterator it = currentBucket.begin();
 		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 			++it;
 

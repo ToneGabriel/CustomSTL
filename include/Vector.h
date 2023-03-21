@@ -6,7 +6,8 @@
 CUSTOM_BEGIN
 
 template<class Type>
-struct VectorData {
+struct VectorData
+{
 	using ValueType		= Type;									// Type for stored values
 	using IterType		= ValueType;							// Type for iteration (same as value)
 	using Alloc			= Allocator<ValueType>;					// Allocator type
@@ -129,8 +130,10 @@ public:
 template<class Vector>
 class VectorIterator : public VectorConstIterator<Vector>			// Vector Iterator
 {
-public:
+private:
 	using Base		= VectorConstIterator<Vector>;
+	
+public:
 	using Data		= typename Vector::Data;
 	using ValueType = typename Vector::ValueType;
 	using IterType	= typename Vector::IterType;
@@ -202,14 +205,15 @@ public:
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
 	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
 	using Alloc					= typename Data::Alloc;						// Allocator type
+	
 	using Iterator				= VectorIterator<Vector<ValueType>>;		// Iterator type
 	using ConstIterator			= VectorConstIterator<Vector<ValueType>>;	// Const Iterator type
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Alloc _alloc;													// Allocator
 	Data _data;														// Actual container data
+	Alloc _alloc;													// Allocator
 	
 	static constexpr size_t default_capacity = 8;
 
@@ -449,13 +453,8 @@ public:
 		auto it1 = begin();
 		auto it2 = other.begin();
 		while (it1 != end())
-		{
-			if (*it1 != *it2)
+			if (*(it1++) != *(it2++))
 				return false;
-
-			++it1;
-			++it2;
-		}
 
 		return true;
 	}
