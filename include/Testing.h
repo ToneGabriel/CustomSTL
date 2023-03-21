@@ -318,6 +318,13 @@ void vector_test() {
 	std::cout << v1.size() << ' ' << v1.capacity() << '\n';
 }
 
+void string_test() {
+	custom::String s("abcd");
+	s.reserve(10);
+
+	s.print_details();
+}
+
 TEST_END
 
 

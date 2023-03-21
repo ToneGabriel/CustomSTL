@@ -108,7 +108,7 @@ public:
 
 public:
 
-	explicit ListIterator(IterType* nodePtr, Data* data)
+	explicit ListIterator(IterType* nodePtr, const Data* data)
 		:Base(nodePtr, data) { /*Empty*/ }
 
 	ListIterator& operator++() {

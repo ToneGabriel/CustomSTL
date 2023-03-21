@@ -44,7 +44,7 @@ public:
 	const Data* _Data	= nullptr;
 
 public:
-	explicit ConstSearchTreeIterator(IterType* ptr, Data* data)
+	explicit ConstSearchTreeIterator(IterType* ptr, const Data* data)
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
 	ConstSearchTreeIterator& operator++() {
@@ -138,7 +138,7 @@ public:
 	using IterType	= typename SearchTree::IterType;
 
 public:
-	explicit SearchTreeIterator(IterType* ptr, Data* data)
+	explicit SearchTreeIterator(IterType* ptr, const Data* data)
 		:Base(ptr, data) { /*Empty*/ }
 
 	SearchTreeIterator& operator++() {
