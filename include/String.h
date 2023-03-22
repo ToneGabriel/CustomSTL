@@ -348,19 +348,19 @@ public:
 		return Iterator(_data._First + pos, &_data);
 	}
 
-	// Iterator insert(const Iterator& where, const Iterator& first, const Iterator& last) {
-	// 	if (where._Data->_Begin == first._Data->_Begin ||
-	// 		first._Data->_Begin != last._Data->_Begin)	// Check if pos string != first/last string
-	// 		throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
+	Iterator insert(const Iterator& where, const Iterator& first, const Iterator& last) {
+		if (where._Data->_First == first._Data->_First ||
+			first._Data->_First != last._Data->_First)	// Check if pos string != first/last string
+			throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
 
-	// 	size_t pos 			= where.get_index();
-	// 	size_t posFrom 		= first.get_index();
-	// 	size_t posTo 		= last.get_index();
-	// 	const char* cstring = first._Data->_Begin;
-	// 	_insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
+		size_t pos 			= where.get_index();
+		size_t posFrom 		= first.get_index();
+		size_t posTo 		= last.get_index();
+		const char* cstring = first._Data->_First;
+		_insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
-	// 	return Iterator(_data._First + pos, &_data);
-	// }
+		return Iterator(_data._First + pos, &_data);
+	}
 	// end Insert
 
 	// Erase function overload

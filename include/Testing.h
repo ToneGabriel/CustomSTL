@@ -233,26 +233,8 @@ void deque_test() {
 	dq.emplace_back(2);
 	dq.emplace_back(3);
 	dq.emplace_back(4);
-	dq.pop_front();
-	dq.pop_front();
-	dq.emplace_front(5);
-	dq.emplace_front(6);
 
-	dq.emplace_front(7);
-	dq.emplace_front(8);
-	dq.emplace_front(9);
-	dq.emplace_front(10);
-	dq.emplace_front(11);
-	dq.emplace_front(12);
-	dq.emplace_front(13);
-	dq.emplace_front(14);
-
-	dq.emplace(++dq.begin(), 101);
 	dq.print_details();
-
-	for(auto& val : dq)
-	std::cout << val << ' ';
-	std::cout << '\n';
 }
 
 void queue_test() {
@@ -320,7 +302,13 @@ void vector_test() {
 
 void string_test() {
 	custom::String s("abcd");
-	s.reserve(10);
+	custom::String s1("abcd");
+	s.insert(++s.begin(),s1.begin(),--s1.end());
+
+	std::string ss("abcd");
+	std::string ss1("abcd");
+	ss.insert(++ss.begin(),ss1.begin(),--ss1.end());
+	std::cout << ss << '\n';
 
 	s.print_details();
 }

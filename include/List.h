@@ -263,7 +263,7 @@ public:
 			throw std::out_of_range("Cannot pop end iterator...");
 
 		Node* temp = iterator._Ptr;
-		Iterator prevIterator = Iterator(temp->_Previous, &_data);	// TODO: check iter
+		Iterator prevIterator = Iterator(temp->_Previous, &_data);
 		_remove_node(temp);
 
 		return prevIterator;

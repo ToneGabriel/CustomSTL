@@ -9,7 +9,8 @@ int main()
 	//test::unordered_map_test();
 	//test::unordered_set_test();
 	//test::list_test();
-	test::string_test();
+	//test::string_test();
+	test::deque_test();
 
 
 	return 0;
