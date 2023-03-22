@@ -1,4 +1,4 @@
-1. Check Array iterator and constructors
+1. Check Array constructors
 2. Change Deque data
 3. Deque resize implement
    Deque check destroy array (back+1)

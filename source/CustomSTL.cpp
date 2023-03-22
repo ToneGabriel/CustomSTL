@@ -10,6 +10,7 @@ int main()
 	//test::unordered_set_test();
 	//test::list_test();
 	//test::string_test();
+	//test::array_test();
 	test::deque_test();
 
 

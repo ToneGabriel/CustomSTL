@@ -313,6 +313,14 @@ void string_test() {
 	s.print_details();
 }
 
+void array_test() {
+	custom::Array<Test, 5> arr;
+	arr.fill(Test(3));
+
+	for (auto& val : arr)
+		std::cout << val << '\n';
+}
+
 TEST_END
 
 
