@@ -9,13 +9,15 @@
 
 CUSTOM_BEGIN
 
-enum class TreeChild {
+enum class TreeChild 
+{
 	Left,
 	Right
 };
 
 template<class Node>
-struct TreeNodeID {
+struct TreeNodeID 			// Indicator for child placement
+{							
 	Node* _Parent		= nullptr;
 	TreeChild _Child	= TreeChild::Left;
 };
@@ -30,6 +32,20 @@ struct SearchTreeData
 
 	size_t _Size		= 0;									// Number of Nodes held
 	Node* _Head			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
+
+	Node* leftmost(Node* node) const {							// return leftmost node in subtree at node
+		while (!node->_Left->_IsNil)
+			node = node->_Left;
+
+		return node;
+	}
+
+	Node* rightmost(Node* node) const {							// return leftmost node in subtree at node
+		while (!node->_Right->_IsNil)
+			node = node->_Right;
+
+		return node;
+	}
 };
 
 template<class SearchTree>
@@ -62,7 +78,7 @@ public:
 			_Ptr = node;
 		}
 		else
-			_Ptr = SearchTree::leftmost(_Ptr->_Right);
+			_Ptr = _Data->leftmost(_Ptr->_Right);
 
 		return *this;
 	}
@@ -92,7 +108,7 @@ public:
 				_Ptr = node;
 		}
 		else
-			_Ptr = SearchTree::rightmost(_Ptr->_Left);
+			_Ptr = _Data->rightmost(_Ptr->_Left);
 
 		return *this;
 	}
@@ -244,8 +260,8 @@ protected:
 		if (size() != other.size())
 			return false;
 
-		Iterator it1 = begin();
-		Iterator it2 = other.begin();
+		auto it1 = begin();
+		auto it2 = other.begin();
 		while (it1 != end())
 			if (*(it1++) != *(it2++))
 				return false;
@@ -259,20 +275,6 @@ protected:
 
 public:
     // Main functions
-
-	static Node* leftmost(Node* node) noexcept {					// return leftmost node in subtree at node
-		while (!node->_Left->_IsNil)
-			node = node->_Left;
-
-		return node;
-	}
-
-	static Node* rightmost(Node* node) noexcept {					// return leftmost node in subtree at node
-		while (!node->_Right->_IsNil)
-			node = node->_Right;
-
-		return node;
-	}
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
@@ -325,10 +327,10 @@ public:
 
 	void clear() {
 		_destroy_all(_data._Head->_Parent);
-		_data._Head->_Parent	= _data._Head;
-		_data._Head->_Left	= _data._Head;
-		_data._Head->_Right	= _data._Head;
-		_data._Size			= 0;
+		_data._Head->_Parent 	= _data._Head;
+		_data._Head->_Left 		= _data._Head;
+		_data._Head->_Right		= _data._Head;
+		_data._Size				= 0;
 	}
 
 	void print_details() const {									// For Debugging
@@ -442,7 +444,7 @@ private:
 
 		promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
-		if (subroot == _data._Head->_Parent)					// special case when tree root is chosen for rotation
+		if (subroot == _data._Head->_Parent)			// special case when tree root is chosen for rotation
 			_data._Head->_Parent = promotedNode;
 		else if (subroot == subroot->_Parent->_Left)	// parent links his new promoted child
 			subroot->_Parent->_Left = promotedNode;
@@ -453,7 +455,7 @@ private:
 		subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 	}
 
-	void _rotate_right(Node* subroot) {								// promotes subroot left
+	void _rotate_right(Node* subroot) {					// promotes subroot left
 		Node* promotedNode = subroot->_Left;
 		subroot->_Left = promotedNode->_Right;			// subroot adopt right child of promoted
 
@@ -462,7 +464,7 @@ private:
 
 		promotedNode->_Parent = subroot->_Parent;		// promoted takes subroot parent
 
-		if (subroot == _data._Head->_Parent)					// special case when tree root is chosen for rotation
+		if (subroot == _data._Head->_Parent)			// special case when tree root is chosen for rotation
 			_data._Head->_Parent = promotedNode;
 		else if (subroot == subroot->_Parent->_Left)
 			subroot->_Parent->_Left = promotedNode;		// parent links his new promoted child
@@ -509,9 +511,9 @@ private:
 	Node* _in_order_successor(Node* node) const {
 		while (!_is_leaf(node))
 			if (!node->_Right->_IsNil)
-				node = leftmost(node->_Right);
+				node = _data.leftmost(node->_Right);
 			else
-				node = leftmost(node);
+				node = _data.leftmost(node);
 
 		return node;
 	}
@@ -519,7 +521,7 @@ private:
 	Node* _find_in_tree(const KeyType& key) {
 		Node* found = nullptr;
 
-		for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil; )	// TODO: check warning
+		for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
 		{
 			if (key == Traits::extract_key(iterNode->_Value))
 			{
@@ -570,8 +572,8 @@ private:
 		if (position._Parent == _data._Head)					// first node
 		{
 			_data._Head->_Parent	= newNode;
-			_data._Head->_Left	= newNode;
-			_data._Head->_Right	= newNode;
+			_data._Head->_Left		= newNode;
+			_data._Head->_Right		= newNode;
 			newNode->_Color = Node::Colors::Black;
 		}
 		else if (position._Child == TreeChild::Left)	// add to left
@@ -774,16 +776,16 @@ private:
 	void _create_head() {
 		_data._Head 			= _alloc.alloc(1);
 		_data._Head->_Parent	= _data._Head;
-		_data._Head->_Left	= _data._Head;
-		_data._Head->_Right	= _data._Head;
-		_data._Head->_IsNil	= true;
-		_data._Head->_Color	= Node::Colors::Black;
+		_data._Head->_Left		= _data._Head;
+		_data._Head->_Right		= _data._Head;
+		_data._Head->_IsNil		= true;
+		_data._Head->_Color		= Node::Colors::Black;
 	}
 
 	void _free_head() {
 		_data._Head->_Parent	= nullptr;
-		_data._Head->_Left	= nullptr;
-		_data._Head->_Right	= nullptr;
+		_data._Head->_Left		= nullptr;
+		_data._Head->_Right		= nullptr;
 		_alloc.dealloc(_data._Head, 1);
 	}
 
@@ -800,18 +802,18 @@ private:
 	}
 
 	void _copy(const SearchTree& other) {
-		_data._Head->_Parent 				= _copy_all(other._data._Head->_Parent);
-		_data._Head->_Left 				= leftmost(_data._Head->_Parent);
-		_data._Head->_Right 				= rightmost(_data._Head->_Parent);
+		_data._Head->_Parent 			= _copy_all(other._data._Head->_Parent);	// copy from root
+		_data._Head->_Left 				= _data.leftmost(_data._Head->_Parent);
+		_data._Head->_Right 			= _data.rightmost(_data._Head->_Parent);
 		_data._Head->_Parent->_Parent 	= _data._Head;
-		_data._Size 						= other._data._Size;
+		_data._Size 					= other._data._Size;
 	}
 
 	void _move(SearchTree&& other) {
 		std::swap(_data._Head, other._data._Head);
 
-		_data._Size = other._data._Size;
-		other._data._Size = 0;
+		_data._Size 		= other._data._Size;
+		other._data._Size 	= 0;
 	}
 }; // END SearchTree Template
 

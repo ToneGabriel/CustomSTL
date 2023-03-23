@@ -1,6 +1,7 @@
-1. Check Array constructors
-2. Change Deque data
-3. Deque resize implement
+1. Change Deque data
+   Check first increment/decrement
+2. Deque resize implement
    Deque check destroy array (back+1)
+3. Check SearchTree at() for const
 4. SearchTree erase elem
-5. Check SearchTree at() for const
+5. Check Array constructors
