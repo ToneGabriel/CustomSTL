@@ -5,6 +5,9 @@
 
 CUSTOM_BEGIN
 
+template <class Traits>
+class Deque;
+
 template<class Type>
 struct VectorData
 {
@@ -200,6 +203,10 @@ public:
 template<class Type>
 class Vector			// Vector Template
 {
+private:
+	template<class>
+	friend class Deque;
+
 public:
 	using Data					= VectorData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values

@@ -243,7 +243,7 @@ public:
 	}
 
 	~String() {
-		_dealloc_string(_data._First, capacity());
+		_alloc.dealloc(_data._First, capacity() + 1);
 	}
 
 public:
@@ -254,9 +254,9 @@ public:
 			_data._Last = _data._First + newCapacity;
 
 		size_t newSize	= size();
-		char* newString = _alloc_string(newCapacity);
+		char* newString = _alloc.alloc(newCapacity + 1);
 		memcpy(newString, _data._First, size());
-		_dealloc_string(_data._First, capacity());
+		_alloc.dealloc(_data._First, capacity() + 1);
 
 		_data._First 	= newString;
 		_data._Last		= _data._First + newSize;
@@ -300,12 +300,12 @@ public:
 	}
 
 	String& append(const size_t& nchar, const char& chr) {								// Appends n consecutive copies of character c
-		char* seq = _alloc_string(nchar);
+		char* seq = _alloc.alloc(nchar + 1);
 		for (size_t i = 0; i < nchar; ++i)
 			seq[i] = chr;
 
 		_insert_from_cstring(size(), seq, 0, nchar);
-		_dealloc_string(seq, nchar);
+		_alloc.dealloc(seq, nchar + 1);
 		return *this;
 	}
 	// end Append
@@ -332,12 +332,12 @@ public:
 	}
 
 	String& insert(const size_t& pos, const size_t& nchar, const char& chr) {
-		char* seq = _alloc_string(nchar);
+		char* seq = _alloc.alloc(nchar + 1);
 		for (size_t i = 0; i < nchar; ++i)
 			seq[i] = chr;
 
 		_insert_from_cstring(pos, seq, 0, nchar);
-		_dealloc_string(seq, nchar);
+		_alloc.dealloc(seq, nchar + 1);
 		return *this;
 	}
 
@@ -528,7 +528,7 @@ public:
 	String& operator=(const String& other) {
 		if (_data._First != other._data._First)
 		{
-			_dealloc_string(_data._First, capacity());
+			_alloc.dealloc(_data._First, capacity() + 1);
 			_copy(other);
 		}
 
@@ -538,7 +538,7 @@ public:
 	String& operator=(String&& other) noexcept {
 		if (_data._First != other._data._First)
 		{
-			_dealloc_string(_data._First, capacity());
+			_alloc.dealloc(_data._First, capacity() + 1);
 			_move(custom::move(other));
 		}
 
@@ -575,7 +575,7 @@ public:
 
 	friend std::istream& operator>>(std::istream& is, String& string) {
 		if (string._data._First != nullptr)
-			string._dealloc_string(string._data._First, string.capacity());
+			string._alloc.dealloc(string._data._First, string.capacity() + 1);
 
 		string._alloc_empty(String::istream_capacity);
 		is.getline(string._data._First, String::istream_capacity);
@@ -621,16 +621,8 @@ public:
 private:
 	// Others
 
-	char* _alloc_string(const size_t& capacity) {						// Allocate memory +1 null term
-		return _alloc.alloc(capacity + 1);
-	}
-
-	void _dealloc_string(char* address, const size_t& capacity) {		// Deallocate memory +1 null term
-		_alloc.dealloc(address, capacity + 1);
-	}
-
 	void _alloc_empty(const size_t& capacity) {
-		_data._First 	= _alloc_string(capacity);
+		_data._First 	= _alloc.alloc(capacity + 1);
 		_data._Last 	= _data._First;
 		_data._Final 	= _data._First + capacity;
 		_data._Last[0] 	= NULLCHR;
@@ -638,13 +630,13 @@ private:
 
 	void _initialize_from_cstring(const char* cstring) {
 		if (cstring == nullptr) {
-			_data._First 	= _alloc_string(0);
+			_data._First 	= _alloc.alloc(1);
 			_data._Last 	= _data._First;
 			_data._Final 	= _data._First;
 		}
 		else {
 			size_t len 		= strlen(cstring);
-			_data._First 	= _alloc_string(len);
+			_data._First 	= _alloc.alloc(len + 1);
 			_data._Last 	= _data._First + len;
 			_data._Final 	= _data._First + len;
 			memcpy(_data._First, cstring, len);
