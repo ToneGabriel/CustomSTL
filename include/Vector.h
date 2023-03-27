@@ -5,9 +5,6 @@
 
 CUSTOM_BEGIN
 
-template <class Traits>
-class Deque;
-
 template<class Type>
 struct VectorData
 {
@@ -203,10 +200,6 @@ public:
 template<class Type>
 class Vector			// Vector Template
 {
-private:
-	template<class>
-	friend class Deque;
-
 public:
 	using Data					= VectorData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
@@ -418,6 +411,14 @@ public:
 	ValueType& back() {                                                      	// Get the value of the last component
 		assert(!empty());
 		return _data._Last[-1];
+	}
+
+	const ValueType* data() const {
+		return _data._First;
+	}
+
+	ValueType* data() {
+		return _data._First;
 	}
 
 public:
