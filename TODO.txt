@@ -1,7 +1,8 @@
 1. Change Deque data
+	- implement as circular map
+	- check extend_if_full
 2. Check SearchTree at() for const
 3. SearchTree erase elem
 4. Check Array constructors
 5. String _move - remove and check initialize from cstring
-6. All containers resize/realloc remove overload
-7. Check const reverse iterator
+6. Check const reverse iterator

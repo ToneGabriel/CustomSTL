@@ -22,7 +22,7 @@ struct DequeData
 	size_t _Size 		= 0;
 
 	size_t get_block(const size_t& offset) const noexcept {
-        return (offset / block_size) % (_MapSize - 1);
+		return (offset / block_size) % _MapSize;
     }
 };
 
@@ -211,7 +211,15 @@ public:
 
 	Deque() {
 		AllocPtr allMap;
-		_data._Map = allMap.alloc(default_capacity);
+
+		//_data._Map			= new ValueType* [default_capacity] {nullptr};
+
+		_data._Map			= allMap.alloc(default_capacity);
+		allMap.construct_range(_data._Map, default_capacity, nullptr);
+
+		_data._MapSize		= default_capacity;
+		_data._Size			= 0;
+		_data._InitOffset	= default_capacity / 2 * _data.block_size - 1;
 	}
 
 	Deque(const ValueType& copyValue) {}
@@ -221,6 +229,8 @@ public:
 	Deque(Deque&& other) {}
 
 	~Deque() {
+		//delete[] _data._Map;
+
 		AllocPtr allMap;
 		allMap.dealloc(_data._Map, default_capacity);
 	}
@@ -228,13 +238,27 @@ public:
 public:
 	// Main functions
 
+	void reserve(const size_t& newMapSize) {
+		// TODO: implement
+		// update _InitOffset
+	}
+
 	void resize(const size_t& newSize, const ValueType& copyValue = ValueType()) {
 		// TODO: implement
 	}
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {
+		extend_if_full();
+		
+		size_t backOffset	= _data._InitOffset + _data._Size;
+		size_t block		= _data.get_block(backOffset);
 
+		if (_data._Map[block] == nullptr)
+			_data._Map[block] = _alloc.alloc(_data.block_size);
+
+		_alloc.construct(_data._Map[block] + backOffset % _data.block_size, custom::forward<Args>(args)...);
+		++_data._Size;
 	}
 
 	void push_back(const ValueType& copyValue) {
@@ -251,7 +275,15 @@ public:
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {
-		
+		extend_if_full();
+
+		// TODO: implement circularr offset
+		size_t block = _data.get_block(--_data._InitOffset);
+		if (_data._Map[block] == nullptr)
+			_data._Map[block] = _alloc.alloc(_data.block_size);
+
+		_alloc.construct(_data._Map[block] + _data._InitOffset % _data.block_size, custom::forward<Args>(args)...);
+		++_data._Size;
 	}
 
 	void push_front(const ValueType& copyValue) {
@@ -324,7 +356,22 @@ public:
 	// }
 
 	void print_details() {
+		std::cout << "Map Size= " << _data._MapSize << '\n';
+		std::cout << "Size= " << _data._Size << '\n';
+		std::cout << "Init Offset= " << _data._InitOffset << '\n';
 
+		for (size_t i = 0; i < _data._MapSize; ++i)
+		{
+			std::cout << "Block " << i << " = ";
+			if (_data._Map[i] == nullptr)
+				std::cout << "NULL\n";
+			else
+			{
+				for (size_t j = 0; j < _data.block_size; ++j)
+					std::cout << _data._Map[i][j] << ' ';
+				std::cout << '\n';
+			}
+		}
 	}
 
 public:
@@ -400,6 +447,11 @@ public:
 
 private:
 	// Helpers
+
+	void extend_if_full() {
+		if (_data._InitOffset == 0 || _data._InitOffset == _data._MapSize * _data.block_size - 1)
+			reserve(2 * _data._MapSize);
+	}
 
 	void _copy(const Deque& other) {
 
