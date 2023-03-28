@@ -6,32 +6,44 @@
 
 CUSTOM_BEGIN
 
+template<class Type>
+struct DequeData
+{
+	using ValueType 	= Type;
+	using IterType		= ValueType;
+	using Alloc			= Allocator<ValueType>;
+	using AllocPtr		= Allocator<ValueType*>;
+
+	static constexpr size_t block_size = 4;
+
+	ValueType** _Map;
+	size_t _MapSize 	= 0;
+	size_t _InitOffset 	= 0;
+	size_t _Size 		= 0;
+
+	size_t get_block(const size_t& offset) const noexcept {
+        return (offset / block_size) % (_MapSize - 1);
+    }
+};
+
 template<class Deque>
 class DequeConstIterator
 {
 public:
+	using Data			= typename Deque::Data;
 	using ValueType		= typename Deque::ValueType;
 	using IterType		= typename Deque::IterType;
 
-	IterType* _Ptr					= nullptr;
-	const Vector<ValueType>* _Front = nullptr;
-	const Vector<ValueType>* _Back	= nullptr;
+	size_t _Offset		= 0;
+	const Data* _Data	= nullptr;
 
 public:
 
-    explicit DequeConstIterator(IterType* ptr, const Vector<ValueType>* front, const Vector<ValueType>* back)
-		:_Ptr(ptr), _Front(front), _Back(back) { /*Empty*/ }
+    explicit DequeConstIterator(size_t offset, const Data* data)
+		:_Offset(offset), _Data(data) { /*Empty*/ }
 
 	DequeConstIterator& operator++() {
-		if (_Ptr == _Back->end()._Ptr)
-			throw std::out_of_range("Cannot increment end iterator...");
 
-		if (_Ptr < _Front->end()._Ptr)
-			--_Ptr;
-		else if (_Ptr == _Front->end()._Ptr - 1)
-			_Ptr = _Back->begin()._Ptr;
-        else
-            ++_Ptr;
 
 		return *this;
 	}
@@ -43,11 +55,7 @@ public:
 	}
 
 	DequeConstIterator& operator+=(const size_t& diff) {
-		// if(get_pos() + diff > _Data->_Size)
-		// 	throw std::out_of_range("Cannot increment end iterator...");
-
-		// _Data->increment(_Ptr, diff);
-		// return *this;
+		return *this;
 	}
 
 	DequeConstIterator operator+(const size_t& diff) const {
@@ -57,11 +65,7 @@ public:
 	}
 
 	DequeConstIterator& operator--() {
-		// if (_Ptr == _Data->_Begin)
-		// 	throw std::out_of_range("Cannot decrement begin iterator...");
-
-		// _Data->decrement(_Ptr);
-		// return *this;
+		return *this;
 	}
 
 	DequeConstIterator operator--(int) {
@@ -71,11 +75,7 @@ public:
 	}
 
 	DequeConstIterator& operator-=(const size_t& diff) {
-		// if(get_pos() < diff)
-		// 	throw std::out_of_range("Cannot decrement begin iterator...");
-
-		// _Data->decrement(_Ptr, diff);
-		// return *this;
+		return *this;
 	}
 
 	DequeConstIterator operator-(const size_t& diff) const {
@@ -85,21 +85,15 @@ public:
 	}
 
 	const IterType* operator->() const {
-		if (_Ptr == _Back->end()._Ptr)
-			throw std::out_of_range("Cannot access end iterator...");
 
-		return _Ptr;
 	}
 
 	const ValueType& operator*() const {
-		if (_Ptr == _Back->end()._Ptr)
-			throw std::out_of_range("Cannot dereference end iterator...");
 
-		return *_Ptr;
-}
+	}
 
 	bool operator==(const DequeConstIterator& other) const {
-		return _Ptr == other._Ptr;
+		return _Offset == other._Offset;
 	}
 
 	bool operator!=(const DequeConstIterator& other) const {
@@ -128,13 +122,14 @@ private:
 	using Base		= DequeConstIterator<Deque>;
 
 public:
+	using Data		= typename Deque::Data;
 	using ValueType	= typename Deque::ValueType;
 	using IterType	= typename Deque::IterType;
 
 public:
 
-	explicit DequeIterator(IterType* ptr, const Vector<ValueType>* front, const Vector<ValueType>* back)
-		:Base(ptr, front, back) { /*Empty*/ }
+	explicit DequeIterator(size_t offset, const Data* data)
+		:Base(offset, data) { /*Empty*/ }
 
 	DequeIterator& operator++() {
 		Base::operator++();
@@ -194,36 +189,41 @@ template<class Type>
 class Deque					// Deque Template implemented using 2 vectors (front and back)
 {
 public:
-	using ValueType 			= Type;										// Type for stored values
-	using IterType				= ValueType;								// Type for iteration (same as value)
-	
+	using Data					= DequeData<Type>;
+	using ValueType 			= typename Data::ValueType;					// Type for stored values
+	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
+	using Alloc					= typename Data::Alloc;						// Allocator for block
+	using AllocPtr				= typename Data::AllocPtr;					// Allocator for map
+
 	using Iterator				= DequeIterator<Deque<ValueType>>;			// Iterator type
 	using ConstIterator			= DequeConstIterator<Deque<ValueType>>;		// Const Iterator type
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Vector<ValueType> _FrontContainer;
-	Vector<ValueType> _BackContainer;
+	Data _data;
+	Alloc _alloc;
+
+	static constexpr size_t default_capacity = 8;
 
 public:
 	// Constructors
 
-	Deque() = default;
+	Deque() {
+		AllocPtr allMap;
+		_data._Map = allMap.alloc(default_capacity);
+	}
 
-	Deque(const ValueType& copyValue)
-		:	_FrontContainer(Vector<ValueType>::default_capacity / 2, copyValue),
-			_BackContainer(Vector<ValueType>::default_capacity / 2, copyValue) { /*Empty*/ }
+	Deque(const ValueType& copyValue) {}
 
-	Deque(const Deque& other)
-		:	_FrontContainer(other._FrontContainer),
-			_BackContainer(other._BackContainer) { /*Empty*/ }
+	Deque(const Deque& other) {}
 
-	Deque(Deque&& other)
-		:	_FrontContainer(custom::move(other._FrontContainer)),
-			_BackContainer(custom::move(other._BackContainer)) { /*Empty*/ }
+	Deque(Deque&& other) {}
 
-	~Deque() = default;
+	~Deque() {
+		AllocPtr allMap;
+		allMap.dealloc(_data._Map, default_capacity);
+	}
 
 public:
 	// Main functions
@@ -234,36 +234,36 @@ public:
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {
-		_BackContainer.emplace_back(custom::forward<Args>(args)...);
+
 	}
 
 	void push_back(const ValueType& copyValue) {
-		_BackContainer.push_back(copyValue);
+		emplace_back(copyValue);
 	}
 
 	void push_back(ValueType&& moveValue) {
-		_BackContainer.push_back(custom::move(moveValue));
+		emplace_back(custom::move(moveValue));
 	}
 
 	void pop_back() {
-		_BackContainer.pop_back();
+		
 	}
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {
-		_FrontContainer.emplace_back(custom::forward<Args>(args)...);
+		
 	}
 
 	void push_front(const ValueType& copyValue) {
-		_FrontContainer.push_back(copyValue);
+		emplace_front(copyValue);
 	}
 
 	void push_front(ValueType&& moveValue) {
-		_FrontContainer.push_back(custom::move(moveValue));
+		emplace_front(custom::move(moveValue));
 	}
 
 	void pop_front() {
-		_FrontContainer.pop_back();
+
 	}
 
 	template<class... Args>
@@ -284,16 +284,15 @@ public:
 	}
 
 	const size_t size() const {
-		return _FrontContainer.size() + _BackContainer.size();
+		return _data._Size;
 	}
 
 	bool empty() const {
-		return (_FrontContainer.empty() && _BackContainer.empty());
+		return (_data._Size == 0);
 	}
 
 	void clear() {
-		_FrontContainer.clear();
-		_BackContainer.clear();
+
 	}
 
 	const ValueType& at(const size_t& index) const {
@@ -304,35 +303,28 @@ public:
 
 	}
 
-	const ValueType& front() const {
-		assert(!empty());
-		return;
-	}
+	// const ValueType& front() const {
+	// 	assert(!empty());
+	// 	return;
+	// }
 
-	ValueType& front() {                                                     	// Get the value of the first component
-		assert(!empty());
-		return;
-	}
+	// ValueType& front() {                                                     	// Get the value of the first component
+	// 	assert(!empty());
+	// 	return;
+	// }
 
-	const ValueType& back() const {
-		assert(!empty());
-		return;
-	}
+	// const ValueType& back() const {
+	// 	assert(!empty());
+	// 	return;
+	// }
 
-	ValueType& back() {                                                      	// Get the value of the last component
-		assert(!empty());
-		return;
-	}
+	// ValueType& back() {                                                      	// Get the value of the last component
+	// 	assert(!empty());
+	// 	return;
+	// }
 
 	void print_details() {
-		std::cout << "Size= " << size() << '\n';
-		for (auto it = _FrontContainer.rbegin(); it != _FrontContainer.rend(); ++it)
-			std::cout << *it << ' ';
-		std::cout << '\n';
 
-		for (auto it = _BackContainer.begin(); it != _BackContainer.end(); ++it)
-			std::cout << *it << ' ';
-		std::cout << '\n';
 	}
 
 public:
@@ -375,11 +367,11 @@ public:
 	// Iterator specific functions
 
 	Iterator begin() {
-		return Iterator(_FrontContainer.data() + _FrontContainer.size() - 1, &_FrontContainer, &_BackContainer);
+		
 	}
 
 	ConstIterator begin() const {
-		return ConstIterator(_FrontContainer.data() + _FrontContainer.size() - 1, &_FrontContainer, &_BackContainer);
+
 	}
 
 	ReverseIterator rbegin() {
@@ -391,11 +383,11 @@ public:
 	}
 
 	Iterator end() {
-		return Iterator(_BackContainer.data() + _BackContainer.size(), &_FrontContainer, &_BackContainer);
+
 	}
 
 	ConstIterator end() const {
-		return ConstIterator(_BackContainer.data() + _BackContainer.size(), &_FrontContainer, &_BackContainer);
+
 	}
 
 	ReverseIterator rend() {
@@ -405,6 +397,22 @@ public:
 	ConstReverseIterator rend() const {
 		return ConstReverseIterator(begin());
 	}
+
+private:
+	// Helpers
+
+	void _copy(const Deque& other) {
+
+	}
+
+	void _move(Deque&& other) {
+
+	}
+
+	void _clear_map() {
+
+	}
+
 }; // END Deque Template
 
 CUSTOM_END
