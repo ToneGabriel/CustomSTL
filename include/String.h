@@ -217,8 +217,8 @@ private:
 	Data _data;
 	Alloc _alloc;
 
-	static constexpr size_t istream_capacity	= 255;
-	static constexpr char NULLCHR 				= '\0';
+	static constexpr size_t _ISTREAM_CAPACITY	= 255;
+	static constexpr char _NULLCHR 				= '\0';
 
 public:
 
@@ -261,7 +261,7 @@ public:
 		_data._First 	= newString;
 		_data._Last		= _data._First + newSize;
 		_data._Final 	= _data._First + newCapacity;
-		_data._Last[0] 	= NULLCHR;
+		_data._Last[0] 	= _NULLCHR;
 	}
 
 	void shrink_to_fit() {								// Allocate memory with capacity equal to size and move values there
@@ -271,11 +271,11 @@ public:
 	void push_back(const char& chr) {
 		_extend_if_full();
 		*(_data._Last++)	= chr;
-		_data._Last[0] 		= NULLCHR;
+		_data._Last[0] 		= _NULLCHR;
 	}
 
 	void pop_back() {
-		*(--_data._Last) = NULLCHR;
+		*(--_data._Last) = _NULLCHR;
 	}
 
 	// Append function overload
@@ -445,7 +445,7 @@ public:
 
 	void clear() {
 		_data._Last 	= _data._First;
-		_data._First[0] = NULLCHR;
+		_data._First[0] = _NULLCHR;
 	}
 
 	const char& at(const size_t& index) const {						// Acces char at index with check (read only)
@@ -491,7 +491,7 @@ public:
 		String sub(len);	// empty string with _capacity = len
 		memcpy(sub._data._First, _data._First + pos, len);
 		sub._data._Last		= sub._data._Final;
-		sub._data._Last[0]	= NULLCHR;
+		sub._data._Last[0]	= _NULLCHR;
 
 		return sub;
 	}
@@ -503,7 +503,7 @@ public:
 		std::cout << '\n';
 		for (size_t i = 0; i <= currentCapacity; ++i)
 		{
-			if (_data._First[i] == NULLCHR)
+			if (_data._First[i] == _NULLCHR)
 				std::cout << 'N' << ' ';
 			else
 				std::cout << _data._First[i] << ' ';
@@ -577,8 +577,8 @@ public:
 		if (string._data._First != nullptr)
 			string._alloc.dealloc(string._data._First, string.capacity() + 1);
 
-		string._alloc_empty(String::istream_capacity);
-		is.getline(string._data._First, String::istream_capacity);
+		string._alloc_empty(String::_ISTREAM_CAPACITY);
+		is.getline(string._data._First, String::_ISTREAM_CAPACITY);
 		string._data._Last = string._data._First + strlen(string._data._First);
 		return is;
 	}
@@ -625,7 +625,7 @@ private:
 		_data._First 	= _alloc.alloc(capacity + 1);
 		_data._Last 	= _data._First;
 		_data._Final 	= _data._First + capacity;
-		_data._Last[0] 	= NULLCHR;
+		_data._Last[0] 	= _NULLCHR;
 	}
 
 	void _initialize_from_cstring(const char* cstring) {
@@ -642,7 +642,7 @@ private:
 			memcpy(_data._First, cstring, len);
 		}
 
-		_data._Last[0] = NULLCHR;
+		_data._Last[0] = _NULLCHR;
 	}
 
 	void _insert_from_cstring(const size_t& pos, const char* cstring, const size_t& subpos, const size_t& sublen) {
@@ -659,7 +659,7 @@ private:
 		memcpy(_data._First + pos + sublen, _data._First + pos, size() - pos);	// copy last chars "sublen" positions to right
 		memcpy(_data._First + pos, cstring + subpos, sublen);			// add substr from cstring between
 		_data._Last 	= _data._First + newSize;
-		_data._Last[0] 	= NULLCHR;
+		_data._Last[0] 	= _NULLCHR;
 	}
 
 	void _remove_from_cstring(const size_t& pos, const size_t& len) {	// TODO: check
@@ -670,7 +670,7 @@ private:
 
 		memcpy(_data._First + pos, _data._First + pos + len, size() - pos - len);
 		_data._Last 	= _data._First + size() - len;
-		_data._Last[0] 	= NULLCHR;
+		_data._Last[0] 	= _NULLCHR;
 	}
 
 	int _compare_with_cstring(const size_t& pos, const size_t& len, const char* cstring, const size_t& subpos, const size_t& sublen) const {
@@ -701,7 +701,7 @@ private:
 		memcpy(_data._First, other._data._First, other.size());
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
-		_data._Last[0] 	= NULLCHR;
+		_data._Last[0] 	= _NULLCHR;
 	}
 
 	void _move(String&& other) {										// Generic move function for string

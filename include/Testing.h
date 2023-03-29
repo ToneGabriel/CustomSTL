@@ -228,11 +228,15 @@ void map_test() {
 void deque_test() {
 	custom::Deque<int> dq;
 	dq.emplace_back(0);
-	dq.emplace_back(0);
-	dq.emplace_back(0);
-	dq.emplace_front(1);
-	dq.emplace_front(1);
-	dq.emplace_front(1);
+	dq.emplace_back(1);
+	dq.emplace_back(2);
+	dq.emplace_front(3);
+	dq.emplace_front(4);
+	dq.emplace_front(5);
+
+	for (auto& val : dq)
+		std::cout << val << ' ';
+	std::cout << '\n';
 
 	dq.print_details();
 }

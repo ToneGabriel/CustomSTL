@@ -215,13 +215,13 @@ private:
 	Data _data;														// Actual container data
 	Alloc _alloc;													// Allocator
 	
-	static constexpr size_t default_capacity = 8;
+	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
 public:
 	// Constructors
 
 	Vector() {														// Default Constructor
-		reserve(default_capacity);
+		reserve(_DEFAULT_CAPACITY);
 	}
 
 	Vector(const size_t& newCapacity, const ValueType& copyValue) {	// Add multiple copies Constructor

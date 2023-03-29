@@ -14,7 +14,7 @@ struct DequeData
 	using Alloc			= Allocator<ValueType>;
 	using AllocPtr		= Allocator<ValueType*>;
 
-	static constexpr size_t block_size = 4;
+	static constexpr size_t BLOCK_SIZE = 4;
 
 	ValueType** _Map;
 	size_t _MapCapacity = 0;
@@ -22,7 +22,7 @@ struct DequeData
 	size_t _Size 		= 0;
 
 	size_t get_block(const size_t& offset) const noexcept {
-		return (offset / block_size) % _MapCapacity;
+		return (offset / BLOCK_SIZE) % _MapCapacity;
     }
 };
 
@@ -96,11 +96,21 @@ public:
 	}
 
 	const IterType* operator->() const {
+		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
+			throw std::out_of_range("Cannot access end iterator...");
 
+		size_t block = _Data->get_block(_Offset);
+		size_t offset = _Offset % _Data->BLOCK_SIZE;
+		return &_Data->_Map[block][offset];
 	}
 
 	const ValueType& operator*() const {
+		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
+			throw std::out_of_range("Cannot dereference end iterator...");
 
+		size_t block	= _Data->get_block(_Offset);
+		size_t offset	= _Offset % _Data->BLOCK_SIZE;
+		return _Data->_Map[block][offset];
 	}
 
 	bool operator==(const DequeConstIterator& other) const {
@@ -113,16 +123,16 @@ public:
 
 public:
 
-	const size_t get_index() const {						// Get the index for the element in array from iterator (relative to array address, NOT begin)
-		//return static_cast<size_t>(_Ptr - _Data->_Base);
+	const size_t get_index() const {
+		// TODO: implement
 	}
 
 	const bool is_begin() const {
-		//return _Ptr == _Data->_Front;
+		return _Offset == _Data->_First;
 	}
 
 	const bool is_end() const {
-		//return _Ptr == _Data->_End;
+		return _Offset == _Data->_First + _Data->_Size;
 	}
 };
 
@@ -215,16 +225,16 @@ private:
 	Data _data;
 	Alloc _alloc;
 
-	static constexpr size_t default_capacity = 8;
+	static constexpr size_t _DEFAULT_CAPACITY = 2;	// TODO: change back to 8
 
 public:
 	// Constructors
 
 	Deque() {
-		_data._Map			= new ValueType* [default_capacity] {nullptr};
-		_data._MapCapacity	= default_capacity;
+		_data._Map			= new ValueType* [_DEFAULT_CAPACITY] {nullptr};
+		_data._MapCapacity	= _DEFAULT_CAPACITY;
 		_data._Size			= 0;
-		_data._First		= default_capacity / 2 * _data.block_size - 1;
+		_data._First		= 0;
 	}
 
 	Deque(const ValueType& copyValue) {}
@@ -258,9 +268,9 @@ public:
 		size_t block		= _data.get_block(backOffset);
 
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.alloc(_data.block_size);
+			_data._Map[block] = _alloc.alloc(_data.BLOCK_SIZE);
 
-		_alloc.construct(_data._Map[block] + backOffset % _data.block_size, custom::forward<Args>(args)...);
+		_alloc.construct(_data._Map[block] + backOffset % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -278,9 +288,9 @@ public:
 			size_t backOffset	= _data._First + _data._Size - 1;
 			size_t block		= _data.get_block(backOffset);
 
-			_alloc.destroy(_data._Map[block] + backOffset % _data.block_size);
+			_alloc.destroy(_data._Map[block] + backOffset % _data.BLOCK_SIZE);
 			if (--_data._Size == 0)
-				_data._First = _data._MapCapacity / 2 * _data.block_size - 1;
+				_data._First = 0;
 		}
 	}
 
@@ -288,12 +298,14 @@ public:
 	void emplace_front(Args&&... args) {
 		_extend_if_full();
 
-		// TODO: implement circularr offset
+		if (_data._First == 0)
+			_data._First = _data._MapCapacity * _data.BLOCK_SIZE;
+
 		size_t block = _data.get_block(--_data._First);
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.alloc(_data.block_size);
+			_data._Map[block] = _alloc.alloc(_data.BLOCK_SIZE);
 
-		_alloc.construct(_data._Map[block] + _data._First % _data.block_size, custom::forward<Args>(args)...);
+		_alloc.construct(_data._Map[block] + _data._First % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -310,9 +322,9 @@ public:
 		{
 			size_t block = _data.get_block(_data._First);
 
-			_alloc.destroy(_data._Map[block] + _data._First % _data.block_size);
+			_alloc.destroy(_data._Map[block] + _data._First % _data.BLOCK_SIZE);
 			if (--_data._Size == 0)
-				_data._First = _data._MapCapacity / 2 * _data.block_size - 1;
+				_data._First = 0;
 			else
 				++_data._First;
 		}
@@ -320,7 +332,7 @@ public:
 
 	template<class... Args>
 	Iterator emplace(const Iterator& iterator, Args&&... args) {
-
+		// TODO: implement
 	}
 
 	Iterator push(const Iterator& iterator, const ValueType& copyValue) {
@@ -332,7 +344,7 @@ public:
 	}
 
 	Iterator pop(const Iterator& iterator) {
-	
+		// TODO: implement
 	}
 
 	const size_t size() const {
@@ -347,36 +359,47 @@ public:
 		while(!empty())
 			pop_back();
 
-		// TODO: dealloc blocks (maybe...)
+		for (size_t i = 0; i < _data._MapCapacity; ++i)
+			if (_data._Map[i] != nullptr)
+			{
+				_alloc.dealloc(_data._Map[i], _data.BLOCK_SIZE);
+				_data._Map[i] = nullptr;
+			}
 	}
 
 	const ValueType& at(const size_t& index) const {
+		if (index >= size())
+			throw std::out_of_range("Invalid Index...");
 
+		return *(begin() + index);
 	}
 
 	ValueType& at(const size_t& index) {
+		if (index >= size())
+			throw std::out_of_range("Invalid Index...");
 
+		return *(begin() + index);
 	}
 
-	// const ValueType& front() const {
-	// 	assert(!empty());
-	// 	return;
-	// }
+	const ValueType& front() const {
+		assert(!empty());
+		return *begin();
+	}
 
-	// ValueType& front() {                                                     	// Get the value of the first component
-	// 	assert(!empty());
-	// 	return;
-	// }
+	ValueType& front() {                                                     	// Get the value of the first component
+		assert(!empty());
+		return *begin();
+	}
 
-	// const ValueType& back() const {
-	// 	assert(!empty());
-	// 	return;
-	// }
+	const ValueType& back() const {
+		assert(!empty());
+		return *(--end());
+	}
 
-	// ValueType& back() {                                                      	// Get the value of the last component
-	// 	assert(!empty());
-	// 	return;
-	// }
+	ValueType& back() {                                                      	// Get the value of the last component
+		assert(!empty());
+		return *(--end());
+	}
 
 	void print_details() {
 		std::cout << "Map Capacity= " << _data._MapCapacity << '\n';
@@ -390,7 +413,7 @@ public:
 				std::cout << "NULL\n";
 			else
 			{
-				for (size_t j = 0; j < _data.block_size; ++j)
+				for (size_t j = 0; j < _data.BLOCK_SIZE; ++j)
 					std::cout << _data._Map[i][j] << ' ';
 				std::cout << '\n';
 			}
@@ -401,18 +424,22 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {
-	
+		assert(!(index >= size()));
+		return *(begin() + index);
 	}
 
 	ValueType& operator[](const size_t& index) {
-
+		assert(!(index >= size()));
+		return *(begin() + index);
 	}
 
 	Deque& operator=(const Deque& other) {
+		// TODO: implement
 		return *this;
 	}
 
 	Deque& operator=(Deque&& other) noexcept {
+		// TODO: implement
 		return *this;
 	}
 
@@ -437,11 +464,11 @@ public:
 	// Iterator specific functions
 
 	Iterator begin() {
-		
+		return Iterator(_data._First, &_data);
 	}
 
 	ConstIterator begin() const {
-
+		return ConstIterator(_data._First, &_data);
 	}
 
 	ReverseIterator rbegin() {
@@ -453,11 +480,11 @@ public:
 	}
 
 	Iterator end() {
-
+		return Iterator(_data._First + _data._Size, &_data);
 	}
 
 	ConstIterator end() const {
-
+		return ConstIterator(_data._First + _data._Size, &_data);
 	}
 
 	ReverseIterator rend() {
@@ -472,22 +499,17 @@ private:
 	// Helpers
 
 	void _extend_if_full() {
-		if (_data._Size == _data._MapCapacity * _data.block_size)
+		if (_data._Size == _data._MapCapacity * _data.BLOCK_SIZE)
 			reserve(2 * _data._MapCapacity);
 	}
 
 	void _copy(const Deque& other) {
-
+		// TODO: implement
 	}
 
 	void _move(Deque&& other) {
-
+		// TODO: implement
 	}
-
-	void _clear_map() {
-
-	}
-
 }; // END Deque Template
 
 CUSTOM_END

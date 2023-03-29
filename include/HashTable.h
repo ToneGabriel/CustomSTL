@@ -34,18 +34,18 @@ protected:
 	IterList _elems;												// Used to iterate through container
 	HashArray _buckets;												// Used to map elems from IterList
 
-	static constexpr float table_load_factor	= 0.75;				// The maximum load factor admitted before rehashing
-	static constexpr size_t default_buckets		= 8;				// Default number of buckets
+	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;				// The maximum load factor admitted before rehashing
+	static constexpr size_t _DEFAULT_BUCKETS	= 8;				// Default number of buckets
 
 protected:
     // Constructors
 
     HashTable() {
-		rehash(default_buckets);
+		rehash(_DEFAULT_BUCKETS);
 	}
 
 	HashTable(const size_t& buckets) {
-		rehash((buckets < default_buckets) ? default_buckets : buckets);
+		rehash((buckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : buckets);
 	}
 
 	HashTable(const HashTable& other)
@@ -193,7 +193,7 @@ public:
 	}
 
 	float max_load_factor() const {
-		return table_load_factor;
+		return _TABLE_LOAD_FACTOR;
 	}
 
 	void print_details()  {									// For Debugging
