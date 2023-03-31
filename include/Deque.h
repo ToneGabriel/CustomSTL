@@ -16,7 +16,7 @@ struct DequeData
 
 	static constexpr size_t BLOCK_SIZE = 4;
 
-	ValueType** _Map;
+	ValueType** _Map	= nullptr;
 	size_t _MapCapacity = 0;
 	size_t _First 		= 0;
 	size_t _Size 		= 0;
@@ -33,6 +33,8 @@ public:
 	using Data			= typename Deque::Data;
 	using ValueType		= typename Deque::ValueType;
 	using IterType		= typename Deque::IterType;
+	using Reference		= const ValueType&;
+	using Pointer		= const IterType*;
 
 	size_t _Offset		= 0;
 	const Data* _Data	= nullptr;
@@ -95,7 +97,7 @@ public:
 		return temp;
 	}
 
-	const IterType* operator->() const {
+	Pointer operator->() const {
 		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
 			throw std::out_of_range("Cannot access end iterator...");
 
@@ -104,7 +106,7 @@ public:
 		return &_Data->_Map[block][offset];
 	}
 
-	const ValueType& operator*() const {
+	Reference operator*() const {
 		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -124,7 +126,7 @@ public:
 public:
 
 	const size_t get_index() const {
-		// TODO: implement
+		return 0;	// TODO: implement
 	}
 
 	const bool is_begin() const {
@@ -146,6 +148,8 @@ public:
 	using Data		= typename Deque::Data;
 	using ValueType	= typename Deque::ValueType;
 	using IterType	= typename Deque::IterType;
+	using Reference	= ValueType&;
+	using Pointer	= IterType*;
 
 public:
 
@@ -196,12 +200,12 @@ public:
 		return temp;
 	}
 
-	IterType* operator->() const {
-		return const_cast<IterType*>(Base::operator->());
+	Pointer operator->() const {
+		return const_cast<Pointer>(Base::operator->());
 	}
 
-	ValueType& operator*() const {
-		return const_cast<ValueType&>(Base::operator*());
+	Reference operator*() const {
+		return const_cast<Reference>(Base::operator*());
 	}
 }; // END Deque Iterator
 

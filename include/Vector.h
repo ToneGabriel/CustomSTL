@@ -24,6 +24,8 @@ public:
 	using Data			= typename Vector::Data;
 	using ValueType		= typename Vector::ValueType;
 	using IterType		= typename Vector::IterType;
+	using Reference		= const ValueType&;
+	using Pointer		= const IterType*;
 
 	IterType* _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
@@ -89,14 +91,14 @@ public:
 		return temp;
 	}
 
-	const IterType* operator->() const {
+	Pointer operator->() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	const ValueType& operator*() const {
+	Reference operator*() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -137,6 +139,8 @@ public:
 	using Data		= typename Vector::Data;
 	using ValueType = typename Vector::ValueType;
 	using IterType	= typename Vector::IterType;
+	using Reference	= ValueType&;
+	using Pointer	= IterType*;
 
 public:
 
@@ -187,12 +191,12 @@ public:
 		return temp;
 	}
 
-	IterType* operator->() const {
-		return const_cast<IterType*>(Base::operator->());
+	Pointer operator->() const {
+		return const_cast<Pointer>(Base::operator->());
 	}
 
-	ValueType& operator*() const {
-		return const_cast<ValueType&>(Base::operator*());
+	Reference operator*() const {
+		return const_cast<Reference>(Base::operator*());
 	}
 }; // END Vector Iterator
 

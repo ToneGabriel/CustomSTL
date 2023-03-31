@@ -84,6 +84,8 @@ public:
     using BaseIterator  = Iterator;
     using ValueType     = typename BaseIterator::ValueType;
     using IterType      = typename BaseIterator::IterType;
+    using Reference		= typename BaseIterator::Reference;
+	using Pointer		= typename BaseIterator::Pointer;
 
     BaseIterator _Base;
 
@@ -93,8 +95,6 @@ public:
         : _Base(base) { /*Empty*/ }
 
     ~ReverseIterator() = default;
-
-public:
 
     ReverseIterator& operator++() {
         --_Base;
@@ -118,12 +118,12 @@ public:
         return temp;
     }
 
-    IterType* operator->() {
+    Pointer operator->() {
         BaseIterator temp = _Base;
         return (--temp).operator->();
     }
 
-    ValueType& operator*() {
+    Reference operator*() {
         BaseIterator temp = _Base;
         return *(--temp);
     }

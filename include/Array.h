@@ -10,6 +10,8 @@ class ArrayConstIterator
 public:
 	using ValueType = Type;
 	using IterType	= ValueType;
+	using Reference	= const ValueType&;
+	using Pointer	= const IterType*;
 
 	IterType* _Ptr	= nullptr;
 	size_t _Index	= 0;
@@ -75,14 +77,14 @@ public:
 		return temp;
 	}
 
-	const IterType* operator->() const {
+	Pointer operator->() const {
 		if (_Index >= Size)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr + _Index;
 	}
 
-	const ValueType& operator*() const {
+	Reference operator*() const {
 		if (_Index >= Size)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -121,6 +123,8 @@ private:
 public:
 	using ValueType = Type;
 	using IterType	= ValueType;
+	using Reference	= ValueType&;
+	using Pointer	= IterType*;
 
 public:
 
@@ -171,12 +175,12 @@ public:
 		return temp;
 	}
 
-	IterType* operator->() const {
-		return const_cast<IterType*>(Base::operator->());
+	Pointer operator->() const {
+		return const_cast<Pointer>(Base::operator->());
 	}
 
-	ValueType& operator*() const {
-		return const_cast<ValueType&>(Base::operator*());
+	Reference operator*() const {
+		return const_cast<Reference>(Base::operator*());
 	}
 }; // END Array Iterator
 

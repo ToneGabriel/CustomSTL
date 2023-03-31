@@ -91,7 +91,7 @@ public:
 	}
 
 	bool operator==(const Queue& other) const {
-	return _baseContainer == other._baseContainer;
+		return _baseContainer == other._baseContainer;
 	}
 
 	bool operator!=(const Queue& other) const {

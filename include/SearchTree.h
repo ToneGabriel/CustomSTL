@@ -55,6 +55,8 @@ public:
 	using Data			= typename SearchTree::Data;
 	using ValueType 	= typename SearchTree::ValueType;
 	using IterType		= typename SearchTree::IterType;
+	using Reference		= const ValueType&;
+	using Pointer		= const IterType*;
 
 	IterType* _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
@@ -119,14 +121,14 @@ public:
 		return temp;
 	}
 
-	const IterType* operator->() {
+	Pointer operator->() {
 		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	const ValueType& operator*() {
+	Reference operator*() {
 		if (_Ptr == _Data->_Head)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -152,8 +154,11 @@ public:
 	using Data		= typename SearchTree::Data;
 	using ValueType = typename SearchTree::ValueType;
 	using IterType	= typename SearchTree::IterType;
+	using Reference	= ValueType&;
+	using Pointer	= IterType*;
 
 public:
+
 	explicit SearchTreeIterator(IterType* ptr, const Data* data)
 		:Base(ptr, data) { /*Empty*/ }
 
@@ -179,12 +184,12 @@ public:
 		return temp;
 	}
 
-	IterType* operator->() {
-		return const_cast<IterType*>(Base::operator->());
+	Pointer operator->() {
+		return const_cast<Pointer>(Base::operator->());
 	}
 
-	ValueType& operator*() {
-		return const_cast<ValueType&>(Base::operator*());
+	Reference operator*() {
+		return const_cast<Reference>(Base::operator*());
 	}
 }; // END SearchTree Iterator
 

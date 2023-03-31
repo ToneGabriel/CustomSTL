@@ -26,6 +26,8 @@ public:
 	using Data			= typename String::Data;
 	using ValueType		= typename String::ValueType;
 	using IterType		= typename String::IterType;
+	using Reference		= const ValueType&;
+	using Pointer		= const IterType*;
 
 	IterType* _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
@@ -91,14 +93,14 @@ public:
 		return temp;
 	}
 
-	const IterType* operator->() const {
+	Pointer operator->() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot access end iterator...");
 
 		return _Ptr;
 	}
 
-	const ValueType& operator*() const {
+	Reference operator*() const {
 		if (_Ptr >= _Data->_Last)
 			throw std::out_of_range("Cannot dereference end iterator...");
 
@@ -138,6 +140,8 @@ public:
 	using Data		= typename String::Data;
 	using ValueType = typename String::ValueType;
 	using IterType	= typename String::IterType;
+	using Reference	= ValueType&;
+	using Pointer	= IterType*;
 
 public:
 
@@ -188,12 +192,12 @@ public:
 		return temp;
 	}
 
-	IterType* operator->() {
-		return const_cast<IterType*>(Base::operator->());
+	Pointer operator->() {
+		return const_cast<Pointer>(Base::operator->());
 	}
 
-	ValueType& operator*() {
-		return const_cast<ValueType&>(Base::operator*());
+	Reference operator*() {
+		return const_cast<Reference>(Base::operator*());
 	}
 }; // END String Iterator
 
@@ -607,7 +611,7 @@ public:
 	}
 
 	ConstIterator end() const {
-		return Iterator(_data._Last, &_data);
+		return ConstIterator(_data._Last, &_data);
 	}
 
 	ReverseIterator rend() {
