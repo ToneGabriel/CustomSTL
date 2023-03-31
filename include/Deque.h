@@ -235,30 +235,25 @@ public:
 	// Constructors
 
 	Deque() {
-		_data._Map			= new ValueType* [_DEFAULT_CAPACITY] {nullptr};
-		_data._MapCapacity	= _DEFAULT_CAPACITY;
-		_data._Size			= 0;
-		_data._First		= 0;
+		_init_map(_DEFAULT_CAPACITY);
 	}
 
 	Deque(const ValueType& copyValue) {}
 
-	Deque(const Deque& other) {}
+	Deque(const Deque& other) {
+		_copy(other);
+	}
 
-	Deque(Deque&& other) {}
+	Deque(Deque&& other) {
+		_move(custom::move(other));
+	}
 
 	~Deque() {
-		clear();
-		delete[] _data._Map;
+		_clean_up_map();
 	}
 
 public:
 	// Main functions
-
-	void reserve(const size_t& newMapSize) {
-		// TODO: implement
-		// update _First
-	}
 
 	void resize(const size_t& newSize, const ValueType& copyValue = ValueType()) {
 		// TODO: implement
@@ -438,12 +433,22 @@ public:
 	}
 
 	Deque& operator=(const Deque& other) {
-		// TODO: implement
+		if (_data._Map != other._data._Map)
+		{
+			_clean_up_map();
+			_copy(other);
+		}
+
 		return *this;
 	}
 
 	Deque& operator=(Deque&& other) noexcept {
-		// TODO: implement
+		if (_data._Map != other._data._Map)
+		{
+			_clean_up_map();
+			_move(custom::move(other));
+		}
+
 		return *this;
 	}
 
@@ -502,17 +507,55 @@ public:
 private:
 	// Helpers
 
+	void _reserve(const size_t& newMapCapacity) {
+		size_t capacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+		ValueType** newMap	= new ValueType* [newMapCapacity] {nullptr};
+
+		for (size_t i = 0; i < _data._Size; ++i)
+			
+		// TODO: finish this
+	}
+
 	void _extend_if_full() {
 		if (_data._Size == _data._MapCapacity * _data.BLOCK_SIZE)
-			reserve(2 * _data._MapCapacity);
+			_reserve(2 * _data._MapCapacity);
 	}
 
 	void _copy(const Deque& other) {
-		// TODO: implement
+		_init_map(other._data._MapCapacity);
+
+		for (auto& val : other)
+			push_back(val);
 	}
 
 	void _move(Deque&& other) {
-		// TODO: implement
+		_data._Map 					= other._data._Map;
+		_data._MapCapacity 			= other._data._MapCapacity;
+		_data._Size 				= other._data._Size;
+		_data._First 				= other._data._First;
+
+		other._data._Map 			= nullptr;
+		other._data._MapCapacity 	= 0;
+		other._data._Size 			= 0;
+		other._data._First 			= 0;
+	}
+
+	_init_map(const ValueType& newMapCapacity) {
+		size_t capacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+
+		_data._Map			= new ValueType* [capacity] {nullptr};
+		_data._MapCapacity	= capacity;
+		_data._Size			= 0;
+		_data._First		= 0;
+	}
+
+	void _clean_up_map() {
+		if (_data._Map != nullptr)
+		{
+			clear();
+			delete[] _data._Map;
+			_data._Map = nullptr;
+		}
 	}
 }; // END Deque Template
 
