@@ -238,7 +238,19 @@ public:
 		_init_map(_DEFAULT_CAPACITY);
 	}
 
-	Deque(const ValueType& copyValue) {}
+	Deque(const size_t& newSize) {
+		_init_map(newSize / _data.BLOCK_SIZE * 2);
+
+		for (size_t i = 0; i < newSize; ++i)
+			emplace_back();
+	}
+
+	Deque(const size_t& newSize, const ValueType& copyValue) {
+		_init_map(newSize / _data.BLOCK_SIZE * 2);
+
+		for (size_t i = 0; i < newSize; ++i)
+			emplace_back(copyValue);
+	}
 
 	Deque(const Deque& other) {
 		_copy(other);
@@ -507,13 +519,43 @@ public:
 private:
 	// Helpers
 
-	void _reserve(const size_t& newMapCapacity) {
-		size_t capacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
-		ValueType** newMap	= new ValueType* [newMapCapacity] {nullptr};
+	void _reserve(const size_t& newMapCapacity) {		// TODO: ERROR - blocks can have both first and last elem
+		if (_data._Map == nullptr)				// after custom::move()
+			_init_map(newMapCapacity);
+		else
+		{
+			size_t newCapacity		= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+			size_t newSize			= _data._Size;
+			size_t newFirst			= _data._First % _data.BLOCK_SIZE;
+			ValueType** newMap		= new ValueType* [newCapacity] {nullptr};
 
-		for (size_t i = 0; i < _data._Size; ++i)
-			
-		// TODO: finish this
+			size_t firstBlock		= _data.get_block(_data._First);
+			size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);
+
+			size_t newBlockIndex	= 0;
+			size_t oldBlockIndex	= firstBlock;
+
+			while (oldBlockIndex != lastBlock)	// copy pointers to blocks and nullify the old ones
+			{
+				newMap[newBlockIndex++]		= _data._Map[oldBlockIndex];
+				_data._Map[oldBlockIndex]	= nullptr;
+
+				if (oldBlockIndex == _data._MapCapacity - 1)
+					oldBlockIndex = 0;
+				else
+					++oldBlockIndex;
+			}
+			newMap[newBlockIndex]		= _data._Map[oldBlockIndex];	// for lastBlock
+			_data._Map[oldBlockIndex]	= nullptr;
+
+			_data._Size = 0;					// clear the remaining empty blocks and map
+			_clean_up_map();
+
+			_data._Map				= newMap;
+			_data._MapCapacity		= newCapacity;
+			_data._Size				= newSize;
+			_data._First			= newFirst;
+		}
 	}
 
 	void _extend_if_full() {
@@ -540,11 +582,11 @@ private:
 		other._data._First 			= 0;
 	}
 
-	_init_map(const ValueType& newMapCapacity) {
-		size_t capacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+	void _init_map(const size_t& newMapCapacity) {
+		size_t newCapacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
 
-		_data._Map			= new ValueType* [capacity] {nullptr};
-		_data._MapCapacity	= capacity;
+		_data._Map			= new ValueType* [newCapacity] {nullptr};
+		_data._MapCapacity	= newCapacity;
 		_data._Size			= 0;
 		_data._First		= 0;
 	}
