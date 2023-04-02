@@ -88,6 +88,11 @@ public:
 	}
 
 	DequeConstIterator& operator-=(const size_t& diff) {
+		if (_Offset - diff < _Data->_First ||								// use data overflow
+			_Offset - diff > _Data->_First + _Data->_Size)
+			throw std::out_of_range("Cannot decrement begin iterator...");
+
+		_Offset -= diff;
 		return *this;
 	}
 
@@ -229,7 +234,7 @@ private:
 	Data _data;
 	Alloc _alloc;
 
-	static constexpr size_t _DEFAULT_CAPACITY = 2;	// TODO: change back to 8
+	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
 public:
 	// Constructors
@@ -256,7 +261,7 @@ public:
 		_copy(other);
 	}
 
-	Deque(Deque&& other) {
+	Deque(Deque&& other) noexcept {
 		_move(custom::move(other));
 	}
 
@@ -519,48 +524,45 @@ public:
 private:
 	// Helpers
 
-	void _reserve(const size_t& newMapCapacity) {		// TODO: ERROR - blocks can have both first and last elem
-		if (_data._Map == nullptr)				// after custom::move()
-			_init_map(newMapCapacity);
-		else
+	void _reserve(const size_t& newMapCapacity) {	// TODO: check newCapacity (maybe not needed)
+		size_t newCapacity		= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+		size_t newSize			= _data._Size;
+		size_t newFirst			= _data._First % _data.BLOCK_SIZE;
+		ValueType** newMap		= new ValueType* [newCapacity] {nullptr};
+
+		size_t firstBlock		= _data.get_block(_data._First);					// block to find first elem
+		size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);	// block to find last elem (always != firstBlock)
+
+		size_t newBlockIndex	= 0;
+		size_t oldBlockIndex	= firstBlock;
+
+		while (oldBlockIndex != lastBlock)								// copy pointers to blocks and nullify the old ones
 		{
-			size_t newCapacity		= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
-			size_t newSize			= _data._Size;
-			size_t newFirst			= _data._First % _data.BLOCK_SIZE;
-			ValueType** newMap		= new ValueType* [newCapacity] {nullptr};
-
-			size_t firstBlock		= _data.get_block(_data._First);
-			size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);
-
-			size_t newBlockIndex	= 0;
-			size_t oldBlockIndex	= firstBlock;
-
-			while (oldBlockIndex != lastBlock)	// copy pointers to blocks and nullify the old ones
-			{
-				newMap[newBlockIndex++]		= _data._Map[oldBlockIndex];
-				_data._Map[oldBlockIndex]	= nullptr;
-
-				if (oldBlockIndex == _data._MapCapacity - 1)
-					oldBlockIndex = 0;
-				else
-					++oldBlockIndex;
-			}
-			newMap[newBlockIndex]		= _data._Map[oldBlockIndex];	// for lastBlock
+			newMap[newBlockIndex++]		= _data._Map[oldBlockIndex];
 			_data._Map[oldBlockIndex]	= nullptr;
 
-			_data._Size = 0;					// clear the remaining empty blocks and map
-			_clean_up_map();
-
-			_data._Map				= newMap;
-			_data._MapCapacity		= newCapacity;
-			_data._Size				= newSize;
-			_data._First			= newFirst;
+			if (oldBlockIndex == _data._MapCapacity - 1)
+				oldBlockIndex = 0;
+			else
+				++oldBlockIndex;
 		}
+		newMap[newBlockIndex]		= _data._Map[oldBlockIndex];		// for lastBlock
+		_data._Map[oldBlockIndex]	= nullptr;
+
+		_data._Size = 0;												// clear the remaining empty blocks and map
+		_clean_up_map();
+
+		_data._Map				= newMap;
+		_data._MapCapacity		= newCapacity;
+		_data._Size				= newSize;
+		_data._First			= newFirst;
 	}
 
-	void _extend_if_full() {
-		if (_data._Size == _data._MapCapacity * _data.BLOCK_SIZE)
-			_reserve(2 * _data._MapCapacity);
+	void _extend_if_full() {												
+		if (_data._Map == nullptr)												// after custom::move()
+			_init_map(_DEFAULT_CAPACITY);
+		else if (_data._Size >= (_data._MapCapacity - 1) * _data.BLOCK_SIZE)	// ensure first and last elem are not in the same block...
+			_reserve(2 * _data._MapCapacity);									// ...with last < first
 	}
 
 	void _copy(const Deque& other) {

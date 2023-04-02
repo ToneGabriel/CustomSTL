@@ -226,22 +226,21 @@ void map_test() {
 }
 
 void deque_test() {
-	custom::Deque<int> dq(5, 10);
-	//dq.emplace_back(0);
-	//dq.emplace_back(1);
-	//dq.emplace_back(2);
-	//dq.emplace_back(3);
+	custom::Deque<int> dq;
+	dq.emplace_back(0);
+	dq.emplace_back(1);
+	dq.emplace_back(2);
+	dq.emplace_back(3);
 	dq.emplace_front(4);
-	dq.emplace_front(5);
-	dq.emplace_front(6);
-	dq.emplace_front(7);
-	//dq.emplace_front(8);
 
-	for (auto& val : dq)
+	custom::Deque<int> dq1(custom::move(dq));
+	dq.emplace_back(0);
+
+	for (auto& val : dq1)
 		std::cout << val << ' ';
 	std::cout << '\n';
 
-	dq.print_details();
+	dq1.print_details();
 }
 
 void queue_test() {
