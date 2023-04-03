@@ -10,7 +10,6 @@ template<class Type>
 struct DequeData
 {
 	using ValueType 	= Type;
-	using IterType		= ValueType;
 	using Alloc			= Allocator<ValueType>;
 	using AllocPtr		= Allocator<ValueType*>;
 
@@ -32,9 +31,8 @@ class DequeConstIterator
 public:
 	using Data			= typename Deque::Data;
 	using ValueType		= typename Deque::ValueType;
-	using IterType		= typename Deque::IterType;
 	using Reference		= const ValueType&;
-	using Pointer		= const IterType*;
+	using Pointer		= const ValueType*;
 
 	size_t _Offset		= 0;
 	const Data* _Data	= nullptr;
@@ -152,9 +150,8 @@ private:
 public:
 	using Data		= typename Deque::Data;
 	using ValueType	= typename Deque::ValueType;
-	using IterType	= typename Deque::IterType;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= ValueType*;
 
 public:
 
@@ -221,7 +218,6 @@ class Deque					// Deque Template implemented using 2 vectors (front and back)
 public:
 	using Data					= DequeData<Type>;
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
 	using Alloc					= typename Data::Alloc;						// Allocator for block
 	using AllocPtr				= typename Data::AllocPtr;					// Allocator for map
 
@@ -244,17 +240,11 @@ public:
 	}
 
 	Deque(const size_t& newSize) {
-		_init_map(newSize / _data.BLOCK_SIZE * 2);
-
-		for (size_t i = 0; i < newSize; ++i)
-			emplace_back();
+		resize(newSize);
 	}
 
 	Deque(const size_t& newSize, const ValueType& copyValue) {
-		_init_map(newSize / _data.BLOCK_SIZE * 2);
-
-		for (size_t i = 0; i < newSize; ++i)
-			emplace_back(copyValue);
+		resize(newSize, copyValue);
 	}
 
 	Deque(const Deque& other) {
@@ -272,8 +262,20 @@ public:
 public:
 	// Main functions
 
-	void resize(const size_t& newSize, const ValueType& copyValue = ValueType()) {
-		// TODO: implement
+	void resize(const size_t& newSize) {
+		while (_data._Size < newSize)
+			emplace_back();
+
+        while (_data._Size > newSize)
+            pop_back();
+	}
+
+	void resize(const size_t& newSize, const ValueType& copyValue) {
+		while (_data._Size < newSize)
+			emplace_back(copyValue);
+
+        while (_data._Size > newSize)
+            pop_back();
 	}
 
 	template<class... Args>
@@ -347,19 +349,19 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(const Iterator& iterator, Args&&... args) {
+	Iterator emplace(ConstIterator iterator, Args&&... args) {
 		// TODO: implement
 	}
 
-	Iterator push(const Iterator& iterator, const ValueType& copyValue) {
+	Iterator push(ConstIterator iterator, const ValueType& copyValue) {
 		return emplace(iterator, copyValue);
 	}
 
-	Iterator push(const Iterator& iterator, ValueType&& moveValue) {
+	Iterator push(ConstIterator iterator, ValueType&& moveValue) {
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	Iterator pop(const Iterator& iterator) {
+	Iterator pop(ConstIterator iterator) {
 		// TODO: implement
 	}
 

@@ -83,7 +83,6 @@ class ReverseIterator       // Adaptor for backwards iteration
 public:
     using BaseIterator  = Iterator;
     using ValueType     = typename BaseIterator::ValueType;
-    using IterType      = typename BaseIterator::IterType;
     using Reference		= typename BaseIterator::Reference;
 	using Pointer		= typename BaseIterator::Pointer;
 
@@ -93,8 +92,6 @@ public:
 
     explicit ReverseIterator(const Iterator& base)
         : _Base(base) { /*Empty*/ }
-
-    ~ReverseIterator() = default;
 
     ReverseIterator& operator++() {
         --_Base;

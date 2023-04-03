@@ -130,7 +130,7 @@ public:
 		return _elems.pop(Iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
 	}
 
-	Iterator erase(const Iterator& iterator) {
+	Iterator erase(ConstIterator iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 

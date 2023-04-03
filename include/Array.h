@@ -9,16 +9,15 @@ class ArrayConstIterator
 {
 public:
 	using ValueType = Type;
-	using IterType	= ValueType;
 	using Reference	= const ValueType&;
-	using Pointer	= const IterType*;
+	using Pointer	= const ValueType*;
 
-	IterType* _Ptr	= nullptr;
+	ValueType* _Ptr	= nullptr;
 	size_t _Index	= 0;
 
 public:
 
-	explicit ArrayConstIterator(IterType* ptr, size_t index) noexcept
+	explicit ArrayConstIterator(ValueType* ptr, size_t index) noexcept
 		:_Ptr(ptr), _Index(index) { /*Empty*/ }
 
 	ArrayConstIterator& operator++() {
@@ -122,13 +121,12 @@ private:
 	
 public:
 	using ValueType = Type;
-	using IterType	= ValueType;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= ValueType*;
 
 public:
 
-	explicit ArrayIterator(IterType* ptr, size_t index) noexcept
+	explicit ArrayIterator(ValueType* ptr, size_t index) noexcept
 		:Base(ptr, index) { /*Empty*/ }
 
 	ArrayIterator& operator++() {
@@ -190,7 +188,6 @@ class Array							// Array Template
 {
 public:
 	using ValueType 			= Type;										// Type for stored values
-	using IterType				= ValueType;								// Type for iteration (same as value)
 	
 	using Iterator				= ArrayIterator<ValueType, Size>;			// Iterator type
 	using ConstIterator			= ArrayConstIterator<ValueType, Size>;		// Const Iterator type

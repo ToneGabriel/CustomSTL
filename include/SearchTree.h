@@ -27,7 +27,6 @@ struct SearchTreeData
 {
 	using ValueType		= typename Traits::ValueType;			// Type for stored values
 	using Node			= TreeNode<ValueType>;					// Node type
-	using IterType		= Node;									// Type for iteration
 	using Alloc			= Allocator<Node>;						// Allocator type
 
 	size_t _Size		= 0;									// Number of Nodes held
@@ -54,15 +53,15 @@ class ConstSearchTreeIterator
 public:
 	using Data			= typename SearchTree::Data;
 	using ValueType 	= typename SearchTree::ValueType;
-	using IterType		= typename SearchTree::IterType;
+	using Node			= typename SearchTree::Node;
 	using Reference		= const ValueType&;
-	using Pointer		= const IterType*;
+	using Pointer		= const Node*;
 
-	IterType* _Ptr		= nullptr;
+	Node* _Ptr			= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
-	explicit ConstSearchTreeIterator(IterType* ptr, const Data* data)
+	explicit ConstSearchTreeIterator(Node* ptr, const Data* data)
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
 	ConstSearchTreeIterator& operator++() {
@@ -71,7 +70,7 @@ public:
 
 		if (_Ptr->_Right->_IsNil)
 		{
-			IterType* node = _Ptr->_Parent;
+			Node* node = _Ptr->_Parent;
 			while (!node->_IsNil && _Ptr == node->_Right)
 			{
 				_Ptr = node;
@@ -99,7 +98,7 @@ public:
 			_Ptr = _Ptr->_Right;
 		else if (_Ptr->_Left->_IsNil)
 		{
-			IterType* node = _Ptr->_Parent;
+			Node* node = _Ptr->_Parent;
 			while (!node->_IsNil && _Ptr == node->_Left)
 			{
 				_Ptr = node;
@@ -153,13 +152,13 @@ private:
 public:
 	using Data		= typename SearchTree::Data;
 	using ValueType = typename SearchTree::ValueType;
-	using IterType	= typename SearchTree::IterType;
+	using Node		= typename SearchTree::Node;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= Node*;
 
 public:
 
-	explicit SearchTreeIterator(IterType* ptr, const Data* data)
+	explicit SearchTreeIterator(Node* ptr, const Data* data)
 		:Base(ptr, data) { /*Empty*/ }
 
 	SearchTreeIterator& operator++() {
@@ -205,7 +204,6 @@ public:
 
 	using Data					= SearchTreeData<Traits>;
 	using Node 					= typename Data::Node;							// Node component from Tree
-	using IterType				= typename Data::IterType;						// Type of iterating element
 	using Alloc					= typename Data::Alloc;							// Allocator for Node type
 	
 	using Iterator				= SearchTreeIterator<SearchTree<Traits>>;		// Iterator type
@@ -307,7 +305,7 @@ public:
 		return Iterator(_data._Head, &_data);	// TODO: not ok
 	}
 
-	Iterator erase(const Iterator& iterator) {
+	Iterator erase(ConstIterator iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
@@ -574,7 +572,7 @@ private:
 		// Raw Insert
 		newNode->_Parent = position._Parent;
 
-		if (position._Parent == _data._Head)					// first node
+		if (position._Parent == _data._Head)			// first node
 		{
 			_data._Head->_Parent	= newNode;
 			_data._Head->_Left		= newNode;

@@ -12,7 +12,6 @@ struct ListData
 {
 	using ValueType		= Type;									// Type for stored values
 	using Node			= DoubleNode<ValueType>;				// Node type
-	using IterType		= Node;									// Type for iteration
 	using Alloc			= Allocator<Node>;						// Allocator type
 
 	size_t _Size		= 0;									// Number of Nodes held
@@ -25,16 +24,16 @@ class ListConstIterator
 public:
 	using Data			= typename List::Data;
 	using ValueType		= typename List::ValueType;
-	using IterType		= typename List::IterType;
+	using Node			= typename List::Node;
 	using Reference		= const ValueType&;
-	using Pointer		= const IterType*;
+	using Pointer		= const Node*;
 
-	IterType* _Ptr		= nullptr;
+	Node* _Ptr			= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
 
-	explicit ListConstIterator(IterType* nodePtr, const Data* data)
+	explicit ListConstIterator(Node* nodePtr, const Data* data)
 		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
 
 	ListConstIterator& operator++() {
@@ -106,13 +105,13 @@ private:
 public:
 	using Data		= typename List::Data;
 	using ValueType = typename List::ValueType;
-	using IterType	= typename List::IterType;
+	using Node		= typename List::Node;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= Node*;
 
 public:
 
-	explicit ListIterator(IterType* nodePtr, const Data* data)
+	explicit ListIterator(Node* nodePtr, const Data* data)
 		:Base(nodePtr, data) { /*Empty*/ }
 
 	ListIterator& operator++() {
@@ -158,7 +157,6 @@ public:
 	using Data 					= ListData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
 	using Node 					= typename Data::Node;						// Node in list
-	using IterType				= typename Data::IterType;					// Type of iterating element
 	using Alloc					= typename Data::Alloc;						// Allocator type
 	
 	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
@@ -246,28 +244,28 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(const Iterator& iterator, Args&&... args) {			// Construct object using arguments (Args) and add it BEFORE the iterator position
-		Node* temp = iterator._Ptr;
-		Node* newNode = new Node(custom::forward<Args>(args)...);
+	Iterator emplace(ConstIterator iterator, Args&&... args) {			// Construct object using arguments (Args) and add it BEFORE the iterator position
+		Node* temp 		= iterator._Ptr;
+		Node* newNode 	= new Node(custom::forward<Args>(args)...);
 		_insert_node_before(temp, newNode);
 
 		return Iterator(newNode, &_data);
 	}
 
-	Iterator push(const Iterator& iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
+	Iterator push(ConstIterator iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
 		return emplace(iterator, copyValue);
 	}
 
-	Iterator push(const Iterator& iterator, ValueType&& moveValue) {        // Construct object using temporary and add it BEFORE the iterator position
+	Iterator push(ConstIterator iterator, ValueType&& moveValue) {        // Construct object using temporary and add it BEFORE the iterator position
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	Iterator pop(const Iterator& iterator) {                                // Remove component at iterator position
+	Iterator pop(ConstIterator iterator) {                                // Remove component at iterator position
 		if (iterator.is_end())
 			throw std::out_of_range("Cannot pop end iterator...");
 
-		Node* temp = iterator._Ptr;
-		Iterator prevIterator = Iterator(temp->_Previous, &_data);
+		Node* temp 				= iterator._Ptr;
+		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
 		_remove_node(temp);
 
 		return prevIterator;
@@ -398,7 +396,7 @@ private:
 	// Others
 
 	void _create_head() {
-		_data._Head 				= _alloc.alloc(1);
+		_data._Head 			= _alloc.alloc(1);
 		_data._Head->_Next 		= _data._Head;
 		_data._Head->_Previous 	= _data._Head;
 	}
@@ -410,11 +408,11 @@ private:
 	}
 
 	void _insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node before another
-		newNode->_Previous = beforeNode->_Previous;
-		newNode->_Next = beforeNode;
+		newNode->_Previous 				= beforeNode->_Previous;
+		newNode->_Next 					= beforeNode;
 
-		beforeNode->_Previous->_Next = newNode;
-		beforeNode->_Previous = newNode;
+		beforeNode->_Previous->_Next 	= newNode;
+		beforeNode->_Previous 			= newNode;
 
 		++_data._Size;
 	}
@@ -438,8 +436,8 @@ private:
 	void _move(List&& other) {												// Generic move function for list
 		std::swap(_data._Head, other._data._Head);
 
-		_data._Size = other._data._Size;
-		other._data._Size = 0;
+		_data._Size 		= other._data._Size;
+		other._data._Size 	= 0;
 	}
 
 	template<class... Args>

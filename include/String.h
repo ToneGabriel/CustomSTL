@@ -11,7 +11,6 @@ CUSTOM_BEGIN
 struct StringData
 {
 	using ValueType		= char;									// Type for stored values
-	using IterType		= ValueType;							// Type for iteration (same as value)
 	using Alloc			= Allocator<ValueType>;					// Allocator type
 
 	ValueType* _First	= nullptr;								// Actual container array
@@ -24,17 +23,16 @@ class StringConstIterator
 {
 public:
 	using Data			= typename String::Data;
-	using ValueType		= typename String::ValueType;
-	using IterType		= typename String::IterType;
+	using ValueType		= typename String::ValueType;;
 	using Reference		= const ValueType&;
-	using Pointer		= const IterType*;
+	using Pointer		= const ValueType*;
 
-	IterType* _Ptr		= nullptr;
+	ValueType* _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
 
-	explicit StringConstIterator(IterType* ptr, const Data* data) noexcept
+	explicit StringConstIterator(ValueType* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
 	StringConstIterator& operator++() {
@@ -139,13 +137,12 @@ private:
 public:
 	using Data		= typename String::Data;
 	using ValueType = typename String::ValueType;
-	using IterType	= typename String::IterType;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= ValueType*;
 
 public:
 
-	explicit StringIterator(IterType* ptr, const Data* data)
+	explicit StringIterator(ValueType* ptr, const Data* data)
 		:Base(ptr, data) { /*Empty*/ }
 
 	StringIterator& operator++() {
@@ -207,7 +204,6 @@ class String	// String container
 public:
 	using Data					= StringData;								// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
 	using Alloc					= typename Data::Alloc;						// Allocator type
 	
 	using Iterator				= StringIterator<String>;					// Iterator type
@@ -345,14 +341,14 @@ public:
 		return *this;
 	}
 
-	Iterator insert(const Iterator& where, const char& chr) {
+	Iterator insert(ConstIterator where, const char& chr) {
 		size_t pos = where.get_index();
 		_insert_from_cstring(pos, &chr, 0, 1);
 
 		return Iterator(_data._First + pos, &_data);
 	}
 
-	Iterator insert(const Iterator& where, const Iterator& first, const Iterator& last) {
+	Iterator insert(ConstIterator where, ConstIterator first, ConstIterator last) {
 		if (where._Data->_First == first._Data->_First ||
 			first._Data->_First != last._Data->_First)	// Check if pos string != first/last string
 			throw std::domain_error("String provided by first and last must be the same, but different from the one provided by where");
@@ -373,7 +369,7 @@ public:
 		return *this;
 	}
 
-	Iterator erase(const Iterator& where) {
+	Iterator erase(ConstIterator where) {
 		if (where.is_end())
 			throw std::out_of_range("String erase iterator outside range...");
 
@@ -383,7 +379,7 @@ public:
 		return Iterator(_data._First + pos, &_data);
 	}
 
-	Iterator erase(const Iterator& first, const Iterator& last) {
+	Iterator erase(ConstIterator first, ConstIterator last) {
 		if (first.is_end())
 			throw std::out_of_range("String erase iterator outside range...");
 

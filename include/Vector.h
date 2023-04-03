@@ -9,7 +9,6 @@ template<class Type>
 struct VectorData
 {
 	using ValueType		= Type;									// Type for stored values
-	using IterType		= ValueType;							// Type for iteration (same as value)
 	using Alloc			= Allocator<ValueType>;					// Allocator type
 
 	ValueType* _First	= nullptr;								// Actual container array
@@ -23,16 +22,15 @@ class VectorConstIterator
 public:
 	using Data			= typename Vector::Data;
 	using ValueType		= typename Vector::ValueType;
-	using IterType		= typename Vector::IterType;
 	using Reference		= const ValueType&;
-	using Pointer		= const IterType*;
+	using Pointer		= const ValueType*;
 
-	IterType* _Ptr		= nullptr;
+	ValueType* _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
 
-	explicit VectorConstIterator(IterType* ptr, const Data* data) noexcept
+	explicit VectorConstIterator(ValueType* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
 	VectorConstIterator& operator++() {
@@ -138,13 +136,12 @@ private:
 public:
 	using Data		= typename Vector::Data;
 	using ValueType = typename Vector::ValueType;
-	using IterType	= typename Vector::IterType;
 	using Reference	= ValueType&;
-	using Pointer	= IterType*;
+	using Pointer	= ValueType*;
 
 public:
 
-	explicit VectorIterator(IterType* ptr, const Data* data) noexcept
+	explicit VectorIterator(ValueType* ptr, const Data* data) noexcept
 		:Base(ptr, data) { /*Empty*/ }
 
 	VectorIterator& operator++() {
@@ -207,7 +204,6 @@ class Vector			// Vector Template
 public:
 	using Data					= VectorData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using IterType				= typename Data::IterType;					// Type for iteration (same as value)
 	using Alloc					= typename Data::Alloc;						// Allocator type
 	
 	using Iterator				= VectorIterator<Vector<ValueType>>;		// Iterator type
@@ -331,7 +327,7 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(const Iterator& iterator, Args&&... args) {				// Emplace object at iterator position with given arguments
+	Iterator emplace(ConstIterator iterator, Args&&... args) {				// Emplace object at iterator position with given arguments
 		size_t index = iterator.get_index();				// Don't check end()
 		emplace_back();
 
@@ -344,15 +340,15 @@ public:
 		return Iterator(_data._First + index, &_data);
 	}
 
-	Iterator push(const Iterator& iterator, const ValueType& copyValue) {		// Push copy object at iterator position
+	Iterator push(ConstIterator iterator, const ValueType& copyValue) {		// Push copy object at iterator position
 		return emplace(iterator, copyValue);
 	}
 
-	Iterator push(const Iterator& iterator, ValueType&& moveValue) {			// Push temporary object at iterator position
+	Iterator push(ConstIterator iterator, ValueType&& moveValue) {			// Push temporary object at iterator position
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	Iterator pop(const Iterator& iterator) {									// Remove component at iterator position
+	Iterator pop(ConstIterator iterator) {									// Remove component at iterator position
 		if (iterator.is_end())
 			throw std::out_of_range("Array pop iterator outside range...");
 
