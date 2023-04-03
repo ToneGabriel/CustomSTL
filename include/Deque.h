@@ -128,8 +128,8 @@ public:
 
 public:
 
-	const size_t get_index() const {
-		return 0;	// TODO: implement
+	const size_t get_offset() const {
+		return _Offset;
 	}
 
 	const bool is_begin() const {
@@ -350,7 +350,34 @@ public:
 
 	template<class... Args>
 	Iterator emplace(ConstIterator iterator, Args&&... args) {
-		// TODO: implement
+		size_t off = iterator.get_offset() - _data._First;
+
+		if (off <= _data._Size / 2)		// closer to front
+		{
+			emplace_front(custom::forward<Args>(args)...);
+			
+			Iterator current 	= begin() + off;
+			ValueType val 		= custom::move(*begin());
+
+			for (Iterator it = begin(); it != current; ++it)
+				*it = custom::move(*(it + 1));
+
+			*current = val;
+		}
+		else							// closer to back
+		{
+			emplace_back(custom::forward<Args>(args)...);
+
+			Iterator current 	= begin() + off;
+			ValueType val 		= custom::move(*--end());
+
+			for (Iterator it = --end(); it != current; --it)
+				*it = custom::move(*(it - 1));
+
+			*current = val;
+		}
+		
+		return begin() + off;
 	}
 
 	Iterator push(ConstIterator iterator, const ValueType& copyValue) {
@@ -362,7 +389,33 @@ public:
 	}
 
 	Iterator pop(ConstIterator iterator) {
-		// TODO: implement
+		if (iterator.is_end())
+			throw std::out_of_range("Array pop iterator outside range...");
+			
+		size_t off = iterator.get_offset() - _data._First;
+
+		if (off <= _data._Size / 2)		// closer to front
+		{
+			Iterator current 	= begin() + off;
+			Iterator first 		= begin();
+
+			for (Iterator it = current; it != first; --it)
+				*it = custom::move(*(it - 1));
+
+			pop_front();
+		}
+		else							// closer to back
+		{
+			Iterator current 	= begin() + off;
+			Iterator last 		= --end();
+
+			for (Iterator it = current; it != last; ++it)
+				*it = custom::move(*(it + 1));
+			
+			pop_back();
+		}
+
+		return begin() + off;
 	}
 
 	const size_t size() const {
@@ -526,11 +579,10 @@ public:
 private:
 	// Helpers
 
-	void _reserve(const size_t& newMapCapacity) {	// TODO: check newCapacity (maybe not needed)
-		size_t newCapacity		= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
+	void _reserve(const size_t& newMapCapacity) {
 		size_t newSize			= _data._Size;
 		size_t newFirst			= _data._First % _data.BLOCK_SIZE;
-		ValueType** newMap		= new ValueType* [newCapacity] {nullptr};
+		ValueType** newMap		= new ValueType* [newMapCapacity] {nullptr};
 
 		size_t firstBlock		= _data.get_block(_data._First);					// block to find first elem
 		size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);	// block to find last elem (always != firstBlock)
@@ -555,7 +607,7 @@ private:
 		_clean_up_map();
 
 		_data._Map				= newMap;
-		_data._MapCapacity		= newCapacity;
+		_data._MapCapacity		= newMapCapacity;
 		_data._Size				= newSize;
 		_data._First			= newFirst;
 	}

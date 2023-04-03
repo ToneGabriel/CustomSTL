@@ -4,6 +4,7 @@ int main()
 {
 	//test::map_test();
 	//test::priority_queue_test();
+	//test::queue_test();
 	//test::stack_test();
 	//test::vector_test();
 	//test::unordered_map_test();
@@ -11,8 +12,8 @@ int main()
 	//test::list_test();
 	//test::string_test();
 	//test::array_test();
-	test::deque_test();
-
+	//test::deque_test();
+	test::function_test();
 
 	return 0;
 }

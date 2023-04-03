@@ -13,6 +13,7 @@
 #include "UnorderedSet.h"
 #include "Map.h"
 #include "Set.h"
+#include "Function.h"
 
 #include <iostream>
 #include <string>
@@ -26,6 +27,7 @@
 #include <unordered_set>
 #include <map>
 #include <set>
+#include <functional>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
@@ -232,26 +234,30 @@ void deque_test() {
 	dq.emplace_back(2);
 	dq.emplace_back(3);
 	dq.emplace_front(4);
+	auto it = dq.emplace(dq.end() - 1, 11);
+	it = dq.emplace(it, 12);
 
-	custom::Deque<int> dq1(custom::move(dq));
-	dq.emplace_back(0);
+	it = dq.pop(dq.begin());
+	it = dq.pop(it);
 
-	for (auto& val : dq1)
+	for (auto& val : dq)
 		std::cout << val << ' ';
 	std::cout << '\n';
 
-	dq1.print_details();
+	dq.print_details();
 }
 
 void queue_test() {
 	custom::Queue<Test> q;
-	custom::Queue<Test> q1;
 
-	q.emplace();
-	q.emplace();
-	q.emplace();
+	for (size_t i = 0; i < 50; ++i)
+		q.emplace(i);
 
-	q1 = q;
+	while(!q.empty())
+	{
+		std::cout << q.front() << '\n';
+		q.pop();
+	}
 }
 
 void priority_queue_test() {
@@ -325,6 +331,11 @@ void array_test() {
 
 	for (auto& val : arr)
 		std::cout << val << '\n';
+}
+
+void function_test() {
+	custom::Function<void()> fct(queue_test);
+	fct();
 }
 
 TEST_END
