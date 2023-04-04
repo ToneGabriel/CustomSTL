@@ -334,8 +334,9 @@ void array_test() {
 }
 
 void function_test() {
-	custom::Function<void()> fct(queue_test);
-	fct();
+	custom::Function<void()> fct(unordered_map_test);
+	custom::Function<void()> fct1(fct);
+	fct1();
 }
 
 TEST_END
