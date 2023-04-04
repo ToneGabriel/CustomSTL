@@ -12,7 +12,7 @@ class Function<RetType(ArgTypes...)>        // Wrapper template to function poin
 {
 private:
     using Invoker           = RetType(*)(const Function&, ArgTypes&&...);
-    using Copiator          = void(*)(const Function&);
+    using Copiator          = void*(*)(const Function&);
     using Destructor        = void(*)(const Function&);
 
 private:
@@ -44,27 +44,22 @@ public:
 
     Function() = default;
 
-    // TODO: enable_if
-    template<typename Func>
+    template<typename Func, typename std::enable_if<!std::is_same<typename std::decay<Func>::type, Function>::value, int>::type = 1>
     Function(Func&& f)
         :   _invoker(reinterpret_cast<Invoker>(_invoke<typename std::decay<Func>::type>)),
             _copiator(reinterpret_cast<Copiator>(_copy<typename std::decay<Func>::type>)),
             _destructor(reinterpret_cast<Destructor>(_destruct<typename std::decay<Func>::type>)),
             _functor(reinterpret_cast<void*>(new typename std::decay<Func>::type(custom::forward<Func>(f))))
-            { std::cout << "Init\n"; }
+            { /*Empty*/ }
 
     Function(const Function& other)
         :   _invoker(other._invoker),
             _copiator(other._copiator),
-            _destructor(other._destructor)
-    {
-        std::cout << "Copy\n";
-        //_functor = _copiator(other);
-    }
+            _destructor(other._destructor),
+            _functor(other._copiator(other))
+            { /*Empty*/ }
 
-    Function(Function&& other) {
-        std::cout << "Move\n";
-
+    Function(Function&& other) noexcept {
         _invoker            = other._invoker;
         _copiator           = other._copiator;
         _destructor         = other._destructor;
@@ -77,7 +72,6 @@ public:
     }
 
     ~Function() {
-        std::cout << "Destroy\n";
         if (_functor != nullptr)
             _destructor(*this);
     }
@@ -95,7 +89,7 @@ public:
     Function& operator=(const Function& other) {
         if (_functor != other._functor)
         {
-
+            // TODO: implement
         }
 
         return *this;
@@ -104,7 +98,7 @@ public:
     Function& operator=(Function&& other) {
         if (_functor != other._functor)
         {
-
+            // TODO: implement
         }
 
         return *this;
