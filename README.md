@@ -6,4 +6,3 @@ Items not ready:
 - SearchTree.h
 - Map.h
 - Set.h
-- Function.h

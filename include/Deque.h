@@ -11,14 +11,13 @@ struct DequeData
 {
 	using ValueType 	= Type;
 	using Alloc			= Allocator<ValueType>;
-	using AllocPtr		= Allocator<ValueType*>;
-
-	static constexpr size_t BLOCK_SIZE = 4;
 
 	ValueType** _Map	= nullptr;
 	size_t _MapCapacity = 0;
 	size_t _First 		= 0;
 	size_t _Size 		= 0;
+
+	static constexpr size_t BLOCK_SIZE = 4;
 
 	size_t get_block(const size_t& offset) const noexcept {
 		return (offset / BLOCK_SIZE) % _MapCapacity;
@@ -219,7 +218,6 @@ public:
 	using Data					= DequeData<Type>;
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
 	using Alloc					= typename Data::Alloc;						// Allocator for block
-	using AllocPtr				= typename Data::AllocPtr;					// Allocator for map
 
 	using Iterator				= DequeIterator<Deque<ValueType>>;			// Iterator type
 	using ConstIterator			= DequeConstIterator<Deque<ValueType>>;		// Const Iterator type
