@@ -24,19 +24,19 @@ private:
 private:
     // Core functions
 
-    template<class Func>
+    template<class FuncType>
     static RetType _invoke(const Function& target, ArgTypes&&... args) {
-        return (*reinterpret_cast<Func*>(target._functor))(custom::forward<ArgTypes>(args)...);
+        return (*reinterpret_cast<FuncType*>(target._functor))(custom::forward<ArgTypes>(args)...);
     }
 
-    template<class Func>
+    template<class FuncType>
     static void* _copy(const Function& target) {
-        return reinterpret_cast<void*>(new Func(*reinterpret_cast<Func*>(target._functor)));
+        return reinterpret_cast<void*>(new FuncType(*reinterpret_cast<FuncType*>(target._functor)));
     }
 
-    template<class Func>
+    template<class FuncType>
     static void _destruct(const Function& target) {
-        delete reinterpret_cast<Func*>(target._functor);
+        delete reinterpret_cast<FuncType*>(target._functor);
     }
 
 public:
@@ -44,12 +44,12 @@ public:
 
     Function() = default;
 
-    template<typename Func, typename std::enable_if<!std::is_same<typename std::decay<Func>::type, Function>::value, int>::type = 1>
-    Function(Func&& f)
-        :   _invoker(reinterpret_cast<Invoker>(_invoke<typename std::decay<Func>::type>)),
-            _copiator(reinterpret_cast<Copiator>(_copy<typename std::decay<Func>::type>)),
-            _destructor(reinterpret_cast<Destructor>(_destruct<typename std::decay<Func>::type>)),
-            _functor(reinterpret_cast<void*>(new typename std::decay<Func>::type(custom::forward<Func>(f))))
+    template<class FuncType, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<FuncType>, Function>::Value, bool> = true>
+    Function(FuncType&& f)
+        :   _invoker(reinterpret_cast<Invoker>(_invoke<custom::Decay_t<FuncType>>)),
+            _copiator(reinterpret_cast<Copiator>(_copy<custom::Decay_t<FuncType>>)),
+            _destructor(reinterpret_cast<Destructor>(_destruct<custom::Decay_t<FuncType>>)),
+            _functor(reinterpret_cast<void*>(new custom::Decay_t<FuncType>(custom::forward<FuncType>(f))))
             { /*Empty*/ }
 
     Function(const Function& other)
