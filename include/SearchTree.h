@@ -9,7 +9,7 @@
 
 CUSTOM_BEGIN
 
-enum class TreeChild 
+enum class TreeChild : char
 {
 	Left,
 	Right
@@ -312,6 +312,14 @@ public:
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
 
+	ConstIterator find (const KeyType& key) const {
+		Node* foundNode = _find_in_tree(key);
+		if (foundNode != nullptr)
+			return ConstIterator(foundNode, &_data);
+
+		return end();
+	}
+
 	Iterator find(const KeyType& key) {
 		Node* foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
@@ -406,11 +414,11 @@ protected:
 	}
 
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
-		Iterator it = find(key);
+		ConstIterator it = find(key);
 		if (it == end())
 			throw std::out_of_range("Invalid key...");
 
-		return Traits::extract_mapval((*it)->_Value);
+		return Traits::extract_mapval(*it);
 	}
 
 	MappedType& _at(const KeyType& key) {
@@ -418,7 +426,7 @@ protected:
 		if (it == end())
 			throw std::out_of_range("Invalid key...");
 
-		return Traits::extract_mapval((*it)->_Value);
+		return const_cast<MappedType&>(Traits::extract_mapval(*it));	// TODO: check
 	}
 
 private:
@@ -521,7 +529,7 @@ private:
 		return node;
 	}
 
-	Node* _find_in_tree(const KeyType& key) {
+	Node* _find_in_tree(const KeyType& key) const {
 		Node* found = nullptr;
 
 		for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
@@ -577,7 +585,7 @@ private:
 			_data._Head->_Parent	= newNode;
 			_data._Head->_Left		= newNode;
 			_data._Head->_Right		= newNode;
-			newNode->_Color = Node::Colors::Black;
+			newNode->_Color 		= Node::Colors::Black;
 		}
 		else if (position._Child == TreeChild::Left)	// add to left
 		{

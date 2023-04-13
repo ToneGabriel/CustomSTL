@@ -71,7 +71,7 @@ struct TreeNode				// Used in SearchTree
 	char _Color;			// Used for balancing
 	bool _IsNil;			// True for Head only
 
-	enum Colors 
+	enum Colors : char
 	{
 		Red,
 		Black
