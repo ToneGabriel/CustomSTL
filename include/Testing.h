@@ -105,9 +105,10 @@ void print_sequence_test() {
 }
 
 void piecewise_pair_test() {
-	 custom::Pair<int, Test> p(custom::piecewise_construct,
- 						custom::forward_as_tuple(3),
- 						custom::forward_as_tuple(3));
+	 custom::Pair<int, Test> p(
+		 custom::PiecewiseConstruct,
+		 custom::forward_as_tuple(3),
+		 custom::forward_as_tuple(3));
 
 	std::cout << p.First << ' ' << p.Second << '\n';
 }
@@ -178,13 +179,9 @@ void unordered_set_test() {
 
 void map_test() {
 	custom::Map<int, Test> map;
-	custom::Map<int, Test> map1;
-	
-	//for (size_t i = 0; i < 20; ++i)
-	//	map.emplace(i, 0);
 
-	map.emplace(0, 0);
 	map.emplace(5, 0);
+	map.emplace(0, 0);
 	map.emplace(7, 0);
 	map.emplace(1, 0);
 	map.emplace(10, 0);
@@ -206,25 +203,16 @@ void map_test() {
 	map.emplace(99, 0);
 	map.emplace(99, 0);
 
-	map1.emplace(0, 0);
-	map1.emplace(5, 0);
-	map1.emplace(7, 0);
-	map1.emplace(1, 0);
-	map1.emplace(10, 0);
+	std::cout << "Map print\n";
+	map.print_details();
 
-	std::cout << "Copy here\n";
-	map1 = map;
+	map.test();
 
 	std::cout << "Map print\n";
 	map.print_details();
-	std::cout << "Map 1 print\n";
-	map1.print_details();
 
-	for (auto& val : map1)
-		std::cout << val.First << ' ' << val.Second << '\n';
-
-	//map.erase(17);
-	//map.print_details();
+	//for (auto& val : map)
+	//	std::cout << val.First << ' ' << val.Second << '\n';
 }
 
 void deque_test() {

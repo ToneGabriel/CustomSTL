@@ -346,12 +346,14 @@ public:
 
 	void print_details() const {									// For Debugging
 		std::cout << "Size= " << _data._Size << '\n';
+		std::cout << "First= " << Traits::extract_key(_data._Head->_Left->_Value) << '\n';
+		std::cout << "Last= " << Traits::extract_key(_data._Head->_Right->_Value) << '\n';
 		_print_graph(0, _data._Head->_Parent, "HEAD");
 	}
 
 	void test() {	// TODO: remove after testing
-		Node* f = _find_in_tree(19);
-		Node* s = _find_in_tree(7);
+		Node* f = _find_in_tree(101);
+		Node* s = _find_in_tree(99);
 		_transplant(f,s);
 	}
 
@@ -402,7 +404,7 @@ protected:
 		else 
 		{
 			Node* newNode = _create_common_node(
-				custom::piecewise_construct,
+				custom::PiecewiseConstruct,
 				custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 				custom::forward_as_tuple(custom::forward<Args>(args)...)
 			);
@@ -426,7 +428,7 @@ protected:
 		if (it == end())
 			throw std::out_of_range("Invalid key...");
 
-		return const_cast<MappedType&>(Traits::extract_mapval(*it));	// TODO: check
+		return const_cast<MappedType&>(Traits::extract_mapval(*it));
 	}
 
 private:
@@ -520,11 +522,10 @@ private:
 	}
 
 	Node* _in_order_successor(Node* node) const {
-		while (!_is_leaf(node))
-			if (!node->_Right->_IsNil)
-				node = _data.leftmost(node->_Right);
-			else
-				node = _data.leftmost(node);
+		if (!node->_Right->_IsNil)
+			node = _data.leftmost(node->_Right);
+		else
+			node = _data.leftmost(node);
 
 		return node;
 	}
@@ -657,21 +658,22 @@ private:
 		_data._Head->_Parent->_Color = Node::Colors::Black;								// root is black
 	}
 
-	void _destroy(Node* oldNode) {
-		Node* tempNode = _in_order_successor(oldNode);	// Now tempNode is leaf
-
-		if (tempNode->_Color == Node::Colors::Red)
-		{
-			_transplant(oldNode, tempNode);	// TODO: check
-			_detach_parent(oldNode);
-			delete oldNode;
-		}
-		else
-		{
-			// TODO: rebalance
-		}
-
+	void _destroy(Node* oldNode) {	// TODO: implement
 		--_data._Size;
+
+		// Switch old with successor until leaf
+		for (Node* tempNode = _in_order_successor(oldNode); !_is_leaf(oldNode);)
+		{
+			_transplant(oldNode, tempNode);
+			tempNode = _in_order_successor(oldNode);
+		}
+
+		// Fix Delete
+		Node* oldNodeParent = oldNode->_Parent;
+		_free_common_node(oldNode);
+
+
+
 	}
 
 	void _fix_destroy(Node* node) {
@@ -714,7 +716,7 @@ private:
 		// node->_Color = Node::Colors::Black;
 	}
 
-	void _transplant(Node* first, Node* second) {
+	void _transplant(Node* first, Node* second) {	// seems OK
 		if(first == second)
 			return;
 
@@ -726,24 +728,26 @@ private:
 	void _swap_parents(Node* first, Node* second) {
 		Node* aux;
 
-		if (_has_parent(first))		// check head first
+		// check head first
+		if (first->_Parent != _data._Head)
 			if (first == first->_Parent->_Left)
 				first->_Parent->_Left = second;
 			else
 				first->_Parent->_Right = second;
 		else
-			_data._Head = second;
+			_data._Head->_Parent = second;
 
-		if (_has_parent(second))	// check head second
+		// check head second
+		if (second->_Parent != _data._Head)
 			if (second == second->_Parent->_Left)
 				second->_Parent->_Left = first;
 			else
 				second->_Parent->_Right = first;
 		else
-			_data._Head = first;
+			_data._Head->_Parent = first;
 
-		aux = first->_Parent;
-		first->_Parent = second->_Parent;
+		aux				= first->_Parent;
+		first->_Parent	= second->_Parent;
 		second->_Parent = aux;
 	}
 
@@ -751,24 +755,36 @@ private:
 		Node* aux;
 
 		// left child
-		aux = first->_Left;
-		first->_Left = second->_Left;
-		second->_Left = aux;
+		aux				= first->_Left;
+		first->_Left	= second->_Left;
+		second->_Left	= aux;
 
-		if (first->_Left != nullptr)
+		if (first->_Left != _data._Head)
 			first->_Left->_Parent = first;
-		if (second->_Left != nullptr)
+		if (second->_Left != _data._Head)
 			second->_Left->_Parent = second;
 
-		// right child
-		aux = first->_Right;
-		first->_Right = second->_Right;
-		second->_Right = aux;
 
-		if (first->_Right != nullptr)
+		// right child
+		aux				= first->_Right;
+		first->_Right	= second->_Right;
+		second->_Right	= aux;
+
+		if (first->_Right != _data._Head)
 			first->_Right->_Parent = first;
-		if (second->_Right != nullptr)
+		if (second->_Right != _data._Head)
 			second->_Right->_Parent = second;
+
+		// head link (if first/second are begin/end)
+		if (_data._Head->_Left == first)
+			_data._Head->_Left = second;
+		else if (_data._Head->_Left == second)
+			_data._Head->_Left = first;
+
+		if (_data._Head->_Right == first)
+			_data._Head->_Right = second;
+		else if (_data._Head->_Right == second)
+			_data._Head->_Right = first;
 	}
 
 	void _swap_colors(Node* first, Node* second) {
@@ -776,12 +792,12 @@ private:
 	}
 
 	void _detach_parent(Node* node) {
-		if (node == node->_Parent->_Left)
-			node->_Parent->_Left = nullptr;
+		if (node == _data._Head->_Parent)
+			_data._Head->_Parent = _data._Head;
+		else if (node == node->_Parent->_Left)
+			node->_Parent->_Left = _data._Head;
 		else
-			node->_Parent->_Right = nullptr;
-
-		node->_Parent = nullptr;
+			node->_Parent->_Right = _data._Head;
 	}
 
 	void _create_head() {
@@ -810,6 +826,11 @@ private:
 		newNode->_Color		= Node::Colors::Red;
 
 		return newNode;
+	}
+
+	void _free_common_node(Node* oldNode) {
+		_detach_parent(oldNode);
+		delete oldNode;
 	}
 
 	void _copy(const SearchTree& other) {

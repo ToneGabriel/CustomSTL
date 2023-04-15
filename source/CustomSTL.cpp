@@ -2,7 +2,7 @@
 
 int main()
 {
-	//test::map_test();
+	test::map_test();
 	//test::priority_queue_test();
 	//test::queue_test();
 	//test::stack_test();
@@ -13,7 +13,7 @@ int main()
 	//test::string_test();
 	//test::array_test();
 	//test::deque_test();
-	test::function_test();
+	//test::function_test();
 
 	return 0;
 }

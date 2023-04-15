@@ -237,7 +237,7 @@ protected:
 			return it;
 		else {
 			Node* newNode = new Node(
-							custom::piecewise_construct,
+							custom::PiecewiseConstruct,
 							custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 							custom::forward_as_tuple(custom::forward<Args>(args)...)
 							);

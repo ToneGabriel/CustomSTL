@@ -14,6 +14,11 @@
 
 CUSTOM_BEGIN
 
+// tag struct declaration for piecewise construction of Pair objects
+struct PiecewiseConstruct_t { explicit PiecewiseConstruct_t() = default; };
+
+constexpr PiecewiseConstruct_t PiecewiseConstruct = PiecewiseConstruct_t();
+
 // integral constant
 template<class Ty, Ty Val>
 struct IntegralConstant
@@ -328,12 +333,11 @@ template<class Iterator>
 class ReverseIterator                           // Adaptor for backwards iteration
 {
 public:
-    using BaseIterator  = Iterator;
-    using ValueType     = typename BaseIterator::ValueType;
-    using Reference		= typename BaseIterator::Reference;
-	using Pointer		= typename BaseIterator::Pointer;
+    using ValueType     = typename Iterator::ValueType;
+    using Reference		= typename Iterator::Reference;
+	using Pointer		= typename Iterator::Pointer;
 
-    BaseIterator _Base;
+    Iterator _Base;
 
 public:
 
@@ -363,12 +367,12 @@ public:
     }
 
     Pointer operator->() {
-        BaseIterator temp = _Base;
+        Iterator temp = _Base;
         return (--temp).operator->();
     }
 
     Reference operator*() {
-        BaseIterator temp = _Base;
+        Iterator temp = _Base;
         return *(--temp);
     }
 

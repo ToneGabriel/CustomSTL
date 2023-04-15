@@ -4,18 +4,13 @@
 
 CUSTOM_BEGIN
 
-// Tag struct declaration for piecewise construction of Pair objects
-struct PiecewiseConstruct {
-    explicit PiecewiseConstruct() = default;
-};
-
-// Instance of piecewise tag
-constexpr PiecewiseConstruct piecewise_construct = PiecewiseConstruct();
-
 template<class Type1, class Type2>
 class Pair			        // Pair Template
 {
 public:
+    using FirstType     = Type1;
+    using SecondType    = Type2;
+
     Type1 First;
 	Type2 Second;
 
@@ -42,7 +37,7 @@ public:
         :First(get<Indexes1>(custom::move(Val1))...), Second(get<Indexes2>(custom::move(Val2))...) { /*Empty*/ }
 
 	template<class... Types1, class... Types2>
-	Pair(PiecewiseConstruct, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
+	Pair(PiecewiseConstruct_t, Tuple<Types1...> Val1, Tuple<Types2...> Val2)
         :Pair(Val1, Val2, IndexSequenceFor<Types1...>{}, IndexSequenceFor<Types2...>{}) { /*Empty*/ }
 
 	~Pair() = default;
