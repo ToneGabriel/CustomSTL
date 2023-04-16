@@ -1,6 +1,3 @@
-1. Check SearchTree at() for const
-2. SearchTree erase elem
-3. Check Array constructors
-4. String _move - remove and check initialize from cstring
-5. Function learn and implement
-6. Add error text to assert
+1. SearchTree erase elem
+2. Check Array constructors
+3. String _move - remove and check initialize from cstring

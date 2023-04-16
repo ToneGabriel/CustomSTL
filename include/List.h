@@ -272,35 +272,35 @@ public:
 	}
 
 	ValueType& front() {                                                    // Get the value of the first component
-		assert(_data._Size > 0);
+		assert((void("Container is empty..."), !empty()));
 		return _data._Head->_Next->_Value;
 	}
 
 	const ValueType& front() const {
-		assert(_data._Size > 0);
+		assert((void("Container is empty..."), !empty()));
 		return _data._Head->_Next->_Value;
 	}
 
 	ValueType& back() {                                                     // Get the value of the last component
-		assert(_data._Size > 0);
+		assert((void("Container is empty..."), !empty()));
 		return _data._Head->_Previous->_Value;
 	}
 
 	const ValueType& back() const {
-		assert(_data._Size > 0);
+		assert((void("Container is empty..."), !empty()));
 		return _data._Head->_Previous->_Value;
 	}
 
 	ValueType& at(const size_t& index) {
 		if (index >= _data._Size)
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _scroll_node(index)->_Value;
 	}
 
 	const ValueType& at(const size_t& index) const {
 		if (index >= _data._Size)
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _scroll_node(index)->_Value;
 	}

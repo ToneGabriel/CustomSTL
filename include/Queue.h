@@ -143,7 +143,7 @@ public:
 	}
 
 	void pop() {											// Remove first elem from queue
-	if (_baseContainer.size() > 0)
+		if (_baseContainer.size() > 0)
 		{
 			std::swap(_baseContainer[0], _baseContainer[_baseContainer.size() - 1]);
 			_baseContainer.pop_back();

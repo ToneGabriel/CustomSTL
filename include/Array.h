@@ -221,22 +221,22 @@ public:
 	}
 
     ValueType& front() {											// Get the value of the first component
-		assert(Size > 0);
+		assert((void("Container is empy..."), Size > 0));
 		return _array[0];
 	}
 
 	const ValueType& front() const {
-		assert(Size > 0);
+		assert((void("Container is empy..."), Size > 0));
 		return _array[0];
 	}
 
 	ValueType& back() {												// Get the value of the last component
-		assert(Size > 0);
+		assert((void("Container is empy..."), Size > 0));
 		return _array[Size - 1];
 	}
 
 	const ValueType& back() const {
-		assert(Size > 0);
+		assert((void("Container is empy..."), Size > 0));
 		return _array[Size - 1];
 	}
 
@@ -250,14 +250,14 @@ public:
 
 	const ValueType& at(const size_t& index) const {				// Acces object at index with check (read only)
 		if (index >= Size)
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
 	}
 
 	ValueType& at(const size_t& index) {							// Acces object at index with check
 		if (index >= Size)
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
 	}
@@ -266,12 +266,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {		// Acces object at index (read only)
-		assert(!(index >= Size));
+		assert((void("Index out of bounds..."), !(index >= Size)));
 		return _array[index];
 	}
 
 	ValueType& operator[](const size_t& index) {					// Acces object at index
-		assert(!(index >= Size));
+		assert((void("Index out of bounds..."), !(index >= Size)));
 		return _array[index];
 	}
 	

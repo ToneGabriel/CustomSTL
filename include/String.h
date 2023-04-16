@@ -450,35 +450,35 @@ public:
 
 	const char& at(const size_t& index) const {						// Acces char at index with check (read only)
 		if (index >= size())
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _data._First[index];
 	}
 
 	char& at(const size_t& index) {									// Acces char at index with check
 		if (index >= size())
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return _data._First[index];
 	}
 
 	const char& front() const {
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return _data._First[0];
 	}
 
 	char& front() {													// Get the value of the first component
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return _data._First[0];
 	}
 
 	const char& back() const {
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return _data._Last[-1];
 	}
 
 	char& back() {													// Get the value of the last component
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return _data._Last[-1];
 	}
 
@@ -516,12 +516,12 @@ public:
 	// Operators
 
 	const char& operator[](const size_t& index) const {
-		assert(!(index >= size()));
+		assert((void("Index out of bounds..."), !(index >= size())));
 		return _data._First[index];
 	}
 
 	char& operator[](const size_t& index) {
-		assert(!(index >= size()));
+		assert((void("Index out of bounds..."), !(index >= size())));
 		return _data._First[index];
 	}
 

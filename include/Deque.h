@@ -438,35 +438,35 @@ public:
 
 	const ValueType& at(const size_t& index) const {
 		if (index >= size())
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return *(begin() + index);
 	}
 
 	ValueType& at(const size_t& index) {
 		if (index >= size())
-			throw std::out_of_range("Invalid Index...");
+			throw std::out_of_range("Index out of bounds...");
 
 		return *(begin() + index);
 	}
 
 	const ValueType& front() const {
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return *begin();
 	}
 
 	ValueType& front() {                                                     	// Get the value of the first component
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return *begin();
 	}
 
 	const ValueType& back() const {
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return *(--end());
 	}
 
 	ValueType& back() {                                                      	// Get the value of the last component
-		assert(!empty());
+		assert((void("Container is empty..."), !empty()));
 		return *(--end());
 	}
 
@@ -493,12 +493,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {
-		assert(!(index >= size()));
+		assert((void("Index out of bounds..."), !(index >= size())));
 		return *(begin() + index);
 	}
 
 	ValueType& operator[](const size_t& index) {
-		assert(!(index >= size()));
+		assert((void("Index out of bounds..."), !(index >= size())));
 		return *(begin() + index);
 	}
 
