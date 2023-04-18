@@ -8,8 +8,9 @@ template<class Type>
 struct ForwardNode			// Struct that holds data and references to next struct
 {
 	using ValueType = Type;
-	ValueType _Value;		// Data
-	ForwardNode* _Next;		// Reference to next
+
+	ValueType _Value;
+	ForwardNode* _Next;
 
 	ForwardNode()								= default;
 	ForwardNode(const ForwardNode&)				= delete;
@@ -35,9 +36,10 @@ template<class Type>
 struct DoubleNode			// Struct that holds data and references to next and previous struct
 {
 	using ValueType = Type;
-	ValueType _Value;		// Data
-	DoubleNode* _Previous;	// Reference to previous 
-	DoubleNode* _Next;		// Reference to next
+
+	ValueType _Value;
+	DoubleNode* _Previous;
+	DoubleNode* _Next;
 
 	DoubleNode()								= default;
 	DoubleNode(const DoubleNode&)				= delete;
@@ -64,10 +66,11 @@ template<class Type>
 struct TreeNode				// Used in SearchTree
 {
 	using ValueType = Type;
-	ValueType _Value;		// Data
-	TreeNode* _Parent;		// Reference to parent
-	TreeNode* _Left;		// Reference to left
-	TreeNode* _Right;		// Reference to right
+	
+	ValueType _Value;
+	TreeNode* _Parent;
+	TreeNode* _Left;
+	TreeNode* _Right;
 	char _Color;			// Used for balancing
 	bool _IsNil;			// True for Head only
 
@@ -95,6 +98,10 @@ struct TreeNode				// Used in SearchTree
 		_Parent	= nullptr;
 		_Left	= nullptr;
 		_Right	= nullptr;
+	}
+
+	bool is_leaf() const {
+		return (_Left->_IsNil && _Right->_IsNil);
 	}
 }; // END Tree Node
 

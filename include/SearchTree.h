@@ -299,13 +299,21 @@ public:
 	}
 
 	Iterator erase(const KeyType& key) {
-		Node* nodeToErase = _find_in_tree(key);
+		Node* nodeToErase 		= _find_in_tree(key);
+		Iterator nextIterator 	= ++Iterator(nodeToErase, &_data);
 		_destroy(nodeToErase);
 
-		return Iterator(_data._Head, &_data);	// TODO: not ok
+		return nextIterator;
 	}
 
 	Iterator erase(ConstIterator iterator) {
+		if (iterator == end())
+			throw std::out_of_range("Map erase iterator outside range...");
+
+		return erase(Traits::extract_key(iterator._Ptr->_Value));
+	}
+
+	Iterator erase(Iterator iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range...");
 
@@ -349,12 +357,6 @@ public:
 		std::cout << "First= " << Traits::extract_key(_data._Head->_Left->_Value) << '\n';
 		std::cout << "Last= " << Traits::extract_key(_data._Head->_Right->_Value) << '\n';
 		_print_graph(0, _data._Head->_Parent, "HEAD");
-	}
-
-	void test() {	// TODO: remove after testing
-		Node* f = _find_in_tree(101);
-		Node* s = _find_in_tree(99);
-		_transplant(f,s);
 	}
 
 public:
@@ -517,10 +519,6 @@ private:
 		delete subroot;
 	}
 
-	bool _is_leaf(Node* node) const {
-		return (node->_Left->_IsNil && node->_Right->_IsNil);
-	}
-
 	Node* _in_order_successor(Node* node) const {
 		if (!node->_Right->_IsNil)
 			node = _data.leftmost(node->_Right);
@@ -549,13 +547,13 @@ private:
 		return found;
 	}
 
-	TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {
+	TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {	// Find parent for newly created node
 		TreeNodeID<Node> position;
 
-		if (_data._Head->_Parent == _data._Head)	// First node
+		if (_data._Head->_Parent == _data._Head)					// first node
 			position._Parent = _data._Head;
 		else
-			for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil;)	// find parent for newly created node
+			for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil;)
 			{
 				position._Parent = iterNode;
 				if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
@@ -581,20 +579,20 @@ private:
 		// Raw Insert
 		newNode->_Parent = position._Parent;
 
-		if (position._Parent == _data._Head)			// first node
+		if (position._Parent == _data._Head)						// first node
 		{
 			_data._Head->_Parent	= newNode;
 			_data._Head->_Left		= newNode;
 			_data._Head->_Right		= newNode;
 			newNode->_Color 		= Node::Colors::Black;
 		}
-		else if (position._Child == TreeChild::Left)	// add to left
+		else if (position._Child == TreeChild::Left)				// add to left
 		{
 			position._Parent->_Left = newNode;
 			if (position._Parent == _data._Head->_Left)
 				_data._Head->_Left = newNode;
 		}
-		else											// add to right
+		else														// add to right
 		{
 			position._Parent->_Right = newNode;
 			if (position._Parent == _data._Head->_Right)
@@ -655,74 +653,114 @@ private:
 			}
 		}
 
-		_data._Head->_Parent->_Color = Node::Colors::Black;								// root is black
+		_data._Head->_Parent->_Color = Node::Colors::Black;							// root is black
 	}
 
-	void _destroy(Node* oldNode) {	// TODO: implement
+	void _destroy(Node* oldNode) {
 		--_data._Size;
 
+		Node* fixNode; 			// the node to recolor as needed
+        Node* fixNodeParent;
+		Node* tempNode;
+
 		// Switch old with successor until leaf
-		for (Node* tempNode = _in_order_successor(oldNode); !_is_leaf(oldNode);)
+		while (!oldNode->is_leaf())
 		{
-			_transplant(oldNode, tempNode);
 			tempNode = _in_order_successor(oldNode);
+			_transplant(oldNode, tempNode);
 		}
 
-		// Fix Delete
-		Node* oldNodeParent = oldNode->_Parent;
+		// Rebalance only if old color is black
+		if (oldNode->_Color == Node::Colors::Black)
+		{
+			fixNode 		= oldNode;
+			fixNodeParent 	= oldNode->_Parent;
+
+			for (; fixNode != _data._Head->_Parent && fixNode->_Color == Node::Colors::Black; fixNodeParent = fixNode->_Parent)
+			{
+				if (fixNode == fixNodeParent->_Left)	// left subtree
+				{
+                    tempNode = fixNodeParent->_Right;
+                    if (tempNode->_Color == Node::Colors::Red) 
+					{
+                        tempNode->_Color = Node::Colors::Black;
+                        fixNodeParent->_Color = Node::Colors::Red;
+                        _rotate_left(fixNodeParent);
+                        tempNode = fixNodeParent->_Right;
+                    }
+
+                    if (tempNode->_Left->_Color == Node::Colors::Black && tempNode->_Right->_Color == Node::Colors::Black)
+					{
+                        tempNode->_Color = Node::Colors::Red;
+                        fixNode = fixNodeParent;
+                    } 
+					else
+					{
+                        if (tempNode->_Right->_Color == Node::Colors::Black)
+						{
+                            tempNode->_Left->_Color = Node::Colors::Black;
+                            tempNode->_Color = Node::Colors::Red;
+                            _rotate_right(tempNode);
+                            tempNode = fixNodeParent->_Right;
+                        }
+
+                        tempNode->_Color 			= fixNodeParent->_Color;
+                        fixNodeParent->_Color 		= Node::Colors::Black;
+                        tempNode->_Right->_Color 	= Node::Colors::Black;
+                        _rotate_left(fixNodeParent);
+                        break;	// rebalanced
+                    }
+                }
+				else	// right subtree
+				{
+                    tempNode = fixNodeParent->_Left;
+                    if (tempNode->_Color == Node::Colors::Red)
+					{
+                        tempNode->_Color = Node::Colors::Black;
+                        fixNodeParent->_Color = Node::Colors::Red;
+                        _rotate_right(fixNodeParent);
+                        tempNode = fixNodeParent->_Left;
+                    }
+
+                    if (tempNode->_Right->_Color == Node::Colors::Black && tempNode->_Left->_Color == Node::Colors::Black)
+					{
+                        tempNode->_Color = Node::Colors::Red;
+                        fixNode = fixNodeParent;
+                    }
+					else
+					{
+                        if (tempNode->_Left->_Color == Node::Colors::Black)
+						{
+                            tempNode->_Right->_Color = Node::Colors::Black;
+                            tempNode->_Color = Node::Colors::Red;
+                            _rotate_left(tempNode);
+                            tempNode = fixNodeParent->_Left;
+                        }
+
+                        tempNode->_Color 			= fixNodeParent->_Color;
+                        fixNodeParent->_Color 		= Node::Colors::Black;
+                        tempNode->_Left->_Color 	= Node::Colors::Black;
+                        _rotate_right(fixNodeParent);
+                        break;	// rebalanced
+                    }
+                }
+			}
+
+            fixNode->_Color = Node::Colors::Black;									// stopping node is black
+		}
+
 		_free_common_node(oldNode);
-
-
-
+		_data._Head->_Left 		= _data.leftmost(_data._Head->_Parent);
+		_data._Head->_Right 	= _data.rightmost(_data._Head->_Parent);
 	}
 
-	void _fix_destroy(Node* node) {
-		// while (node != _head && node->is_black())
-		// {
-		// 	if (node == node->_Parent->_Left)
-		// 	{
-		// 		_workspaceNode = node->_Parent->_Right;
-		// 		if (_workspaceNode->is_red())
-		// 		{
-		// 			_workspaceNode->_Color = Node::Colors::Black;
-		// 			node->_Parent->_Color = Node::Colors::Red;
-		// 			_rotate_left(node->_Parent);
-		// 			_workspaceNode = node->_Parent->_Right;
-		// 		}
-		// 		if (_workspaceNode->_Left->is_black() && _workspaceNode->_Right->is_black())
-		// 		{
-		// 			_workspaceNode->_Color = Node::Colors::Red;
-		// 			node = node->_Parent;
-		// 		}
-		// 		else
-		// 		{
-		// 			if (_workspaceNode->_Right->is_black())
-		// 			{
-		// 				_workspaceNode->_Left->_Color = Node::Colors::Black;
-		// 				_workspaceNode->_Color = Node::Colors::Red;
-		// 				_rotate_right(_workspaceNode);
-		// 				_workspaceNode = node->_Parent->_Right;
-		// 			}
-
-		// 			_workspaceNode->_Color = node->_Parent->_Color;
-		// 			node->_Parent->_Color = Node::Colors::Black;
-		// 			_workspaceNode->_Right->_Color = Node::Colors::Black;
-		// 			_rotate_left(node->_Parent);
-		// 			node = _head;
-		// 		}
-		// 	}
-		// }
-
-		// node->_Color = Node::Colors::Black;
-	}
-
-	void _transplant(Node* first, Node* second) {	// seems OK
+	void _transplant(Node* first, Node* second) {
 		if(first == second)
 			return;
 
 		_swap_parents(first, second);	
 		_swap_children(first, second);
-		_swap_colors(first, second);
+		std::swap(first->_Color, second->_Color);
 	}
 
 	void _swap_parents(Node* first, Node* second) {
@@ -764,7 +802,6 @@ private:
 		if (second->_Left != _data._Head)
 			second->_Left->_Parent = second;
 
-
 		// right child
 		aux				= first->_Right;
 		first->_Right	= second->_Right;
@@ -774,30 +811,6 @@ private:
 			first->_Right->_Parent = first;
 		if (second->_Right != _data._Head)
 			second->_Right->_Parent = second;
-
-		// head link (if first/second are begin/end)
-		if (_data._Head->_Left == first)
-			_data._Head->_Left = second;
-		else if (_data._Head->_Left == second)
-			_data._Head->_Left = first;
-
-		if (_data._Head->_Right == first)
-			_data._Head->_Right = second;
-		else if (_data._Head->_Right == second)
-			_data._Head->_Right = first;
-	}
-
-	void _swap_colors(Node* first, Node* second) {
-		std::swap(first->_Color, second->_Color);
-	}
-
-	void _detach_parent(Node* node) {
-		if (node == _data._Head->_Parent)
-			_data._Head->_Parent = _data._Head;
-		else if (node == node->_Parent->_Left)
-			node->_Parent->_Left = _data._Head;
-		else
-			node->_Parent->_Right = _data._Head;
 	}
 
 	void _create_head() {
@@ -829,7 +842,14 @@ private:
 	}
 
 	void _free_common_node(Node* oldNode) {
-		_detach_parent(oldNode);
+		// detach parent first
+		if (oldNode == _data._Head->_Parent)
+			_data._Head->_Parent = _data._Head;
+		else if (oldNode == oldNode->_Parent->_Left)
+			oldNode->_Parent->_Left = _data._Head;
+		else
+			oldNode->_Parent->_Right = _data._Head;
+
 		delete oldNode;
 	}
 

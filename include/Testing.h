@@ -14,6 +14,7 @@
 #include "Map.h"
 #include "Set.h"
 #include "Function.h"
+//#include "Thread.h"
 
 #include <iostream>
 #include <string>
@@ -28,6 +29,7 @@
 #include <map>
 #include <set>
 #include <functional>
+#include <thread>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
@@ -178,41 +180,41 @@ void unordered_set_test() {
 }
 
 void map_test() {
-	custom::Map<int, Test> map;
+	custom::Map<int, int> map;
 
-	map.emplace(5, 0);
+	map.emplace(5, 5);
 	map.emplace(0, 0);
-	map.emplace(7, 0);
-	map.emplace(1, 0);
-	map.emplace(10, 0);
-	map.emplace(21, 0);
-	map.emplace(44, 0);
-	map.emplace(6, 0);
-	map.emplace(8, 0);
-	map.emplace(15, 0);
-	map.emplace(14, 0);
-	map.emplace(96, 0);
-	map.emplace(2, 0);
-	map.emplace(50, 0);
-	map.emplace(69, 0);
-	map.emplace(19, 0);
-	map.emplace(29, 0);
-	map.emplace(101, 0);
-	map.emplace(40, 0);
-	map.emplace(51, 0);
-	map.emplace(99, 0);
-	map.emplace(99, 0);
+	map.emplace(7, 7);
+	map.emplace(1, 1);
+	map.emplace(10, 10);
+	map.emplace(21, 21);
+	map.emplace(44, 44);
+	map.emplace(6, 6);
+	map.emplace(8, 8);
+	map.emplace(15, 15);
+	map.emplace(14, 14);
+	map.emplace(96, 96);
+	map.emplace(2, 2);
+	map.emplace(50, 50);
+	map.emplace(69, 69);
+	map.emplace(19, 19);
+	map.emplace(29, 29);
+	map.emplace(101, 101);
+	map.emplace(40, 40);
+	map.emplace(51, 51);
+	map.emplace(99, 99);
+	map.emplace(99, 99);
 
-	std::cout << "Map print\n";
+	std::cout << "Map before erase\n";
 	map.print_details();
 
-	map.test();
+	std::cout << "Current elem= " << (*map.erase(10)).First << '\n';
 
-	std::cout << "Map print\n";
+	std::cout << "Map after erase\n";
 	map.print_details();
 
-	//for (auto& val : map)
-	//	std::cout << val.First << ' ' << val.Second << '\n';
+	for (auto& val : map)
+		std::cout << val.First << ' ' << val.Second << '\n';
 }
 
 void deque_test() {
@@ -325,6 +327,10 @@ void function_test() {
 	custom::Function<void()> fct(unordered_map_test);
 	custom::Function<void()> fct1(fct);
 	fct1();
+}
+
+void thread_test() {
+	// TODO: add test
 }
 
 TEST_END
