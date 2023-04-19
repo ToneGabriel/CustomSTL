@@ -31,6 +31,27 @@ public:
 	~Queue() = default;										// Destructor
 
 public:
+	// Operators
+
+	Queue& operator=(const Queue& other) {					// Assign operator using reference
+		_baseContainer = other._baseContainer;
+		return *this;
+	}
+
+	Queue& operator=(Queue&& other) noexcept {				// Assign operator using temporary
+		_baseContainer = custom::move(other._baseContainer);
+		return *this;
+	}
+
+	bool operator==(const Queue& other) const {
+		return _baseContainer == other._baseContainer;
+	}
+
+	bool operator!=(const Queue& other) const {
+		return !(*this == other);
+	}
+
+public:
 	// Main functions
 
 	template<class... Args>
@@ -76,27 +97,6 @@ public:
 	void clear() {											// Remove ALL components
 		return _baseContainer.clear();
 	}
-
-public:
-	// Operators
-
-	Queue& operator=(const Queue& other) {					// Assign operator using reference
-		_baseContainer = other._baseContainer;
-		return *this;
-	}
-
-	Queue& operator=(Queue&& other) noexcept {				// Assign operator using temporary
-		_baseContainer = custom::move(other._baseContainer);
-		return *this;
-	}
-
-	bool operator==(const Queue& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const Queue& other) const {
-		return !(*this == other);
-	}
 }; // END Queue template
 
 
@@ -124,6 +124,27 @@ public:
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
 	~PriorityQueue() = default;
+
+public:
+	// Operators
+
+	PriorityQueue& operator=(const PriorityQueue& other) {
+		_baseContainer = other._baseContainer;
+		return *this;
+	}
+
+	PriorityQueue& operator=(PriorityQueue&& other) noexcept {
+		_baseContainer = custom::move(other._baseContainer);
+		return *this;
+	}
+
+	bool operator==(const PriorityQueue& other) const {
+		return _baseContainer == other._baseContainer;
+	}
+
+	bool operator!=(const PriorityQueue& other) const {
+		return !(*this == other);
+	}
 
 public:
 	// Main Functions
@@ -170,27 +191,6 @@ public:
 	void print_details() {
 		std::cout << "Size= " << size() << '\n';
 		_print_graph(0, 0, "HEAD");
-	}
-
-public:
-	// Operators
-
-	PriorityQueue& operator=(const PriorityQueue& other) {
-		_baseContainer = other._baseContainer;
-		return *this;
-	}
-
-	PriorityQueue& operator=(PriorityQueue&& other) noexcept {
-		_baseContainer = custom::move(other._baseContainer);
-		return *this;
-	}
-
-	bool operator==(const PriorityQueue& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const PriorityQueue& other) const {
-		return !(*this == other);
 	}
 
 private:

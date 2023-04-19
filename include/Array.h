@@ -213,6 +213,45 @@ public:
 	~Array() = default;												// Destructor
 
 public:
+	// Operators
+
+	const ValueType& operator[](const size_t& index) const {		// Acces object at index (read only)
+		assert((void("Index out of bounds..."), !(index >= Size)));
+		return _array[index];
+	}
+
+	ValueType& operator[](const size_t& index) {					// Acces object at index
+		assert((void("Index out of bounds..."), !(index >= Size)));
+		return _array[index];
+	}
+	
+	Array& operator=(const Array& other) {							// Assign operator using reference
+		if (_array != other._array)
+			_copy(other);
+
+		return *this;
+	}
+
+	Array& operator=(Array&& other) noexcept {						// Assign operator using temporary
+		if (_array != other._array)
+			_move(custom::move(other));
+
+		return *this;
+	}
+
+	bool operator==(const Array& other) const {
+		for (size_t i = 0; i < Size; ++i)
+			if (_array[i] != other._array[i])
+				return false;
+
+		return true;
+	}
+
+	bool operator!=(const Array& other) const {
+		return !(*this == other);
+	}
+	
+public:
 	// Main functions
 
     void fill(const ValueType& copyValue) {
@@ -260,45 +299,6 @@ public:
 			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
-	}
-
-public:
-	// Operators
-
-	const ValueType& operator[](const size_t& index) const {		// Acces object at index (read only)
-		assert((void("Index out of bounds..."), !(index >= Size)));
-		return _array[index];
-	}
-
-	ValueType& operator[](const size_t& index) {					// Acces object at index
-		assert((void("Index out of bounds..."), !(index >= Size)));
-		return _array[index];
-	}
-	
-	Array& operator=(const Array& other) {							// Assign operator using reference
-		if (_array != other._array)
-			_copy(other);
-
-		return *this;
-	}
-
-	Array& operator=(Array&& other) noexcept {						// Assign operator using temporary
-		if (_array != other._array)
-			_move(custom::move(other));
-
-		return *this;
-	}
-
-	bool operator==(const Array& other) const {
-		for (size_t i = 0; i < Size; ++i)
-			if (_array[i] != other._array[i])
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const Array& other) const {
-		return !(*this == other);
 	}
 
 public:

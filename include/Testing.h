@@ -14,7 +14,8 @@
 #include "Map.h"
 #include "Set.h"
 #include "Function.h"
-//#include "Thread.h"
+#include "Thread.h"
+#include "Mutex.h"
 
 #include <iostream>
 #include <string>
@@ -30,6 +31,7 @@
 #include <set>
 #include <functional>
 #include <thread>
+#include <mutex>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
@@ -330,7 +332,8 @@ void function_test() {
 }
 
 void thread_test() {
-	// TODO: add test
+	custom::Thread t(function_test);
+	t.join();
 }
 
 TEST_END

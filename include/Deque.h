@@ -257,6 +257,56 @@ public:
 	}
 
 public:
+	// Operators
+
+	const ValueType& operator[](const size_t& index) const {
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return *(begin() + index);
+	}
+
+	ValueType& operator[](const size_t& index) {
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return *(begin() + index);
+	}
+
+	Deque& operator=(const Deque& other) {
+		if (_data._Map != other._data._Map)
+		{
+			_clean_up_map();
+			_copy(other);
+		}
+
+		return *this;
+	}
+
+	Deque& operator=(Deque&& other) noexcept {
+		if (_data._Map != other._data._Map)
+		{
+			_clean_up_map();
+			_move(custom::move(other));
+		}
+
+		return *this;
+	}
+
+	bool operator==(const Deque& other) const {
+		if (size() != other.size())
+			return false;
+
+		auto it1 = begin();
+		auto it2 = other.begin();
+		while (it1 != end())
+			if (*(it1++) != *(it2++))
+				return false;
+
+		return true;
+	}
+
+	bool operator!=(const Deque& other) const {
+		return !(*this == other);
+	}
+
+public:
 	// Main functions
 
 	void resize(const size_t& newSize) {
@@ -486,56 +536,6 @@ public:
 				std::cout << '\n';
 			}
 		}
-	}
-
-public:
-	// Operators
-
-	const ValueType& operator[](const size_t& index) const {
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return *(begin() + index);
-	}
-
-	ValueType& operator[](const size_t& index) {
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return *(begin() + index);
-	}
-
-	Deque& operator=(const Deque& other) {
-		if (_data._Map != other._data._Map)
-		{
-			_clean_up_map();
-			_copy(other);
-		}
-
-		return *this;
-	}
-
-	Deque& operator=(Deque&& other) noexcept {
-		if (_data._Map != other._data._Map)
-		{
-			_clean_up_map();
-			_move(custom::move(other));
-		}
-
-		return *this;
-	}
-
-	bool operator==(const Deque& other) const {
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const Deque& other) const {
-		return !(*this == other);
 	}
 
 public:

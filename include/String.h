@@ -247,6 +247,77 @@ public:
 	}
 
 public:
+	// Operators
+
+	const char& operator[](const size_t& index) const {
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return _data._First[index];
+	}
+
+	char& operator[](const size_t& index) {
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return _data._First[index];
+	}
+
+	String& operator=(const String& other) {
+		if (_data._First != other._data._First)
+		{
+			_alloc.dealloc(_data._First, capacity() + 1);
+			_copy(other);
+		}
+
+		return *this;
+	}
+
+	String& operator=(String&& other) noexcept {
+		if (_data._First != other._data._First)
+		{
+			_alloc.dealloc(_data._First, capacity() + 1);
+			_move(custom::move(other));
+		}
+
+		return *this;
+	}
+
+	String& operator+=(const String& string) {
+		append(string);
+		return *this;
+	}
+
+	String& operator+=(const char* cstring) {
+		append(cstring);
+		return *this;
+	}
+
+	String& operator+=(const char& chr) {
+		push_back(chr);
+		return *this;
+	}
+
+	bool operator==(const String& other) const {
+		return compare(other) == 0;
+	}
+
+	bool operator!=(const String& other) const {
+		return !(*this == other);
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, const String& string) {
+		os << string._data._First;
+		return os;
+	}
+
+	friend std::istream& operator>>(std::istream& is, String& string) {
+		if (string._data._First != nullptr)
+			string._alloc.dealloc(string._data._First, string.capacity() + 1);
+
+		string._alloc_empty(String::_ISTREAM_CAPACITY);
+		is.getline(string._data._First, String::_ISTREAM_CAPACITY);
+		string._data._Last = string._data._First + strlen(string._data._First);
+		return is;
+	}
+
+public:
 	// Main functions
 
 	void reserve(const size_t& newCapacity) {			// Allocate memory and copy values if needed
@@ -510,77 +581,6 @@ public:
 		}
 		std::cout << '\n';
 		std::cout << currentSize << ' ' << currentCapacity << '\n';
-	}
-
-public:
-	// Operators
-
-	const char& operator[](const size_t& index) const {
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return _data._First[index];
-	}
-
-	char& operator[](const size_t& index) {
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return _data._First[index];
-	}
-
-	String& operator=(const String& other) {
-		if (_data._First != other._data._First)
-		{
-			_alloc.dealloc(_data._First, capacity() + 1);
-			_copy(other);
-		}
-
-		return *this;
-	}
-
-	String& operator=(String&& other) noexcept {
-		if (_data._First != other._data._First)
-		{
-			_alloc.dealloc(_data._First, capacity() + 1);
-			_move(custom::move(other));
-		}
-
-		return *this;
-	}
-
-	String& operator+=(const String& string) {
-		append(string);
-		return *this;
-	}
-
-	String& operator+=(const char* cstring) {
-		append(cstring);
-		return *this;
-	}
-
-	String& operator+=(const char& chr) {
-		push_back(chr);
-		return *this;
-	}
-
-	bool operator==(const String& other) const {
-		return compare(other) == 0;
-	}
-
-	bool operator!=(const String& other) const {
-		return !(*this == other);
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, const String& string) {
-		os << string._data._First;
-		return os;
-	}
-
-	friend std::istream& operator>>(std::istream& is, String& string) {
-		if (string._data._First != nullptr)
-			string._alloc.dealloc(string._data._First, string.capacity() + 1);
-
-		string._alloc_empty(String::_ISTREAM_CAPACITY);
-		is.getline(string._data._First, String::_ISTREAM_CAPACITY);
-		string._data._Last = string._data._First + strlen(string._data._First);
-		return is;
 	}
 
 public:

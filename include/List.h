@@ -193,6 +193,46 @@ public:
 	}
 
 public:
+	// Operators
+
+	List& operator=(const List& other) {
+		if (_data._Head != other._data._Head)
+		{
+			clear();
+			_copy(other);
+		}
+
+		return *this;
+	}
+
+	List& operator=(List&& other) noexcept {
+		if (_data._Head != other._data._Head)
+		{
+			clear();
+			_move(custom::move(other));
+		}
+
+		return *this;
+	}
+
+	bool operator==(const List& other) const {
+		if (size() != other.size())
+			return false;
+
+		auto it1 = begin();
+		auto it2 = other.begin();
+		while (it1 != end())
+			if (*(it1++) != *(it2++))
+				return false;
+
+		return true;
+	}
+
+	bool operator!=(const List& other) const {
+		return !(*this == other);
+	}
+
+public:
 	// Main functions
 
 	void resize(const size_t& newSize) {								// Resize the list by removing or adding default elements to the tail
@@ -315,46 +355,6 @@ public:
 
 	void clear() {
 		_delete_until_size(0);
-	}
-
-public:
-	// Operators
-
-	List& operator=(const List& other) {
-		if (_data._Head != other._data._Head)
-		{
-			clear();
-			_copy(other);
-		}
-
-		return *this;
-	}
-
-	List& operator=(List&& other) noexcept {
-		if (_data._Head != other._data._Head)
-		{
-			clear();
-			_move(custom::move(other));
-		}
-
-		return *this;
-	}
-
-	bool operator==(const List& other) const {
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const List& other) const {
-		return !(*this == other);
 	}
 
 public:

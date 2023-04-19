@@ -76,14 +76,14 @@ public:
     }
 
     template<class Functor, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<Functor>, Function>::Value, bool> = true>
-    Function& operator=(Functor&& f) {
+    Function& operator=(Functor&& func) {
         using FunctorType = custom::Decay_t<Functor>;
 
         _clear();
         _invoker    = reinterpret_cast<Invoker>(_invoke_impl<FunctorType>);
         _copiator   = reinterpret_cast<Copiator>(_copy_impl<FunctorType>);
         _destructor = reinterpret_cast<Destructor>(_destruct_impl<FunctorType>);
-        _functor    = reinterpret_cast<void*>(new FunctorType(custom::forward<Functor>(f)));
+        _functor    = reinterpret_cast<void*>(new FunctorType(custom::forward<Functor>(func)));
 
         return *this;
     }

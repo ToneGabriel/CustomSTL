@@ -241,6 +241,56 @@ public:
 	}
 
 public:
+	// Operators
+
+	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return _data._First[index];
+	}
+
+	ValueType& operator[](const size_t& index) {								// Acces object at index
+		assert((void("Index out of bounds..."), !(index >= size())));
+		return _data._First[index];
+	}
+
+	Vector& operator=(const Vector& other) {									// Assign operator using reference
+		if (_data._First != other._data._First)
+		{
+			_clean_up_array();
+			_copy(other);
+		}
+
+		return *this;
+	}
+
+	Vector& operator=(Vector&& other) noexcept {								// Assign operator using temporary
+		if (_data._First != other._data._First)
+		{
+			_clean_up_array();
+			_move(custom::move(other));
+		}
+
+		return *this;
+	}
+
+	bool operator==(const Vector& other) const {
+		if (size() != other.size())
+			return false;
+
+		auto it1 = begin();
+		auto it2 = other.begin();
+		while (it1 != end())
+			if (*(it1++) != *(it2++))
+				return false;
+
+		return true;
+	}
+
+	bool operator!=(const Vector& other) const {
+		return !(*this == other);
+	}
+
+public:
 	// Main functions
 
 	void reserve(const size_t& newCapacity) {									// Allocate memory and move values if needed
@@ -419,56 +469,6 @@ public:
 
 	ValueType* data() {
 		return _data._First;
-	}
-
-public:
-	// Operators
-
-	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return _data._First[index];
-	}
-
-	ValueType& operator[](const size_t& index) {								// Acces object at index
-		assert((void("Index out of bounds..."), !(index >= size())));
-		return _data._First[index];
-	}
-
-	Vector& operator=(const Vector& other) {									// Assign operator using reference
-		if (_data._First != other._data._First)
-		{
-			_clean_up_array();
-			_copy(other);
-		}
-
-		return *this;
-	}
-
-	Vector& operator=(Vector&& other) noexcept {								// Assign operator using temporary
-		if (_data._First != other._data._First)
-		{
-			_clean_up_array();
-			_move(custom::move(other));
-		}
-
-		return *this;
-	}
-
-	bool operator==(const Vector& other) const {
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const Vector& other) const {
-		return !(*this == other);
 	}
 
 public:

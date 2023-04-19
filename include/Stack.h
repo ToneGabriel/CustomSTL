@@ -28,6 +28,27 @@ public:
 	~Stack() = default;
 
 public:
+	// Operators
+
+	Stack& operator=(const Stack& other) {
+		_baseContainer = other._baseContainer;
+		return *this;
+	}
+
+	Stack& operator=(Stack&& other) noexcept {
+		_baseContainer = custom::move(other._baseContainer);
+		return *this;
+	}
+
+	bool operator==(const Stack& other) const {
+		return _baseContainer == other._baseContainer;
+	}
+
+	bool operator!=(const Stack& other) const {
+		return !(*this == other);
+	}
+
+public:
 	// Main Functions
 
 	template<class... Args>
@@ -65,27 +86,6 @@ public:
 
 	void clear() {
 		_baseContainer.clear();
-	}
-
-public:
-	// Operators
-
-	Stack& operator=(const Stack& other) {
-		_baseContainer = other._baseContainer;
-		return *this;
-	}
-
-	Stack& operator=(Stack&& other) noexcept {
-		_baseContainer = custom::move(other._baseContainer);
-		return *this;
-	}
-
-	bool operator==(const Stack& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const Stack& other) const {
-		return !(*this == other);
 	}
 }; // END Stack Template
 
