@@ -56,7 +56,7 @@ public:
         }
     }
 
-    Thread(Thread&& other) {
+    Thread(Thread&& other) noexcept {
         // TODO: implement
     }
 
@@ -67,6 +67,11 @@ public:
 
 public:
     // Operators
+
+    Thread& operator=(Thread&& other) noexcept {
+        // TODO: implement
+        return *this;
+    }
 
     bool operator==(const Thread& other) const {
         return (pthread_equal(_thread, other._thread) != 0);

@@ -1,3 +1,4 @@
 1. Check Array constructors
 2. String _move - remove and check initialize from cstring
 3. Learn and implement threads
+- check mutex try_lock_for and try_lock_until
