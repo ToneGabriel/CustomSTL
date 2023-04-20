@@ -1,35 +1,40 @@
 #pragma once
+
+#if defined __GNUG__
 #include "Utility.h"
 #include "Tuple.h"
 
 #include <pthread.h>
+#include <iostream>
 
 
 CUSTOM_BEGIN
 
 class Thread        // Thread wrapper for pthread_t
 {
-private:
-    using Invoker   = void*(*)(void*);
-    using ThreadID  = unsigned long long;
-
-    pthread_t _thread;
-    ThreadID _id        = 0;
-    Invoker _invoker    = nullptr;
+public:
+    class ID;
+    using NativeHandleType  = pthread_t;
 
 private:
-    template <class CallableTuple, size_t... _Indices>
+    using Invoker       = void*(*)(void*);
+    pthread_t _thread   = 0;
+
+private:
+    // Core functions
+
+    template <class CallableTuple, size_t... Indices>
     static void* _invoke_impl(void* args) {
         CallableTuple* callable = static_cast<CallableTuple*>(args);
-        std::invoke(custom::move(custom::get<_Indices>(*callable))...);     // TODO: check std::invoke
+        std::invoke(custom::move(custom::get<Indices>(*callable))...);     // TODO: check std::invoke
         delete callable;
 
         return nullptr;
     }
 
-    template <class CallableTuple, size_t... _Indices>
-    static constexpr Invoker _get_invoke_impl(IndexSequence<_Indices...>) noexcept {
-        return _invoke_impl<CallableTuple, _Indices...>;
+    template <class CallableTuple, size_t... Indices>
+    static constexpr Invoker _get_invoke_impl(IndexSequence<Indices...>) noexcept {
+        return reinterpret_cast<Invoker>(_invoke_impl<CallableTuple, Indices...>);
     }
 
 public:
@@ -40,24 +45,22 @@ public:
 
     template<class Functor, class... Args, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<Functor>, Thread>::Value, bool> = true>
     Thread(Functor&& func, Args&&... args) {
-        using CallableTuple = custom::Tuple<custom::Decay_t<Functor>, custom::Decay_t<Args>...>;
-
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
-        CallableTuple* callable = new CallableTuple(custom::forward<Functor>(func), custom::forward<Args>(args)...);
-        _invoker = _get_invoke_impl<CallableTuple>(MakeIndexSequence<1 + sizeof...(Args)>{});
 
-        if (pthread_create(&_thread, nullptr, _invoker, callable) == 0)
-            _id = static_cast<ThreadID>(_thread);
-        else
+        using CallableTuple     = custom::Tuple<custom::Decay_t<Functor>, custom::Decay_t<Args>...>;
+        Invoker invoker         = _get_invoke_impl<CallableTuple>(MakeIndexSequence<1 + sizeof...(Args)>{});
+        CallableTuple* callable = new CallableTuple(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+
+        if (pthread_create(&_thread, nullptr, invoker, callable) != 0)
         {
-            _id = 0;
+            _thread = 0;
             delete callable;
             throw std::runtime_error("Thread creation failed...");
         }
     }
 
     Thread(Thread&& other) noexcept {
-        // TODO: implement
+        _move(custom::move(other));
     }
 
     ~Thread() {
@@ -68,8 +71,17 @@ public:
 public:
     // Operators
 
+    Thread& operator=(const Thread&) = delete;
+
     Thread& operator=(Thread&& other) noexcept {
-        // TODO: implement
+        if (*this != other)
+        {
+            if (joinable())
+                std::terminate();
+
+            _move(custom::move(other));
+        }
+
         return *this;
     }
 
@@ -86,13 +98,10 @@ public:
 
     static unsigned int hardware_concurrency() {
         return pthread_num_processors_np();
-        // SYSTEM_INFO sysinfo;
-        // GetSystemInfo(&sysinfo);
-        // return sysinfo.dwNumberOfProcessors;
     }
 
     bool joinable() const {
-        return _id != 0;
+        return _thread != 0;
     }
 
     void join() {
@@ -102,8 +111,7 @@ public:
         if (pthread_join(_thread, nullptr) != 0)
             throw std::runtime_error("Thread join failed...");
 
-        _id         = 0;
-        _invoker    = nullptr;
+        _thread = 0;
     }
 
     void detach() {
@@ -113,13 +121,60 @@ public:
         if (pthread_detach(_thread) != 0)
             throw std::runtime_error("Thread detach failed...");
 
-        _id         = 0;
-        _invoker    = nullptr;
+        _thread = 0;
     }
 
-    ThreadID get_id() const {
-        return _id;
+    ID get_id() const {
+        return _thread;         // calls private constructor of Thread::ID
+    }
+
+    NativeHandleType native_handle() {
+        return _thread;
+    }
+
+public:
+    // ID definition
+    
+    class ID
+    {
+    private:
+        pthread_t _threadID;
+
+    public:
+
+        ID() : _threadID(0) { /*Empty*/ }
+
+        bool operator==(const ID& other) const {
+            return (pthread_equal(_threadID, other._threadID) != 0);
+        }
+
+        bool operator!=(const ID& other) const {
+            return !(*this == other);
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const ID& id) {
+            os << id._threadID;
+            return os;
+        }
+
+        friend Thread::ID Thread::get_id() const;
+
+    private:
+
+        ID(const pthread_t& thr) : _threadID(thr) { /*Empty*/ }
+    };
+
+private:
+    // Helpers
+
+    void _move(Thread&& other) {
+        _thread         = other._thread;
+        other._thread   = 0;
     }
 }; // END Thread
 
 CUSTOM_END
+
+#elif defined _MSC_VER
+#error NO Thread implementation
+#endif

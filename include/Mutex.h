@@ -1,13 +1,16 @@
 #pragma once
-#include "Utility.h"
-#include "Thread.h"
 
-// TODO: implement
+#if defined __GNUG__
+#include "ConditionVariable.h"
+
 
 CUSTOM_BEGIN
 
 class MutexBase         // Mutex wrapper for pthread_mutex_t
 {
+public:
+    using NativeHandleType = pthread_mutex_t;
+
 private:
     pthread_mutex_t _mutex;
     pthread_mutexattr_t _mutexAttr;
@@ -51,6 +54,10 @@ public:
     void unlock() {
         pthread_mutex_unlock(&_mutex);
     }
+
+    NativeHandleType native_handle() {
+        return _mutex;
+    }
 };
 
 
@@ -80,6 +87,16 @@ public:
 };
 
 
+// tag struct declarations for construction of UniqueLock objects
+struct AdoptLock_t { explicit AdoptLock_t() = default; };
+struct DeferLock_t { explicit DeferLock_t() = default; };
+struct TryToLock_t { explicit TryToLock_t() = default; };
+
+constexpr AdoptLock_t AdoptLock = AdoptLock_t();
+constexpr DeferLock_t DeferLock = DeferLock_t();
+constexpr TryToLock_t TryToLock = TryToLock_t();
+
+
 template<class Mtx>
 class UniqueLock
 {
@@ -96,10 +113,27 @@ public:
     UniqueLock()                    = default;
     UniqueLock(const UniqueLock&)   = delete;
 
-    UniqueLock(MutexType& mtx) : _ownedMutex(&mtx), _owns(false) {
+    UniqueLock(MutexType& mtx) : _ownedMutex(&mtx), _owns(false) {                              // construct and lock
         _ownedMutex->lock();
         _owns = true;
     }
+
+    UniqueLock(MutexType& mtx, AdoptLock_t)                                                     // construct and assume already locked
+        : _ownedMutex(&mtx), _owns(true) { /*Empty*/ }
+
+    UniqueLock(MutexType& mtx, DeferLock_t) noexcept                                            // construct but don't lock
+        : _ownedMutex(&mtx), _owns(false) { /*Empty*/ }
+
+    UniqueLock(MutexType& mtx, TryToLock_t)                                                     // construct and try to lock
+        : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock()) { /*Empty*/ }
+
+    template <class Rep, class Period>
+    UniqueLock(MutexType& mtx, const std::chrono::duration<Rep, Period>& relativeTime)          // construct and lock with timeout
+        : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_for(relativeTime)) { /*Empty*/ }
+
+    template <class _Clock, class _Duration>
+    UniqueLock(MutexType& mtx, const std::chrono::time_point<_Clock, _Duration>& absoluteTime)  // construct and lock with timeout
+        : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_until(absoluteTime)) { /*Empty*/ }
 
     UniqueLock(UniqueLock&& other) noexcept : _ownedMutex(other._ownedMutex), _owns(other._owns) {
         other._ownedMutex   = nullptr;
@@ -116,11 +150,11 @@ public:
 
     UniqueLock& operator=(const UniqueLock&) = delete;
 
-    UniqueLock& operator=(UniqueLock&& other) noexcept {
+    UniqueLock& operator=(UniqueLock&& other) {
         if (_ownedMutex != other._ownedMutex)
         {
             if (_owns)
-                _ownedMutex->unlock();
+                _ownedMutex->unlock();  // can throw
 
             _ownedMutex         = other._ownedMutex;
             _owns               = other._owns;
@@ -150,14 +184,18 @@ public:
         return _owns;
     }
 
-    bool try_lock_for() {
-        return false;
-        // TODO: implement
+    template <class Rep, class Period>
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
+        _validate();
+        _owns = _ownedMutex->try_lock_for(relativeTime);
+        return _owns;
     }
 
-    bool try_lock_until() {
-        return false;
-        // TODO: implement
+    template <class Clock, class Duration>
+    bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        _validate();
+        _owns = _ownedMutex->try_lock_until(absoluteTime);
+        return _owns;
     }
 
     void unlock() {
@@ -224,7 +262,23 @@ public:
 
 class ScopedLock
 {
+    // TODO: implement
+};
 
+
+class TimedMutex
+{
+    // TODO: implement
+};
+
+
+class RecursiveTimedMutex
+{
+    // TODO: implement
 };
 
 CUSTOM_END
+
+#elif defined _MSC_VER
+#error NO Mutex implementation
+#endif
