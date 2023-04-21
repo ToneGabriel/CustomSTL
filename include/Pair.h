@@ -4,6 +4,11 @@
 
 CUSTOM_BEGIN
 
+// tag struct declaration for piecewise construction of Pair objects
+struct PiecewiseConstruct_t { explicit PiecewiseConstruct_t() = default; };
+
+constexpr PiecewiseConstruct_t PiecewiseConstruct = PiecewiseConstruct_t();
+
 template<class Type1, class Type2>
 class Pair			        // Pair Template
 {

@@ -7,6 +7,11 @@
 #include <pthread.h>
 #include <iostream>
 
+#if defined _WIN32
+#include <windows.h>
+#elif defined __linux__
+#include <sys/sysinfo.h>
+#endif      // _WIN32 and __linux__
 
 CUSTOM_BEGIN
 
@@ -97,7 +102,13 @@ public:
     // Main functions
 
     static unsigned int hardware_concurrency() {
-        return pthread_num_processors_np();
+        #if defined _WIN32
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo(&sysinfo);
+        return sysinfo.dwNumberOfProcessors;
+        #elif defined __linux__
+        return get_nprocs();
+        #endif
     }
 
     bool joinable() const {
@@ -177,4 +188,4 @@ CUSTOM_END
 
 #elif defined _MSC_VER
 #error NO Thread implementation
-#endif
+#endif      // __GNUG__ and _MSC_VER

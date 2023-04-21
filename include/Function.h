@@ -143,4 +143,8 @@ private:
     }
 }; // END Function template
 
+
+template<class Callable, class... Args>
+auto invoke(Callable&& func, Args&&... args);   // TODO: implement
+
 CUSTOM_END
