@@ -36,6 +36,10 @@ struct IntegralConstant
 template<bool Val>
 using BoolConstant = IntegralConstant<bool, Val>;
 
+// true / false type
+using TrueType  = BoolConstant<true>;
+using FalseType = BoolConstant<false>;
+
 // remove const
 template<class Ty>                             // remove top-level const qualifier
 struct RemoveConst { using Type = Ty; };
@@ -174,6 +178,25 @@ constexpr bool IsReference_v<Ty&&> = true;
 template<class Ty>
 struct IsReference : BoolConstant<IsReference_v<Ty>> {};
 
+// is pointer
+template<class>                                 // determine whether Ty is a pointer
+constexpr bool IsPointer_v = false;
+
+template<class Ty>
+constexpr bool IsPointer_v<Ty*> = true;
+
+template<class Ty>
+constexpr bool IsPointer_v<Ty* const> = true;
+
+template<class Ty>
+constexpr bool IsPointer_v<Ty* volatile> = true;
+
+template<class Ty>
+constexpr bool IsPointer_v<Ty* const volatile> = true;
+
+template<class Ty>
+struct IsPointer : BoolConstant<IsPointer_v<Ty>> {};
+
 // is void
 template<class Ty>
 constexpr bool IsVoid_v = IsSame_v<RemoveCV_t<Ty>, void>;
@@ -220,6 +243,13 @@ constexpr bool IsArray_v<Ty[]> = true;
 
 template<class Ty>
 struct IsArray : BoolConstant<IsArray_v<Ty>> {};
+
+// is convertible
+template<class From, class To>
+constexpr bool IsConvertible_v = __is_convertible_to(From, To);
+
+template<class From, class To>
+struct IsConvertible : BoolConstant<IsConvertible_v<From, To>> {};
 
 // add pointer
 template<class Ty, class = void>                // add pointer (pointer type cannot be formed)
@@ -277,6 +307,29 @@ struct Conditional<false, Ty1, Ty2> { using Type = Ty2; };
 
 template<bool Test, class Ty1, class Ty2>
 using Conditional_t = typename Conditional<Test, Ty1, Ty2>::Type;
+
+// negation
+template<class Trait>
+struct Negation : BoolConstant<!static_cast<bool>(Trait::Value)> {}; // The negated result of Trait
+
+template<class Trait>
+constexpr bool Negation_v = Negation<Trait>::Value;
+
+// conjunction
+template<bool FirstValue, class First, class... Rest>
+struct _Conjunction { using Type = First; };        // handle false trait or last trait
+
+template<class True, class Next, class... Rest>     // the first trait is true, try the next one
+struct _Conjunction<true, True, Next, Rest...> { using Type = typename _Conjunction<Next::Value, Next, Rest...>::Type; };
+
+template<class... Traits>
+struct Conjunction : TrueType {};                   // If Traits is empty, true_type
+
+template<class First, class... Rest>                // the first false trait in _Traits, or the last trait if none are false
+struct Conjunction<First, Rest...> : _Conjunction<First::Value, First, Rest...>::Type {};
+
+template<class... Traits>
+constexpr bool Conjunction_v = Conjunction<Traits...>::Value;
 
 // Class template IntegerSequence
 template<class Ty, Ty... Vals>
