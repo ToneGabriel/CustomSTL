@@ -16,6 +16,7 @@
 #include "Function.h"
 #include "Thread.h"
 #include "Mutex.h"
+#include "Memory.h"
 
 #include <iostream>
 #include <string>
@@ -32,6 +33,7 @@
 #include <functional>
 #include <thread>
 #include <mutex>
+#include <memory.h>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
