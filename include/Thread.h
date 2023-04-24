@@ -48,11 +48,11 @@ public:
     Thread()                = default;
     Thread(const Thread&)   = delete;
 
-    template<class Functor, class... Args, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<Functor>, Thread>::Value, bool> = true>
+    template<class Functor, class... Args, EnableIf_t<!IsSame<Decay_t<Functor>, Thread>::Value, bool> = true>
     Thread(Functor&& func, Args&&... args) {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
 
-        using CallableTuple     = custom::Tuple<custom::Decay_t<Functor>, custom::Decay_t<Args>...>;
+        using CallableTuple     = Tuple<Decay_t<Functor>, Decay_t<Args>...>;
         Invoker invoker         = _get_invoke_impl<CallableTuple>(MakeIndexSequence<1 + sizeof...(Args)>{});
         CallableTuple* callable = new CallableTuple(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 

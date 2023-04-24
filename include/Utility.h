@@ -207,6 +207,33 @@ struct IsVoid : BoolConstant<IsVoid_v<Ty>> {};
 template<class... Types>
 using Void_t = void;
 
+// add reference
+template<class Ty, class = void>
+struct _AddReference                    // add reference (non-referenceable type)
+{
+    using Lvalue = Ty;
+    using Rvalue = Ty;
+};
+
+template<class Ty>
+struct _AddReference<Ty, Void_t<Ty&>>   // (referenceable type)
+{
+    using Lvalue = Ty&;
+    using Rvalue = Ty&&;
+};
+
+template<class Ty>
+struct AddLvalueReference { using Type = typename _AddReference<Ty>::Lvalue; };
+
+template<class Ty>
+using AddLvalueReference_t = typename AddLvalueReference<Ty>::Type;
+
+template<class Ty>
+struct AddRvalueReference { using Type = typename _AddReference<Ty>::Rvalue; };
+
+template<class Ty>
+using AddRvalueReference_t = typename AddRvalueReference<Ty>::Type;
+
 // is const
 template<class>                                 // determine whether type argument is const qualified
 constexpr bool IsConst_v = false;
@@ -244,12 +271,84 @@ constexpr bool IsArray_v<Ty[]> = true;
 template<class Ty>
 struct IsArray : BoolConstant<IsArray_v<Ty>> {};
 
+// is constructible
+template<class Ty, class... Args>
+struct IsConstructible : BoolConstant<__is_constructible(Ty, Args...)> {};
+
+template<class Ty, class... Args>
+constexpr bool IsConstructible_v = IsConstructible<Ty, Args...>::Value;
+
+template<class Ty>
+struct IsDefaultConstructible : BoolConstant<__is_constructible(Ty)> {};
+
+template<class Ty>
+constexpr bool IsDefaultConstructible_v = IsDefaultConstructible<Ty>::Value;
+
+template<class Ty>
+struct IsCopyConstructible : BoolConstant<__is_constructible(Ty, AddLvalueReference_t<const Ty>)> {};
+
+template<class Ty>
+constexpr bool IsCopyConstructible_v = IsCopyConstructible<Ty>::Value;
+
+template<class Ty>
+struct IsMoveConstructible : BoolConstant<__is_constructible(Ty, Ty)> {};
+
+template<class Ty>
+constexpr bool IsMoveConstructible_v = IsMoveConstructible<Ty>::Value;
+
+// is assignable
+template<class To, class From>
+struct IsAssignable : BoolConstant<__is_assignable(To, From)> {};
+
+template<class To, class From>
+constexpr bool IsAssignable_v = IsAssignable<To, From>::Value;
+
+template<class Ty>
+struct IsCopyAssignable : BoolConstant<__is_assignable(AddLvalueReference_t<Ty>, AddLvalueReference_t<const Ty>)> {};
+
+template<class Ty>
+constexpr bool IsCopyAssignable_v = IsCopyAssignable<Ty>::Value;
+
+template<class Ty>
+struct IsMoveAssignable : BoolConstant<__is_assignable(AddLvalueReference_t<Ty>, Ty)> {};
+
+template <class Ty>
+constexpr bool IsMoveAssignable_v = IsMoveAssignable<Ty>::Value;
+
 // is convertible
+#if defined _MSC_VER
 template<class From, class To>
 constexpr bool IsConvertible_v = __is_convertible_to(From, To);
 
 template<class From, class To>
 struct IsConvertible : BoolConstant<IsConvertible_v<From, To>> {};
+#elif defined __GNUG__
+template<class From, class To>
+struct _IsConvertible           // TODO: check
+{
+    template<class Ty>
+    static auto test_returnable(int) -> decltype(void(static_cast<Ty(*)()>(nullptr)), TrueType{});
+
+    template<class>
+    static auto test_returnable(...) -> FalseType;
+
+    template<class _From, class _To>
+    static auto test_implicitly_convertible(int) -> decltype(void(std::declval<void(&)(_To)>()(std::declval<_From>())), TrueType{});
+
+    template<class, class>
+    static auto test_implicitly_convertible(...) -> FalseType;
+
+    static constexpr bool Value = ((decltype(test_returnable<To>(0))::Value &&
+                                    decltype(test_implicitly_convertible<From, To>(0))::Value) ||
+                                    (IsVoid_v<From> && IsVoid_v<To>));
+};
+
+template<class From, class To>
+struct IsConvertible : public BoolConstant<_IsConvertible<From, To>::Value> {};
+
+template<class From, class To>
+constexpr bool IsConvertible_v = IsConvertible<From, To>::Value;
+#endif
 
 // add pointer
 template<class Ty, class = void>                // add pointer (pointer type cannot be formed)

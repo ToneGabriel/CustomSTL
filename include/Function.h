@@ -43,9 +43,9 @@ public:
 
     Function() = default;
 
-    template<class Functor, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<Functor>, Function>::Value, bool> = true>
+    template<class Functor, EnableIf_t<!IsSame<Decay_t<Functor>, Function>::Value, bool> = true>
     Function(Functor&& f) {
-        using FunctorType = custom::Decay_t<Functor>;
+        using FunctorType = Decay_t<Functor>;
 
         _invoker    = reinterpret_cast<Invoker>(_invoke_impl<FunctorType>);
         _copiator   = reinterpret_cast<Copiator>(_copy_impl<FunctorType>);
@@ -75,9 +75,9 @@ public:
         return _invoker(*this, custom::forward<ArgTypes>(args)...);
     }
 
-    template<class Functor, custom::EnableIf_t<!custom::IsSame<custom::Decay_t<Functor>, Function>::Value, bool> = true>
+    template<class Functor, EnableIf_t<!IsSame<Decay_t<Functor>, Function>::Value, bool> = true>
     Function& operator=(Functor&& func) {
-        using FunctorType = custom::Decay_t<Functor>;
+        using FunctorType = Decay_t<Functor>;
 
         _clear();
         _invoker    = reinterpret_cast<Invoker>(_invoke_impl<FunctorType>);
