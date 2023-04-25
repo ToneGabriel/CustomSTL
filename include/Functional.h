@@ -16,17 +16,17 @@ struct _InvokerFunctor
 
 struct _InvokerPMFObject
 {
-    template <class Decayed, class Type, class... Args>
-    static constexpr auto invoke_impl(Decayed pmf, Type&& arg1, Args&&... args) noexcept
-    -> decltype((static_cast<Type&&>(arg1).*pmf)(static_cast<Args&&>(args)...)) {
-        return (static_cast<Type&&>(arg1).*pmf)(static_cast<Args&&>(args)...);
+    template <class Callable, class Type, class... Args>
+    static constexpr auto invoke_impl(Callable&& pmf, Type&& typeObj, Args&&... args) noexcept
+    -> decltype((static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...)) {
+        return (static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...);
     }
 };
 
 struct _InvokerPMFRefwrap   // not implemented
 {
-    // template <class Decayed, class _Refwrap, class... Args>
-    // static constexpr auto invoke_impl(Decayed pmf, _Refwrap _Rw, Args&&... args) noexcept(
+    // template <class Callable, class _Refwrap, class... Args>
+    // static constexpr auto invoke_impl(Callable pmf, _Refwrap _Rw, Args&&... args) noexcept(
     //     noexcept((_Rw.get().*pmf)(static_cast<Args&&>(args)...)))
     //     -> decltype((_Rw.get().*pmf)(static_cast<Args&&>(args)...)) {
     //     return (_Rw.get().*pmf)(static_cast<Args&&>(args)...);
@@ -35,36 +35,36 @@ struct _InvokerPMFRefwrap   // not implemented
 
 struct _InvokerPMFPointer
 {
-    template <class Decayed, class Type, class... Args>
-    static constexpr auto invoke_impl(Decayed pmf, Type&& arg1, Args&&... args) noexcept
-    -> decltype(((*static_cast<Type&&>(arg1)).*pmf)(static_cast<Args&&>(args)...)) {
-        return ((*static_cast<Type&&>(arg1)).*pmf)(static_cast<Args&&>(args)...);
+    template <class Callable, class Type, class... Args>
+    static constexpr auto invoke_impl(Callable&& pmf, Type&& typeObj, Args&&... args) noexcept
+    -> decltype(((*static_cast<Type&&>(typeObj)).*pmf)(static_cast<Args&&>(args)...)) {
+        return ((*static_cast<Type&&>(typeObj)).*pmf)(static_cast<Args&&>(args)...);
     }
 };
 
 struct _InvokerPMDObject
 {
-    template <class Decayed, class Type>
-    static constexpr auto invoke_impl(Decayed pmd, Type&& arg1) noexcept
-    -> decltype(static_cast<Type&&>(arg1).*pmd) {
-        return static_cast<Type&&>(arg1).*pmd;
+    template <class Callable, class Type>
+    static constexpr auto invoke_impl(Callable&& pmd, Type&& typeObj) noexcept
+    -> decltype(static_cast<Type&&>(typeObj).*pmd) {
+        return static_cast<Type&&>(typeObj).*pmd;
     }
 };
 
 struct _InvokerPMDRefwrap   // not implemented
 {
-    // template <class Decayed, class _Refwrap>
-    // static constexpr auto invoke_impl(Decayed pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*pmd) {
+    // template <class Callable, class _Refwrap>
+    // static constexpr auto invoke_impl(Callable pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*pmd) {
     //     return _Rw.get().*pmd;
     // }
 };
 
 struct _InvokerPMDPointer
 {
-    template <class Decayed, class Type>
-    static constexpr auto invoke_impl(Decayed pmd, Type&& arg1) noexcept
-    -> decltype((*static_cast<Type&&>(arg1)).*pmd) {
-        return (*static_cast<Type&&>(arg1)).*pmd;
+    template <class Callable, class Type>
+    static constexpr auto invoke_impl(Callable&& pmd, Type&& typeObj) noexcept
+    -> decltype((*static_cast<Type&&>(typeObj)).*pmd) {
+        return (*static_cast<Type&&>(typeObj)).*pmd;
     }
 };
 

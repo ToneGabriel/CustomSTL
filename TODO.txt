@@ -2,5 +2,5 @@
 2. String _move - remove and check initialize from cstring
 3. Learn and implement threads
 - check mutex try_lock_for and try_lock_until
-4. Function invoke implement
+4. Function invoke implement (check reference_wrapper)
 5. Learn and implement smart pointers

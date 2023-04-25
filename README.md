@@ -8,4 +8,5 @@ Items not ready:
 - Thread.h
 - Mutex.h
 - ConditionalVariable.h
+- Functional.h
 - Memory.h

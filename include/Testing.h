@@ -340,8 +340,8 @@ void function_test() {
 }
 
 void invoke_test() {
-	test::Test t;
-	std::cout << custom::invoke(test::Test::test_function, t, 3) << '\n';
+	Test t;
+	std::cout << custom::invoke(&Test::test_function, t, 3) << '\n';
 }
 
 #if defined __GNUG__
