@@ -32,7 +32,7 @@ private:
     template <class CallableTuple, size_t... Indices>
     static void* _invoke_impl(void* args) {
         CallableTuple* callable = static_cast<CallableTuple*>(args);
-        std::invoke(custom::move(custom::get<Indices>(*callable))...);     // TODO: check std::invoke
+        custom::invoke(custom::move(custom::get<Indices>(*callable))...);
         delete callable;
 
         return nullptr;

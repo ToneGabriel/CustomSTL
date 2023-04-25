@@ -96,8 +96,8 @@ public:
 		return os;
 	}
 
-	void test_function() {
-		std::cout << "Test\n";
+	int test_function(int x) {
+		return x;
 	}
 };
 
@@ -337,6 +337,11 @@ void function_test() {
 	custom::Function<void()> fct(unordered_map_test);
 	custom::Function<void()> fct1(fct);
 	fct1();
+}
+
+void invoke_test() {
+	test::Test t;
+	std::cout << custom::invoke(test::Test::test_function, t, 3) << '\n';
 }
 
 #if defined __GNUG__

@@ -4,24 +4,9 @@
 CUSTOM_BEGIN
 
 
-enum class InvokeFlag
-{
-    Functor,    // non-member function
-
-    PMFObject,  // member function from object
-    PMFRefwrap, // member function from reference wrapper (not implemented)
-    PMFPointer, // member function from pointer object
-
-    PMDObject,
-    PMDRefwrap, // (not implemented)
-    PMDPointer
-};
-
 // All invoke implmentations
 struct _InvokerFunctor
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::Functor;
-
     template<class Callable, class... Args>
     static constexpr auto invoke_impl(Callable&& func, Args&&... _Args) noexcept
     -> decltype(static_cast<Callable&&>(func)(static_cast<Args&&>(_Args)...)) {
@@ -31,8 +16,6 @@ struct _InvokerFunctor
 
 struct _InvokerPMFObject
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMFObject;
-
     template <class Decayed, class Type, class... Args>
     static constexpr auto invoke_impl(Decayed pmf, Type&& arg1, Args&&... args) noexcept
     -> decltype((static_cast<Type&&>(arg1).*pmf)(static_cast<Args&&>(args)...)) {
@@ -40,10 +23,8 @@ struct _InvokerPMFObject
     }
 };
 
-struct _InvokerPMFRefwrap
+struct _InvokerPMFRefwrap   // not implemented
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMFRefwrap;
-
     // template <class Decayed, class _Refwrap, class... Args>
     // static constexpr auto invoke_impl(Decayed pmf, _Refwrap _Rw, Args&&... args) noexcept(
     //     noexcept((_Rw.get().*pmf)(static_cast<Args&&>(args)...)))
@@ -54,8 +35,6 @@ struct _InvokerPMFRefwrap
 
 struct _InvokerPMFPointer
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMFPointer;
-
     template <class Decayed, class Type, class... Args>
     static constexpr auto invoke_impl(Decayed pmf, Type&& arg1, Args&&... args) noexcept
     -> decltype(((*static_cast<Type&&>(arg1)).*pmf)(static_cast<Args&&>(args)...)) {
@@ -65,8 +44,6 @@ struct _InvokerPMFPointer
 
 struct _InvokerPMDObject
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMDObject;
-
     template <class Decayed, class Type>
     static constexpr auto invoke_impl(Decayed pmd, Type&& arg1) noexcept
     -> decltype(static_cast<Type&&>(arg1).*pmd) {
@@ -74,10 +51,8 @@ struct _InvokerPMDObject
     }
 };
 
-struct _InvokerPMDRefwrap
+struct _InvokerPMDRefwrap   // not implemented
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMDRefwrap;
-
     // template <class Decayed, class _Refwrap>
     // static constexpr auto invoke_impl(Decayed pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*pmd) {
     //     return _Rw.get().*pmd;
@@ -86,8 +61,6 @@ struct _InvokerPMDRefwrap
 
 struct _InvokerPMDPointer
 {
-    static constexpr InvokeFlag Flag = InvokeFlag::PMDPointer;
-
     template <class Decayed, class Type>
     static constexpr auto invoke_impl(Decayed pmd, Type&& arg1) noexcept
     -> decltype((*static_cast<Type&&>(arg1)).*pmd) {
@@ -102,47 +75,28 @@ bool IsPMD = IsMemberObjectPointer_v<NoCVRef_t>>
 struct _Invoker;
 
 template <class Callable, class Type, class NoCVRef_t>
-struct _Invoker<Callable, Type, NoCVRef_t, true, false>
+struct _Invoker<Callable, Type, NoCVRef_t, true, false>     // pointer to member function
 : Conditional_t<IsBaseOf_v<typename _IsMemberFunctionPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
 _InvokerPMFObject,
-/*Conditional_t<_Is_specialization_v<_Remove_cvref_t<Type>, reference_wrapper>, _Invoker_pmf_refwrap,*/
-_InvokerPMFPointer> {}; // pointer to member function
+Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMFRefwrap, _InvokerPMFPointer>> {};
 
-template <class _Callable, class Type, class NoCVRef_t>
-struct _Invoker<_Callable, Type, NoCVRef_t, false, true>
+template <class Callable, class Type, class NoCVRef_t>
+struct _Invoker<Callable, Type, NoCVRef_t, false, true>     // pointer to member data
 : Conditional_t<IsBaseOf_v<typename _IsMemberObjectPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
 _InvokerPMDObject,
-/*Conditional_t<_Is_specialization_v<_Remove_cvref_t<Type>, reference_wrapper>, _Invoker_pmd_refwrap,*/
-_InvokerPMDPointer> {}; // pointer to member data
+Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMDRefwrap, _InvokerPMDPointer>> {};
 
 // Choose and call Invoke implementation
+template <class Callable>
+auto invoke(Callable&& func) noexcept
+-> decltype(static_cast<Callable&&>(func)()) {
+    return static_cast<Callable&&>(func)();
+}
+
 template<class Callable, class Type, class... Args>
 auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
 -> decltype(_Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...)) {
-
-    switch (_Invoker<Callable, Type>::Flag)
-    {
-        case InvokeFlag::Functor:
-            return static_cast<Callable&&>(func)(static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
-
-        case InvokeFlag::PMFObject:
-            return;
-
-        case InvokeFlag::PMFRefwrap:
-            return; // not implemented
-
-        case InvokeFlag::PMFPointer:
-            return;
-
-        case InvokeFlag::PMDObject:
-            return;
-
-        case InvokeFlag::PMDRefwrap:
-            return; // not implemented
-
-        case InvokeFlag::PMDPointer:
-            return;
-    }
+    return _Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
 
 

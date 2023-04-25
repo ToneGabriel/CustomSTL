@@ -301,6 +301,16 @@ constexpr bool IsArray_v<Ty[]> = true;
 template<class Ty>
 struct IsArray : BoolConstant<IsArray_v<Ty>> {};
 
+// is specialization
+template<class Type, template<class...> class Template>
+constexpr bool IsSpecialization_v = false; // true if and only if Type is a specialization of Template
+
+template<template<class...> class Template, class... Types>
+constexpr bool IsSpecialization_v<Template<Types...>, Template> = true;
+
+template <class Type, template<class...> class Template>
+struct IsSpecialization : BoolConstant<IsSpecialization_v<Type, Template>> {};
+
 // is member object pointer
 template<class>
 struct _IsMemberObjectPointer
@@ -492,9 +502,9 @@ template<class True, class Next, class... Rest>     // the first trait is true, 
 struct _Conjunction<true, True, Next, Rest...> { using Type = typename _Conjunction<Next::Value, Next, Rest...>::Type; };
 
 template<class... Traits>
-struct Conjunction : TrueType {};                   // If Traits is empty, true_type
+struct Conjunction : TrueType {};                   // If Traits is empty, true type
 
-template<class First, class... Rest>                // the first false trait in _Traits, or the last trait if none are false
+template<class First, class... Rest>                // the first false trait in Traits, or the last trait if none are false
 struct Conjunction<First, Rest...> : _Conjunction<First::Value, First, Rest...>::Type {};
 
 template<class... Traits>
@@ -545,6 +555,9 @@ constexpr Ty&& forward(RemoveReference_t<Ty>&& val) noexcept {
     static_assert(!IsLvalueReference_v<Ty>, "bad forward call");
     return static_cast<Ty&&>(val);
 }
+
+template<class Type>
+class ReferenceWrapper;                         // TODO: implement
 
 template<class Iterator>
 class ReverseIterator                           // Adaptor for backwards iteration
