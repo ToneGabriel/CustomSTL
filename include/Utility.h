@@ -100,6 +100,19 @@ struct RemoveCV<const volatile Ty>
 template<class Ty>
 using RemoveCV_t = typename RemoveCV<Ty>::Type;
 
+// remove const volatile and ref
+template<class Ty>
+struct RemoveCVRef : RemoveCV<Ty> {};
+
+template<class Ty>
+struct RemoveCVRef<Ty&> : RemoveCV<Ty> {};
+
+template<class Ty>
+struct RemoveCVRef<Ty&&> : RemoveCV<Ty> {};
+
+template<class Ty>
+using RemoveCVRef_t = typename RemoveCVRef<Ty>::Type;
+
 // remove reference
 template<class Ty>
 struct RemoveReference { using Type = Ty; };
@@ -165,6 +178,16 @@ constexpr bool IsLvalueReference_v<Ty&> = true;
 template<class Ty>
 struct IsLvalueReference : BoolConstant<IsLvalueReference_v<Ty>> {};
 
+// is rvalue reference
+template<class>                                 // determine whether type argument is an rvalue reference
+constexpr bool IsRvalueReference_v = false;
+
+template<class Ty>
+constexpr bool IsRvalueReference_v<Ty&&> = true;
+
+template<class Ty>
+struct IsRvalueReference : BoolConstant<IsRvalueReference_v<Ty>> {};
+
 // is reference
 template<class>                                 // determine whether type argument is a reference
 constexpr bool IsReference_v = false;
@@ -206,6 +229,13 @@ struct IsVoid : BoolConstant<IsVoid_v<Ty>> {};
 
 template<class... Types>
 using Void_t = void;
+
+// is base of
+template<class Base, class Derived>
+struct IsBaseOf : BoolConstant<__is_base_of(Base, Derived)> {};
+
+template<class Base, class Derived>
+constexpr bool IsBaseOf_v = IsBaseOf<Base, Derived>::Value;
 
 // add reference
 template<class Ty, class = void>
@@ -270,6 +300,46 @@ constexpr bool IsArray_v<Ty[]> = true;
 
 template<class Ty>
 struct IsArray : BoolConstant<IsArray_v<Ty>> {};
+
+// is member object pointer
+template<class>
+struct _IsMemberObjectPointer
+{
+    static constexpr bool Value = false;
+};
+
+template<class Ty1, class Ty2>
+struct _IsMemberObjectPointer<Ty1 Ty2::*>
+{
+    static constexpr bool Value = !IsFunction_v<Ty1>;
+    using ClassType = Ty2;
+};
+
+template<class Ty>
+constexpr bool IsMemberObjectPointer_v = _IsMemberObjectPointer<RemoveCV_t<Ty>>::Value;
+
+template<class Ty>
+struct IsMemberObjectPointer : BoolConstant<IsMemberObjectPointer_v<Ty>> {};
+
+// is member function pointer
+template<class>
+struct _IsMemberFunctionPointer
+{
+    static constexpr bool Value = false;
+};
+
+template<class Ty1, class Ty2>
+struct _IsMemberFunctionPointer<Ty1 Ty2::*>
+{
+    static constexpr bool Value = IsFunction_v<Ty1>;
+    using ClassType = Ty2;
+};
+
+template<class Ty>
+constexpr bool IsMemberFunctionPointer_v = _IsMemberFunctionPointer<RemoveCV_t<Ty>>::Value;
+
+template<class Ty>
+struct IsMemberFunctionPointer : BoolConstant<IsMemberFunctionPointer_v<Ty>> {};
 
 // is constructible
 template<class Ty, class... Args>

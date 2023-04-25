@@ -13,9 +13,11 @@
 #include "UnorderedSet.h"
 #include "Map.h"
 #include "Set.h"
-#include "Function.h"
+#include "Functional.h"
+#if defined __GNUG__
 #include "Thread.h"
 #include "Mutex.h"
+#endif
 #include "Memory.h"
 
 #include <iostream>
@@ -92,6 +94,10 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const Test& test) {
 		os << "Test val = " << test.value;
 		return os;
+	}
+
+	void test_function() {
+		std::cout << "Test\n";
 	}
 };
 
@@ -333,10 +339,12 @@ void function_test() {
 	fct1();
 }
 
+#if defined __GNUG__
 void thread_test() {
 	custom::Thread t(function_test);
 	t.join();
 }
+#endif
 
 TEST_END
 

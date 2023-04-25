@@ -2,13 +2,14 @@
 
 #if defined __GNUG__
 #include "Utility.h"
+#include "Functional.h"
 #include "Tuple.h"
 
 #include <pthread.h>
 #include <iostream>
 
 #if defined _WIN32
-#include <windows.h>
+#include <windows.h>    // for hardware_concurrency()
 #elif defined __linux__
 #include <sys/sysinfo.h>
 #endif      // _WIN32 and __linux__
