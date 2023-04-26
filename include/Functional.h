@@ -7,25 +7,15 @@ CUSTOM_BEGIN
 template<class Ty>
 class ReferenceWrapper;
 
-// template <class _Ty>
-// void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept; // not defined
-// template <class _Ty>
-// void _Refwrap_ctor_fun(_Identity_t<_Ty&&>) = delete;
-
-// template <class _Ty, class _Uty, class = void>
-// struct _Refwrap_has_ctor_from : false_type {};
-
-// template <class _Ty, class _Uty>
-// struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_STD _Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>>
-//     : true_type {}; // _STD _Refwrap_ctor_fun is qualified: avoid ADL, handle incomplete types
+// invoke ==========================================================================
 
 // All invoke implmentations
 struct _InvokerFunctor
 {
     template<class Callable, class... Args>
-    static constexpr auto invoke_impl(Callable&& func, Args&&... _Args) noexcept
-    -> decltype(static_cast<Callable&&>(func)(static_cast<Args&&>(_Args)...)) {
-        return static_cast<Callable&&>(func)(static_cast<Args&&>(_Args)...);
+    static constexpr auto invoke_impl(Callable&& func, Args&&... args) noexcept
+    -> decltype(static_cast<Callable&&>(func)(static_cast<Args&&>(args)...)) {
+        return static_cast<Callable&&>(func)(static_cast<Args&&>(args)...);
     }
 };
 
@@ -38,14 +28,13 @@ struct _InvokerPMFObject
     }
 };
 
-struct _InvokerPMFRefwrap   // not implemented
+struct _InvokerPMFRefwrap
 {
-    // template <class Callable, class _Refwrap, class... Args>
-    // static constexpr auto invoke_impl(Callable pmf, _Refwrap _Rw, Args&&... args) noexcept(
-    //     noexcept((_Rw.get().*pmf)(static_cast<Args&&>(args)...)))
-    //     -> decltype((_Rw.get().*pmf)(static_cast<Args&&>(args)...)) {
-    //     return (_Rw.get().*pmf)(static_cast<Args&&>(args)...);
-    // }
+    template <class Callable, class Refwrap, class... Args>
+    static constexpr auto invoke_impl(Callable pmf, Refwrap rw, Args&&... args) noexcept
+    -> decltype((rw.get().*pmf)(static_cast<Args&&>(args)...)) {
+        return (rw.get().*pmf)(static_cast<Args&&>(args)...);
+    }
 };
 
 struct _InvokerPMFPointer
@@ -66,12 +55,13 @@ struct _InvokerPMDObject
     }
 };
 
-struct _InvokerPMDRefwrap   // not implemented
+struct _InvokerPMDRefwrap
 {
-    // template <class Callable, class _Refwrap>
-    // static constexpr auto invoke_impl(Callable pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*pmd) {
-    //     return _Rw.get().*pmd;
-    // }
+    template <class Callable, class Refwrap>
+    static constexpr auto invoke_impl(Callable pmd, Refwrap rw) noexcept 
+    -> decltype(rw.get().*pmd) {
+        return rw.get().*pmd;
+    }
 };
 
 struct _InvokerPMDPointer
@@ -118,43 +108,94 @@ auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
     return _Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
 
-// TODO: implement
+// END invoke ==========================================================================
+
+
+// ReferenceWrapper ====================================================================
+
 template<class Ty>
-class ReferenceWrapper
+void _RefwrapConstructorFunc(TypeIdentity_t<Ty&>) noexcept; // not defined
+
+template<class Ty>
+void _RefwrapConstructorFunc(TypeIdentity_t<Ty&&>) = delete;
+
+template<class Ty, class Base, class = void>
+struct _RefwrapHasConstructorFrom : FalseType {};
+
+template<class Ty, class Base>
+struct _RefwrapHasConstructorFrom<Ty, Base, Void_t<decltype(_RefwrapConstructorFunc<Ty>(std::declval<Base>()))>>
+: TrueType {}; // _RefwrapConstructorFunc is qualified: avoid ADL, handle incomplete types
+
+template<class Ty>
+class ReferenceWrapper      // ReferenceWrapper Template
 {
 public:
     static_assert(IsObject_v<Ty> || IsFunction_v<Ty>, "ReferenceWrapper<Ty> requires Ty to be an object type or a function type.");
-
     using Type = Ty;
+
+private:
+    Type* _Ptr;
+
+public:
+    // Constructors & Operators
 
     template <class Base, EnableIf_t<Conjunction_v<
     Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
-    _Refwrap_has_ctor_from<Ty, Base>>, bool> = true>
-    ReferenceWrapper(Base&& val) noexcept(
-        noexcept(_STD _Refwrap_ctor_fun<Ty>(_STD declval<Base>()))) { // qualified: avoid ADL, handle incomplete types
+    _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>
+    ReferenceWrapper(Base&& val) noexcept {
         _Ptr = &static_cast<Base&&>(val);
+    }
+
+    template<class... Types>
+    auto operator()(Types&&... args) const
+    -> decltype(custom::invoke(*_Ptr, static_cast<Types&&>(args)...)) {
+        return custom::invoke(*_Ptr, static_cast<Types&&>(args)...);
     }
 
     operator Type& () const noexcept {
         return *_Ptr;
     }
 
+public:
+    // Main functions
+
     Type& get() const noexcept {
         return *_Ptr;
     }
-
-private:
-    Type* _Ptr;
-
-public:
-    template<class... Types>
-    auto operator()(Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<Types&&>(_Args)...))) // strengthened
-        -> decltype(_STD invoke(*_Ptr, static_cast<Types&&>(_Args)...)) {
-        return _STD invoke(*_Ptr, static_cast<Types&&>(_Args)...);
-    }
 }; // END ReferenceWrapper
 
+template<class Ty>
+ReferenceWrapper(Ty&) -> ReferenceWrapper<Ty>;  // deduce type
+
+template<class Ty>
+ReferenceWrapper<Ty> ref(Ty& val) noexcept {
+    return ReferenceWrapper<Ty>(val);
+}
+
+template<class Ty>
+void ref(const Ty&&) = delete;
+
+template<class Ty>
+ReferenceWrapper<Ty> ref(ReferenceWrapper<Ty> val) noexcept {
+    return val;
+}
+
+template<class Ty>
+ReferenceWrapper<const Ty> cref(const Ty& val) noexcept {
+    return ReferenceWrapper<const Ty>(val);
+}
+
+template<class Ty>
+void cref(const Ty&&) = delete;
+
+template<class Ty>
+ReferenceWrapper<const Ty> cref(ReferenceWrapper<Ty> val) noexcept {
+    return val;
+}
+
+// END ReferenceWrapper ================================================================
+
+// Function ============================================================================
 
 // TODO: refactor
 template<class Signature>
@@ -296,5 +337,8 @@ private:
         other._functor  = nullptr;
     }
 }; // END Function template
+
+// END Function ========================================================================
+
 
 CUSTOM_END
