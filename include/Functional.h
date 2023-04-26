@@ -4,6 +4,21 @@
 CUSTOM_BEGIN
 
 
+template<class Ty>
+class ReferenceWrapper;
+
+// template <class _Ty>
+// void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept; // not defined
+// template <class _Ty>
+// void _Refwrap_ctor_fun(_Identity_t<_Ty&&>) = delete;
+
+// template <class _Ty, class _Uty, class = void>
+// struct _Refwrap_has_ctor_from : false_type {};
+
+// template <class _Ty, class _Uty>
+// struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_STD _Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>>
+//     : true_type {}; // _STD _Refwrap_ctor_fun is qualified: avoid ADL, handle incomplete types
+
 // All invoke implmentations
 struct _InvokerFunctor
 {
@@ -16,7 +31,7 @@ struct _InvokerFunctor
 
 struct _InvokerPMFObject
 {
-    template <class Callable, class Type, class... Args>
+    template<class Callable, class Type, class... Args>
     static constexpr auto invoke_impl(Callable&& pmf, Type&& typeObj, Args&&... args) noexcept
     -> decltype((static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...)) {
         return (static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...);
@@ -35,7 +50,7 @@ struct _InvokerPMFRefwrap   // not implemented
 
 struct _InvokerPMFPointer
 {
-    template <class Callable, class Type, class... Args>
+    template<class Callable, class Type, class... Args>
     static constexpr auto invoke_impl(Callable&& pmf, Type&& typeObj, Args&&... args) noexcept
     -> decltype(((*static_cast<Type&&>(typeObj)).*pmf)(static_cast<Args&&>(args)...)) {
         return ((*static_cast<Type&&>(typeObj)).*pmf)(static_cast<Args&&>(args)...);
@@ -44,7 +59,7 @@ struct _InvokerPMFPointer
 
 struct _InvokerPMDObject
 {
-    template <class Callable, class Type>
+    template<class Callable, class Type>
     static constexpr auto invoke_impl(Callable&& pmd, Type&& typeObj) noexcept
     -> decltype(static_cast<Type&&>(typeObj).*pmd) {
         return static_cast<Type&&>(typeObj).*pmd;
@@ -61,7 +76,7 @@ struct _InvokerPMDRefwrap   // not implemented
 
 struct _InvokerPMDPointer
 {
-    template <class Callable, class Type>
+    template<class Callable, class Type>
     static constexpr auto invoke_impl(Callable&& pmd, Type&& typeObj) noexcept
     -> decltype((*static_cast<Type&&>(typeObj)).*pmd) {
         return (*static_cast<Type&&>(typeObj)).*pmd;
@@ -69,28 +84,32 @@ struct _InvokerPMDPointer
 };
 
 // Invoker implementation choice
-template <class Callable, class Type, class NoCVRef_t = RemoveCVRef_t<Callable>,
+template<class Callable, class Type = void, class NoCVRef_t = RemoveCVRef_t<Callable>,
 bool IsPMF = IsMemberFunctionPointer_v<NoCVRef_t>,
 bool IsPMD = IsMemberObjectPointer_v<NoCVRef_t>>
 struct _Invoker;
 
-template <class Callable, class Type, class NoCVRef_t>
+template<class Callable, class Type, class NoCVRef_t>
+struct _Invoker<Callable, Type, NoCVRef_t, false, false>    // non-member function
+: _InvokerFunctor {};
+
+template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, true, false>     // pointer to member function
 : Conditional_t<IsBaseOf_v<typename _IsMemberFunctionPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
 _InvokerPMFObject,
 Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMFRefwrap, _InvokerPMFPointer>> {};
 
-template <class Callable, class Type, class NoCVRef_t>
+template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, false, true>     // pointer to member data
 : Conditional_t<IsBaseOf_v<typename _IsMemberObjectPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
 _InvokerPMDObject,
 Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMDRefwrap, _InvokerPMDPointer>> {};
 
 // Choose and call Invoke implementation
-template <class Callable>
+template<class Callable>
 auto invoke(Callable&& func) noexcept
--> decltype(static_cast<Callable&&>(func)()) {
-    return static_cast<Callable&&>(func)();
+-> decltype(_Invoker<Callable>::invoke_impl(static_cast<Callable&&>(func))) {
+    return _Invoker<Callable>::invoke_impl(static_cast<Callable&&>(func));
 }
 
 template<class Callable, class Type, class... Args>
@@ -98,6 +117,43 @@ auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
 -> decltype(_Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...)) {
     return _Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
+
+// TODO: implement
+template<class Ty>
+class ReferenceWrapper
+{
+public:
+    static_assert(IsObject_v<Ty> || IsFunction_v<Ty>, "ReferenceWrapper<Ty> requires Ty to be an object type or a function type.");
+
+    using Type = Ty;
+
+    template <class Base, EnableIf_t<Conjunction_v<
+    Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
+    _Refwrap_has_ctor_from<Ty, Base>>, bool> = true>
+    ReferenceWrapper(Base&& val) noexcept(
+        noexcept(_STD _Refwrap_ctor_fun<Ty>(_STD declval<Base>()))) { // qualified: avoid ADL, handle incomplete types
+        _Ptr = &static_cast<Base&&>(val);
+    }
+
+    operator Type& () const noexcept {
+        return *_Ptr;
+    }
+
+    Type& get() const noexcept {
+        return *_Ptr;
+    }
+
+private:
+    Type* _Ptr;
+
+public:
+    template<class... Types>
+    auto operator()(Types&&... _Args) const
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<Types&&>(_Args)...))) // strengthened
+        -> decltype(_STD invoke(*_Ptr, static_cast<Types&&>(_Args)...)) {
+        return _STD invoke(*_Ptr, static_cast<Types&&>(_Args)...);
+    }
+}; // END ReferenceWrapper
 
 
 // TODO: refactor

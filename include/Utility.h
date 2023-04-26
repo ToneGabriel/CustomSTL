@@ -40,6 +40,13 @@ using BoolConstant = IntegralConstant<bool, Val>;
 using TrueType  = BoolConstant<true>;
 using FalseType = BoolConstant<false>;
 
+// identity
+template<class Ty>
+struct TypeIdentity { using Type = Ty; };
+
+template<class Ty>
+using TypeIdentity_t = typename TypeIdentity<Ty>::Type;
+
 // remove const
 template<class Ty>                             // remove top-level const qualifier
 struct RemoveConst { using Type = Ty; };
