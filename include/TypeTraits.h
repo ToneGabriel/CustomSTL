@@ -100,6 +100,22 @@ struct AddPointer<Ty, Void_t<RemoveReference_t<Ty>*>> { using Type = RemoveRefer
 template<class Ty>
 using AddPointer_t = typename AddPointer<Ty>::Type;
 
+// extent
+template<class Ty, unsigned int Ix = 0>
+constexpr size_t Extent_v = 0;                  // determine extent of dimension Ix of array Ty
+
+template<class Ty, size_t Nx>
+constexpr size_t Extent_v<Ty[Nx], 0> = Nx;
+
+template<class Ty, unsigned int Ix, size_t Nx>
+constexpr size_t Extent_v<Ty[Nx], Ix> = Extent_v<Ty, Ix - 1>;
+
+template<class Ty, unsigned int Ix>
+constexpr size_t Extent_v<Ty[], Ix> = Extent_v<Ty, Ix - 1>;
+
+template<class Ty, unsigned int Ix = 0>
+struct Extent : IntegralConstant<size_t, Extent_v<Ty, Ix>> {};
+
 // remove extent
 template<class Ty>                              // remove array extent
 struct RemoveExtent { using Type = Ty; };

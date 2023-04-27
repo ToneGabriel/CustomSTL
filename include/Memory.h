@@ -251,4 +251,18 @@ public:
 
 }; // END UniquePtr[]
 
+// build UniquePtr
+template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+UniquePtr<Ty> make_unique(Args&&... args) {
+    return UniquePtr<Ty>(new Ty(custom::forward<Args>(args)...));
+}
+
+template<class Ty, EnableIf_t<IsArray_v<Ty> && Extent_v<Ty> == 0, bool> = true>
+UniquePtr<Ty> make_unique(const size_t size) {
+    return UniquePtr<Ty>(new RemoveExtent_t<Ty>[size]());
+}
+
+template<class Ty, class... Args, EnableIf_t<Extent_v<Ty> != 0, bool> = true>
+void make_unique(Args&&...) = delete;
+
 CUSTOM_END
