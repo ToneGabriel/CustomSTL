@@ -25,6 +25,21 @@ constexpr Ty&& forward(RemoveReference_t<Ty>&& val) noexcept {
     return static_cast<Ty&&>(val);
 }
 
+template<class Ty, EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool> = true>
+void swap(Ty& first, Ty& second) noexcept {
+    Ty temp = custom::move(first);
+    first   = custom::move(second);
+    second  = custom::move(temp);
+}
+
+template<class Ty, class Other = Ty, EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowAssignable_v<Ty&, Other>, bool> = true>
+void exchange(Ty& val, Other&& newVal) noexcept {
+    // assign newVal to val, return previous val
+    Ty old  = custom::move(val);
+    val     = custom::move(newVal);
+    return old;
+}
+
 template<class Iterator>
 class ReverseIterator                           // Adaptor for backwards iteration
 {
@@ -202,7 +217,7 @@ public:
     using Type = Ty;
 
 private:
-    Type* _Ptr;
+    Type* _ptr;
 
 public:
     // Constructors & Operators
@@ -211,24 +226,24 @@ public:
     Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
     _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>
     ReferenceWrapper(Base&& val) noexcept {
-        _Ptr = &static_cast<Base&&>(val);
+        _ptr = &static_cast<Base&&>(val);       // TODO: check
     }
 
     template<class... Args>
     auto operator()(Args&&... args) const
-    -> decltype(custom::invoke(*_Ptr, static_cast<Args&&>(args)...)) {
-        return custom::invoke(*_Ptr, static_cast<Args&&>(args)...);
+    -> decltype(custom::invoke(*_ptr, static_cast<Args&&>(args)...)) {
+        return custom::invoke(*_ptr, static_cast<Args&&>(args)...);
     }
 
     operator Type& () const noexcept {
-        return *_Ptr;
+        return *_ptr;
     }
 
 public:
     // Main functions
 
     Type& get() const noexcept {
-        return *_Ptr;
+        return *_ptr;
     }
 }; // END ReferenceWrapper
 

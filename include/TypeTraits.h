@@ -328,6 +328,31 @@ struct IsMoveConstructible : BoolConstant<__is_constructible(Ty, Ty)> {};
 template<class Ty>
 constexpr bool IsMoveConstructible_v = IsMoveConstructible<Ty>::Value;
 
+// is nothrow constructible
+template<class Ty, class... Args>
+struct IsNothrowConstructible : BoolConstant<__is_nothrow_constructible(Ty, Args...)> {};
+
+template<class Ty, class... Args>
+constexpr bool IsNothrowConstructible_v = IsNothrowConstructible<Ty, Args>::Value;
+
+template<class Ty>
+struct IsNothrowDefaultConstructible : BoolConstant<__is_nothrow_constructible(Ty)> {};
+
+template<class Ty>
+constexpr bool IsNothrowDefaultConstructible_v = IsNothrowDefaultConstructible<Ty>::Value;
+
+template<class Ty>
+struct IsNothrowCopyConstructible : BoolConstant<__is_nothrow_constructible(Ty, AddLvalueReference_t<const Ty>)> {};
+
+template<class Ty>
+constexpr bool IsNothrowCopyConstructible_v = IsNothrowCopyConstructible<Ty>::Value;
+
+template<class Ty>
+struct IsNothrowMoveConstructible : BoolConstant<__is_nothrow_constructible(Ty, Ty)> {};
+
+template<class Ty>
+constexpr bool IsNothrowMoveConstructible_v = IsNothrowMoveConstructible<Ty>::Value;
+
 // is assignable
 template<class To, class From>
 struct IsAssignable : BoolConstant<__is_assignable(To, From)> {};
@@ -346,6 +371,39 @@ struct IsMoveAssignable : BoolConstant<__is_assignable(AddLvalueReference_t<Ty>,
 
 template <class Ty>
 constexpr bool IsMoveAssignable_v = IsMoveAssignable<Ty>::Value;
+
+// is nothrow assignable
+template<class To, class From>
+struct IsNothrowAssignable : BoolConstant<__is_nothrow_assignable(To, From)> {};
+
+template<class To, class From>
+constexpr bool IsNothrowAssignable_v = IsNothrowAssignable<To, From>::Value;
+
+template<class Ty>
+struct IsNothrowCopyAssignable : BoolConstant<__is_nothrow_assignable(AddLvalueReference_t<Ty>, AddLvalueReference_t<const Ty>)> {};
+
+template<class Ty>
+constexpr bool IsNothrowCopyAssignable_v = IsNothrowCopyAssignable<Ty>::Value;
+
+template<class Ty>
+struct IsNothrowMoveAssignable : BoolConstant<__is_nothrow_assignable(AddLvalueReference_t<Ty>, Ty)> {};
+
+template<class Ty>
+constexpr bool IsNothrowMoveAssignable_v = IsNothrowMoveAssignable<Ty>::Value;
+
+// is destructible
+template<class Ty>
+struct IsDestructible : BoolConstant<__is_destructible(Ty)> {};
+
+template<class Ty>
+constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
+
+// is nothrow destructible
+template<class Ty>
+struct IsNothrowDestructible : BoolConstant<__is_nothrow_destructible(Ty)> {};
+
+template<class Ty>
+constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
 
 // is base of
 template<class Base, class Derived>

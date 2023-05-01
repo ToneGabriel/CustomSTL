@@ -101,6 +101,9 @@ struct Disjunction : FalseType {};                  // If Traits is empty, false
 template<class First, class... Rest>
 struct Disjunction<First, Rest...> : _Disjunction<First::Value, First, Rest...>::Type {};
 
+template<class... Traits>
+constexpr bool Disjunction_v = Disjunction<Traits...>::Value;
+
 // remove const
 template<class Ty>                                  // remove top-level const qualifier
 struct RemoveConst { using Type = Ty; };
@@ -215,5 +218,32 @@ constexpr bool IsSame_v<Ty, Ty> = true;
 
 template<class Ty1, class Ty2>
 struct IsSame : BoolConstant<IsSame_v<Ty1, Ty2>> {};
+
+// is arithmetic
+template<class Ty, class... Types>                  // Helper - true if Ty is in Types
+constexpr bool _IsAnyOf_v = Disjunction_v<IsSame<Ty, Types>...>;
+
+template<class Ty>
+constexpr bool IsIntegral_v = _IsAnyOf_v<RemoveCV_t<Ty>, bool, char, signed char, unsigned char,
+wchar_t,
+#ifdef __cpp_char8_t
+char8_t,
+#endif
+char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
+
+template<class Ty>
+struct IsIntegral : BoolConstant<IsIntegral_v<Ty>> {};
+
+template<class Ty>
+constexpr bool IsFloatingPoint_v = _IsAnyOf_v<RemoveCV_t<Ty>, float, double, long double>;
+
+template<class Ty>
+struct IsFloatingPoint : BoolConstant<IsFloatingPoint_v<Ty>> {};
+
+template<class Ty>
+constexpr bool IsArithmetic_v = IsIntegral_v<Ty> || IsFloatingPoint_v<Ty>;
+
+template<class Ty>
+struct IsArithmetic : BoolConstant<IsArithmetic_v<Ty>> {};
 
 CUSTOM_END
