@@ -6,12 +6,16 @@
 
 CUSTOM_BEGIN
 
+class ConditionVariable;
+
 class MutexBase         // Mutex wrapper for pthread_mutex_t
 {
 public:
     using NativeHandleType = pthread_mutex_t;
 
 private:
+    friend ConditionVariable;
+
     pthread_mutex_t _mutex;
     pthread_mutexattr_t _mutexAttr;
 
@@ -260,10 +264,102 @@ public:
 };
 
 
+template<class... Mutexes>
 class ScopedLock
 {
-    // TODO: implement
+// private:
+//     Tuple<Mutexes&...> _ownedMutexes;
+
+// public:
+//     // Constructors & Operators
+
+//     explicit ScopedLock(Mutexes&... mtxes) : _ownedMutexes(mtxes...) { // construct and lock
+//         std::lock(mtxes...);    // TODO: check
+//     }
+
+//     explicit ScopedLock(AdoptLock_t, Mutexes&... mtxes) : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
+
+//     ~ScopedLock() {
+//         std::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
+//     }
+
+//     ScopedLock(const ScopedLock&)            = delete;
+//     ScopedLock& operator=(const ScopedLock&) = delete;
 };
+
+
+enum class CVStatus
+{
+    NoTimeout,
+    Timeout
+};
+
+class ConditionVariable         // Condition variable wrapper for pthread_cond_t
+{
+public:
+    using NativeHandleType = pthread_cond_t;
+
+private:
+    pthread_cond_t _conditionVar;
+
+public:
+    // Constructors & Operators
+
+    ConditionVariable() {
+        pthread_cond_init(&_conditionVar, nullptr);
+    }
+
+    ~ConditionVariable() {
+        pthread_cond_destroy(&_conditionVar);
+    }
+
+    ConditionVariable(const ConditionVariable&)            = delete;
+    ConditionVariable& operator=(const ConditionVariable&) = delete;
+
+public:
+    // Main functions
+
+    void notify_one() noexcept {
+        pthread_cond_signal(&_conditionVar);
+    }
+
+    void notify_all() noexcept {
+        pthread_cond_broadcast(&_conditionVar);
+    }
+
+    void wait(UniqueLock<Mutex>& lock) {
+        pthread_cond_wait(&_conditionVar, &lock.mutex()->_mutex);
+    }
+
+    template<class Rep, class Period>
+    CVStatus wait_for(UniqueLock<Mutex>& lock, const std::chrono::duration<Rep, Period>& relativeTime) {
+        // TODO: implement
+        return 0;
+    }
+
+    template<class Rep, class Period, class Predicate>
+    bool wait_for(UniqueLock<Mutex>& lock, const std::chrono::duration<Rep, Period>& relativeTime, Predicate pred) {
+        // TODO: implement
+        return false;
+    }
+
+    template<class Clock, class Duration>
+    CVStatus wait_until(UniqueLock<Mutex>& lock, const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        // TODO: implement
+        return 0;
+    }
+
+    template<class Clock, class Duration, class Predicate>
+    bool wait_until(UniqueLock<Mutex>& lock, const std::chrono::time_point<Clock, Duration>& absoluteTime, Predicate pred) {
+        // TODO: implement
+        return false;
+    }
+
+    NativeHandleType native_handle() {
+        return _conditionVar;
+    }
+
+}; // END ConditionVariable
 
 
 class TimedMutex
