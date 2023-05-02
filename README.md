@@ -2,7 +2,12 @@
 
 Actual code is found in "include" folder.
 
-Items not ready:
+The code works if using:
+
+- MinGW (Linux or Windows)
+- MSVC (Windows, but no thread support)
+
+Components not fully operational:
 
 - Array.h
 - Thread.h

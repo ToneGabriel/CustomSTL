@@ -129,6 +129,18 @@ struct RemoveExtent<Ty[]> { using Type = Ty; };
 template<class Ty>
 using RemoveExtent_t = typename RemoveExtent<Ty>::Type;
 
+template<class Ty>
+struct RemoveAllExtents { using Type = Ty; };
+
+template<class Ty, size_t Ix>
+struct RemoveAllExtents<Ty[Ix]> { using Type = typename RemoveAllExtents<Ty>::Type; };
+
+template<class Ty>
+struct RemoveAllExtents<Ty[]> { using Type = typename RemoveAllExtents<Ty>::Type; };
+
+template<class Ty>
+using RemoveAllExtents_t = typename RemoveAllExtents<Ty>::Type;
+
 // is array
 template<class>                                 // determine whether type argument is an array
 constexpr bool IsArray_v = false;
@@ -141,6 +153,24 @@ constexpr bool IsArray_v<Ty[]> = true;
 
 template<class Ty>
 struct IsArray : BoolConstant<IsArray_v<Ty>> {};
+
+template<class>
+constexpr bool IsBoundedArray_v = false;
+
+template<class Ty, size_t Nx>
+constexpr bool IsBoundedArray_v<Ty[Nx]> = true;
+
+template<class Ty>
+struct IsBoundedArray : BoolConstant<IsBoundedArray_v<Ty>> {};
+
+template<class>
+constexpr bool IsUnboundedArray_v = false;
+
+template<class Ty>
+constexpr bool IsUnboundedArray_v<Ty[]> = true;
+
+template<class Ty>
+struct IsUnboundedArray : BoolConstant<IsUnboundedArray_v<Ty>> {};
 
 // is lvalue reference
 template<class>                                 // determine whether type argument is an lvalue reference
@@ -193,6 +223,27 @@ constexpr bool IsPointer_v<Ty* const volatile> = true;
 
 template<class Ty>
 struct IsPointer : BoolConstant<IsPointer_v<Ty>> {};
+
+// is enum
+template<class Ty>
+struct IsEnum : BoolConstant<__is_enum(Ty)> {};
+
+template<class Ty>
+constexpr bool IsEnum_v = IsEnum<Ty>::Value;
+
+// is union
+template<class Ty>
+struct IsUnion : BoolConstant<__is_union(Ty)> {};
+
+template <class Ty>
+constexpr bool IsUnion_v = IsUnion<Ty>::Value;
+
+// is class
+template<class Ty>
+struct IsClass: BoolConstant<__is_class(Ty)> {};
+
+template <class Ty>
+constexpr bool IsClass_v = IsClass<Ty>::Value;
 
 // is convertible
 #if defined _MSC_VER
@@ -303,6 +354,55 @@ constexpr bool IsMemberFunctionPointer_v = _IsMemberFunctionPointer<RemoveCV_t<T
 template<class Ty>
 struct IsMemberFunctionPointer : BoolConstant<IsMemberFunctionPointer_v<Ty>> {};
 
+// is member pointer
+template<class Ty>
+constexpr bool IsMemberPointer_v = IsMemberObjectPointer_v<Ty> || IsMemberFunctionPointer_v<Ty>;
+
+template<class Ty>
+struct IsMemberPointer : BoolConstant<IsMemberPointer_v<Ty>> {};
+
+// is null pointer
+template<class Ty>
+constexpr bool IsNullPointer_v = IsSame_v<RemoveCV_t<Ty>, std::nullptr_t>;
+
+template<class Ty>
+struct IsNullPointer : BoolConstant<IsNullPointer_v<Ty>> {};
+
+// is scalar
+template<class Ty>
+constexpr bool IsScalar_v = IsArithmetic_v<Ty> || IsEnum_v<Ty> || IsPointer_v<Ty> || IsMemberPointer_v<Ty> || IsNullPointer_v<Ty>;
+
+template<class Ty>
+struct IsScalar : BoolConstant<IsScalar_v<Ty>> {};
+
+// is empty
+template<class Ty>
+struct IsEmpty : BoolConstant<__is_empty(Ty)> {};
+
+template<class Ty>
+constexpr bool IsEmpty_v = IsEmpty<Ty>::Value;
+
+// is polymorphic
+template<class Ty>
+struct IsPolymorphic : BoolConstant<__is_polymorphic(Ty)> {};
+
+template<class Ty>
+constexpr bool IsPolymorphic_v = IsPolymorphic<Ty>::Value;
+
+// is abstract
+template<class Ty>
+struct IsAbstract : BoolConstant<__is_abstract(Ty)> {};
+
+template<class Ty>
+constexpr bool IsAbstract_v = IsAbstract<Ty>::Value;
+
+// is final
+template<class Ty>
+struct IsFinal : BoolConstant<__is_final(Ty)> {};
+
+template<class Ty>
+constexpr bool IsFinal_v = IsFinal<Ty>::Value;
+
 // is constructible
 template<class Ty, class... Args>
 struct IsConstructible : BoolConstant<__is_constructible(Ty, Args...)> {};
@@ -333,7 +433,7 @@ template<class Ty, class... Args>
 struct IsNothrowConstructible : BoolConstant<__is_nothrow_constructible(Ty, Args...)> {};
 
 template<class Ty, class... Args>
-constexpr bool IsNothrowConstructible_v = IsNothrowConstructible<Ty, Args>::Value;
+constexpr bool IsNothrowConstructible_v = IsNothrowConstructible<Ty, Args...>::Value;
 
 template<class Ty>
 struct IsNothrowDefaultConstructible : BoolConstant<__is_nothrow_constructible(Ty)> {};
@@ -392,18 +492,86 @@ template<class Ty>
 constexpr bool IsNothrowMoveAssignable_v = IsNothrowMoveAssignable<Ty>::Value;
 
 // is destructible
+#if defined _MSC_VER
 template<class Ty>
 struct IsDestructible : BoolConstant<__is_destructible(Ty)> {};
 
 template<class Ty>
 constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
+#elif defined __GNUG__
+template<class Ty>
+struct _IsDestructibleTest
+{
+    template<class _Ty, class = decltype(std::declval<_Ty&>().~_Ty())>
+    static TrueType test_destructible(int);
+
+    template<class>
+    static FalseType test_destructible(...);
+
+    using Type = decltype(test_destructible<Ty>(0));
+};
+
+template<class Ty,
+bool = (IsVoid_v<Ty> || IsUnboundedArray_v<Ty> || IsFunction_v<Ty>),
+bool = (IsReference_v<Ty> || IsScalar_v<Ty>)>
+struct _IsDestructible;
+
+template<class Ty>
+struct _IsDestructible<Ty, false, false> : _IsDestructibleTest<RemoveAllExtents_t<Ty>>::Type {};
+
+template<class Ty>
+struct _IsDestructible<Ty, true, false> : FalseType {};
+
+template<class Ty>
+struct _IsDestructible<Ty, false, true> : TrueType {};
+
+template<class Ty>
+struct IsDestructible : _IsDestructible<Ty>::Type {};
+
+template<class Ty>
+constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
+#endif
 
 // is nothrow destructible
+#if defined _MSC_VER
 template<class Ty>
 struct IsNothrowDestructible : BoolConstant<__is_nothrow_destructible(Ty)> {};
 
 template<class Ty>
 constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
+#elif defined __GNUG__
+template<class Ty>
+struct _IsNothrowDestructibleTest
+{
+    template<typename _Ty>
+    static BoolConstant<noexcept(std::declval<_Ty&>().~_Ty())> test_nothrow_destructible(int);
+
+    template<class>
+    static FalseType test_nothrow_destructible(...);
+
+    using Type = decltype(test_nothrow_destructible<Ty>(0));
+};
+
+template<class Ty,
+bool = (IsVoid_v<Ty> || IsUnboundedArray_v<Ty> || IsFunction_v<Ty>),
+bool = (IsReference_v<Ty> || IsScalar_v<Ty>)>
+struct _IsNothrowDestructible;
+
+template<class Ty>
+struct _IsNothrowDestructible<Ty, false, false> : _IsNothrowDestructibleTest<RemoveAllExtents_t<Ty>>::Type {};
+
+template<class Ty>
+struct _IsNothrowDestructible<Ty, true, false> : FalseType {};
+
+template<class Ty>
+struct _IsNothrowDestructible<Ty, false, true> : TrueType {};
+
+template<class Ty>
+struct IsNothrowDestructible : _IsNothrowDestructible<Ty>::Type {};
+
+template<class Ty>
+constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
+#endif
 
 // is base of
 template<class Base, class Derived>
@@ -419,8 +587,39 @@ constexpr bool IsSpecialization_v = false; // true if and only if Type is a spec
 template<template<class...> class Template, class... Types>
 constexpr bool IsSpecialization_v<Template<Types...>, Template> = true;
 
-template <class Type, template<class...> class Template>
+template<class Type, template<class...> class Template>
 struct IsSpecialization : BoolConstant<IsSpecialization_v<Type, Template>> {};
+
+// is signed/unsigned
+template<class Ty, bool = IsIntegral_v<Ty>>
+struct _SignChoice
+{
+    using NoCV_t = RemoveCV_t<Ty>;
+
+    static constexpr bool Signed    = static_cast<NoCV_t>(-1) < static_cast<NoCV_t>(0);
+    static constexpr bool Unsigned  = !Signed;
+};
+
+template<class Ty>
+struct _SignChoice<Ty, false>
+{
+    // floating-point Ty is signed
+    // non-arithmetic Ty is neither signed nor unsigned
+    static constexpr bool Signed    = IsFloatingPoint_v<Ty>;
+    static constexpr bool Unsigned  = false;
+};
+
+template<class Ty>
+struct IsSigned : BoolConstant<_SignChoice<Ty>::Signed> {};
+
+template<class Ty>
+constexpr bool IsSigned_v = IsSigned<Ty>::Value;
+
+template<class Ty>
+struct IsUnsigned : BoolConstant<_SignChoice<Ty>::Unsigned> {};
+
+template<class Ty>
+constexpr bool IsUnsigned_v = IsUnsigned<Ty>::Value;
 
 // select
 template<bool>
