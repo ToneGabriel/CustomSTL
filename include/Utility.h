@@ -277,4 +277,14 @@ ReferenceWrapper<const Ty> cref(ReferenceWrapper<Ty> val) noexcept {
     return val;
 }
 
+// decay, then unwrap a reference_wrapper
+template<class Ty>
+struct UnRefWrap { using Type = Ty; };
+
+template<class Ty>
+struct UnRefWrap<ReferenceWrapper<Ty>> { using Type = Ty&; };
+
+template<class Ty>
+using UnRefWrap_t = typename UnRefWrap<Decay_t<Ty>>::Type;
+
 CUSTOM_END

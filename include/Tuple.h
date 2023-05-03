@@ -34,6 +34,14 @@ public:
 	~Tuple() 			= default;
 };
 
+// tuple size TODO: implement
+template<class Tuple>
+struct TupleSize;
+
+template<class Tuple>
+constexpr size_t TupleSize_v = TupleSize<Tuple>::Value;
+
+// tuple element
 template<size_t Index, class Tuple>
 struct TupleElement;                                        // TupleElement prototype for accessing Tuple members
 
@@ -48,24 +56,69 @@ struct TupleElement <0, Tuple<This, Rest...>>				// Default TupleElement impleme
 	using TupleType = Tuple<This, Rest...>;
 };
 
+template<size_t Index, class Tuple>
+using TupleElement_t = typename TupleElement<Index, Tuple>::Type;
+
+template<size_t Index, class Tuple>
+using TupleElement_tt = typename TupleElement<Index, Tuple>::TupleType;
+
+// get
 template<int Index, class... Types>
-typename TupleElement<Index, Tuple<Types...>>::Type& get(Tuple<Types...>& tuple) {      // Function to get Tuple member from reference
-	using TupleType = typename TupleElement<Index, Tuple<Types...>>::TupleType;
+TupleElement_t<Index, Tuple<Types...>>& get(Tuple<Types...>& tuple) {					// Function to get Tuple member from reference
+	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
 	return static_cast<TupleType&>(tuple).First;
 }
 
 template<int Index, class... Types>
-typename TupleElement<Index, Tuple<Types...>>::Type&& get(Tuple<Types...>&& tuple) {    // Function to get Tuple member from rval
-	using Type		= typename TupleElement<Index, Tuple<Types...>>::Type;
-	using TupleType = typename TupleElement<Index, Tuple<Types...>>::TupleType;
+const TupleElement_t<Index, Tuple<Types...>>& get(const Tuple<Types...>& tuple) {		// Same but const
+	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
+
+	return static_cast<const TupleType&>(tuple).First;
+}
+
+template<int Index, class... Types>
+TupleElement_t<Index, Tuple<Types...>>&& get(Tuple<Types...>&& tuple) {					// Function to get Tuple member from rval
+	using Type		= TupleElement_t<Index, Tuple<Types...>>;
+	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
 	return static_cast<Type&&>(static_cast<TupleType&>(tuple).First);
 }
 
+template<int Index, class... Types>
+const TupleElement_t<Index, Tuple<Types...>>&& get(const Tuple<Types...>&& tuple) {		// Same but const
+	using Type		= TupleElement_t<Index, Tuple<Types...>>;
+	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
+
+	return static_cast<const Type&&>(static_cast<const TupleType&>(tuple).First);
+}
+
+// forward as tuple
 template<class... Types>
-Tuple<Types&&...> forward_as_tuple(Types&&... args) {	    // Forward arguments in a tuple
+Tuple<Types&&...> forward_as_tuple(Types&&... args) {									// Forward arguments in a tuple
 	return Tuple<Types&&...>(custom::forward<Types>(args)...);
+}
+
+// apply
+template<class Callable, class Tuple, size_t... Indices>
+decltype(auto) _apply_impl(Callable&& func, Tuple&& tuple, IndexSequence<Indices...>) noexcept {
+    return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...);
+}
+
+template<class Callable, class Tuple>
+decltype(auto) apply(Callable&& func, Tuple&& tuple) noexcept {							// Invoke Callable obj with args as Tuple
+    return _apply_impl(custom::forward<Callable>(func), custom::forward<Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<Tuple>>>{});
+}
+
+// make tuple / tie
+template<class... Args>
+Tuple<UnRefWrap_t<Args>...> make_tuple(Args&&... args) {
+	return Tuple<UnRefWrap_t<Args>...>(custom::forward<Args>(args)...);
+}
+
+template<class... Args>
+Tuple<Args&...> tie(Args&... args) noexcept {
+	return Tuple<Args&...>(args...);
 }
 
 CUSTOM_END
