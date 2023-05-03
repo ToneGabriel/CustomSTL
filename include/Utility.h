@@ -277,7 +277,7 @@ ReferenceWrapper<const Ty> cref(ReferenceWrapper<Ty> val) noexcept {
     return val;
 }
 
-// decay, then unwrap a reference_wrapper
+// decay, then unwrap a ReferenceWrapper
 template<class Ty>
 struct UnRefWrap { using Type = Ty; };
 

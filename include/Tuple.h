@@ -4,7 +4,7 @@
 CUSTOM_BEGIN
 
 template <class... Types>
-class Tuple;				// Tuple prototype
+class Tuple;											// Tuple prototype
 
 template<class This, class... Rest>
 class Tuple<This, Rest...> : public Tuple<Rest...> {	// Recursive Tuple implementation
@@ -25,7 +25,7 @@ public:
 };
 
 template<>
-class Tuple<> {				// Default Tuple implementation
+class Tuple<> {											// Default Tuple implementation
 public:
 
 	Tuple() 			= default;
@@ -34,12 +34,33 @@ public:
 	~Tuple() 			= default;
 };
 
-// tuple size TODO: implement
+// tuple size
 template<class Tuple>
 struct TupleSize;
 
+template<class... Elements>
+struct TupleSize<Tuple<Elements...>> : IntegralConstant<size_t, sizeof...(Elements)> {};
+
 template<class Tuple>
 constexpr size_t TupleSize_v = TupleSize<Tuple>::Value;
+
+template<class Tuple,
+class NoCV_t 	= RemoveCV_t<Tuple>,
+class 			= EnableIf_t<IsSame_v<Tuple, NoCV_t>>,
+size_t 			= TupleSize_v<Tuple>>
+using _EnableTupleSize = Tuple;
+
+template<typename Tuple>
+struct TupleSize<const _EnableTupleSize<Tuple>>
+: public TupleSize<Tuple> {};
+
+template<typename Tuple>
+struct TupleSize<volatile _EnableTupleSize<Tuple>>
+: public TupleSize<Tuple> {};
+
+template<typename Tuple>
+struct TupleSize<const volatile _EnableTupleSize<Tuple>>
+: public TupleSize<Tuple> {};
 
 // tuple element
 template<size_t Index, class Tuple>
@@ -112,13 +133,18 @@ decltype(auto) apply(Callable&& func, Tuple&& tuple) noexcept {							// Invoke 
 
 // make tuple / tie
 template<class... Args>
-Tuple<UnRefWrap_t<Args>...> make_tuple(Args&&... args) {
+Tuple<UnRefWrap_t<Args>...> make_tuple(Args&&... args) {								// Create Tuple with args
 	return Tuple<UnRefWrap_t<Args>...>(custom::forward<Args>(args)...);
 }
 
 template<class... Args>
-Tuple<Args&...> tie(Args&... args) noexcept {
+Tuple<Args&...> tie(Args&... args) noexcept {											// Create Tuple with references of args
 	return Tuple<Args&...>(args...);
 }
+
+// tuple cat
+// TODO: implement
+template<class... Tuples>
+void tuple_cat(Tuples&&... tuples);
 
 CUSTOM_END

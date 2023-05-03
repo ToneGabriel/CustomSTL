@@ -2,10 +2,10 @@
 
 Actual code is found in "include" folder.
 
-The code works if using:
+Code build requirements:
 
-- MinGW (Linux or Windows)
-- MSVC (Windows, but no thread support)
+- c++20 version
+- MinGW (Linux or Windows) OR MSVC (Windows, but no thread support)
 
 Components not fully operational:
 

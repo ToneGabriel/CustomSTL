@@ -334,7 +334,7 @@ public:
     template<class Rep, class Period>
     CVStatus wait_for(UniqueLock<Mutex>& lock, const std::chrono::duration<Rep, Period>& relativeTime) {
         // TODO: implement
-        return 0;
+        return CVStatus::NoTimeout;
     }
 
     template<class Rep, class Period, class Predicate>
@@ -346,7 +346,7 @@ public:
     template<class Clock, class Duration>
     CVStatus wait_until(UniqueLock<Mutex>& lock, const std::chrono::time_point<Clock, Duration>& absoluteTime) {
         // TODO: implement
-        return 0;
+        return CVStatus::NoTimeout;
     }
 
     template<class Clock, class Duration, class Predicate>
