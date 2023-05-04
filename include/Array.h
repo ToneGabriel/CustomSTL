@@ -198,21 +198,6 @@ private:
 	ValueType _array[Size];											// Actual container array
 
 public:
-	// Constructors
-
-	Array() = default;												// Default Constructor
-
-	//Array(const Array& other) {										// Copy Constructor
-	//	_copy(other);
-	//}
-
-	//Array(Array&& other) noexcept {									// Move Constructor
-	//	_move(custom::move(other));
-	//}
-
-	~Array() = default;												// Destructor
-
-public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {		// Acces object at index (read only)
@@ -349,5 +334,9 @@ private:
 			_array[i] = custom::move(other._array[i]);
 	}
 }; // END Array Template
+
+
+// template<class First, class... Rest>
+// Array(First, Rest...) -> Array<EnableIf_t<(IsSame_v<First, Rest> && ...), First>, 1 + sizeof...(Rest)>;
 
 CUSTOM_END

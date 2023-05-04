@@ -4,3 +4,4 @@
 4. Learn and implement smart pointers
 5. Complete TypeTraits
 6. Complete Pair and Tuple functions
+7. Refactor Function class

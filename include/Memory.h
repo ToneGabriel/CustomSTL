@@ -136,6 +136,18 @@ public:
 
     UniquePtr& operator=(const UniquePtr&)  = delete;
 
+    AddLvalueReference_t<Type> operator*() const noexcept {
+       return *_data;
+    }
+
+    Pointer operator->() const noexcept {
+        return _data;
+    }
+
+    explicit operator bool() const noexcept {
+        return _data != nullptr;
+    }
+
 public:
     // Main functions
 
@@ -147,28 +159,16 @@ public:
         return _deleter;
     }
 
-    AddLvalueReference_t<Type> operator*() const noexcept {
-       return *_data;
-    }
-
-    Pointer operator->() const noexcept {
-        return _data;
-    }
-
     Pointer get() const noexcept {
         return _data;
     }
 
-    explicit operator bool() const noexcept {
-        return _data != nullptr;
-    }
-
     Pointer release() noexcept {
-        return std::exchange(_data, nullptr);
+        return custom::exchange(_data, nullptr);
     }
 
     void reset(Pointer ptr = nullptr) noexcept {
-        Pointer old = std::exchange(_data, ptr);
+        Pointer old = custom::exchange(_data, ptr);
 
         if (old)
             _deleter(old);
@@ -214,12 +214,26 @@ public:
         : _data(ptr) { /*Empty*/ }
 
     template<class Type2, class Deleter2 = Deleter, 
-    EnableIf_t<IsConstructible_v<Deleter2, const Deleter2&>, bool> = true,
+    EnableIf_t<IsCopyConstructible_v<Deleter2>, bool> = true,
     _EnableConstructorReset<Type2> = true>
     UniquePtr(Type2 ptr, const Deleter& del)
         : _data(ptr), _deleter(del) { /*Empty*/ }
 
-    // TODO: continue...
+    template<class Type2, class Deleter2 = Deleter,
+    EnableIf_t<Conjunction_v<Negation<IsReference<Deleter2>>, IsMoveConstructible<Deleter2>>, bool> = true,
+    _EnableConstructorReset<Type2> = true>
+    UniquePtr(Type2 ptr, Deleter&& del) noexcept
+        : _data(ptr), _deleter(custom::move(del)) { /*Empty*/ }
+
+    template<class Type2, class Deleter2 = Deleter,
+    EnableIf_t<Conjunction_v<IsReference<Deleter2>, IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
+    UniquePtr(Type2, RemoveReference_t<Deleter>&&) = delete;
+
+    template<class Deleter2 = Deleter, EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
+    UniquePtr(UniquePtr&& other) noexcept
+        : _data(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
+
+    UniquePtr(const UniquePtr&) = delete;
 
     ~UniquePtr() {
         if (_data != nullptr)
@@ -234,22 +248,63 @@ public:
         return *this;
     }
 
-    // TODO: continue...
+    template<class Type2, class Deleter2, _EnableConversion<Type2, Deleter2, IsAssignable<Deleter&, Deleter2>> = true>
+    UniquePtr& operator=(UniquePtr<Type2, Deleter2>&& other) noexcept {
+        reset(other.release());
+        _deleter = custom::forward<Deleter2>(other._deleter);
+
+        return *this;
+    }
+
+    template<class Deleter2 = Deleter, EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
+    UniquePtr& operator=(UniquePtr&& other) noexcept {
+        if (_data != other._data) {
+            reset(other.release());
+            _deleter = custom::move(other._deleter);
+        }
+
+        return *this;
+    }
+
+    UniquePtr& operator=(const UniquePtr&) = delete;
+
+    Type& operator[](size_t index) const noexcept {
+        return _data[index];
+    }
+
+    explicit operator bool() const noexcept {
+        return _data != nullptr;
+    }
 
 public:
     // Main functions
 
-    // TODO: continue...
+    Deleter& get_deleter() noexcept {
+        return _deleter;
+    }
+
+    const Deleter& get_deleter() const noexcept {
+        return _deleter;
+    }
+
+    Pointer get() const noexcept {
+        return _data;
+    }
+
+    Pointer release() noexcept {
+        return custom::exchange(_data, nullptr);
+    }
 
     template <class Type2, _EnableConstructorReset<Type2, FalseType> = true>
     void reset(Type2 ptr) noexcept {
-        Pointer old = std::exchange(_data, ptr);
+        Pointer old = custom::exchange(_data, ptr);
 
         if (old)
             _deleter(old);
     }
 
 }; // END UniquePtr[]
+
 
 // build UniquePtr
 template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
