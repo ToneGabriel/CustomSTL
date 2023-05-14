@@ -22,6 +22,8 @@ public:
 public:
     // Constructors
 
+    // TODO: fix constructors
+
     Pair()
         : First(), Second() { /*Empty*/ }
     
@@ -72,8 +74,8 @@ public:
 }; // END Pair Template
 
 template<class Type1, class Type2>  // TODO: check
-Pair<Type1, Type2> make_pair(Type1&& first, Type2&& second) {
-    return Pair<Type1, Type2>(custom::forward<Type1>(first), custom::forward<Type2>(second));
+Pair<UnRefWrap_t<Type1>, UnRefWrap_t<Type2>> make_pair(Type1&& first, Type2&& second) {
+    return Pair<UnRefWrap_t<Type1>, UnRefWrap_t<Type2>>(custom::forward<Type1>(first), custom::forward<Type2>(second));
 }
 
 CUSTOM_END
