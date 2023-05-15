@@ -3,40 +3,15 @@
 
 CUSTOM_BEGIN
 
+// tag type for construction (from one arg per element)
+struct _ExactArgs_t { explicit _ExactArgs_t() = default; };
+
+// tag type for construction (from unpacking a tuple/pair)
+struct _UnpackTuple_t { explicit _UnpackTuple_t() = default; };
+
+// tuple prototype
 template <class... Types>
-class Tuple;											// Tuple prototype
-
-template<class This, class... Rest>
-class Tuple<This, Rest...> : public Tuple<Rest...>		// Recursive Tuple implementation
-{
-public:
-	This First;
-
-public:
-
-	// TODO: fix constructors
-
-	Tuple(const This& first, Rest&&... rest)
-		:Tuple<Rest...>(custom::forward<Rest>(rest)...), First(first) { /*Empty*/ }
-
-	Tuple(This&& first, Rest&&... rest)
-		:Tuple<Rest...>(custom::forward<Rest>(rest)...), First(custom::move(first)) { /*Empty*/ }
-
-	Tuple(const Tuple&) = default;
-	Tuple(Tuple&&)		= default;
-    ~Tuple()            = default;
-};
-
-template<>
-class Tuple<>											// Default Tuple implementation
-{
-public:
-
-	Tuple() 			= default;
-	Tuple(const Tuple&) = default;
-	Tuple(Tuple&&)		= default;
-	~Tuple() 			= default;
-};
+class Tuple;
 
 // tuple size
 template<class Tuple>
@@ -48,10 +23,7 @@ struct TupleSize<Tuple<Elements...>> : IntegralConstant<size_t, sizeof...(Elemen
 template<class Tuple>
 constexpr size_t TupleSize_v = TupleSize<Tuple>::Value;
 
-template<class Tuple,
-class NoCV_t 	= RemoveCV_t<Tuple>,
-class 			= EnableIf_t<IsSame_v<Tuple, NoCV_t>>,
-size_t 			= TupleSize_v<Tuple>>
+template<class Tuple, class NoCV_t = RemoveCV_t<Tuple>, class = EnableIf_t<IsSame_v<Tuple, NoCV_t>>, size_t = TupleSize_v<Tuple>>
 using _EnableTupleSize = Tuple;
 
 template<typename Tuple>
@@ -68,10 +40,10 @@ template<size_t Index, class Tuple>
 struct TupleElement;                                        // TupleElement prototype for accessing Tuple members
 
 template<size_t Index, class This, class... Rest>			// Recursive TupleElement implementation
-struct TupleElement<Index, Tuple<This, Rest...>>  : public TupleElement<Index - 1, Tuple<Rest...>> {};
+struct TupleElement<Index, Tuple<This, Rest...>> : public TupleElement<Index - 1, Tuple<Rest...>> {};
 
 template<class This, class... Rest>
-struct TupleElement <0, Tuple<This, Rest...>>				// Default TupleElement implementation
+struct TupleElement<0, Tuple<This, Rest...>>				// Default TupleElement implementation
 {
 	using Type = This;
 	using TupleType = Tuple<This, Rest...>;
@@ -82,6 +54,81 @@ using TupleElement_t = typename TupleElement<Index, Tuple>::Type;
 
 template<size_t Index, class Tuple>
 using TupleElement_tt = typename TupleElement<Index, Tuple>::TupleType;
+
+
+template<>
+class Tuple<>												// Default Tuple implementation
+{
+public:
+	// Constructors
+
+	template<class Tag, EnableIf_t<IsSame_v<Tag, _ExactArgs_t>, bool> = true>
+	Tuple(Tag) { /*Empty*/ }
+
+	Tuple()				= default;
+	Tuple(const Tuple&) = default;
+	Tuple(Tuple&&)		= default;
+	~Tuple()			= default;
+
+public:
+	// Operators
+
+	Tuple& operator=(const Tuple&) = default;
+};
+
+
+template<class This, class... Rest>
+class Tuple<This, Rest...> : public Tuple<Rest...>			// Recursive Tuple implementation
+{
+public:
+	using ThisType	= This;
+	using Base		= Tuple<Rest...>;
+
+	This First;
+
+private:
+	// Construct Helpers
+
+	template<class Tag, class _Tuple, size_t... Indices, EnableIf_t<IsSame_v<Tag, _UnpackTuple_t>, bool> = true>
+	Tuple(Tag, _Tuple&& other, IndexSequence<Indices...>);
+
+public:
+	// Constructors
+
+	template<class Tag, class _This, class... _Rest, EnableIf_t<IsSame_v<Tag, _ExactArgs_t>, bool> = true>
+	Tuple(Tag, _This&& first, _Rest&&...rest)
+		: Base(_ExactArgs_t{}, custom::forward<_Rest>(rest)...),
+		  First(custom::forward<_This>(first)) { /*Empty*/ }
+
+	template<class Tag, class _Tuple, EnableIf_t<IsSame_v<Tag, _UnpackTuple_t>, bool> = true>
+	Tuple(Tag, _Tuple&& other)
+		: Tuple(_UnpackTuple_t{}, custom::forward<_Tuple>(other),
+		  MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{}) { /*Empty*/ }
+
+	template<class _This = This,
+	EnableIf_t<Conjunction_v<IsDefaultConstructible<_This>, IsDefaultConstructible<Rest>...>, bool> = true>
+	Tuple()
+		: Base(), First() { /*Empty*/ }
+
+	template<class _This = This,
+	EnableIf_t<Conjunction_v<IsCopyConstructible<_This>, IsCopyConstructible<Rest>...>, bool> = true>
+	Tuple(const _This& first, const Rest&... rest)
+		: Tuple(_ExactArgs_t{}, first, rest...) { /*Empty*/ }
+
+	template<class _This = This,
+	EnableIf_t<Conjunction_v<IsMoveConstructible<_This>, IsMoveConstructible<Rest>...>, bool> = true>
+	Tuple(_This&& first, Rest&&... rest)
+		: Tuple(_ExactArgs_t{}, custom::move(first), custom::move(rest)...) { /*Empty*/ }
+
+	Tuple(const Tuple&) = default;
+	Tuple(Tuple&&)		= default;
+    ~Tuple()            = default;
+
+public:
+	// Operators
+
+	// TODO: complete
+};
 
 // get
 template<int Index, class... Types>
