@@ -4,10 +4,10 @@
 CUSTOM_BEGIN
 
 // tag type for construction (from one arg per element)
-struct _ExactArgs_t { explicit _ExactArgs_t() = default; };
+struct TupleArgs_t { explicit TupleArgs_t() = default; };
 
 // tag type for construction (from unpacking a tuple/pair)
-struct _UnpackTuple_t { explicit _UnpackTuple_t() = default; };
+struct TupleUnpack_t { explicit TupleUnpack_t() = default; };
 
 // tuple prototype
 template <class... Types>
@@ -62,7 +62,7 @@ class Tuple<>												// Default Tuple implementation
 public:
 	// Constructors
 
-	template<class Tag, EnableIf_t<IsSame_v<Tag, _ExactArgs_t>, bool> = true>
+	template<class Tag, EnableIf_t<IsSame_v<Tag, TupleArgs_t>, bool> = true>
 	Tuple(Tag) { /*Empty*/ }
 
 	Tuple()				= default;
@@ -86,24 +86,39 @@ public:
 
 	This First;
 
-private:
-	// Construct Helpers
-
-	template<class Tag, class _Tuple, size_t... Indices, EnableIf_t<IsSame_v<Tag, _UnpackTuple_t>, bool> = true>
-	Tuple(Tag, _Tuple&& other, IndexSequence<Indices...>);
-
 public:
 	// Constructors
 
-	template<class Tag, class _This, class... _Rest, EnableIf_t<IsSame_v<Tag, _ExactArgs_t>, bool> = true>
+	template<class Tag, class _This, class... _Rest, EnableIf_t<IsSame_v<Tag, TupleArgs_t>, bool> = true>
 	Tuple(Tag, _This&& first, _Rest&&...rest)
-		: Base(_ExactArgs_t{}, custom::forward<_Rest>(rest)...),
+		: Base(TupleArgs_t{}, custom::forward<_Rest>(rest)...),
 		  First(custom::forward<_This>(first)) { /*Empty*/ }
 
-	template<class Tag, class _Tuple, EnableIf_t<IsSame_v<Tag, _UnpackTuple_t>, bool> = true>
+	// Helper for below constructor
+	template<class Tag, class _Tuple, size_t... Indices, EnableIf_t<IsSame_v<Tag, TupleUnpack_t>, bool> = true>
+	Tuple(Tag, _Tuple&& other, IndexSequence<Indices...>);
+
+	template<class Tag, class _Tuple, EnableIf_t<IsSame_v<Tag, TupleUnpack_t>, bool> = true>
 	Tuple(Tag, _Tuple&& other)
-		: Tuple(_UnpackTuple_t{}, custom::forward<_Tuple>(other),
+		: Tuple(TupleUnpack_t{}, custom::forward<_Tuple>(other),
 		  MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{}) { /*Empty*/ }
+
+	// TODO: check those
+
+	//template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
+	//	_STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
+	//	int> = 0>
+	//constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
+	//	tuple(const tuple<_Other...>& _Right) noexcept(
+	//		_Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
+	//	: tuple(_Unpack_tuple_t{}, _Right) {}
+
+	//template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
+	//	_STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
+	//	int> = 0>
+	//constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
+	//	tuple(tuple<_Other...>&& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
+	//	: tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
 	template<class _This = This,
 	EnableIf_t<Conjunction_v<IsDefaultConstructible<_This>, IsDefaultConstructible<Rest>...>, bool> = true>
@@ -113,12 +128,12 @@ public:
 	template<class _This = This,
 	EnableIf_t<Conjunction_v<IsCopyConstructible<_This>, IsCopyConstructible<Rest>...>, bool> = true>
 	Tuple(const _This& first, const Rest&... rest)
-		: Tuple(_ExactArgs_t{}, first, rest...) { /*Empty*/ }
+		: Tuple(TupleArgs_t{}, first, rest...) { /*Empty*/ }
 
 	template<class _This = This,
 	EnableIf_t<Conjunction_v<IsMoveConstructible<_This>, IsMoveConstructible<Rest>...>, bool> = true>
 	Tuple(_This&& first, Rest&&... rest)
-		: Tuple(_ExactArgs_t{}, custom::move(first), custom::move(rest)...) { /*Empty*/ }
+		: Tuple(TupleArgs_t{}, custom::move(first), custom::move(rest)...) { /*Empty*/ }
 
 	Tuple(const Tuple&) = default;
 	Tuple(Tuple&&)		= default;
@@ -226,7 +241,7 @@ RetType _tuple_cat_impl(IndexSequence<Kx...>, IndexSequence<Ix...>, Tuple tuple)
 	return RetType(custom::get<Kx>(custom::get<Ix>(custom::move(tuple)))...);
 }
 
-template<class... Tuples>
+template<class... Tuples>		// TODO: check
 typename TupleCat<Tuples...>::RetType tuple_cat(Tuples&&... tuples) {					// concatenate tuples
 	using Cat		= TupleCat<Tuples...>;
 	using RetType	= typename Cat::RetType;

@@ -229,7 +229,7 @@ public:
 protected:
 	// Others
 
-	template<class _KeyType, class... Args>
+	template<class _KeyType, class... Args>							// _KeyType used for "const KeyType&" type
 	Iterator _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
 		Iterator it = find(key);		// Check key and decide to construct or not
 
