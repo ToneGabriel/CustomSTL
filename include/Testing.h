@@ -127,15 +127,21 @@ void piecewise_pair_test() {
 
 void tuple_test() {
 	{
-		std::tuple<int, Test> tuple(3, Test(3));
-		std::cout << std::get<1>(tuple) << '\n';
+		std::tuple<int, Test> tuple1(3, Test(3));
+		std::tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		auto tuple3 = std::tuple_cat(std::move(tuple1), std::move(tuple2));
+		std::cout << std::get<4>(tuple3) << '\n';
+		std::cout << std::get<1>(tuple1) << '\n';
 	}
 
 	std::cout << "\n\n";
 
 	{
-		custom::Tuple<int, Test> Tuple(3, Test(3));
-		std::cout << custom::get<1>(Tuple) << '\n';
+		custom::Tuple<int, Test> tuple1(3, Test(3));
+		custom::Tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		auto tuple3 = custom::tuple_cat(custom::move(tuple1), custom::move(tuple2));
+		std::cout << custom::get<4>(tuple3) << '\n';
+		std::cout << custom::get<1>(tuple1) << '\n';
 	}
 }
 
