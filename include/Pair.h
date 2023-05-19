@@ -1,7 +1,6 @@
 #pragma once
 #include "Tuple.h"
 #include "Utility.h"
-#include <iostream>
 
 
 CUSTOM_BEGIN
@@ -21,7 +20,7 @@ public:
     Type1 First;
     Type2 Second;
 
-protected:
+public:
     // Constructor Helpers
 
     // (H1) Helper for (4)
@@ -50,7 +49,9 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsConstructible<Type1, const Other1&>,
-                                IsConstructible<Type2, const Other2&>>, bool> = true>
+                                IsConstructible<Type2, const Other2&>,
+                                IsConvertible<const Other1&, Type1>,
+                                IsConvertible<const Other2&, Type2>>, bool> = true>
     Pair(const Pair<Other1, Other2>& other)
         : First(other.First), Second(other.Second) { /*Empty*/ }
 
@@ -58,7 +59,9 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsConstructible<Type1, Other1>,
-                                IsConstructible<Type2, Other2>>, bool> = true>
+                                IsConstructible<Type2, Other2>,
+                                IsConvertible<Other1, Type1>,
+                                IsConvertible<Other2, Type2>>, bool> = true>
     Pair(Pair<Other1, Other2>&& other)
         : First(custom::forward<Other1>(other.First)), Second(custom::forward<Other2>(other.Second)) { /*Empty*/ }
 
@@ -78,7 +81,9 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsAssignable<Type1&, const Other1&>,
-                                IsAssignable<Type2&, const Other2&>>, bool> = true>
+                                IsAssignable<Type2&, const Other2&>,
+                                IsConvertible<const Other1&, Type1>,
+                                IsConvertible<const Other2&, Type2>>, bool> = true>
     Pair& operator=(const Pair<Other1, Other2>& other) {
         First  = other.First;
         Second = other.Second;
@@ -89,7 +94,9 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsAssignable<Type1&, Other1>,
-                                IsAssignable<Type2&, Other2>>, bool> = true>
+                                IsAssignable<Type2&, Other2>,
+                                IsConvertible<Other1, Type1>,
+                                IsConvertible<Other2, Type2>>, bool> = true>
     Pair& operator=(Pair<Other1, Other2>&& other) {
         First  = custom::forward<Other1>(other.First);
         Second = custom::forward<Other2>(other.Second);
@@ -99,15 +106,12 @@ public:
     Pair& operator=(const Pair&)            = default;
     Pair& operator=(Pair&&)                 = default;
     Pair& operator=(const volatile Pair&)   = delete;
-
-    bool operator==(const Pair& other) {
-        return (First == other.First && Second == other.Second);
-    }
-
-    bool operator!=(const Pair& other) {
-        return !(*this == other);
-    }
 }; // END Pair Template
+
+template<class Type1, class Type2>
+constexpr bool operator==(const Pair<Type1, Type2>& left, const Pair<Type1, Type2>& right) {
+    return left.First == right.First && left.Second == right.Second;
+}
 
 template<class Type1, class Type2>
 Pair<UnRefWrap_t<Type1>, UnRefWrap_t<Type2>> make_pair(Type1&& first, Type2&& second) {

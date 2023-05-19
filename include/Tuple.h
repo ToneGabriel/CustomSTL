@@ -144,7 +144,7 @@ public:
 	Tuple& operator=(const Tuple&) 	= default;
 	Tuple& operator=(Tuple&&) 		= default;
 
-protected:
+public:
 	// Helpers
 
 	bool _equals(const Tuple&) const {
@@ -162,7 +162,7 @@ public:
 
 	ThisType First;											// Data stored to this iteration
 
-protected:
+public:
 	// Construction Helpers
 
 	// (H1) Helper for (1), (H2)
@@ -230,10 +230,11 @@ public:
 	// Operators
 
 	// Copy convertible operator
-    template<class... Other,
-	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<Other...>>>,
-                            	TupleAssignable<Tuple, const Other&...>>, bool> = true>
-    Tuple& operator=(const Tuple<Other...>& other) {
+    template<class... OtherTypes,
+	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<OtherTypes...>>>,
+                            	TupleAssignable<Tuple, const OtherTypes&...>,
+								TupleConvert<Tuple, const Tuple<OtherTypes...>&, OtherTypes...>>, bool> = true>
+    Tuple& operator=(const Tuple<OtherTypes...>& other) {
         First 			= other.First;
         _get_rest()   	= other._get_rest();
 
@@ -241,12 +242,13 @@ public:
     }
 
 	// Move convertible operator
-    template<class... Other,
-	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<Other...>>>,
-                              	TupleAssignable<Tuple, Other...>>, bool> = true>
-    Tuple& operator=(Tuple<Other...>&& other) {
-        First 			= custom::forward<typename Tuple<Other...>::ThisType>(other.First);
-        _get_rest()   	= custom::forward<typename Tuple<Other...>::Base>(other._get_rest());
+    template<class... OtherTypes,
+	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<OtherTypes...>>>,
+                              	TupleAssignable<Tuple, OtherTypes...>,
+								TupleConvert<Tuple, Tuple<OtherTypes...>, OtherTypes...>>, bool> = true>
+    Tuple& operator=(Tuple<OtherTypes...>&& other) {
+        First 			= custom::forward<typename Tuple<OtherTypes...>::ThisType>(other.First);
+        _get_rest()   	= custom::forward<typename Tuple<OtherTypes...>::Base>(other._get_rest());
 
         return *this;
     }
@@ -255,15 +257,7 @@ public:
 	Tuple& operator=(Tuple&&) 				= default;
 	Tuple& operator=(const volatile Tuple&) = delete;
 
-    bool operator==(const Tuple& other) {
-    	return _equals(other);
-	}
-
-	bool operator!=(const Tuple& other) {
-		return !(*this == other);
-	}
-
-protected:
+public:
 	// Helpers
 
     Base& _get_rest() noexcept { 							// get reference to rest of elements
@@ -274,11 +268,17 @@ protected:
         return *this;
     }
 
-	template<class... Other>
-    bool _equals(const Tuple<Other...>& other) const {
+	template<class... OtherTypes>
+    bool _equals(const Tuple<OtherTypes...>& other) const {
         return First == other.First && Base::_equals(other._get_rest());
     }
 };
+
+template<class... Types1, class... Types2>
+constexpr bool operator==(const Tuple<Types1...>& left, const Tuple<Types2...>& right) {
+    static_assert(sizeof...(Types1) == sizeof...(Types2), "cannot compare tuples of different sizes");
+    return left._equals(right);
+}
 
 template<class... Types>
 Tuple(Types...) -> Tuple<Types...>;
