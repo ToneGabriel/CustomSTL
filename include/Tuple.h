@@ -141,7 +141,15 @@ public:
 public:
 	// Operators
 
-	Tuple& operator=(const Tuple&) = default;
+	Tuple& operator=(const Tuple&) 	= default;
+	Tuple& operator=(Tuple&&) 		= default;
+
+protected:
+	// Helpers
+
+	bool _equals(const Tuple&) const {
+        return true;
+    }
 };
 
 
@@ -154,7 +162,7 @@ public:
 
 	ThisType First;											// Data stored to this iteration
 
-public:
+protected:
 	// Construction Helpers
 
 	// (H1) Helper for (1), (H2)
@@ -179,7 +187,7 @@ public:
 	template<class _This = This,
 	EnableIf_t<Conjunction_v<IsDefaultConstructible<_This>, IsDefaultConstructible<Rest>...>, bool> = true>
 	Tuple()
-		: Base(), First() { /*Empty*/ }
+		: Base(), First() { /*Empty*/ }		// Uses itself
 
 	// (1) Copy/Move obj constructor
 	template<class _This = This, class... _Rest,
@@ -221,7 +229,55 @@ public:
 public:
 	// Operators
 
-	// TODO: complete
+	// Copy convertible operator
+    template<class... Other,
+	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<Other...>>>,
+                            	TupleAssignable<Tuple, const Other&...>>, bool> = true>
+    Tuple& operator=(const Tuple<Other...>& other) {
+        First 			= other.First;
+        _get_rest()   	= other._get_rest();
+
+        return *this;
+    }
+
+	// Move convertible operator
+    template<class... Other,
+	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<Other...>>>,
+                              	TupleAssignable<Tuple, Other...>>, bool> = true>
+    Tuple& operator=(Tuple<Other...>&& other) {
+        First 			= custom::forward<typename Tuple<Other...>::ThisType>(other.First);
+        _get_rest()   	= custom::forward<typename Tuple<Other...>::Base>(other._get_rest());
+
+        return *this;
+    }
+
+	Tuple& operator=(const Tuple&) 			= default;
+	Tuple& operator=(Tuple&&) 				= default;
+	Tuple& operator=(const volatile Tuple&) = delete;
+
+    bool operator==(const Tuple& other) {
+    	return _equals(other);
+	}
+
+	bool operator!=(const Tuple& other) {
+		return !(*this == other);
+	}
+
+protected:
+	// Helpers
+
+    Base& _get_rest() noexcept { 							// get reference to rest of elements
+        return *this;
+    }
+
+    const Base& _get_rest() const noexcept { 				// get const reference to rest of elements
+        return *this;
+    }
+
+	template<class... Other>
+    bool _equals(const Tuple<Other...>& other) const {
+        return First == other.First && Base::_equals(other._get_rest());
+    }
 };
 
 template<class... Types>
@@ -304,7 +360,7 @@ Type _make_from_tuple_impl(_Tuple&& tuple, IndexSequence<Indices...>) {
 }
 
 template<class Type, class _Tuple>
-Type make_from_tuple(_Tuple&& tuple) {													// construct Type from the elements of tuple
+Type make_from_tuple(_Tuple&& tuple) {													// construct Type from the elements of _Tuple
 	return _make_from_tuple_impl<Type>(custom::forward<_Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{});
 }
 
