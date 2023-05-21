@@ -12,7 +12,9 @@ template<class Ty, class DeleterNoref>
 struct _GetDeleterPointerType<Ty, DeleterNoref, Void_t<typename DeleterNoref::Pointer>> { using Type = typename DeleterNoref::Pointer; };
 
 template<class Deleter>
-using _UniquePtrEnableDefault_t = EnableIf_t<Conjunction_v<Negation<IsPointer<Deleter>>, IsDefaultConstructible<Deleter>>, bool>;
+using _UniquePtrEnableDefault_t = EnableIf_t<Conjunction_v<
+                                                Negation<IsPointer<Deleter>>,
+                                                IsDefaultConstructible<Deleter>>, bool>;
 
 
 template<class Type>
@@ -73,26 +75,34 @@ public:
     explicit UniquePtr(Pointer ptr)
         : _data(ptr) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter, EnableIf_t<IsConstructible_v<Deleter2, const Deleter2&>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<IsConstructible_v<Deleter2, const Deleter2&>, bool> = true>
     UniquePtr(Pointer ptr, const Deleter& del)
         : _data(ptr), _deleter(del) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter, EnableIf_t<Conjunction_v<Negation<IsReference<Deleter2>>, IsConstructible<Deleter2, Deleter2>>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<Conjunction_v<
+                    Negation<IsReference<Deleter2>>,
+                    IsConstructible<Deleter2, Deleter2>>, bool> = true>
     UniquePtr(Pointer ptr, Deleter&& del)
         : _data(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
     template<class Deleter2 = Deleter,
-    EnableIf_t<Conjunction_v<IsReference<Deleter2>, IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
+    EnableIf_t<Conjunction_v<
+                    IsReference<Deleter2>,
+                    IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
     UniquePtr(Pointer, RemoveReference_t<Deleter>&&) = delete;
 
-    template<class Deleter2 = Deleter, EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
     UniquePtr(UniquePtr&& other) noexcept
         : _data(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
     template<class Type2, class Deleter2,
-    EnableIf_t<
-    Conjunction_v<Negation<IsArray<Type2>>, IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>,
-    Conditional_t<IsReference_v<Deleter>, IsSame<Deleter2, Deleter>, IsConvertible<Deleter2, Deleter>>>,
+    EnableIf_t<Conjunction_v<
+                    Negation<IsArray<Type2>>,
+                    IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>,
+                    Conditional_t<IsReference_v<Deleter>, IsSame<Deleter2, Deleter>, IsConvertible<Deleter2, Deleter>>>,
     bool> = true>
     UniquePtr(UniquePtr<Type2, Deleter2>&& other) noexcept
         : _data(other.release()), _deleter(custom::forward<Deleter2>(other.get_deleter())) { /*Empty*/ }
@@ -113,9 +123,10 @@ public:
     }
 
     template<class Type2, class Deleter2,
-    EnableIf_t<
-    Conjunction_v<Negation<IsArray<Type2>>, IsAssignable<Deleter&, Deleter2>,
-    IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>>,
+    EnableIf_t<Conjunction_v<
+                    Negation<IsArray<Type2>>,
+                    IsAssignable<Deleter&, Deleter2>,
+                    IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>>,
     bool> = true>
     UniquePtr& operator=(UniquePtr<Type2, Deleter2>&& other) noexcept {
         reset(other.release());
@@ -124,7 +135,8 @@ public:
         return *this;
     }
 
-    template<class Deleter2 = Deleter, EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         if (_data != other._data) {
             reset(other.release());
@@ -185,19 +197,25 @@ public:
     using Pointer       = typename _GetDeleterPointerType<Type, RemoveReference_t<Deleter>>::Type;
 
     template<class Type2, class IsNullptr = IsSame<Type2, std::nullptr_t>>
-    using _EnableConstructorReset = EnableIf_t<
-                                    IsSame_v<Type2, Pointer> || 
-                                    IsNullptr::Value || 
-                                    (IsSame_v<Pointer, ValueType*> && IsPointer_v<Type2> && IsConvertible_v<RemovePointer_t<Type2>(*)[], ValueType(*)[]>),
+    using _EnableConstructorReset = EnableIf_t<Disjunction_v<
+                                                    IsSame<Type2, Pointer>,
+                                                    IsNullptr,
+                                                    Conjunction<
+                                                        IsSame<Pointer, ValueType*>,
+                                                        IsPointer<Type2>,
+                                                        IsConvertible<RemovePointer_t<Type2>(*)[], ValueType(*)[]>>>,
                                     bool>;
 
-    template<class Type2, class Del, class More, 
+    template<class Type2, class Del, class More,
     class UpPointer         = typename UniquePtr<Type2, Del>::Pointer,
     class UpValueType       = typename UniquePtr<Type2, Del>::ValueType>
-    using _EnableConversion =   EnableIf_t<
-                                Conjunction_v<IsArray<Type2>, IsSame<Pointer, ValueType*>, IsSame<UpPointer, UpValueType*>,
-                                IsConvertible<UpValueType(*)[], ValueType(*)[]>, More>,
-                                bool>;
+    using _EnableConversion =   EnableIf_t<Conjunction_v<
+                                                IsArray<Type2>,
+                                                IsSame<Pointer, ValueType*>,
+                                                IsSame<UpPointer, UpValueType*>,
+                                                IsConvertible<UpValueType(*)[], ValueType(*)[]>,
+                                                More>,  // More is used for additional enable traits
+                                bool>;  // TODO: check
 
 private:
     Pointer _data;
@@ -206,10 +224,13 @@ private:
 public:
     // Constructors
 
-    template<class Deleter2 = Deleter, _UniquePtrEnableDefault_t<Deleter2> = true>
+    template<class Deleter2 = Deleter,
+    _UniquePtrEnableDefault_t<Deleter2> = true>
     UniquePtr() { /*Empty*/ }
 
-    template<class Type2, class Deleter2 = Deleter, _UniquePtrEnableDefault_t<Deleter2> = true, _EnableConstructorReset<Type2> = true>
+    template<class Type2, class Deleter2 = Deleter,
+    _UniquePtrEnableDefault_t<Deleter2> = true,
+    _EnableConstructorReset<Type2> = true>
     explicit UniquePtr(Type2 ptr)
         : _data(ptr) { /*Empty*/ }
 
@@ -220,16 +241,21 @@ public:
         : _data(ptr), _deleter(del) { /*Empty*/ }
 
     template<class Type2, class Deleter2 = Deleter,
-    EnableIf_t<Conjunction_v<Negation<IsReference<Deleter2>>, IsMoveConstructible<Deleter2>>, bool> = true,
+    EnableIf_t<Conjunction_v<
+                    Negation<IsReference<Deleter2>>,
+                    IsMoveConstructible<Deleter2>>, bool> = true,
     _EnableConstructorReset<Type2> = true>
     UniquePtr(Type2 ptr, Deleter&& del) noexcept
         : _data(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
     template<class Type2, class Deleter2 = Deleter,
-    EnableIf_t<Conjunction_v<IsReference<Deleter2>, IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
+    EnableIf_t<Conjunction_v<
+                    IsReference<Deleter2>,
+                    IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
     UniquePtr(Type2, RemoveReference_t<Deleter>&&) = delete;
 
-    template<class Deleter2 = Deleter, EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
     UniquePtr(UniquePtr&& other) noexcept
         : _data(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
@@ -248,7 +274,8 @@ public:
         return *this;
     }
 
-    template<class Type2, class Deleter2, _EnableConversion<Type2, Deleter2, IsAssignable<Deleter&, Deleter2>> = true>
+    template<class Type2, class Deleter2,
+    _EnableConversion<Type2, Deleter2, IsAssignable<Deleter&, Deleter2>> = true>
     UniquePtr& operator=(UniquePtr<Type2, Deleter2>&& other) noexcept {
         reset(other.release());
         _deleter = custom::forward<Deleter2>(other._deleter);
@@ -256,7 +283,8 @@ public:
         return *this;
     }
 
-    template<class Deleter2 = Deleter, EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
+    template<class Deleter2 = Deleter,
+    EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         if (_data != other._data) {
             reset(other.release());
@@ -295,7 +323,7 @@ public:
         return custom::exchange(_data, nullptr);
     }
 
-    template <class Type2, _EnableConstructorReset<Type2, FalseType> = true>
+    template <class Type2, _EnableConstructorReset<Type2, FalseType> = true>    // FalseType (don't allow nullptr)
     void reset(Type2 ptr) noexcept {
         Pointer old = custom::exchange(_data, ptr);
 

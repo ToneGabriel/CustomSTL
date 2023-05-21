@@ -222,9 +222,10 @@ private:
 public:
     // Constructors & Operators
 
-    template <class Base, EnableIf_t<Conjunction_v<
-    Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
-    _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>
+    template <class Base,
+    EnableIf_t<Conjunction_v<
+                    Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
+                    _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>
     ReferenceWrapper(Base&& val) noexcept {
         _ptr = &static_cast<Base&&>(val);       // TODO: check
     }
