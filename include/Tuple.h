@@ -160,7 +160,7 @@ public:
 	using ThisType	= This;
 	using Base		= Tuple<Rest...>;
 
-	ThisType First;											// Data stored to this iteration
+	ThisType ThisVal;											// Data stored to this iteration
 
 public:
 	// Construction Helpers
@@ -168,7 +168,7 @@ public:
 	// (H1) Helper for (1), (H2)
 	template<class Tag, class _This, class... _Rest, EnableIf_t<IsSame_v<Tag, TupleArgs_t>, bool> = true>
 	Tuple(Tag, _This&& first, _Rest&&...rest)
-		: Base(TupleArgs_t{}, custom::forward<_Rest>(rest)...), First(custom::forward<_This>(first)) { /*Empty*/ }
+		: Base(TupleArgs_t{}, custom::forward<_Rest>(rest)...), ThisVal(custom::forward<_This>(first)) { /*Empty*/ }
 	
 	// (H2) Helper for (H3)
 	template<class Tag, class _Tuple, size_t... Indices, EnableIf_t<IsSame_v<Tag, TupleUnpack_t>, bool> = true>
@@ -187,7 +187,7 @@ public:
 	template<class _This = This,
 	EnableIf_t<Conjunction_v<IsDefaultConstructible<_This>, IsDefaultConstructible<Rest>...>, bool> = true>
 	Tuple()
-		: Base(), First() { /*Empty*/ }		// Uses itself
+		: Base(), ThisVal() { /*Empty*/ }		// Uses itself
 
 	// (1) Copy/Move obj constructor
 	template<class _This = This, class... _Rest,
@@ -209,18 +209,17 @@ public:
 	Tuple(Tuple<OtherTypes...>&& other)
 		: Tuple(TupleUnpack_t{}, custom::move(other)) { /*Empty*/ }		// Uses (H3)
 
-	// TODO: check
-	// // (4) Pair copy constructor
-	// template<class First, class Second,
-    // EnableIf_t<TupleConstructible_v<Tuple, const First&, const Second&>, bool> = true>
-    // Tuple(const Pair<First, Second>& other)
-    //     : Tuple(TupleUnpack_t{}, other) { /*Empty*/ }	// Uses (2)
+	// (4) Pair copy constructor
+	template<class First, class Second,
+    EnableIf_t<TupleConstructible_v<Tuple, const First&, const Second&>, bool> = true>
+    Tuple(const Pair<First, Second>& pair)
+		: Tuple(TupleArgs_t{}, pair.First, pair.Second) { /*Empty*/ }	// Uses (H1)
 
-	// // (5) Pair move constructor
-    // template<class First, class Second,
-	// EnableIf_t<TupleConstructible_v<Tuple, First, Second>, bool> = true>
-	// Tuple(Pair<First, Second>&& other)
-    //     : Tuple(TupleUnpack_t{}, custom::move(other)) { /*Empty*/ }		// Uses (3)
+	// (5) Pair move constructor
+    template<class First, class Second,
+	EnableIf_t<TupleConstructible_v<Tuple, First, Second>, bool> = true>
+	Tuple(Pair<First, Second>&& pair)
+        : Tuple(TupleArgs_t{}, custom::move(pair.First), custom::move(pair.Second)) { /*Empty*/ }	// Uses (H1)
 
 	Tuple(const Tuple&) = default;
 	Tuple(Tuple&&)		= default;
@@ -232,10 +231,9 @@ public:
 	// Copy convertible operator
     template<class... OtherTypes,
 	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<OtherTypes...>>>,
-                            	TupleAssignable<Tuple, const OtherTypes&...>,
-								TupleConvert<Tuple, const Tuple<OtherTypes...>&, OtherTypes...>>, bool> = true>
+                            	TupleAssignable<Tuple, const OtherTypes&...>>, bool> = true>
     Tuple& operator=(const Tuple<OtherTypes...>& other) {
-        First 			= other.First;
+        ThisVal 		= other.ThisVal;
         _get_rest()   	= other._get_rest();
 
         return *this;
@@ -244,14 +242,31 @@ public:
 	// Move convertible operator
     template<class... OtherTypes,
 	EnableIf_t<Conjunction_v<	Negation<IsSame<Tuple, Tuple<OtherTypes...>>>,
-                              	TupleAssignable<Tuple, OtherTypes...>,
-								TupleConvert<Tuple, Tuple<OtherTypes...>, OtherTypes...>>, bool> = true>
+                              	TupleAssignable<Tuple, OtherTypes...>>, bool> = true>
     Tuple& operator=(Tuple<OtherTypes...>&& other) {
-        First 			= custom::forward<typename Tuple<OtherTypes...>::ThisType>(other.First);
+        ThisVal 		= custom::forward<typename Tuple<OtherTypes...>::ThisType>(other.ThisVal);
         _get_rest()   	= custom::forward<typename Tuple<OtherTypes...>::Base>(other._get_rest());
 
         return *this;
     }
+
+	template<class First, class Second,
+	EnableIf_t<TupleAssignable_v<Tuple, const First&, const Second&>, bool> = true>
+	Tuple& operator=(const Pair<First, Second>& pair) {
+		ThisVal				= pair.First;
+		_get_rest().ThisVal	= pair.Second;
+
+		return *this;
+	}
+
+	template<class First, class Second,
+	EnableIf_t<TupleAssignable_v<Tuple, First, Second>, bool> = true>
+	Tuple& operator=(Pair<First, Second>&& pair) {
+		ThisVal				= custom::forward<First>(pair.First);
+		_get_rest().ThisVal	= custom::forward<Second>(pair.Second);
+
+		return *this;
+	}
 
 	Tuple& operator=(const Tuple&) 			= default;
 	Tuple& operator=(Tuple&&) 				= default;
@@ -270,7 +285,7 @@ public:
 
 	template<class... OtherTypes>
     bool _equals(const Tuple<OtherTypes...>& other) const {
-        return First == other.First && Base::_equals(other._get_rest());
+        return ThisVal == other.ThisVal && Base::_equals(other._get_rest());
     }
 };
 
@@ -280,26 +295,20 @@ constexpr bool operator==(const Tuple<Types1...>& left, const Tuple<Types2...>& 
     return left._equals(right);
 }
 
-template<class... Types>
-Tuple(Types...) -> Tuple<Types...>;
-
-template<class First, class Second>
-Tuple(Pair<First, Second>) -> Tuple<First, Second>;
-
 
 // get
 template<int Index, class... Types>
 TupleElement_t<Index, Tuple<Types...>>& get(Tuple<Types...>& tuple) {					// Function to get Tuple member from reference
 	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
-	return static_cast<TupleType&>(tuple).First;
+	return static_cast<TupleType&>(tuple).ThisVal;
 }
 
 template<int Index, class... Types>
 const TupleElement_t<Index, Tuple<Types...>>& get(const Tuple<Types...>& tuple) {		// Same but const
 	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
-	return static_cast<const TupleType&>(tuple).First;
+	return static_cast<const TupleType&>(tuple).ThisVal;
 }
 
 template<int Index, class... Types>
@@ -307,7 +316,7 @@ TupleElement_t<Index, Tuple<Types...>>&& get(Tuple<Types...>&& tuple) {					// F
 	using Type		= TupleElement_t<Index, Tuple<Types...>>;
 	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
-	return static_cast<Type&&>(static_cast<TupleType&>(tuple).First);
+	return static_cast<Type&&>(static_cast<TupleType&>(tuple).ThisVal);
 }
 
 template<int Index, class... Types>
@@ -315,7 +324,7 @@ const TupleElement_t<Index, Tuple<Types...>>&& get(const Tuple<Types...>&& tuple
 	using Type		= TupleElement_t<Index, Tuple<Types...>>;
 	using TupleType = TupleElement_tt<Index, Tuple<Types...>>;
 
-	return static_cast<const Type&&>(static_cast<const TupleType&>(tuple).First);
+	return static_cast<const Type&&>(static_cast<const TupleType&>(tuple).ThisVal);
 }
 
 // (H2) Constructor helper defined here because of custom::get()

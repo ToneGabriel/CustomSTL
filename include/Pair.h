@@ -81,9 +81,7 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsAssignable<Type1&, const Other1&>,
-                                IsAssignable<Type2&, const Other2&>,
-                                IsConvertible<const Other1&, Type1>,
-                                IsConvertible<const Other2&, Type2>>, bool> = true>
+                                IsAssignable<Type2&, const Other2&>>, bool> = true>
     Pair& operator=(const Pair<Other1, Other2>& other) {
         First  = other.First;
         Second = other.Second;
@@ -94,9 +92,7 @@ public:
     template<class Other1, class Other2,
     EnableIf_t<Conjunction_v<   Negation<IsSame<Pair, Pair<Other1, Other2>>>,
                                 IsAssignable<Type1&, Other1>,
-                                IsAssignable<Type2&, Other2>,
-                                IsConvertible<Other1, Type1>,
-                                IsConvertible<Other2, Type2>>, bool> = true>
+                                IsAssignable<Type2&, Other2>>, bool> = true>
     Pair& operator=(Pair<Other1, Other2>&& other) {
         First  = custom::forward<Other1>(other.First);
         Second = custom::forward<Other2>(other.Second);
