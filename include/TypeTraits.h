@@ -235,14 +235,14 @@ constexpr bool IsEnum_v = IsEnum<Ty>::Value;
 template<class Ty>
 struct IsUnion : BoolConstant<__is_union(Ty)> {};
 
-template <class Ty>
+template<class Ty>
 constexpr bool IsUnion_v = IsUnion<Ty>::Value;
 
 // is class
 template<class Ty>
 struct IsClass: BoolConstant<__is_class(Ty)> {};
 
-template <class Ty>
+template<class Ty>
 constexpr bool IsClass_v = IsClass<Ty>::Value;
 
 // is convertible
@@ -469,7 +469,7 @@ constexpr bool IsCopyAssignable_v = IsCopyAssignable<Ty>::Value;
 template<class Ty>
 struct IsMoveAssignable : BoolConstant<__is_assignable(AddLvalueReference_t<Ty>, Ty)> {};
 
-template <class Ty>
+template<class Ty>
 constexpr bool IsMoveAssignable_v = IsMoveAssignable<Ty>::Value;
 
 // is nothrow assignable

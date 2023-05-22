@@ -29,7 +29,7 @@ private:
 private:
     // Core functions
 
-    template <class CallableTuple, size_t... Indices>
+    template<class CallableTuple, size_t... Indices>
     static void* _invoke_impl(void* args) {
         CallableTuple* callable = static_cast<CallableTuple*>(args);
         custom::invoke(custom::move(custom::get<Indices>(*callable))...);
@@ -38,7 +38,7 @@ private:
         return nullptr;
     }
 
-    template <class CallableTuple, size_t... Indices>
+    template<class CallableTuple, size_t... Indices>
     static constexpr Invoker _get_invoke_impl(IndexSequence<Indices...>) noexcept {
         return reinterpret_cast<Invoker>(_invoke_impl<CallableTuple, Indices...>);
     }

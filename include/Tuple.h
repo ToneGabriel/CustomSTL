@@ -40,16 +40,6 @@ struct TupleSize<volatile _EnableTupleSize<_Tuple>> : public TupleSize<_Tuple> {
 template<class _Tuple>
 struct TupleSize<const volatile _EnableTupleSize<_Tuple>> : public TupleSize<_Tuple> {};
 
-// tuple cond explicit
-// template<bool SameSize, class _Tuple, class... Args>
-// constexpr bool _TupleConditionalExplicit_v = false;
-
-// template<class... Types, class... Args>
-// constexpr bool _TupleConditionalExplicit_v<true, Tuple<Types...>, Args...> = !Conjunction_v<IsConvertible<Types, Args>...>;
-
-// template<class _Tuple, class... Args>
-// constexpr bool TupleConditionalExplicit_v = _TupleConditionalExplicit_v<TupleSize_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
-
 // tuple constructible
 template<bool SameSize, class _Tuple, class... Args>
 constexpr bool _TupleConstructible_v = false;

@@ -26,14 +26,14 @@ constexpr Ty&& forward(RemoveReference_t<Ty>&& val) noexcept {
 }
 
 template<class Ty, EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool> = true>
-void swap(Ty& first, Ty& second) noexcept {
+constexpr void swap(Ty& first, Ty& second) noexcept {
     Ty temp = custom::move(first);
     first   = custom::move(second);
     second  = custom::move(temp);
 }
 
 template<class Ty, class Other = Ty, EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowAssignable_v<Ty&, Other>, bool> = true>
-void exchange(Ty& val, Other&& newVal) noexcept {
+constexpr Ty exchange(Ty& val, Other&& newVal) noexcept {
     // assign newVal to val, return previous val
     Ty old  = custom::move(val);
     val     = custom::move(newVal);
@@ -117,7 +117,7 @@ struct _InvokerPMFObject
 
 struct _InvokerPMFRefwrap
 {
-    template <class Callable, class Refwrap, class... Args>
+    template<class Callable, class Refwrap, class... Args>
     static constexpr auto invoke_impl(Callable pmf, Refwrap rw, Args&&... args) noexcept
     -> decltype((rw.get().*pmf)(static_cast<Args&&>(args)...)) {
         return (rw.get().*pmf)(static_cast<Args&&>(args)...);
@@ -144,7 +144,7 @@ struct _InvokerPMDObject
 
 struct _InvokerPMDRefwrap
 {
-    template <class Callable, class Refwrap>
+    template<class Callable, class Refwrap>
     static constexpr auto invoke_impl(Callable pmd, Refwrap rw) noexcept 
     -> decltype(rw.get().*pmd) {
         return rw.get().*pmd;
@@ -184,13 +184,13 @@ Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _Invoke
 
 // invoke
 template<class Callable>
-auto invoke(Callable&& func) noexcept
+constexpr auto invoke(Callable&& func) noexcept
 -> decltype(_Invoker<Callable>::invoke_impl(static_cast<Callable&&>(func))) {
     return _Invoker<Callable>::invoke_impl(static_cast<Callable&&>(func));
 }
 
 template<class Callable, class Type, class... Args>
-auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
+constexpr auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
 -> decltype(_Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...)) {
     return _Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
@@ -222,7 +222,7 @@ private:
 public:
     // Constructors & Operators
 
-    template <class Base,
+    template<class Base,
     EnableIf_t<Conjunction_v<
                     Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
                     _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>

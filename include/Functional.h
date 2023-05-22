@@ -4,6 +4,7 @@
 CUSTOM_BEGIN
 
 // TODO: refactor
+// This only works with normal function pointers
 template<class Signature>
 class Function;
 

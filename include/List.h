@@ -4,7 +4,7 @@
 
 CUSTOM_BEGIN
 
-template <class Traits>
+template<class Traits>
 class HashTable;
 
 template<class Type>
@@ -151,7 +151,7 @@ class List				// Doubly Linked List
 {
 private:
 	template<class>
-	friend class HashTable;
+	friend class HashTable;													// Needed in HashTable class
 
 public:
 	using Data 					= ListData<Type>;							// Members that are modified

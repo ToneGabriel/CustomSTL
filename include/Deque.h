@@ -211,7 +211,7 @@ public:
 
 
 template<class Type>
-class Deque					// Deque Template implemented using 2 vectors (front and back)
+class Deque					// Deque Template implemented as map of blocks
 {
 public:
 	using Data					= DequeData<Type>;

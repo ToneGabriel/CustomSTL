@@ -175,11 +175,11 @@ public:
         return _data;
     }
 
-    Pointer release() noexcept {
+    Pointer release() noexcept {                            // Releases the ownership of the managed object, get() returns nullptr after this
         return custom::exchange(_data, nullptr);
     }
 
-    void reset(Pointer ptr = nullptr) noexcept {
+    void reset(Pointer ptr = nullptr) noexcept {            // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_data, ptr);
 
         if (old)
@@ -319,12 +319,12 @@ public:
         return _data;
     }
 
-    Pointer release() noexcept {
+    Pointer release() noexcept {                                                // Releases the ownership of the managed object, get() returns nullptr after this
         return custom::exchange(_data, nullptr);
     }
 
-    template <class Type2, _EnableConstructorReset<Type2, FalseType> = true>    // FalseType (don't allow nullptr)
-    void reset(Type2 ptr) noexcept {
+    template<class Type2, _EnableConstructorReset<Type2, FalseType> = true>     // FalseType (don't allow nullptr ???)
+    void reset(Type2 ptr) noexcept {                                            // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_data, ptr);
 
         if (old)

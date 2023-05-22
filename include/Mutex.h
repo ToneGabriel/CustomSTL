@@ -131,11 +131,11 @@ public:
     UniqueLock(MutexType& mtx, TryToLock_t)                                                     // construct and try to lock
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock()) { /*Empty*/ }
 
-    template <class Rep, class Period>
+    template<class Rep, class Period>
     UniqueLock(MutexType& mtx, const std::chrono::duration<Rep, Period>& relativeTime)          // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_for(relativeTime)) { /*Empty*/ }
 
-    template <class _Clock, class _Duration>
+    template<class _Clock, class _Duration>
     UniqueLock(MutexType& mtx, const std::chrono::time_point<_Clock, _Duration>& absoluteTime)  // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_until(absoluteTime)) { /*Empty*/ }
 
@@ -188,14 +188,14 @@ public:
         return _owns;
     }
 
-    template <class Rep, class Period>
+    template<class Rep, class Period>
     bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
         _validate();
         _owns = _ownedMutex->try_lock_for(relativeTime);
         return _owns;
     }
 
-    template <class Clock, class Duration>
+    template<class Clock, class Duration>
     bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
         _validate();
         _owns = _ownedMutex->try_lock_until(absoluteTime);
