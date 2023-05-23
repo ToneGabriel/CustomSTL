@@ -1,7 +1,35 @@
 #pragma once
 #include "Utility.h"
+#include "Tuple.h"
+
 
 CUSTOM_BEGIN
+
+template<int Num> struct Placeholder {};
+
+namespace placeholders
+{
+    extern const Placeholder<1> _1;
+    extern const Placeholder<2> _2;
+    extern const Placeholder<3> _3;
+    extern const Placeholder<4> _4;
+    extern const Placeholder<5> _5;
+    extern const Placeholder<6> _6;
+    extern const Placeholder<7> _7;
+    extern const Placeholder<8> _8;
+    extern const Placeholder<9> _9;
+    extern const Placeholder<10> _10;
+    extern const Placeholder<11> _11;
+    extern const Placeholder<12> _12;
+    extern const Placeholder<13> _13;
+    extern const Placeholder<14> _14;
+    extern const Placeholder<15> _15;
+    extern const Placeholder<16> _16;
+    extern const Placeholder<17> _17;
+    extern const Placeholder<18> _18;
+    extern const Placeholder<19> _19;
+    extern const Placeholder<20> _20;
+}
 
 // TODO: refactor
 // This only works with normal function pointers
@@ -144,5 +172,34 @@ private:
         other._functor  = nullptr;
     }
 }; // END Function template
+
+// bind
+auto _call_binder() -> decltype(/*something*/) {
+    // TODO: implement
+}
+
+template<class Functor, class... Args>
+class Binder
+{
+private:
+    Decay_t<Functor> _functor;
+    Tuple<Decay_t<Args>...> _arguments;
+
+public:
+    explicit Binder(Functor&& func, Args&&... args)
+        : _functor(custom::forward<Functor>(func)), _arguments(custom::forward<Args>(args)...) { /*Empty*/ }
+
+    template<class... UnboundArgs>
+    auto operator()(UnboundArgs&&... unbArgs) noexcept
+    -> decltype(_call_binder(_functor, _arguments, custom::forward_as_tuple(custom::forward<UnboundArgs>(unbArgs)...))) {
+        return _call_binder(_functor, _arguments, custom::forward_as_tuple(custom::forward<UnboundArgs>(unbArgs)...));
+        // TODO: check impl
+    }
+};
+
+template<class Functor, class... Args>
+constexpr Binder<Functor, Args...> bind(Functor&& func, Args&&... args) {
+    return Binder<Functor, Args...>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+}
 
 CUSTOM_END
