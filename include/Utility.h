@@ -118,7 +118,7 @@ struct _InvokerPMFObject
 struct _InvokerPMFRefwrap
 {
     template<class Callable, class Refwrap, class... Args>
-    static constexpr auto invoke_impl(Callable pmf, Refwrap rw, Args&&... args) noexcept
+    static constexpr auto invoke_impl(Callable&& pmf, Refwrap&& rw, Args&&... args) noexcept
     -> decltype((rw.get().*pmf)(static_cast<Args&&>(args)...)) {
         return (rw.get().*pmf)(static_cast<Args&&>(args)...);
     }
@@ -145,7 +145,7 @@ struct _InvokerPMDObject
 struct _InvokerPMDRefwrap
 {
     template<class Callable, class Refwrap>
-    static constexpr auto invoke_impl(Callable pmd, Refwrap rw) noexcept 
+    static constexpr auto invoke_impl(Callable&& pmd, Refwrap&& rw) noexcept 
     -> decltype(rw.get().*pmd) {
         return rw.get().*pmd;
     }
