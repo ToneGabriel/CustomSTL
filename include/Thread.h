@@ -6,7 +6,6 @@
 #include "Tuple.h"
 
 #include <pthread.h>
-#include <iostream>
 
 #if defined _WIN32
 #include <windows.h>    // for hardware_concurrency()

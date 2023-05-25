@@ -10,8 +10,8 @@ Code build requirements:
 Components not fully operational:
 
 - Array.h
-- Thread.h
 - Mutex.h
 - ConditionalVariable.h
+- Semaphore.h
 - Functional.h
 - Memory.h

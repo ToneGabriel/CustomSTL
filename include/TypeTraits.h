@@ -32,6 +32,75 @@ template<class... Types>
 using IndexSequenceFor = MakeIndexSequence<sizeof...(Types)>;
 // END Alias helpers for IntegerSequence
 
+// alignment of
+template<class Ty>
+struct AlignmentOf : IntegralConstant<size_t, alignof(Ty)> {}; // determine alignment of Ty
+
+template<class Ty>
+constexpr size_t AlignmentOf_v = AlignmentOf<Ty>::Value;
+
+// align storage helpers
+// TODO: replace std::max_align_t with this
+//using MaxAlign_t = long long;
+
+template<class Ty, size_t Len>
+union _AlignType                // union with size Len bytes and alignment of Ty
+{
+    Ty Val;
+    char Pad[Len];
+};
+
+template<size_t Len, size_t Align, class Ty, bool Ok>
+struct _Aligned;                // define Type with size Len and alignment Ty
+
+template<size_t Len, size_t Align, class Ty>
+struct _Aligned<Len, Align, Ty, true>           // class
+{
+    using Type = _AlignType<Ty, Len>;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned<Len, Align, double, false>      // double
+{
+    using Type = _AlignType<max_align_t, Len>;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned<Len, Align, int, false>         // int
+{
+    using Next = double;
+    static constexpr bool Fits = Align <= alignof(Next);
+    using Type = typename _Aligned<Len, Align, Next, Fits>::Type;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned<Len, Align, short, false>       // short
+{
+    using Next = int;
+    static constexpr bool Fits = Align <= alignof(Next);
+    using Type = typename _Aligned<Len, Align, Next, Fits>::Type;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned<Len, Align, char, false>        // char
+{
+    using Next = short;
+    static constexpr bool Fits = Align <= alignof(Next);
+    using Type = typename _Aligned<Len, Align, Next, Fits>::Type;
+};
+
+// aligned storage
+template<size_t Len, size_t Align = alignof(max_align_t)>
+struct AlignedStorage                                     // define Type with size Len and alignment Align
+{
+    using Next = char;
+    static constexpr bool Fits = Align <= alignof(Next);
+    using Type = typename _Aligned<Len, Align, Next, Fits>::Type;
+};
+
+template<size_t Len, size_t Align = alignof(max_align_t)>
+using AlignedStorage_t = typename AlignedStorage<Len, Align>::Type;
+
 // is void
 template<class Ty>
 constexpr bool IsVoid_v = IsSame_v<RemoveCV_t<Ty>, void>;
@@ -65,14 +134,14 @@ using AddCV_t = typename AddCV<Ty>::Type;
 
 // add reference
 template<class Ty, class = void>
-struct _AddReference                    // add reference (non-referenceable type)
+struct _AddReference                    // add reference (non-referenceable Type)
 {
     using Lvalue = Ty;
     using Rvalue = Ty;
 };
 
 template<class Ty>
-struct _AddReference<Ty, Void_t<Ty&>>   // (referenceable type)
+struct _AddReference<Ty, Void_t<Ty&>>   // (referenceable Type)
 {
     using Lvalue = Ty&;
     using Rvalue = Ty&&;
@@ -91,10 +160,10 @@ template<class Ty>
 using AddRvalueReference_t = typename AddRvalueReference<Ty>::Type;
 
 // add pointer
-template<class Ty, class = void>                // add pointer (pointer type cannot be formed)
+template<class Ty, class = void>                // add pointer (pointer Type cannot be formed)
 struct AddPointer { using Type = Ty; };
 
-template<class Ty>                              // (pointer type can be formed)
+template<class Ty>                              // (pointer Type can be formed)
 struct AddPointer<Ty, Void_t<RemoveReference_t<Ty>*>> { using Type = RemoveReference_t<Ty>*; };
 
 template<class Ty>
@@ -142,7 +211,7 @@ template<class Ty>
 using RemoveAllExtents_t = typename RemoveAllExtents<Ty>::Type;
 
 // is array
-template<class>                                 // determine whether type argument is an array
+template<class>                                 // determine whether Type argument is an array
 constexpr bool IsArray_v = false;
 
 template<class Ty, size_t Size>
@@ -173,7 +242,7 @@ template<class Ty>
 struct IsUnboundedArray : BoolConstant<IsUnboundedArray_v<Ty>> {};
 
 // is lvalue reference
-template<class>                                 // determine whether type argument is an lvalue reference
+template<class>                                 // determine whether Type argument is an lvalue reference
 constexpr bool IsLvalueReference_v = false;
 
 template<class Ty>
@@ -183,7 +252,7 @@ template<class Ty>
 struct IsLvalueReference : BoolConstant<IsLvalueReference_v<Ty>> {};
 
 // is rvalue reference
-template<class>                                 // determine whether type argument is an rvalue reference
+template<class>                                 // determine whether Type argument is an rvalue reference
 constexpr bool IsRvalueReference_v = false;
 
 template<class Ty>
@@ -193,7 +262,7 @@ template<class Ty>
 struct IsRvalueReference : BoolConstant<IsRvalueReference_v<Ty>> {};
 
 // is reference
-template<class>                                 // determine whether type argument is a reference
+template<class>                                 // determine whether Type argument is a reference
 constexpr bool IsReference_v = false;
 
 template<class Ty>
@@ -281,7 +350,7 @@ constexpr bool IsConvertible_v = IsConvertible<From, To>::Value;
 #endif
 
 // is const
-template<class>                                 // determine whether type argument is const qualified
+template<class>                                 // determine whether Type argument is const qualified
 constexpr bool IsConst_v = false;
 
 template<class Ty>
@@ -292,7 +361,7 @@ struct IsConst : BoolConstant<IsConst_v<Ty>> {};
 
 // is volatile
 template<class>
-constexpr bool IsVolatile_v = false;            // determine whether type argument is volatile qualified
+constexpr bool IsVolatile_v = false;            // determine whether Type argument is volatile qualified
 
 template<class Ty>
 constexpr bool IsVolatile_v<volatile Ty> = true;

@@ -17,6 +17,7 @@
 #if defined __GNUG__
 #include "Thread.h"
 #include "Mutex.h"
+#include "Semaphore.h"
 #endif
 #include "Memory.h"
 
@@ -35,6 +36,7 @@
 #include <functional>
 #include <thread>
 #include <mutex>
+#include <semaphore>
 #include <memory.h>
 
 #define TEST_BEGIN namespace test {
