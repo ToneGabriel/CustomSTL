@@ -434,7 +434,7 @@ private:
 	}
 
 	void _move(List&& other) {												// Generic move function for list
-		std::swap(_data._Head, other._data._Head);
+		custom::swap(_data._Head, other._data._Head);
 
 		_data._Size 		= other._data._Size;
 		other._data._Size 	= 0;

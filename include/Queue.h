@@ -166,7 +166,7 @@ public:
 	void pop() {											// Remove first elem from queue
 		if (_baseContainer.size() > 0)
 		{
-			std::swap(_baseContainer[0], _baseContainer[_baseContainer.size() - 1]);
+			custom::swap(_baseContainer[0], _baseContainer[_baseContainer.size() - 1]);
 			_baseContainer.pop_back();
 			_heap_pop_adjust();
 		}
@@ -218,7 +218,7 @@ private:
 
 		while (index > 0 && _less(_baseContainer[parent], _baseContainer[index]))
 		{
-			std::swap(_baseContainer[parent], _baseContainer[index]);
+			custom::swap(_baseContainer[parent], _baseContainer[index]);
 			index	= parent;
 			parent	= _heap_get_parent(index);
 		}
@@ -237,7 +237,7 @@ private:
 
 			if (_less(_baseContainer[index], _baseContainer[maxChild]))
 			{
-				std::swap(_baseContainer[index], _baseContainer[maxChild]);
+				custom::swap(_baseContainer[index], _baseContainer[maxChild]);
 				index = maxChild;
 			}
 			else

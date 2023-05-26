@@ -760,7 +760,7 @@ private:
 
 		_swap_parents(first, second);	
 		_swap_children(first, second);
-		std::swap(first->_Color, second->_Color);
+		custom::swap(first->_Color, second->_Color);
 	}
 
 	void _swap_parents(Node* first, Node* second) {
@@ -784,18 +784,14 @@ private:
 		else
 			_data._Head->_Parent = first;
 
-		aux				= first->_Parent;
-		first->_Parent	= second->_Parent;
-		second->_Parent = aux;
+		custom::swap(first->_Parent, second->_Parent);
 	}
 
 	void _swap_children(Node* first, Node* second) {
 		Node* aux;
 
 		// left child
-		aux				= first->_Left;
-		first->_Left	= second->_Left;
-		second->_Left	= aux;
+		custom::swap(first->_Left, second->_Left);
 
 		if (first->_Left != _data._Head)
 			first->_Left->_Parent = first;
@@ -803,10 +799,8 @@ private:
 			second->_Left->_Parent = second;
 
 		// right child
-		aux				= first->_Right;
-		first->_Right	= second->_Right;
-		second->_Right	= aux;
-
+		custom::swap(first->_Right, second->_Right);
+		
 		if (first->_Right != _data._Head)
 			first->_Right->_Parent = first;
 		if (second->_Right != _data._Head)
@@ -862,7 +856,7 @@ private:
 	}
 
 	void _move(SearchTree&& other) {
-		std::swap(_data._Head, other._data._Head);
+		custom::swap(_data._Head, other._data._Head);
 
 		_data._Size 		= other._data._Size;
 		other._data._Size 	= 0;
