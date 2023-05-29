@@ -50,16 +50,23 @@ public:
         return (sem_trywait(&_semaphore) > 0) ? true : false;
     }
 
-    template<class Rep, class Period>
-    bool try_acquire_for(const std::chrono::duration<Rep, Period>& relativeTime) {
-        // TODO: implement
-        return false;
-    }
-
     template<class Clock, class Duration>
     bool try_acquire_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
-        // TODO: implement
+        auto seconds        = std::chrono::time_point_cast<std::chrono::seconds>(absoluteTime);
+	    auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - seconds);
+        struct timespec ts  =   {
+                                    static_cast<std::time_t>(seconds.time_since_epoch().count()),
+                                    static_cast<long>(nanoseconds.count())
+                                };
+        sem_timedwait(&_semaphore, &ts);
         return false;
+        // TODO: check return of timedwait
+    }
+
+    template<class Rep, class Period>
+    bool try_acquire_for(const std::chrono::duration<Rep, Period>& relativeTime) {
+        return wait_until(  std::chrono::steady_clock::now() + 
+                            std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
     }
 };
 

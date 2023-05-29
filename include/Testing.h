@@ -14,12 +14,13 @@
 #include "Map.h"
 #include "Set.h"
 #include "Functional.h"
+#include "Memory.h"
+
 #if defined __GNUG__
 #include "Thread.h"
 #include "Mutex.h"
 #include "Semaphore.h"
-#endif
-#include "Memory.h"
+#endif	// __GNUG__
 
 #include <iostream>
 #include <string>
@@ -34,10 +35,11 @@
 #include <map>
 #include <set>
 #include <functional>
+#include <memory.h>
+
 #include <thread>
 #include <mutex>
 #include <semaphore>
-#include <memory.h>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
@@ -342,9 +344,9 @@ void array_test() {
 }
 
 void function_test() {
-	custom::Function<void()> fct(unordered_map_test);
-	custom::Function<void()> fct1(fct);
-	fct1();
+	// custom::Function<void()> fct(unordered_map_test);
+	// custom::Function<void()> fct1(fct);
+	// fct1();
 }
 
 void invoke_test() {

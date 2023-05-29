@@ -12,16 +12,16 @@ class Callable;
 template<class Signature>
 class Function;
 
-template<class RetType, class... ArgTypes>
-class Function<RetType(ArgTypes...)>        // Wrapper template to function pointer
-{
-private:
-    constexpr size_t StorageSize = std::max(sizeof(Callable<void(*)()>),
-                                            sizeof(ReferenceWrapper<char>));
+// template<class RetType, class... ArgTypes>
+// class Function<RetType(ArgTypes...)>        // Wrapper template to function pointer
+// {
+// private:
+//     constexpr size_t StorageSize = std::max(sizeof(Callable<void(*)()>),
+//                                             sizeof(ReferenceWrapper<char>));
 
-    using Storage_t = custom::AlignedStorage_t<StorageSize>;
+//     using Storage_t = custom::AlignedStorage_t<StorageSize>;
 
-}; // END Function template
+// }; // END Function template
 
 
 // placeholder
