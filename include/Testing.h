@@ -20,6 +20,7 @@
 #include "Thread.h"
 #include "Mutex.h"
 #include "Semaphore.h"
+#include "Barrier.h"
 #endif	// __GNUG__
 
 #include <iostream>
@@ -40,6 +41,7 @@
 #include <thread>
 #include <mutex>
 #include <semaphore>
+#include <barrier>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }

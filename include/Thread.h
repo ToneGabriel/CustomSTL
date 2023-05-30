@@ -15,7 +15,7 @@
 
 CUSTOM_BEGIN
 
-class Thread        // Thread wrapper for pthread_t
+class Thread        // Thread adaptor for pthread_t
 {
 public:
     class ID;

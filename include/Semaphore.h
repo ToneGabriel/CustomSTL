@@ -7,19 +7,18 @@
 
 CUSTOM_BEGIN
 
-constexpr ptrdiff_t SemaphoreMax_v = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
-
-template<ptrdiff_t LeastMaxValue = SemaphoreMax_v>
-class CountingSemaphore
+template<int LeastMaxValue = INT_MAX>
+class CountingSemaphore                 // Semaphore adaptor for sem_t
 {
 private:
+    static_assert((LeastMaxValue >= 0 && LeastMaxValue <= INT_MAX), "Invalid semaphore count...");
     sem_t _semaphore;
 
 public:
     // Constructors & Operators
 
-    explicit CountingSemaphore(ptrdiff_t desired) {
-        static_assert(desired >= 0 && desired <= LeastMaxValue, "invalid desired value");
+    explicit CountingSemaphore(int desired) {
+        assert((void("Invalid desired value..."), (desired >= 0 && desired <= LeastMaxValue)));
         sem_init(&_semaphore, 0, desired);
     }
 
@@ -33,11 +32,11 @@ public:
 public:
     // Main functions
 
-    static ptrdiff_t max() noexcept {
+    static int max() noexcept {
         return LeastMaxValue;
     }
 
-    void release(ptrdiff_t update = 1) noexcept {
+    void release(int update = 1) noexcept {
         for (; update != 0; --update)
             sem_post(&_semaphore);     
     }
@@ -58,8 +57,7 @@ public:
                                     static_cast<std::time_t>(seconds.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
                                 };
-        sem_timedwait(&_semaphore, &ts);
-        return false;
+        return ((sem_timedwait(&_semaphore, &ts) == 0 ) ? true : false);
         // TODO: check return of timedwait
     }
 

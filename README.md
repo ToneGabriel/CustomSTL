@@ -13,5 +13,6 @@ Components not fully operational:
 - Mutex.h
 - ConditionalVariable.h
 - Semaphore.h
+- Barrier.h
 - Functional.h
 - Memory.h

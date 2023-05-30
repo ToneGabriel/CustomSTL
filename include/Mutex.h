@@ -3,14 +3,12 @@
 #if defined __GNUG__
 #include "ConditionVariable.h"
 
-#include <chrono>
-
 
 CUSTOM_BEGIN
 
 class ConditionVariable;
 
-class MutexBase         // Mutex wrapper for pthread_mutex_t
+class MutexBase         // Mutex adaptor for pthread_mutex_t
 {
 public:
     using NativeHandleType = pthread_mutex_t;
@@ -266,6 +264,13 @@ public:
 };
 
 
+// lock
+template<class Lock0, class Lock1, class... LockN>
+void lock(Lock0& lock0, Lock1& lock1, LockN&... lockN) {    // lock multiple locks, without deadlock
+    // TODO: implement
+}
+
+
 template<class... Mutexes>
 class ScopedLock
 {
@@ -276,13 +281,13 @@ class ScopedLock
 //     // Constructors & Operators
 
 //     explicit ScopedLock(Mutexes&... mtxes) : _ownedMutexes(mtxes...) { // construct and lock
-//         std::lock(mtxes...);    // TODO: check
+//         custom::lock(mtxes...);    // TODO: check
 //     }
 
 //     explicit ScopedLock(AdoptLock_t, Mutexes&... mtxes) : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
 
 //     ~ScopedLock() {
-//         std::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
+//         custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
 //     }
 
 //     ScopedLock(const ScopedLock&)            = delete;
@@ -296,7 +301,7 @@ enum class CVStatus
     Timeout
 };
 
-class ConditionVariable         // Condition variable wrapper for pthread_cond_t
+class ConditionVariable         // Condition variable adaptor for pthread_cond_t
 {
 public:
     using NativeHandleType = pthread_cond_t;
@@ -331,6 +336,13 @@ public:
 
     void wait(UniqueLock<Mutex>& lock) {
         pthread_cond_wait(&_conditionVar, &lock.mutex()->_mutex);
+    }
+
+    template<class Predicate>
+    void wait(UniqueLock<Mutex>& lock, Predicate pred) {
+        while(!pred())
+            pthread_cond_wait(&_conditionVar, &lock.mutex()->_mutex);
+        // TODO: check
     }
 
     template<class Clock, class Duration>
@@ -378,15 +390,114 @@ public:
 }; // END ConditionVariable
 
 
-class TimedMutex
+class TimedMutex    // TODO: check ALL
 {
-    // TODO: implement
+private:
+    Mutex _mutex;
+    ConditionVariable _conditionVar;
+    unsigned int _locked;
+
+public:
+    // Constructors & Operators
+
+    TimedMutex() noexcept
+        : _locked(0) { /*Empty*/ }
+
+    TimedMutex(const TimedMutex&)            = delete;
+    TimedMutex& operator=(const TimedMutex&) = delete;
+
+public:
+    // Main functions
+
+    void lock() {
+        UniqueLock<Mutex> lock(_mutex);
+
+        while (_locked != 0)
+            _conditionVar.wait(lock);
+
+        _locked = UINT_MAX;
+    }
+
+    bool try_lock() noexcept {
+        LockGuard<Mutex> lock(_mutex);
+
+        if (_locked != 0)
+            return false;
+        else
+        {
+            _locked = UINT_MAX;
+            return true;
+        }
+    }
+
+    void unlock() {
+        {
+            // The lock here is necessary
+            LockGuard<Mutex> lock(_mutex);
+            _locked = 0;
+        }
+
+        _conditionVar.notify_one();
+    }
+
+    template<class Clock, class Duration>
+    bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        // TODO: implement
+        return false;
+    }
+
+    template<class Rep, class Period>
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
+        // TODO: implement
+        return false;
+    }
 };
 
 
-class RecursiveTimedMutex
+class RecursiveTimedMutex   // TODO: check ALL
 {
-    // TODO: implement
+private:
+    Mutex _mutex;
+    ConditionVariable _conditionVar;
+    unsigned int _locked;
+    Thread::ID _owner;
+
+public:
+    // Constructors & Operators
+
+    RecursiveTimedMutex() noexcept
+        : _locked(0) { /*Empty*/ }
+
+    RecursiveTimedMutex(const RecursiveTimedMutex&)            = delete;
+    RecursiveTimedMutex& operator=(const RecursiveTimedMutex&) = delete;
+
+public:
+    // Main functions
+
+    void lock() {
+        // TODO: implement
+    }
+
+    bool try_lock() noexcept {
+        return false;
+        // TODO: implement
+    }
+
+    void unlock() {
+        // TODO: implement
+    }
+
+    template<class Clock, class Duration>
+    bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        // TODO: implement
+        return false;
+    }
+
+    template<class Rep, class Period>
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
+        // TODO: implement
+        return false;
+    }
 };
 
 CUSTOM_END
