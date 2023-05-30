@@ -66,7 +66,7 @@ public:
         return wait_until(  std::chrono::steady_clock::now() + 
                             std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
     }
-};
+}; // END CountingSemaphore
 
 using BinarySemaphore = CountingSemaphore<1>;
 

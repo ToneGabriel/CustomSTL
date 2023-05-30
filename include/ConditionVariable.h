@@ -34,13 +34,13 @@ public:
 
     UnlockGuard(const UnlockGuard&)             = delete;
     UnlockGuard& operator=(const UnlockGuard&)  = delete;
-};
+}; // END UnlockGuard
 
 
 class ConditionVariableAny
 {
     // TODO: implement
-};
+}; // END ConditionVariableAny
 
 CUSTOM_END
 

@@ -173,7 +173,7 @@ public:
     private:
 
         ID(const pthread_t& thr) : _threadID(thr) { /*Empty*/ }
-    };
+    }; // END Thread::ID
 
 private:
     // Helpers

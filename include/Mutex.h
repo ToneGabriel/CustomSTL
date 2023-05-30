@@ -17,7 +17,7 @@ private:
     friend ConditionVariable;
 
     pthread_mutex_t _mutex;
-    pthread_mutexattr_t _mutexAttr;
+    pthread_mutexattr_t _mutexAttr;     // PTHREAD_MUTEX_NORMAL or PTHREAD_MUTEX_RECURSIVE
 
 public:
     // Constructors & Operators
@@ -62,7 +62,7 @@ public:
     NativeHandleType native_handle() {
         return _mutex;
     }
-};
+}; // END MutexBase
 
 
 class Mutex : public MutexBase
@@ -75,7 +75,7 @@ public:
 
     Mutex(const Mutex&)             = delete;
     Mutex& operator= (const Mutex&) = delete;
-};
+}; // END Mutex
 
 
 class RecursiveMutex : public MutexBase
@@ -88,7 +88,7 @@ public:
 
     RecursiveMutex(const RecursiveMutex&)             = delete;
     RecursiveMutex& operator= (const RecursiveMutex&) = delete;
-};
+}; // RecursiveMutex
 
 
 // tag struct declarations for construction of UniqueLock objects
@@ -135,8 +135,8 @@ public:
     UniqueLock(MutexType& mtx, const std::chrono::duration<Rep, Period>& relativeTime)          // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_for(relativeTime)) { /*Empty*/ }
 
-    template<class _Clock, class _Duration>
-    UniqueLock(MutexType& mtx, const std::chrono::time_point<_Clock, _Duration>& absoluteTime)  // construct and lock with timeout
+    template<class Clock, class Duration>
+    UniqueLock(MutexType& mtx, const std::chrono::time_point<Clock, Duration>& absoluteTime)    // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_until(absoluteTime)) { /*Empty*/ }
 
     UniqueLock(UniqueLock&& other) noexcept : _ownedMutex(other._ownedMutex), _owns(other._owns) {
@@ -236,7 +236,7 @@ private:
         if (_owns)
             throw std::logic_error("Mutex already locked...");
     }
-};
+}; // END UniqueLock
 
 
 template<class Mtx>
@@ -261,7 +261,7 @@ public:
     
     LockGuard(const LockGuard&)             = delete;
     LockGuard& operator=(const LockGuard&)  = delete;
-};
+}; // END LockGuard
 
 
 // lock
@@ -292,7 +292,7 @@ class ScopedLock
 
 //     ScopedLock(const ScopedLock&)            = delete;
 //     ScopedLock& operator=(const ScopedLock&) = delete;
-};
+}; // END ScopedLock
 
 
 enum class CVStatus
@@ -451,7 +451,7 @@ public:
         // TODO: implement
         return false;
     }
-};
+}; // END TimedMutex
 
 
 class RecursiveTimedMutex   // TODO: check ALL
@@ -498,7 +498,7 @@ public:
         // TODO: implement
         return false;
     }
-};
+}; // END RecursiveTimedMutex
 
 CUSTOM_END
 

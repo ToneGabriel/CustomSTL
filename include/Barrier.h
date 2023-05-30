@@ -6,14 +6,44 @@
 
 CUSTOM_BEGIN
 
-template<class CompletionFunction>
+template<class CompletionFunction /*TODO: check*/>
 class Barrier                       // Barrier adaptor for pthread_barrier_t
 {
-    // TODO: implement
-};
+private:
+    pthread_barrier_t _barrier;
+
+public:
+    // Constructors & Operators
+
+    explicit Barrier(int expected) {
+        // TODO: implement
+        pthread_barrier_init(&_barrier, nullptr, expected);
+    }
+
+    ~Barrier() {
+        pthread_barrier_destroy(&_barrier);
+    }
+
+    Barrier(const Barrier&)            = delete;
+    Barrier& operator=(const Barrier&) = delete;
+
+public:
+    // Main functions // TODO: implement
+
+    static int max() noexcept;
+
+    void arrive();
+
+    void wait();
+
+    void arrive_and_wait();
+
+    void arrive_and_drop();
+
+}; // END Barrier
 
 CUSTOM_END
 
 #elif defined _MSC_VER
-#error NO Semaphore implementation
+#error NO Barrier implementation
 #endif      // __GNUG__ and _MSC_VER
