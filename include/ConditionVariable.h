@@ -1,10 +1,7 @@
 #pragma once
 
 #if defined __GNUG__
-#include "Utility.h"
-#include "Thread.h"
-
-#include <chrono>
+#include "Mutex.h"
 
 
 CUSTOM_BEGIN

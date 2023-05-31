@@ -1,7 +1,10 @@
 #pragma once
 
 #if defined __GNUG__
-#include "ConditionVariable.h"
+#include "Utility.h"
+#include "Thread.h"
+
+#include <chrono>
 
 
 CUSTOM_BEGIN
@@ -392,10 +395,22 @@ public:
 
 class TimedMutex    // TODO: check ALL
 {
+public:
+    using NativeHandleType = typename Mutex::NativeHandleType;
+
 private:
     Mutex _mutex;
     ConditionVariable _conditionVar;
     unsigned int _locked;
+
+    struct UINTIsZero
+    {
+        const unsigned int& UInt;
+
+        bool operator()() const {
+            return UInt == 0;
+    };
+};
 
 public:
     // Constructors & Operators
@@ -442,20 +457,32 @@ public:
 
     template<class Clock, class Duration>
     bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
-        // TODO: implement
-        return false;
+        UniqueLock<Mutex> lock(_mutex);
+
+        if (_conditionVar.wait_until(lock, absoluteTime, UINTIsZero{_locked}) == false)
+            return false;
+
+        _locked = UINT_MAX;
+        return true;
     }
 
     template<class Rep, class Period>
     bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
-        // TODO: implement
-        return false;
+        return try_lock_until(  std::chrono::steady_clock::now() + 
+                                std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
+    }
+
+    NativeHandleType native_handle() {
+        return _mutex.native_handle();
     }
 }; // END TimedMutex
 
 
 class RecursiveTimedMutex   // TODO: check ALL
 {
+public:
+    using NativeHandleType = typename Mutex::NativeHandleType;
+
 private:
     Mutex _mutex;
     ConditionVariable _conditionVar;
@@ -497,6 +524,10 @@ public:
     bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
         // TODO: implement
         return false;
+    }
+
+    NativeHandleType native_handle() {
+        return _mutex.native_handle();
     }
 }; // END RecursiveTimedMutex
 

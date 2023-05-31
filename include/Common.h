@@ -2,6 +2,7 @@
 #include <cstddef>      // size_t, nullptr_t
 #include <stdexcept>    // exceptions
 #include <cassert>      // assert
+#include <climits>
 
 #define CUSTOM_BEGIN namespace custom {
 #define CUSTOM_END }
