@@ -40,8 +40,7 @@ template<class Ty>
 constexpr size_t AlignmentOf_v = AlignmentOf<Ty>::Value;
 
 // align storage helpers
-// TODO: replace std::max_align_t with this
-//using MaxAlign_t = long long;
+using MaxAlign_t = double;
 
 template<class Ty, size_t Len>
 union _AlignType                // union with size Len bytes and alignment of Ty
@@ -62,7 +61,7 @@ struct _Aligned<Len, Align, Ty, true>           // class
 template<size_t Len, size_t Align>
 struct _Aligned<Len, Align, double, false>      // double
 {
-    using Type = _AlignType<max_align_t, Len>;
+    using Type = _AlignType<MaxAlign_t, Len>;
 };
 
 template<size_t Len, size_t Align>
@@ -90,7 +89,7 @@ struct _Aligned<Len, Align, char, false>        // char
 };
 
 // aligned storage
-template<size_t Len, size_t Align = alignof(max_align_t)>
+template<size_t Len, size_t Align = alignof(MaxAlign_t)>
 struct AlignedStorage                                     // define Type with size Len and alignment Align
 {
     using Next = char;
@@ -98,7 +97,7 @@ struct AlignedStorage                                     // define Type with si
     using Type = typename _Aligned<Len, Align, Next, Fits>::Type;
 };
 
-template<size_t Len, size_t Align = alignof(max_align_t)>
+template<size_t Len, size_t Align = alignof(MaxAlign_t)>
 using AlignedStorage_t = typename AlignedStorage<Len, Align>::Type;
 
 // is void

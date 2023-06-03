@@ -21,7 +21,7 @@ public:
 		:_Ptr(ptr), _Index(index) { /*Empty*/ }
 
 	ArrayConstIterator& operator++() noexcept {
-		assert((void("Cannot increment end iterator..."), _Index < Size));
+		CUSTOM_ASSERT(_Index < Size, "Cannot increment end iterator...");
 		++_Index;
 		return *this;
 	}
@@ -33,7 +33,7 @@ public:
 	}
 
 	ArrayConstIterator& operator+=(const size_t& diff) noexcept {
-		assert((void("Cannot increment end iterator..."), _Index + diff <= Size));
+		CUSTOM_ASSERT(_Index + diff <= Size, "Cannot increment end iterator...");
 		_Index += diff;
 		return *this;
 	}
@@ -45,7 +45,7 @@ public:
 	}
 
 	ArrayConstIterator& operator--() noexcept {
-		assert((void("Cannot decrement begin iterator..."), _Index > 0));
+		CUSTOM_ASSERT(_Index > 0, "Cannot decrement begin iterator...");
 		--_Index;
 		return *this;
 	}
@@ -57,7 +57,7 @@ public:
 	}
 
 	ArrayConstIterator& operator-=(const size_t& diff) noexcept {
-		assert((void("Cannot decrement begin iterator..."), _Index >= diff));
+		CUSTOM_ASSERT(_Index >= diff, "Cannot decrement begin iterator...");
 		_Index -= diff;
 		return *this;
 	}
@@ -69,12 +69,12 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		assert((void("Cannot access end iterator..."), _Index < Size));
+		CUSTOM_ASSERT(_Index < Size, "Cannot access end iterator...");
 		return _Ptr + _Index;
 	}
 
 	Reference operator*() const noexcept {
-		assert((void("Cannot dereference end iterator..."), _Index < Size));
+		CUSTOM_ASSERT(_Index < Size, "Cannot dereference end iterator...");
 		return *(_Ptr + _Index);
 	}
 
@@ -99,7 +99,7 @@ public:
 	const bool is_end() const noexcept {
 		return _Index == Size;
 	}
-};
+}; // END ArrayConstIterator
 
 template<class Type, size_t Size>
 class ArrayIterator : public ArrayConstIterator<Type, Size>
@@ -168,7 +168,7 @@ public:
 	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
-}; // END Array Iterator
+}; // END ArrayIterator
 
 
 template<class Type, size_t Size>
@@ -183,7 +183,6 @@ class Array							// Array Template (follows aggregate rules)
 
 public:
 	using ValueType 			= Type;										// Type for stored values
-	
 	using Iterator				= ArrayIterator<ValueType, Size>;			// Iterator type
 	using ConstIterator			= ArrayConstIterator<ValueType, Size>;		// Const Iterator type
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
@@ -195,12 +194,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const noexcept {// Acces object at index (read only)
-		assert((void("Index out of bounds..."), !(index >= Size)));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
 
 	ValueType& operator[](const size_t& index) noexcept {			// Acces object at index
-		assert((void("Index out of bounds..."), !(index >= Size)));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
 
@@ -225,22 +224,22 @@ public:
 	}
 
     ValueType& front() noexcept {									// Get the value of the first component
-		assert((void("Container is empy..."), Size > 0));
+		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[0];
 	}
 
 	const ValueType& front() const noexcept {
-		assert((void("Container is empy..."), Size > 0));
+		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[0];
 	}
 
 	ValueType& back() noexcept {									// Get the value of the last component
-		assert((void("Container is empy..."), Size > 0));
+		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[Size - 1];
 	}
 
 	const ValueType& back() const noexcept {
-		assert((void("Container is empy..."), Size > 0));
+		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[Size - 1];
 	}
 

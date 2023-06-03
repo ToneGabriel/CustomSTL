@@ -33,99 +33,86 @@ public:
 	explicit VectorConstIterator(ValueType* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
-	VectorConstIterator& operator++() {
-		if (_Ptr >= _Data->_Last)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	VectorConstIterator& operator++() noexcept {
+		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot increment end iterator...");
 		++_Ptr;
 		return *this;
 	}
 
-	VectorConstIterator operator++(int) {
+	VectorConstIterator operator++(int) noexcept {
 		VectorConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	VectorConstIterator& operator+=(const size_t& diff) {
-		if (_Ptr + diff >= _Data->_Last)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	VectorConstIterator& operator+=(const size_t& diff) noexcept {
+		CUSTOM_ASSERT(_Ptr + diff < _Data->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
 
-	VectorConstIterator operator+(const size_t& diff) const {
+	VectorConstIterator operator+(const size_t& diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	VectorConstIterator& operator--() {
-		if (_Ptr <= _Data->_First)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	VectorConstIterator& operator--() noexcept {
+		CUSTOM_ASSERT(_Ptr > _Data->_First, "Cannot decrement begin iterator...");
 		--_Ptr;
 		return *this;
 	}
 
-	VectorConstIterator operator--(int) {
+	VectorConstIterator operator--(int) noexcept {
 		VectorConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	VectorConstIterator& operator-=(const size_t& diff) {
-		if (_Ptr - diff <= _Data->_First)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	VectorConstIterator& operator-=(const size_t& diff) noexcept {
+		CUSTOM_ASSERT(_Ptr - diff > _Data->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	VectorConstIterator operator-(const size_t& diff) const {
+	VectorConstIterator operator-(const size_t& diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
-		if (_Ptr >= _Data->_Last)
-			throw std::out_of_range("Cannot access end iterator...");
-
+	Pointer operator->() const noexcept {
+		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot access end iterator...");
 		return _Ptr;
 	}
 
-	Reference operator*() const {
-		if (_Ptr >= _Data->_Last)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
+	Reference operator*() const noexcept {
+		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot dereference end iterator...");
 		return *_Ptr;
 	}
 
-	bool operator==(const VectorConstIterator& other) const {
+	bool operator==(const VectorConstIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const VectorConstIterator& other) const {
+	bool operator!=(const VectorConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
 
 public:
 
-	const size_t get_index() const {						// Get the position for the element in array from iterator
+	const size_t get_index() const noexcept {						// Get the position for the element in array from iterator
 		return static_cast<size_t>(_Ptr - _Data->_First);
 	}
 
-	const bool is_begin() const {
+	const bool is_begin() const noexcept {
 		return _Ptr == _Data->_First;
 	}
 
-	const bool is_end() const {
+	const bool is_end() const noexcept {
 		return _Ptr == _Data->_Last;
 	}
-
-};
+}; // END VectorConstIterator
 
 template<class Vector>
 class VectorIterator : public VectorConstIterator<Vector>			// Vector Iterator
@@ -144,58 +131,58 @@ public:
 	explicit VectorIterator(ValueType* ptr, const Data* data) noexcept
 		:Base(ptr, data) { /*Empty*/ }
 
-	VectorIterator& operator++() {
+	VectorIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	VectorIterator operator++(int) {
+	VectorIterator operator++(int) noexcept {
 		VectorIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	VectorIterator& operator+=(const size_t& diff) {
+	VectorIterator& operator+=(const size_t& diff) noexcept {
 		Base::operator+=(diff);
 		return *this;
 	}
 
-	VectorIterator operator+(const size_t& diff) const {
+	VectorIterator operator+(const size_t& diff) const noexcept {
 		VectorIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	VectorIterator& operator--() {
+	VectorIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	VectorIterator operator--(int) {
+	VectorIterator operator--(int) noexcept {
 		VectorIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
 
-	VectorIterator& operator-=(const size_t& diff) {
+	VectorIterator& operator-=(const size_t& diff) noexcept {
 		Base::operator-=(diff);
 		return *this;
 	}
 
-	VectorIterator operator-(const size_t& diff) const {
+	VectorIterator operator-(const size_t& diff) const noexcept {
 		VectorIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
+	Pointer operator->() const noexcept {
 		return const_cast<Pointer>(Base::operator->());
 	}
 
-	Reference operator*() const {
+	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
-}; // END Vector Iterator
+}; // END VectorIterator
 
 
 template<class Type>
@@ -244,12 +231,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {					// Acces object at index (read only)
-		assert((void("Index out of bounds..."), !(index >= size())));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
 
 	ValueType& operator[](const size_t& index) {								// Acces object at index
-		assert((void("Index out of bounds..."), !(index >= size())));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
 
@@ -444,22 +431,22 @@ public:
 	}
 
 	const ValueType& front() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._First[0];
 	}
 
 	ValueType& front() {                                                     	// Get the value of the first component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._First[0];
 	}
 
 	const ValueType& back() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Last[-1];
 	}
 
 	ValueType& back() {                                                      	// Get the value of the last component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Last[-1];
 	}
 

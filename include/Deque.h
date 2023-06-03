@@ -37,107 +37,103 @@ public:
 
 public:
 
-    explicit DequeConstIterator(size_t offset, const Data* data)
+    explicit DequeConstIterator(size_t offset, const Data* data) noexcept
 		:_Offset(offset), _Data(data) { /*Empty*/ }
 
-	DequeConstIterator& operator++() {
-		if (_Offset >= _Data->_First + _Data->_Size)
-			throw std::out_of_range("Cannot increment end iterator...");
-		
+	DequeConstIterator& operator++() noexcept {
+		CUSTOM_ASSERT(_Offset < _Data->_First + _Data->_Size, "Cannot increment end iterator...");
 		++_Offset;
 		return *this;
 	}
 
-	DequeConstIterator operator++(int) {
+	DequeConstIterator operator++(int) noexcept {
 		DequeConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	DequeConstIterator& operator+=(const size_t& diff) {
-		if (_Offset + diff < _Data->_First || 
-			_Offset + diff > _Data->_First + _Data->_Size)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	DequeConstIterator& operator+=(const size_t& diff) noexcept {
+		CUSTOM_ASSERT(	_Offset + diff >= _Data->_First &&
+						_Offset + diff <= _Data->_First + _Data->_Size, 
+						"Cannot increment end iterator...");
 		_Offset += diff;
 		return *this;
 	}
 
-	DequeConstIterator operator+(const size_t& diff) const {
+	DequeConstIterator operator+(const size_t& diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	DequeConstIterator& operator--() {
-		if (_Offset <= _Data->_First)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	DequeConstIterator& operator--() noexcept {
+		CUSTOM_ASSERT(_Offset > _Data->_First, "Cannot decrement begin iterator...");
 		--_Offset;
 		return *this;
 	}
 
-	DequeConstIterator operator--(int) {
+	DequeConstIterator operator--(int) noexcept {
 		DequeConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
 	DequeConstIterator& operator-=(const size_t& diff) {
-		if (_Offset - diff < _Data->_First ||								// use data overflow
-			_Offset - diff > _Data->_First + _Data->_Size)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+		CUSTOM_ASSERT(	_Offset - diff >= _Data->_First &&					// TODO: use data overflow
+						_Offset - diff <= _Data->_First + _Data->_Size,
+						"Cannot decrement begin iterator...");
 		_Offset -= diff;
 		return *this;
 	}
 
-	DequeConstIterator operator-(const size_t& diff) const {
+	DequeConstIterator operator-(const size_t& diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
-		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
-			throw std::out_of_range("Cannot access end iterator...");
+	Pointer operator->() const noexcept {
+		CUSTOM_ASSERT(	_Offset >= _Data->_First &&
+						_Offset < _Data->_First + _Data->_Size,
+						"Cannot access end iterator...");
 
 		size_t block = _Data->get_block(_Offset);
 		size_t offset = _Offset % _Data->BLOCK_SIZE;
 		return &_Data->_Map[block][offset];
 	}
 
-	Reference operator*() const {
-		if (_Offset < _Data->_First || _Offset >= _Data->_First + _Data->_Size)
-			throw std::out_of_range("Cannot dereference end iterator...");
+	Reference operator*() const noexcept {
+		CUSTOM_ASSERT(	_Offset >= _Data->_First &&
+						_Offset < _Data->_First + _Data->_Size,
+						"Cannot dereference end iterator...");
 
 		size_t block	= _Data->get_block(_Offset);
 		size_t offset	= _Offset % _Data->BLOCK_SIZE;
 		return _Data->_Map[block][offset];
 	}
 
-	bool operator==(const DequeConstIterator& other) const {
+	bool operator==(const DequeConstIterator& other) const noexcept {
 		return _Offset == other._Offset;
 	}
 
-	bool operator!=(const DequeConstIterator& other) const {
+	bool operator!=(const DequeConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
 
 public:
 
-	const size_t get_offset() const {
+	const size_t get_offset() const noexcept {
 		return _Offset;
 	}
 
-	const bool is_begin() const {
+	const bool is_begin() const noexcept {
 		return _Offset == _Data->_First;
 	}
 
-	const bool is_end() const {
+	const bool is_end() const noexcept {
 		return _Offset == _Data->_First + _Data->_Size;
 	}
-};
+}; // END DequeConstIterator
 
 template<class Deque>
 class DequeIterator : public DequeConstIterator<Deque>			// Deque Iterator
@@ -153,58 +149,58 @@ public:
 
 public:
 
-	explicit DequeIterator(size_t offset, const Data* data)
+	explicit DequeIterator(size_t offset, const Data* data) noexcept
 		:Base(offset, data) { /*Empty*/ }
 
-	DequeIterator& operator++() {
+	DequeIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	DequeIterator operator++(int) {
+	DequeIterator operator++(int) noexcept {
 		DequeIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	DequeIterator& operator+=(const size_t& diff) {
+	DequeIterator& operator+=(const size_t& diff) noexcept {
 		Base::operator+=(diff);
 		return *this;
 	}
 
-	DequeIterator operator+(const size_t& diff) const {
+	DequeIterator operator+(const size_t& diff) const noexcept {
 		DequeIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	DequeIterator& operator--() {
+	DequeIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	DequeIterator operator--(int) {
+	DequeIterator operator--(int) noexcept {
 		DequeIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
 
-	DequeIterator& operator-=(const size_t& diff) {
+	DequeIterator& operator-=(const size_t& diff) noexcept {
 		Base::operator-=(diff);
 		return *this;
 	}
 
-	DequeIterator operator-(const size_t& diff) const {
+	DequeIterator operator-(const size_t& diff) const noexcept {
 		DequeIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
+	Pointer operator->() const noexcept {
 		return const_cast<Pointer>(Base::operator->());
 	}
 
-	Reference operator*() const {
+	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
 }; // END Deque Iterator
@@ -260,12 +256,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t& index) const {
-		assert((void("Index out of bounds..."), !(index >= size())));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return *(begin() + index);
 	}
 
 	ValueType& operator[](const size_t& index) {
-		assert((void("Index out of bounds..."), !(index >= size())));
+		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return *(begin() + index);
 	}
 
@@ -500,22 +496,22 @@ public:
 	}
 
 	const ValueType& front() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *begin();
 	}
 
 	ValueType& front() {                                                     	// Get the value of the first component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *begin();
 	}
 
 	const ValueType& back() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *(--end());
 	}
 
 	ValueType& back() {                                                      	// Get the value of the last component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *(--end());
 	}
 

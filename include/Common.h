@@ -3,12 +3,27 @@
 #include <stdexcept>    // exceptions
 #include <cassert>      // assert
 #include <climits>
+#include <iostream>     // debugging
+
 
 #define CUSTOM_BEGIN namespace custom {
 #define CUSTOM_END }
 
 #define STD_BEGIN namespace std {
 #define STD_END }
+
+#define CUSTOM_ASSERT(Expr, Msg) \
+            __Assert(#Expr, Expr, __FILE__, __LINE__, Msg)
+
+void __Assert(const char* expr_str, bool expr, const char* file, int line, const char* msg) {
+    if (!expr)
+    {
+        std::cerr   << "Assert failed:\t" << msg << "\n"
+                    << "Expected:\t" << expr_str << "\n"
+                    << "Source:\t\t" << file << ", line " << line << "\n";
+        abort();
+    }
+}
 
 
 CUSTOM_BEGIN

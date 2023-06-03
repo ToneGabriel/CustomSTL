@@ -3,7 +3,6 @@
 #include "Pair.h"
 #include "Utility.h"
 
-#include <iostream>
 #include <functional>	// std::less
 
 

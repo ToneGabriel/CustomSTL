@@ -23,7 +23,6 @@
 #include "Barrier.h"
 #endif	// __GNUG__
 
-#include <iostream>
 #include <string>
 #include <array>
 #include <vector>
