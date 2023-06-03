@@ -20,95 +20,83 @@ public:
 	explicit ArrayConstIterator(ValueType* ptr, size_t index) noexcept
 		:_Ptr(ptr), _Index(index) { /*Empty*/ }
 
-	ArrayConstIterator& operator++() {
-		if (_Index >= Size)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	ArrayConstIterator& operator++() noexcept {
+		assert((void("Cannot increment end iterator..."), _Index < Size));
 		++_Index;
 		return *this;
 	}
 
-	ArrayConstIterator operator++(int) {
+	ArrayConstIterator operator++(int) noexcept {
 		ArrayConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ArrayConstIterator& operator+=(const size_t& diff) {
-		if (_Index + diff > Size)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	ArrayConstIterator& operator+=(const size_t& diff) noexcept {
+		assert((void("Cannot increment end iterator..."), _Index + diff <= Size));
 		_Index += diff;
 		return *this;
 	}
 
-	ArrayConstIterator operator+(const size_t& diff) const {
+	ArrayConstIterator operator+(const size_t& diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	ArrayConstIterator& operator--() {
-		if (_Index == 0)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	ArrayConstIterator& operator--() noexcept {
+		assert((void("Cannot decrement begin iterator..."), _Index > 0));
 		--_Index;
 		return *this;
 	}
 
-	ArrayConstIterator operator--(int) {
+	ArrayConstIterator operator--(int) noexcept {
 		ArrayConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	ArrayConstIterator& operator-=(const size_t& diff) {
-		if (_Index < diff)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	ArrayConstIterator& operator-=(const size_t& diff) noexcept {
+		assert((void("Cannot decrement begin iterator..."), _Index >= diff));
 		_Index -= diff;
 		return *this;
 	}
 
-	ArrayConstIterator operator-(const size_t& diff) const {
+	ArrayConstIterator operator-(const size_t& diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
-		if (_Index >= Size)
-			throw std::out_of_range("Cannot access end iterator...");
-
+	Pointer operator->() const noexcept {
+		assert((void("Cannot access end iterator..."), _Index < Size));
 		return _Ptr + _Index;
 	}
 
-	Reference operator*() const {
-		if (_Index >= Size)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
+	Reference operator*() const noexcept {
+		assert((void("Cannot dereference end iterator..."), _Index < Size));
 		return *(_Ptr + _Index);
 	}
 
-	bool operator==(const ArrayConstIterator& other) const {
+	bool operator==(const ArrayConstIterator& other) const noexcept {
 		return (_Ptr == other._Ptr && _Index == other._Index);
 	}
 
-	bool operator!=(const ArrayConstIterator& other) const {
+	bool operator!=(const ArrayConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
 
 public:
 
-	const size_t get_index() const {						// Get the position for the element in array from iterator
+	const size_t get_index() const noexcept {				// Get the position for the element in array from iterator
 		return _Index;
 	}
 
-	const bool is_begin() const {
+	const bool is_begin() const noexcept {
 		return _Index == 0;
 	}
 
-	const bool is_end() const {
+	const bool is_end() const noexcept {
 		return _Index == Size;
 	}
 };
@@ -129,63 +117,70 @@ public:
 	explicit ArrayIterator(ValueType* ptr, size_t index) noexcept
 		:Base(ptr, index) { /*Empty*/ }
 
-	ArrayIterator& operator++() {
+	ArrayIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	ArrayIterator operator++(int) {
+	ArrayIterator operator++(int) noexcept {
 		ArrayIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	ArrayIterator& operator+=(const size_t& diff) {
+	ArrayIterator& operator+=(const size_t& diff) noexcept {
 		Base::operator+=(diff);
 		return *this;
 	}
 
-	ArrayIterator operator+(const size_t& diff) const {
+	ArrayIterator operator+(const size_t& diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	ArrayIterator& operator--() {
+	ArrayIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	ArrayIterator operator--(int) {
+	ArrayIterator operator--(int) noexcept {
 		ArrayIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
 
-	ArrayIterator& operator-=(const size_t& diff) {
+	ArrayIterator& operator-=(const size_t& diff) noexcept {
 		Base::operator-=(diff);
 		return *this;
 	}
 
-	ArrayIterator operator-(const size_t& diff) const {
+	ArrayIterator operator-(const size_t& diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	Pointer operator->() const {
+	Pointer operator->() const noexcept {
 		return const_cast<Pointer>(Base::operator->());
 	}
 
-	Reference operator*() const {
+	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
 }; // END Array Iterator
 
 
 template<class Type, size_t Size>
-class Array							// Array Template
+class Array							// Array Template (follows aggregate rules)
 {
+//Aggregate Rules:
+//Is a class type(a struct, class, or union), or an array type;
+//Has no private or protected non-static data members;
+//Has no user-declared or inherited constructors;
+//Has no base classes;
+//Has no virtual member functions;
+
 public:
 	using ValueType 			= Type;										// Type for stored values
 	
@@ -194,34 +189,19 @@ public:
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
-private:
-	ValueType _array[Size];											// Actual container array
+	ValueType _array[Size];													// Actual container array
 
 public:
 	// Operators
 
-	const ValueType& operator[](const size_t& index) const {		// Acces object at index (read only)
+	const ValueType& operator[](const size_t& index) const noexcept {// Acces object at index (read only)
 		assert((void("Index out of bounds..."), !(index >= Size)));
 		return _array[index];
 	}
 
-	ValueType& operator[](const size_t& index) {					// Acces object at index
+	ValueType& operator[](const size_t& index) noexcept {			// Acces object at index
 		assert((void("Index out of bounds..."), !(index >= Size)));
 		return _array[index];
-	}
-	
-	Array& operator=(const Array& other) {							// Assign operator using reference
-		if (_array != other._array)
-			_copy(other);
-
-		return *this;
-	}
-
-	Array& operator=(Array&& other) noexcept {						// Assign operator using temporary
-		if (_array != other._array)
-			_move(custom::move(other));
-
-		return *this;
 	}
 
 	bool operator==(const Array& other) const {
@@ -239,36 +219,36 @@ public:
 public:
 	// Main functions
 
-    void fill(const ValueType& copyValue) {
+    void fill(const ValueType& copyValue) {							// Fill the container with values
 		for (size_t i = 0; i < Size; ++i)
 			_array[i] = copyValue;
 	}
 
-    ValueType& front() {											// Get the value of the first component
+    ValueType& front() noexcept {									// Get the value of the first component
 		assert((void("Container is empy..."), Size > 0));
 		return _array[0];
 	}
 
-	const ValueType& front() const {
+	const ValueType& front() const noexcept {
 		assert((void("Container is empy..."), Size > 0));
 		return _array[0];
 	}
 
-	ValueType& back() {												// Get the value of the last component
+	ValueType& back() noexcept {									// Get the value of the last component
 		assert((void("Container is empy..."), Size > 0));
 		return _array[Size - 1];
 	}
 
-	const ValueType& back() const {
+	const ValueType& back() const noexcept {
 		assert((void("Container is empy..."), Size > 0));
 		return _array[Size - 1];
 	}
 
-	const size_t size() const {										// Get size
+	const size_t size() const noexcept {							// Get size
 		return Size;
 	}
 
-	bool empty() const {											// Check if array is empty
+	bool empty() const noexcept {									// Check if array is empty
 		return Size == 0;
 	}
 
@@ -286,57 +266,89 @@ public:
 		return _array[index];
 	}
 
+	ValueType* data() noexcept {
+		return _array;
+	}
+
+	const ValueType* data() const noexcept {
+		return _array;
+	}
+
 public:
 	// Iterator specific functions
 
-	Iterator begin() {
+	Iterator begin() noexcept {
 		return Iterator(_array, 0);
 	}
 
-	ConstIterator begin() const {
+	ConstIterator begin() const noexcept {
 		return ConstIterator(_array, 0);
 	}
 
-	ReverseIterator rbegin() {
+	ReverseIterator rbegin() noexcept {
 		return ReverseIterator(end());
 	}
 
-	ConstReverseIterator rbegin() const {
+	ConstReverseIterator rbegin() const noexcept {
 		return ConstReverseIterator(end());
 	}
 
-	Iterator end() {
+	Iterator end() noexcept {
 		return Iterator(_array, Size);
 	}
 
-	ConstIterator end() const {
+	ConstIterator end() const noexcept {
 		return ConstIterator(_array, Size);
 	}
 
-	ReverseIterator rend() {
+	ReverseIterator rend() noexcept {
 		return ReverseIterator(begin());
 	}
 
-	ConstReverseIterator rend() const {
+	ConstReverseIterator rend() const noexcept {
 		return ConstReverseIterator(begin());
-	}
-
-private:
-	// Others
-
-	void _copy(const Array& other) {								// Generic copy function for vector
-		for(size_t i = 0; i < Size; ++i)
-			_array[i] = other._array[i];
-	}
-
-	void _move(Array&& other) {										// Generic move function for vector
-		for(size_t i = 0; i < Size; ++i)
-			_array[i] = custom::move(other._array[i]);
 	}
 }; // END Array Template
 
 
-// template<class First, class... Rest>
-// Array(First, Rest...) -> Array<EnableIf_t<(IsSame_v<First, Rest> && ...), First>, 1 + sizeof...(Rest)>;
+template<class First, class... Rest>
+struct _AssertSame													// Assert all types to be the same
+{
+	static_assert(Conjunction_v<IsSame<First, Rest>...>,
+					"All types must be the same. Otherwise the program is ill-formed.");
+
+	using Type = First;												// Get type
+};
+
+template<class First, class... Rest>
+Array(First, Rest...) -> Array<typename _AssertSame<First, Rest...>::Type, 1 + sizeof...(Rest)>;
+
+
+// to array
+template<class Ty, size_t Size, size_t... Idx>
+constexpr Array<RemoveCV_t<Ty>, Size> _to_array_copy_impl(Ty(&builtInArray)[Size], IndexSequence<Idx...>) {
+	return { builtInArray[Idx]... };
+}
+
+template<class Ty, size_t Size, size_t... Idx>
+constexpr Array<RemoveCV_t<Ty>, Size> _to_array_move_impl(Ty(&&builtInArray)[Size], IndexSequence<Idx...>) {
+	return { custom::move(builtInArray[Idx])... };
+}
+
+template<class Ty, size_t Size>
+constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty(&builtInArray)[Size]) {
+	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
+	static_assert(IsCopyConstructible_v<Ty>, "to_array requires copy constructible elements...");
+
+	return _to_array_copy_impl(builtInArray, MakeIndexSequence<Size>{});
+}
+
+template<class Ty, size_t Size>
+constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty(&&builtInArray)[Size]) {
+	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
+	static_assert(IsMoveConstructible_v<Ty>, "to_array requires move constructible elements...");
+
+	return _to_array_move_impl(custom::move(builtInArray), MakeIndexSequence<Size>{});
+}
 
 CUSTOM_END

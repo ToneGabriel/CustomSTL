@@ -1,4 +1,4 @@
-1. Check Array constructors
+1. Check ALL iterators for noexcept operators
 2. Learn and implement thread, mutex, condition_variable, semaphore, barrier
 3. Learn and implement smart pointers
 4. Complete TypeTraits
