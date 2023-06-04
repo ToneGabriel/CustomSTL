@@ -33,68 +33,61 @@ public:
 
 public:
 
-	explicit ListConstIterator(Node* nodePtr, const Data* data)
+	explicit ListConstIterator(Node* nodePtr, const Data* data) noexcept
 		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
 
-	ListConstIterator& operator++() {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot increment end iterator...");
-
+	ListConstIterator& operator++() noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot increment end iterator...");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
 
-	ListConstIterator operator++(int) {
+	ListConstIterator operator++(int) noexcept {
 		ListConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ListConstIterator& operator--() {
-		if (_Ptr == _Data->_Head->_Next)
-			throw std::out_of_range("Cannot decrement begin iterator...");
-
+	ListConstIterator& operator--() noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head->_Next, "Cannot decrement begin iterator...");
 		_Ptr = _Ptr->_Previous;
 		return *this;
 	}
 
-	ListConstIterator operator--(int) {
+	ListConstIterator operator--(int) noexcept {
 		ListConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	Pointer operator->() const {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot access end iterator...");
-
+	Pointer operator->() const noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot access end iterator...");
 		return _Ptr;
 	}
 
-	Reference operator*() const {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
+	Reference operator*() const noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ListConstIterator& other) const {
+	bool operator==(const ListConstIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ListConstIterator& other) const {
+	bool operator!=(const ListConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
 
 public:
-	const bool is_begin() const {
+
+	const bool is_begin() const noexcept {
 		return _Ptr == _Data->_Head->_Next;
 	}
 
-	const bool is_end() const {
+	const bool is_end() const noexcept {
 		return _Ptr == _Data->_Head;
 	}
-};
+}; // END ListConstIterator
 
 template<class List>
 class ListIterator : public ListConstIterator<List>		// Linked List Iterator
@@ -111,39 +104,39 @@ public:
 
 public:
 
-	explicit ListIterator(Node* nodePtr, const Data* data)
-		:Base(nodePtr, data) { /*Empty*/ }
+	explicit ListIterator(Node* nodePtr, const Data* data) noexcept
+		: Base(nodePtr, data) { /*Empty*/ }
 
-	ListIterator& operator++() {
+	ListIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	ListIterator operator++(int) {
+	ListIterator operator++(int) noexcept {
 		ListIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	ListIterator& operator--() {
+	ListIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	ListIterator operator--(int) {
+	ListIterator operator--(int) noexcept {
 		ListIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
 
-	Pointer operator->() const {
+	Pointer operator->() const noexcept {
 		return const_cast<Pointer>(Base::operator->());
 	}
 
-	Reference operator*() const {
+	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
-}; // END Linked List Iterator
+}; // END ListIterator
 
 
 template<class Type>
@@ -312,22 +305,22 @@ public:
 	}
 
 	ValueType& front() {                                                    // Get the value of the first component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Next->_Value;
 	}
 
 	const ValueType& front() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Next->_Value;
 	}
 
 	ValueType& back() {                                                     // Get the value of the last component
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Previous->_Value;
 	}
 
 	const ValueType& back() const {
-		assert((void("Container is empty..."), !empty()));
+		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Previous->_Value;
 	}
 

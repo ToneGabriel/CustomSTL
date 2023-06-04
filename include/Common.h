@@ -1,7 +1,6 @@
 #pragma once
 #include <cstddef>      // size_t, nullptr_t
 #include <stdexcept>    // exceptions
-#include <cassert>      // assert
 #include <climits>
 #include <iostream>     // debugging
 
@@ -13,14 +12,14 @@
 #define STD_END }
 
 #define CUSTOM_ASSERT(Expr, Msg) \
-            __Assert(#Expr, Expr, __FILE__, __LINE__, Msg)
+            __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
-void __Assert(const char* expr_str, bool expr, const char* file, int line, const char* msg) {
+void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
     {
-        std::cerr   << "Assert failed:\t" << msg << "\n"
-                    << "Expected:\t" << expr_str << "\n"
-                    << "Source:\t\t" << file << ", line " << line << "\n";
+        std::cerr   << "Assert failed:\t"   << msg      << "\n"
+                    << "Expected:\t"        << exprStr  << "\n"
+                    << "Source:\t\t"        << file     << ", line " << line << "\n";
         abort();
     }
 }

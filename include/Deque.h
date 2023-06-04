@@ -78,7 +78,7 @@ public:
 		return temp;
 	}
 
-	DequeConstIterator& operator-=(const size_t& diff) {
+	DequeConstIterator& operator-=(const size_t& diff) noexcept {
 		CUSTOM_ASSERT(	_Offset - diff >= _Data->_First &&					// TODO: use data overflow
 						_Offset - diff <= _Data->_First + _Data->_Size,
 						"Cannot decrement begin iterator...");

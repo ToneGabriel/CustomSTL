@@ -60,12 +60,11 @@ public:
 	const Data* _Data	= nullptr;
 
 public:
-	explicit ConstSearchTreeIterator(Node* ptr, const Data* data)
+	explicit ConstSearchTreeIterator(Node* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
-	ConstSearchTreeIterator& operator++() {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot increment end iterator...");
+	ConstSearchTreeIterator& operator++() noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot increment end iterator...");
 
 		if (_Ptr->_Right->_IsNil)
 		{
@@ -83,15 +82,14 @@ public:
 		return *this;
 	}
 
-	ConstSearchTreeIterator operator++(int) {
+	ConstSearchTreeIterator operator++(int) noexcept {
 		ConstSearchTreeIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ConstSearchTreeIterator& operator--() {
-		if (_Ptr == _Data->_Head->_Left)
-			throw std::out_of_range("Cannot decrement begin iterator...");
+	ConstSearchTreeIterator& operator--() noexcept {
+		CUSTOM_ASSERT(_Ptr != _Data->_Head->_Left, "Cannot decrement begin iterator...");
 
 		if (_Ptr->_IsNil)
 			_Ptr = _Ptr->_Right;
@@ -113,34 +111,30 @@ public:
 		return *this;
 	}
 
-	ConstSearchTreeIterator operator--(int) {
+	ConstSearchTreeIterator operator--(int) noexcept {
 		ConstSearchTreeIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	Pointer operator->() {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot access end iterator...");
-
+	Pointer operator->() const noexcept{
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot access end iterator...");
 		return _Ptr;
 	}
 
-	Reference operator*() {
-		if (_Ptr == _Data->_Head)
-			throw std::out_of_range("Cannot dereference end iterator...");
-
+	Reference operator*() const noexcept{
+		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ConstSearchTreeIterator& other) const {
+	bool operator==(const ConstSearchTreeIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ConstSearchTreeIterator& other) const {
+	bool operator!=(const ConstSearchTreeIterator& other) const noexcept {
 		return !(*this == other);
 	}
-};
+}; // END ConstSearchTreeIterator
 
 template<class SearchTree>
 class SearchTreeIterator : public ConstSearchTreeIterator<SearchTree>			// SearchTree Iterator
@@ -157,39 +151,39 @@ public:
 
 public:
 
-	explicit SearchTreeIterator(Node* ptr, const Data* data)
+	explicit SearchTreeIterator(Node* ptr, const Data* data) noexcept
 		:Base(ptr, data) { /*Empty*/ }
 
-	SearchTreeIterator& operator++() {
+	SearchTreeIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	SearchTreeIterator operator++(int) {
+	SearchTreeIterator operator++(int) noexcept {
 		SearchTreeIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	SearchTreeIterator& operator--() {
+	SearchTreeIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	SearchTreeIterator operator--(int) {
+	SearchTreeIterator operator--(int) noexcept {
 		SearchTreeIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
 
-	Pointer operator->() {
+	Pointer operator->() const noexcept {
 		return const_cast<Pointer>(Base::operator->());
 	}
 
-	Reference operator*() {
+	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
-}; // END SearchTree Iterator
+}; // END SearchTreeIterator
 
 
 template<class Traits>
