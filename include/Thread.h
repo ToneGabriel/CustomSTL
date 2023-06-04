@@ -6,12 +6,15 @@
 #include "Tuple.h"
 
 #include <pthread.h>
+#include <chrono>
+
 
 #if defined _WIN32
 #include <windows.h>    // for hardware_concurrency()
 #elif defined __linux__
 #include <sys/sysinfo.h>
 #endif      // _WIN32 and __linux__
+
 
 CUSTOM_BEGIN
 
@@ -48,7 +51,8 @@ public:
     Thread()                = default;
     Thread(const Thread&)   = delete;
 
-    template<class Functor, class... Args, EnableIf_t<!IsSame<Decay_t<Functor>, Thread>::Value, bool> = true>
+    template<class Functor, class... Args, 
+    EnableIf_t<!IsSame<Decay_t<Functor>, Thread>::Value, bool> = true>
     Thread(Functor&& func, Args&&... args) {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
 
@@ -101,16 +105,6 @@ public:
 public:
     // Main functions
 
-    static unsigned int hardware_concurrency() {
-        #if defined _WIN32
-        SYSTEM_INFO sysinfo;
-        GetSystemInfo(&sysinfo);
-        return sysinfo.dwNumberOfProcessors;
-        #elif defined __linux__
-        return get_nprocs();
-        #endif
-    }
-
     bool joinable() const {
         return _thread != 0;
     }
@@ -118,6 +112,9 @@ public:
     void join() {
         if (!joinable())
             throw std::runtime_error("Thread not joinable...");
+
+        if (_thread == pthread_self())
+            throw std::runtime_error("Resource deadlock would occur...");
 
         if (pthread_join(_thread, nullptr) != 0)
             throw std::runtime_error("Thread join failed...");
@@ -135,45 +132,21 @@ public:
         _thread = 0;
     }
 
-    ID get_id() const {
-        return _thread;         // calls private constructor of Thread::ID
-    }
+    ID get_id() const noexcept;
 
-    NativeHandleType native_handle() {
+    NativeHandleType native_handle() noexcept {
         return _thread;
     }
 
-public:
-    // ID definition
-    
-    class ID
-    {
-    private:
-        pthread_t _threadID;
-
-    public:
-
-        ID() : _threadID(0) { /*Empty*/ }
-
-        bool operator==(const ID& other) const {
-            return (pthread_equal(_threadID, other._threadID) != 0);
-        }
-
-        bool operator!=(const ID& other) const {
-            return !(*this == other);
-        }
-
-        friend std::ostream& operator<<(std::ostream& os, const ID& id) {
-            os << id._threadID;
-            return os;
-        }
-
-        friend Thread::ID Thread::get_id() const;
-
-    private:
-
-        ID(const pthread_t& thr) : _threadID(thr) { /*Empty*/ }
-    }; // END Thread::ID
+    static unsigned int hardware_concurrency() {
+        #if defined _WIN32
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo(&sysinfo);
+        return sysinfo.dwNumberOfProcessors;
+        #elif defined __linux__
+        return get_nprocs();
+        #endif
+    }
 
 private:
     // Helpers
@@ -183,6 +156,80 @@ private:
         other._thread   = 0;
     }
 }; // END Thread
+
+
+namespace this_thread
+{
+    Thread::ID get_id() noexcept;
+
+    void yield() noexcept {
+        sched_yield();
+    }
+
+    template<class Clock, class Duration>
+    void sleep_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        // TODO: implement
+    }
+
+    template<class Rep, class Period>
+    void sleep_for(const std::chrono::duration<Rep, Period>& relativetime) {
+        // if (relativetime <= relativetime.zero())
+	    //     return;
+
+        // auto seconds        = std::chrono::time_point_cast<std::chrono::seconds>(relativetime);
+	    // auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(relativetime - seconds);
+        // struct timespec ts  =   {
+        //                             static_cast<std::time_t>(seconds.time_since_epoch().count()),
+        //                             static_cast<long>(nanoseconds.count())
+        //                         };
+
+        // while (::nanosleep(&ts, &ts) == -1 && errno == EINTR)
+        // { /*Empty*/ }
+
+    } // TODO: check
+
+} // END namespace this_thread
+
+
+class Thread::ID
+{
+private:
+    pthread_t _threadID;
+
+public:
+
+    ID() : _threadID(0) { /*Empty*/ }
+
+    bool operator==(const ID& other) const {
+        return (pthread_equal(_threadID, other._threadID) != 0);
+    }
+
+    bool operator!=(const ID& other) const {
+        return !(*this == other);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const ID& id) {
+        os << id._threadID;
+        return os;
+    }
+
+    friend Thread::ID Thread::get_id() const noexcept;
+    friend Thread::ID this_thread::get_id() noexcept;
+
+private:
+
+    ID(const pthread_t& thr) : _threadID(thr) { /*Empty*/ }
+}; // END Thread::ID
+
+
+// other definitions
+Thread::ID Thread::get_id() const noexcept {
+    return _thread;             // calls private constructor of Thread::ID
+}
+
+Thread::ID this_thread::get_id() noexcept {
+    return pthread_self();      // calls private constructor of Thread::ID
+}
 
 CUSTOM_END
 
