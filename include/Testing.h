@@ -182,7 +182,7 @@ void unordered_map_test() {
 
 	map.print_details();
 	std::cout << '\n';
-	for(auto& val : map)
+	for (auto& val : map)
 		std::cout << val.First << ' ' << val.Second << '\n';
 }
 
@@ -264,7 +264,7 @@ void queue_test() {
 	for (size_t i = 0; i < 50; ++i)
 		q.emplace(i);
 
-	while(!q.empty())
+	while (!q.empty())
 	{
 		std::cout << q.front() << '\n';
 		q.pop();
@@ -357,10 +357,10 @@ void invoke_test() {
 
 #if defined __GNUG__
 void thread_test() {
-	custom::Thread t(function_test);
+	custom::Thread t(deque_test);
 	t.join();
 }
-#endif
+#endif	// __GNUG__
 
 TEST_END
 

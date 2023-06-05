@@ -32,7 +32,7 @@ private:
     // Core functions
 
     template<class CallableTuple, size_t... Indices>
-    static void* _invoke_impl(void* args) {
+    static void* _invoke_impl(void* args) noexcept {
         CallableTuple* callable = static_cast<CallableTuple*>(args);
         custom::invoke(custom::move(custom::get<Indices>(*callable))...);
         delete callable;
@@ -105,7 +105,7 @@ public:
 public:
     // Main functions
 
-    bool joinable() const {
+    bool joinable() const noexcept {
         return _thread != 0;
     }
 
@@ -138,14 +138,14 @@ public:
         return _thread;
     }
 
-    static unsigned int hardware_concurrency() {
+    static unsigned int hardware_concurrency() noexcept {
         #if defined _WIN32
         SYSTEM_INFO sysinfo;
         GetSystemInfo(&sysinfo);
         return sysinfo.dwNumberOfProcessors;
         #elif defined __linux__
         return get_nprocs();
-        #endif
+        #endif      // _WIN32 and __linux__
     }
 
 private:
@@ -158,7 +158,7 @@ private:
 }; // END Thread
 
 
-namespace this_thread
+namespace this_thread   // TODO: check
 {
     Thread::ID get_id() noexcept;
 
@@ -166,27 +166,39 @@ namespace this_thread
         sched_yield();
     }
 
-    template<class Clock, class Duration>
-    void sleep_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
-        // TODO: implement
-    }
-
     template<class Rep, class Period>
     void sleep_for(const std::chrono::duration<Rep, Period>& relativetime) {
-        // if (relativetime <= relativetime.zero())
-	    //     return;
+        if (relativetime <= relativetime.zero())
+	        return;
 
-        // auto seconds        = std::chrono::time_point_cast<std::chrono::seconds>(relativetime);
-	    // auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(relativetime - seconds);
-        // struct timespec ts  =   {
-        //                             static_cast<std::time_t>(seconds.time_since_epoch().count()),
-        //                             static_cast<long>(nanoseconds.count())
-        //                         };
+        auto seconds        = std::chrono::duration_cast<std::chrono::seconds>(relativetime);
+	    auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(relativetime - seconds);
+        struct timespec ts  =   {
+                                    static_cast<std::time_t>(seconds.count()),
+                                    static_cast<long>(nanoseconds.count())
+                                };
 
-        // while (::nanosleep(&ts, &ts) == -1 && errno == EINTR)
-        // { /*Empty*/ }
+        while (::nanosleep(&ts, &ts) == -1 && errno == EINTR)
+        {
+            // Empty
 
-    } // TODO: check
+            // 1'st param (const) is the given time to sleep;
+            // 2'nd param (no const) returns the remaining time if fail;
+            // while ::nanosleep keeps failing, it is recalled with the remaining time...
+            // ...assigned to given time;
+        }
+    }
+
+    template<class Clock, class Duration>
+    void sleep_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+        auto now = Clock::now();
+
+        while (now < absoluteTime)
+        {
+            sleep_for(absoluteTime - now);
+            now = Clock::now();
+        }
+    }
 
 } // END namespace this_thread
 

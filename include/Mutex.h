@@ -343,7 +343,7 @@ public:
 
     template<class Predicate>
     void wait(UniqueLock<Mutex>& lock, Predicate pred) {
-        while(!pred())
+        while (!pred())
             pthread_cond_wait(&_conditionVar, &lock.mutex()->_mutex);
         // TODO: check
     }

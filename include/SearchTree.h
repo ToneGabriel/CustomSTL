@@ -748,7 +748,7 @@ private:
 	}
 
 	void _transplant(Node* first, Node* second) {
-		if(first == second)
+		if (first == second)
 			return;
 
 		_swap_parents(first, second);	

@@ -470,7 +470,7 @@ public:
 	}
 
 	void clear() {
-		while(!empty())
+		while (!empty())
 			pop_back();
 
 		for (size_t i = 0; i < _data._MapCapacity; ++i)

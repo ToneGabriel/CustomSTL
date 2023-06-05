@@ -63,9 +63,9 @@ public:
 
     template<class Rep, class Period>
     bool try_acquire_for(const std::chrono::duration<Rep, Period>& relativeTime) {
-        return wait_until(  std::chrono::steady_clock::now() + 
-                            std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
-    }
+        return try_acquire_until(   std::chrono::steady_clock::now() + 
+                                    std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
+    }   // TODO: check
 }; // END CountingSemaphore
 
 using BinarySemaphore = CountingSemaphore<1>;
