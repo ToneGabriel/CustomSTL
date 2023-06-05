@@ -69,4 +69,9 @@ ExportedObj/
 *.exe
 *.out
 *.app
+
+# Git Command Helpers
+*.sh
+*.bat
+Token
 CustomSTL
