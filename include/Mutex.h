@@ -268,34 +268,162 @@ public:
 
 
 // lock
-template<class Lock0, class Lock1, class... LockN>
-void lock(Lock0& lock0, Lock1& lock1, LockN&... lockN) {    // lock multiple locks, without deadlock
-    // TODO: implement
+template<size_t... Indices, class... Locks>
+void _lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
+    int ignored[] = {((static_cast<int>(Indices) == target ? (void) locks.lock() : void()), 0)...};
+    (void) ignored;
+}
+
+template<size_t... Indices, class... Locks>
+bool _try_lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // try to lock locks[target]
+    bool result;
+    int ignored[] = {((static_cast<int>(Indices) == target ? (void) (result = locks.try_lock()) : void()), 0)...};
+    (void) ignored;
+    return result;
+}
+
+template<size_t... Indices, class... Locks>
+void _unlock_locks(const int first, const int last, IndexSequence<Indices...>, Locks&... locks) noexcept {
+    // terminates
+    // unlock locks in locks[first, last)
+    int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void) locks.unlock() : void()), 0)...};
+    (void) ignored;
+}
+
+template<class... Locks>
+int _try_lock_range(const int first, const int last, Locks&... locks) {
+    using Indices = IndexSequenceFor<Locks...>;
+
+    int next = first;
+    try
+    {
+        for (; next != last; ++next)
+            if (!_try_lock_from_locks(next, Indices{}, locks...))   // try_lock failed, backout
+            {
+                _unlock_locks(first, next, Indices{}, locks...);
+                return next;
+            }
+    }
+    catch (...)
+    {
+        _unlock_locks(first, next, Indices{}, locks...);
+        // _RERAISE; // TODO: ???
+    }
+
+    return -1;
+}
+
+template<class... Locks>
+int _lock_attempt(const int hardLock, Locks&... locks) {
+    // attempt to lock locks, starting by locking locks[hardLock] and trying to lock the rest
+
+    using Indices = IndexSequenceFor<Locks...>;
+
+    _lock_from_locks(hardLock, Indices{}, locks...);
+    int failed          = -1;
+    int backoutStart    = hardLock; // that is, unlock hardLock
+
+    try
+    {
+        failed = _try_lock_range(0, hardLock, locks...);
+        if (failed == -1)
+        {
+            backoutStart    = 0;    // that is, unlock [0, hardLock] if the next throws
+            failed          = _try_lock_range(hardLock + 1, sizeof...(Locks), locks...);
+            
+            if (failed == -1)       // we got all the locks
+                return -1;
+        }
+    }
+    catch (...)
+    {
+        _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
+        // _RERAISE; // TODO: ???
+    }
+
+    // didn't get all the locks, backout
+    _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
+    custom::this_thread::yield();
+    return failed;
+}
+
+template<class... Locks>
+void lock(Locks&... locks) {    // lock multiple locks, without deadlock
+    int hardLock = 0;
+    while (hardLock != -1)
+        hardLock = _lock_attempt(hardLock, locks...);
+}
+
+template<class... Locks>
+int try_lock(Locks&... locks) { // try to lock multiple locks
+    return _try_lock_range(0, sizeof...(Locks), locks...);
 }
 
 
 template<class... Mutexes>
-class ScopedLock
+class ScopedLock            // locks/unlocks multiple mutexes
 {
-// private:
-//     Tuple<Mutexes&...> _ownedMutexes;
+private:
+    Tuple<Mutexes&...> _ownedMutexes;
 
-// public:
-//     // Constructors & Operators
+public:
+    // Constructors & Operators
 
-//     explicit ScopedLock(Mutexes&... mtxes) : _ownedMutexes(mtxes...) { // construct and lock
-//         custom::lock(mtxes...);    // TODO: check
-//     }
+    explicit ScopedLock(Mutexes&... mtxes): _ownedMutexes(mtxes...) { // construct and lock
+        custom::lock(mtxes...);    // TODO: check
+    }
 
-//     explicit ScopedLock(AdoptLock_t, Mutexes&... mtxes) : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
+    explicit ScopedLock(AdoptLock_t, Mutexes&... mtxes)
+        : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
 
-//     ~ScopedLock() {
-//         custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
-//     }
+    ~ScopedLock() {
+        custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
+    }
 
-//     ScopedLock(const ScopedLock&)            = delete;
-//     ScopedLock& operator=(const ScopedLock&) = delete;
-}; // END ScopedLock
+    ScopedLock(const ScopedLock&)            = delete;
+    ScopedLock& operator=(const ScopedLock&) = delete;
+}; // END ScopedLock multiple
+
+template<class Mtx>
+class ScopedLock<Mtx>
+{
+public:
+    using MutexType = Mtx;
+
+private:
+    MutexType& _ownedMutex;
+    
+public:
+    // Constructors & Operators
+
+    explicit ScopedLock(MutexType& mtx) : _ownedMutex(mtx) { // construct and lock
+        _ownedMutex.lock();
+    }
+
+    explicit ScopedLock(AdoptLock_t, MutexType& mtx)
+        : _ownedMutex(mtx) { /*Empty*/ } // construct but don't lock
+
+    ~ScopedLock() {
+        _ownedMutex.unlock();
+    }
+
+    ScopedLock(const ScopedLock&)            = delete;
+    ScopedLock& operator=(const ScopedLock&) = delete;
+}; // END ScopedLock one
+
+template<>
+class ScopedLock<>
+{
+public:
+    // Constructors & Operators
+
+    explicit ScopedLock() { /*Empty*/ }
+    explicit ScopedLock(AdoptLock_t) { /*Empty*/ }
+    ~ScopedLock() { /*Empty*/ }
+
+    ScopedLock(const ScopedLock&)            = delete;
+    ScopedLock& operator=(const ScopedLock&) = delete;
+}; // END ScopedLock empty
 
 
 enum class CVStatus
@@ -393,6 +521,15 @@ public:
 }; // END ConditionVariable
 
 
+struct UINTIsZero   // used as predicate in TimedMutex/RecursiveTimedMutex::try_lock_until
+{
+    const unsigned int& UInt;
+
+    bool operator()() const {
+        return UInt == 0;
+    }
+};
+
 class TimedMutex    // TODO: check ALL
 {
 public:
@@ -402,15 +539,6 @@ private:
     Mutex _mutex;
     ConditionVariable _conditionVar;
     unsigned int _locked;
-
-    struct UINTIsZero
-    {
-        const unsigned int& UInt;
-
-        bool operator()() const {
-            return UInt == 0;
-    };
-};
 
 public:
     // Constructors & Operators
@@ -447,7 +575,6 @@ public:
 
     void unlock() {
         {
-            // The lock here is necessary
             LockGuard<Mutex> lock(_mutex);
             _locked = 0;
         }
@@ -502,28 +629,88 @@ public:
     // Main functions
 
     void lock() {
-        // TODO: implement
+        const Thread::ID tid = custom::this_thread::get_id();
+        UniqueLock<Mutex> lock(_mutex);
+
+        if (tid == _owner)
+            if (_locked < UINT_MAX)
+                ++_locked;
+            else
+                throw std::runtime_error("Resource busy...");
+        else
+        {
+            while (_locked != 0)
+                _conditionVar.wait(lock);
+
+            _locked = 1;
+            _owner  = tid;
+        }
     }
 
     bool try_lock() noexcept {
-        return false;
-        // TODO: implement
+        const Thread::ID tid = custom::this_thread::get_id();
+        LockGuard<Mutex> lock(_mutex);
+
+        if (tid == _owner)
+            if (_locked < UINT_MAX)
+                ++_locked;
+            else
+                return false;
+        else
+            if (_locked != 0)
+                return false;
+            else
+            {
+                _locked = 1;
+                _owner  = tid;
+            }
+        
+        return true;
     }
 
     void unlock() {
-        // TODO: implement
+        bool notify = false;
+
+        {
+            LockGuard<Mutex> lock(_mutex);
+            --_locked;
+            if (_locked == 0)
+            {
+                notify = true;
+                _owner  = Thread::ID();
+            }
+        }
+
+        if (notify)
+            _conditionVar.notify_one();
     }
 
     template<class Clock, class Duration>
     bool try_lock_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
-        // TODO: implement
-        return false;
+        const Thread::ID tid = custom::this_thread::get_id();
+        UniqueLock<Mutex> lock(_mutex);
+
+        if (tid == _owner)
+            if (_locked < UINT_MAX)
+                ++_locked;
+            else
+                return false;
+        else
+        {
+            if (!_conditionVar.wait_until(lock, absoluteTime, UINTIsZero{_locked}))
+                return false;
+
+            _locked = 1;
+            _owner  = tid;
+        }
+
+        return true;
     }
 
     template<class Rep, class Period>
     bool try_lock_for(const std::chrono::duration<Rep, Period>& relativeTime) {
-        // TODO: implement
-        return false;
+        return try_lock_until(  std::chrono::steady_clock::now() + 
+                                std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
     }
 
     NativeHandleType native_handle() {

@@ -9,9 +9,7 @@ Code build requirements:
 
 Components not fully operational:
 
-- Mutex.h
-- ConditionalVariable.h
-- Semaphore.h
+- ConditionVariable.h
 - Barrier.h
 - Functional.h
 - Memory.h
