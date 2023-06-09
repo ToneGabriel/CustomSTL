@@ -1,6 +1,7 @@
 #pragma once
 #include "Utility.h"
 
+#include <atomic>
 
 CUSTOM_BEGIN
 
@@ -50,6 +51,7 @@ struct DefaultDelete<Type[]>                                // default deleter f
 }; // END DefaultDelete[]
 
 
+// UniquePtr implementation
 template<class Type, class Deleter = DefaultDelete<Type>>
 class UniquePtr                                             // non-copyable pointer to an object
 {
@@ -347,5 +349,241 @@ UniquePtr<Ty> make_unique(const size_t size) {
 
 template<class Ty, class... Args, EnableIf_t<Extent_v<Ty> != 0, bool> = true>
 void make_unique(Args&&...) = delete;
+
+
+// Shared/Weak Ptr implementation
+class /*__declspec(novtable)*/ RefCountBase     // TODO: why __declspec(novtable) ???
+{
+private:
+    std::atomic<long> _uses;
+    std::atomic<long> _weaks;
+
+protected:
+    RefCountBase() noexcept = default;    // non-atomic initializations
+
+public:
+    // Constructors & Operators
+    
+    RefCountBase(const RefCountBase&)               = delete;
+    RefCountBase& operator=(const RefCountBase&)    = delete;
+
+    virtual ~RefCountBase() { /*Empty*/ }
+
+public:
+    // Main functions
+
+    void _incref() noexcept {           // increment use count
+        ++_uses;
+    }
+
+    void _incwref() noexcept {          // increment weak reference count
+        ++_weaks;
+    }
+
+    void _decref() noexcept {           // decrement use count
+        if (--_uses == 0)
+        {
+            _destroy();
+            _decwref();
+        }
+    }
+
+    void _decwref() noexcept {          // decrement weak reference count
+        if (--_weaks == 0)
+            _delete_this();
+    }
+
+    long _use_count() const noexcept {
+        return static_cast<long>(_uses);
+    }
+
+    // virtual void* _get_deleter(const type_info& ti) const noexcept {    // TODO: check
+    //     return nullptr;
+    // }
+
+private:
+    // Helpers
+
+    virtual void _destroy() noexcept {
+        std::terminate();
+    }
+
+    virtual void _delete_this() noexcept {
+        std::terminate();
+    }
+}; // END RefCountBase
+
+template<class Type>
+class RefCount : public RefCountBase    // handle reference counting for pointer without deleter
+{
+private:
+    Type* _Ptr;
+
+public:
+
+    explicit RefCount(Type* _Px)
+        : RefCountBase(), _Ptr(_Px) { /*Empty*/ }
+
+private:
+
+    void _destroy() noexcept override {     // destroy managed resource
+        delete _Ptr;
+    }
+
+    void _delete_this() noexcept override { // destroy self
+        delete this;
+    }
+}; // END RefCount
+
+template<class _Resource, class Deleter>
+class RefCountDeleter : public RefCountBase     // handle reference counting for object with deleter
+{
+private:
+    _Resource* _Ptr;
+    Deleter _deleter;
+
+public:
+
+    RefCountDeleter(_Resource* _Px, Deleter& _Dt)
+        : RefCountBase(), _Ptr(_Px), _deleter(_Dt) { /*Empty*/ }
+
+private:
+    void _destroy() noexcept override { // destroy managed resource
+        _deleter(_Ptr);
+    }
+
+    void _delete_this() noexcept override { // destroy self
+        delete this;
+    }
+}; // END RefCountDeleter
+
+template<class Type>
+class SharedPtr;
+
+template<class Type>
+class WeakPtr;
+
+template<class Type>
+class SharedWeakBase
+{
+public:
+    using ElementType = RemoveExtent_t<Type>;
+
+private:
+    ElementType* _Ptr   = nullptr;
+    RefCountBase* _Rep  = nullptr;
+
+    friend SharedPtr<Type>;
+
+public:
+    // Constructors & Operators
+
+    SharedWeakBase(const SharedWeakBase&)               = delete;
+    SharedWeakBase& operator=(const SharedWeakBase&)    = delete;
+
+protected:
+    
+    SharedWeakBase() noexcept   = default;
+    ~SharedWeakBase()           = default;
+
+public:
+    // Main functions
+
+    long use_count() const noexcept {
+        return _Rep ? _Rep->_use_count() : 0;
+    }
+
+    template<class _Ty>
+    bool owner_before(const SharedWeakBase<_Ty>& other) const noexcept { // compare addresses of manager objects
+        return _Rep < other._Rep;
+    }
+
+protected:
+
+    ElementType* get() const noexcept {
+        return _Ptr;
+    }
+
+    template<class _Ty>
+    void _move(SharedWeakBase<_Ty>&& other) noexcept {
+        _Ptr = other._Ptr;
+        _Rep = other._Rep;
+
+        other._Ptr = nullptr;
+        other._Rep = nullptr;
+    }
+
+    template<class _Ty>
+    void _copy(const SharedPtr<_Ty>& other) noexcept {     // Only SharedPtr can copy
+        other._incref();
+
+        _Ptr = other._Ptr;
+        _Rep = other._Rep;
+    }
+
+    void _incref() const noexcept {
+        if (_Rep)
+            _Rep->_incref();
+    }
+
+    void _decref() noexcept {
+        if (_Rep)
+            _Rep->_Decref();
+    }
+
+    void _incwref() const noexcept {
+        if (_Rep)
+            _Rep->_incwref();
+    }
+
+    void _decwref() noexcept {
+        if (_Rep)
+            _Rep->_decwref();
+    }
+}; // END SharedWeakBase
+
+template<class Type>
+class SharedPtr : public SharedWeakBase<Type>    // class for reference counted resource management
+{
+private:
+    using Base = SharedWeakBase<Type>;
+
+public:
+    using ElementType = typename Base::ElementType;
+
+public:
+    // Constructors & Operators
+
+    SharedPtr() noexcept = default;
+    SharedPtr(std::nullptr_t) noexcept { /*Empty*/ }
+
+    SharedPtr(const SharedPtr& other) noexcept { // construct SharedPtr object that owns same resource as other
+        this->_copy(other);
+    }
+
+    ~SharedPtr() { // release resource
+        this->_decref();
+    }
+}; // END SharedPtr
+
+template<class Type>
+class WeakPtr : public SharedWeakBase<Type>
+{
+    // TODO: implement
+    
+public:
+    // Constructors & Operators
+    
+    WeakPtr() noexcept { /*Empty*/ }
+
+    WeakPtr(const WeakPtr& other) noexcept {
+
+    }
+
+    ~WeakPtr() {
+        this->_decwref();
+    }
+
+}; // END WeakPtr
 
 CUSTOM_END
