@@ -18,5 +18,7 @@ int main()
 	//test::invoke_test();
 	test::tuple_test();
 
+	asd
+
 	return 0;
 }
