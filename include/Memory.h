@@ -528,7 +528,7 @@ protected:
 
     void _decref() noexcept {
         if (_Rep)
-            _Rep->_Decref();
+            _Rep->_decref();
     }
 
     void _incwref() const noexcept {

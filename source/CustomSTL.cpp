@@ -16,7 +16,7 @@ int main()
 	//test::deque_test();
 	//test::function_test();
 	//test::invoke_test();
-	test::tuple_test();
+	//test::tuple_test();
 
 	return 0;
 }

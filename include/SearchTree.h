@@ -443,7 +443,7 @@ private:
 			_print_graph(ident + 1, root->_Right, "RIGHT");
 	}
 	
-	void _rotate_left(Node* subroot) {								// promotes subroot right
+	void _rotate_left(Node* subroot) {					// promotes subroot right
 		Node* promotedNode = subroot->_Right;
 		subroot->_Right = promotedNode->_Left;			// subroot adopt left child of promoted
 
