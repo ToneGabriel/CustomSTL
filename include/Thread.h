@@ -139,13 +139,13 @@ public:
     }
 
     static unsigned int hardware_concurrency() noexcept {
-        #if defined _WIN32
+#if defined _WIN32
         SYSTEM_INFO sysinfo;
         GetSystemInfo(&sysinfo);
         return sysinfo.dwNumberOfProcessors;
-        #elif defined __linux__
+#elif defined __linux__
         return get_nprocs();
-        #endif      // _WIN32 and __linux__
+#endif  // _WIN32 and __linux__
     }
 
 private:

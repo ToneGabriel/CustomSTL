@@ -17,6 +17,7 @@ int main()
 	//test::function_test();
 	//test::invoke_test();
 	//test::tuple_test();
+	test::memory_test();
 
 	return 0;
 }

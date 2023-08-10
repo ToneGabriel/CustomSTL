@@ -1,3 +1,6 @@
+0. Check lock functions on Mutex
+0. Check type_info class
+
 1. Check ALL components for explicit and noexcept operators
 2. Learn and implement smart pointers
 3. Learn and implement condition_variable_any

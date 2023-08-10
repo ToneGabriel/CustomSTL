@@ -35,7 +35,7 @@
 #include <map>
 #include <set>
 #include <functional>
-#include <memory.h>
+#include <memory>
 
 #include <thread>
 #include <mutex>
@@ -357,10 +357,15 @@ void invoke_test() {
 
 #if defined __GNUG__
 void thread_test() {
-	custom::Thread t(deque_test);
-	t.join();
+	std::cout << custom::this_thread::get_id();
+	// custom::Thread t(deque_test);
+	// t.join();
 }
-#endif	// __GNUG__
+#endif	// __GNUG__ for thread tests
+
+void memory_test() {
+	custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+}
 
 TEST_END
 

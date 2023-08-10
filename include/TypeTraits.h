@@ -346,7 +346,7 @@ struct IsConvertible : public BoolConstant<_IsConvertible<From, To>::Value> {};
 
 template<class From, class To>
 constexpr bool IsConvertible_v = IsConvertible<From, To>::Value;
-#endif
+#endif  // is convertible
 
 // is const
 template<class>                                 // determine whether Type argument is const qualified
@@ -598,7 +598,7 @@ struct IsDestructible : _IsDestructible<Ty>::Type {};
 
 template<class Ty>
 constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
-#endif
+#endif  // is destructible
 
 // is nothrow destructible
 #if defined _MSC_VER
@@ -639,7 +639,7 @@ struct IsNothrowDestructible : _IsNothrowDestructible<Ty>::Type {};
 
 template<class Ty>
 constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
-#endif
+#endif  // is nothrow destructible
 
 // is base of
 template<class Base, class Derived>

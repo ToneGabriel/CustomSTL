@@ -1,5 +1,6 @@
 #pragma once
 #include "Utility.h"
+#include "TypeInfo.h"
 
 #include <atomic>
 
@@ -352,22 +353,22 @@ void make_unique(Args&&...) = delete;
 
 
 // Shared/Weak Ptr implementation
-class /*__declspec(novtable)*/ RefCountBase     // TODO: why __declspec(novtable) ???
+class /*__declspec(novtable)*/ _RefCountBase     // TODO: why __declspec(novtable) ???
 {
 private:
     std::atomic<long> _uses;
     std::atomic<long> _weaks;
 
 protected:
-    RefCountBase() noexcept = default;    // non-atomic initializations
+    _RefCountBase() noexcept = default;    // non-atomic initializations
 
 public:
     // Constructors & Operators
     
-    RefCountBase(const RefCountBase&)               = delete;
-    RefCountBase& operator=(const RefCountBase&)    = delete;
+    _RefCountBase(const _RefCountBase&)               = delete;
+    _RefCountBase& operator=(const _RefCountBase&)    = delete;
 
-    virtual ~RefCountBase() { /*Empty*/ }
+    virtual ~_RefCountBase() { /*Empty*/ }
 
 public:
     // Main functions
@@ -397,9 +398,9 @@ public:
         return static_cast<long>(_uses);
     }
 
-    // virtual void* _get_deleter(const type_info& ti) const noexcept {    // TODO: check
-    //     return nullptr;
-    // }
+    virtual void* _get_deleter(const TypeInfo& ti) const noexcept {    // TODO: wtf is this?
+        return nullptr;
+    }
 
 private:
     // Helpers
@@ -411,51 +412,51 @@ private:
     virtual void _delete_this() noexcept {
         std::terminate();
     }
-}; // END RefCountBase
+}; // END _RefCountBase
 
 template<class Type>
-class RefCount : public RefCountBase    // handle reference counting for pointer without deleter
+class _RefCount : public _RefCountBase    // handle reference counting for pointer without deleter
 {
 private:
-    Type* _Ptr;
+    Type* _ptr;
 
 public:
 
-    explicit RefCount(Type* _Px)
-        : RefCountBase(), _Ptr(_Px) { /*Empty*/ }
+    explicit _RefCount(Type* ptr)
+        : _RefCountBase(), _ptr(ptr) { /*Empty*/ }
 
 private:
 
     void _destroy() noexcept override {     // destroy managed resource
-        delete _Ptr;
+        delete _ptr;
     }
 
     void _delete_this() noexcept override { // destroy self
         delete this;
     }
-}; // END RefCount
+}; // END _RefCount
 
-template<class _Resource, class Deleter>
-class RefCountDeleter : public RefCountBase     // handle reference counting for object with deleter
+template<class Type, class Deleter>
+class _RefCountDeleter : public _RefCountBase     // handle reference counting for object with deleter
 {
 private:
-    _Resource* _Ptr;
+    Type* _ptr;
     Deleter _deleter;
 
 public:
 
-    RefCountDeleter(_Resource* _Px, Deleter& _Dt)
-        : RefCountBase(), _Ptr(_Px), _deleter(_Dt) { /*Empty*/ }
+    _RefCountDeleter(Type* ptr, Deleter& dt)
+        : _RefCountBase(), _ptr(ptr), _deleter(dt) { /*Empty*/ }
 
 private:
     void _destroy() noexcept override { // destroy managed resource
-        _deleter(_Ptr);
+        _deleter(_ptr);
     }
 
     void _delete_this() noexcept override { // destroy self
         delete this;
     }
-}; // END RefCountDeleter
+}; // END _RefCountDeleter
 
 template<class Type>
 class SharedPtr;
@@ -464,16 +465,17 @@ template<class Type>
 class WeakPtr;
 
 template<class Type>
-class SharedWeakBase
+class SharedWeakBase        // base class for SharedPtr and WeakPtr
 {
 public:
     using ElementType = RemoveExtent_t<Type>;
 
 private:
-    ElementType* _Ptr   = nullptr;
-    RefCountBase* _Rep  = nullptr;
+    ElementType* _ptr       = nullptr;
+    _RefCountBase* _rep     = nullptr;
 
     friend SharedPtr<Type>;
+    friend WeakPtr<Type>;
 
 public:
     // Constructors & Operators
@@ -484,63 +486,83 @@ public:
 protected:
     
     SharedWeakBase() noexcept   = default;
-    ~SharedWeakBase()           = default;
+    ~SharedWeakBase()           = default;      // YES: each child of this class manages the destructor itself
 
 public:
     // Main functions
 
     long use_count() const noexcept {
-        return _Rep ? _Rep->_use_count() : 0;
+        return _rep ? _rep->_use_count() : 0;
     }
 
     template<class _Ty>
     bool owner_before(const SharedWeakBase<_Ty>& other) const noexcept { // compare addresses of manager objects
-        return _Rep < other._Rep;
+        return _rep < other._rep;
     }
 
 protected:
 
-    ElementType* get() const noexcept {
-        return _Ptr;
+    ElementType* _get() const noexcept {
+        return _ptr;
     }
 
     template<class _Ty>
     void _move(SharedWeakBase<_Ty>&& other) noexcept {
-        _Ptr = other._Ptr;
-        _Rep = other._Rep;
+        _ptr = other._ptr;
+        _rep = other._rep;
 
-        other._Ptr = nullptr;
-        other._Rep = nullptr;
+        other._ptr = nullptr;
+        other._rep = nullptr;
     }
 
     template<class _Ty>
     void _copy(const SharedPtr<_Ty>& other) noexcept {     // Only SharedPtr can copy
         other._incref();
 
-        _Ptr = other._Ptr;
-        _Rep = other._Rep;
+        _ptr = other._ptr;
+        _rep = other._rep;
     }
 
+    // template<class _Ty>
+    // bool _construct_from_weak(const WeakPtr<_Ty>& other) noexcept {     // TODO: check _incref here
+    //     // implement shared_ptr's ctor from weak_ptr, and weak_ptr::lock()
+    //     if (other._rep && other._rep->_incref())
+    //     {
+    //         _ptr = other._ptr;
+    //         _rep = other._rep;
+
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
+
     void _incref() const noexcept {
-        if (_Rep)
-            _Rep->_incref();
+        if (_rep)
+            _rep->_incref();
     }
 
     void _decref() noexcept {
-        if (_Rep)
-            _Rep->_decref();
+        if (_rep)
+            _rep->_decref();
     }
 
     void _incwref() const noexcept {
-        if (_Rep)
-            _Rep->_incwref();
+        if (_rep)
+            _rep->_incwref();
     }
 
     void _decwref() noexcept {
-        if (_Rep)
-            _Rep->_decwref();
+        if (_rep)
+            _rep->_decwref();
+    }
+
+    void _swap(SharedWeakBase& other) noexcept { // swap pointers
+        custom::swap(_ptr, other._ptr);
+        custom::swap(_rep, other._rep);
     }
 }; // END SharedWeakBase
+
 
 template<class Type>
 class SharedPtr : public SharedWeakBase<Type>    // class for reference counted resource management
@@ -561,29 +583,66 @@ public:
         this->_copy(other);
     }
 
-    ~SharedPtr() { // release resource
+    SharedPtr(SharedPtr&& other) noexcept {     // construct SharedPtr object that takes resource from other
+        this->_move(custom::move(other));
+    }
+
+    ~SharedPtr() {                              // release resource
         this->_decref();
     }
+
+    SharedPtr& operator=(const SharedPtr& other) noexcept {
+        SharedPtr(other).swap(*this);
+        return *this;
+    }
+
+    SharedPtr& operator=(SharedPtr&& other) noexcept {
+        SharedPtr(custom::move(other)).swap(*this);
+        return *this;
+    }
+
+    template<EnableIf_t<!Disjunction_v<IsArray<Type>, IsVoid<Type>>, bool> = true>
+    Type& operator*() const noexcept {
+        return *this->_get();
+    }
+
+    template<EnableIf_t<!IsArray_v<Type>, bool> = true>
+    Type* operator->() const noexcept {
+        return this->_get();
+    }
+
+public:
+    // Main functions
+
+    void swap(SharedPtr& other) noexcept {
+        this->_swap(other);
+    }
+
+    void reset() noexcept { // release resource and convert to empty SharedPtr object
+        SharedPtr().swap(*this);
+    }
+
 }; // END SharedPtr
 
-template<class Type>
-class WeakPtr : public SharedWeakBase<Type>
-{
-    // TODO: implement
+
+// template<class Type>
+// class WeakPtr : public SharedWeakBase<Type>
+// {
+//     // TODO: implement
     
-public:
-    // Constructors & Operators
+// public:
+//     // Constructors & Operators
     
-    WeakPtr() noexcept { /*Empty*/ }
+//     WeakPtr() noexcept { /*Empty*/ }
 
-    WeakPtr(const WeakPtr& other) noexcept {
+//     WeakPtr(const WeakPtr& other) noexcept {
 
-    }
+//     }
 
-    ~WeakPtr() {
-        this->_decwref();
-    }
+//     ~WeakPtr() {
+//         this->_decwref();
+//     }
 
-}; // END WeakPtr
+// }; // END WeakPtr
 
 CUSTOM_END
