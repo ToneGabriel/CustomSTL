@@ -1,8 +1,8 @@
 #pragma once
 #include "Utility.h"
-#include "TypeInfo.h"
 
 #include <atomic>
+#include <typeinfo>
 
 CUSTOM_BEGIN
 
@@ -353,7 +353,7 @@ void make_unique(Args&&...) = delete;
 
 
 // Shared/Weak Ptr implementation
-class /*__declspec(novtable)*/ _RefCountBase     // TODO: why __declspec(novtable) ???
+class /*__declspec(novtable)*/ _RefCountBase     // Helper base class for ref counting // TODO: why __declspec(novtable) ???
 {
 private:
     std::atomic<long> _uses;
@@ -398,7 +398,7 @@ public:
         return static_cast<long>(_uses);
     }
 
-    virtual void* _get_deleter(const TypeInfo& ti) const noexcept {    // TODO: wtf is this?
+    virtual void* _get_deleter(const std::type_info& ti) const noexcept {    // TODO: wtf is this?
         return nullptr;
     }
 
@@ -491,6 +491,10 @@ protected:
 public:
     // Main functions
 
+    ElementType* get() const noexcept {
+        return _ptr;
+    }
+
     long use_count() const noexcept {
         return _rep ? _rep->_use_count() : 0;
     }
@@ -500,14 +504,15 @@ public:
         return _rep < other._rep;
     }
 
-protected:
-
-    ElementType* _get() const noexcept {
-        return _ptr;
+    void swap(SharedWeakBase& other) noexcept { // swap pointers
+        custom::swap(_ptr, other._ptr);
+        custom::swap(_rep, other._rep);
     }
 
+protected:
+
     template<class _Ty>
-    void _move(SharedWeakBase<_Ty>&& other) noexcept {
+    void _move_construct(SharedWeakBase<_Ty>&& other) noexcept {
         _ptr = other._ptr;
         _rep = other._rep;
 
@@ -516,11 +521,28 @@ protected:
     }
 
     template<class _Ty>
-    void _copy(const SharedPtr<_Ty>& other) noexcept {     // Only SharedPtr can copy
+    void _copy_construct(const SharedPtr<_Ty>& other) noexcept {     // Only SharedPtr can copy
         other._incref();
 
         _ptr = other._ptr;
         _rep = other._rep;
+    }
+
+    template<class _Ty>
+    void _alias_copy_construct(const SharedPtr<_Ty>& other, ElementType* ptr) noexcept {
+        other._incref();
+
+        _ptr = ptr;
+        _rep = other._rep;
+    }
+
+    template<class _Ty>
+    void _alias_move_construct(SharedPtr<_Ty>&& other, ElementType* ptr) noexcept {
+        _ptr = ptr;
+        _rep = other._rep;
+
+        other._ptr = nullptr;
+        other._rep = nullptr;
     }
 
     // template<class _Ty>
@@ -556,12 +578,30 @@ protected:
         if (_rep)
             _rep->_decwref();
     }
-
-    void _swap(SharedWeakBase& other) noexcept { // swap pointers
-        custom::swap(_ptr, other._ptr);
-        custom::swap(_rep, other._rep);
-    }
 }; // END SharedWeakBase
+
+
+// Helpers for SharedPtr constructor
+template<class _Ty, class = void>
+struct _CanScalarDelete : FalseType {};
+
+template<class _Ty>
+struct _CanScalarDelete<_Ty, Void_t<decltype(delete std::declval<_Ty*>())>> : TrueType {};
+
+template<class _Ty, class = void>
+struct _CanArrayDelete : FalseType {};
+
+template<class _Ty>
+struct _CanArrayDelete<_Ty, Void_t<decltype(delete[] std::declval<_Ty*>())>> : TrueType {};
+
+template<class _Ty1, class _Ty2>
+struct _SharedPtrConvertible : IsConvertible<_Ty1*, _Ty2*>::Type {};
+
+template<class _Ty1, class _Ty2>
+struct _SharedPtrConvertible<_Ty1, _Ty2[]> : IsConvertible<_Ty1(*)[], _Ty2(*)[]>::Type {};
+
+template<class _Ty1, class _Ty2, size_t _Ext>
+struct _SharedPtrConvertible<_Ty1, _Ty2[_Ext]> : IsConvertible<_Ty1(*)[_Ext], _Ty2(*)[_Ext]>::Type {};
 
 
 template<class Type>
@@ -571,7 +611,8 @@ private:
     using Base = SharedWeakBase<Type>;
 
 public:
-    using ElementType = typename Base::ElementType;
+    using ElementType   = typename Base::ElementType;
+    using WeakType      = WeakPtr<Type>;
 
 public:
     // Constructors & Operators
@@ -579,12 +620,40 @@ public:
     SharedPtr() noexcept = default;
     SharedPtr(std::nullptr_t) noexcept { /*Empty*/ }
 
+    // template<class _Ty,
+    // EnableIf_t<Conjunction_v<
+    //                 Conditional_t<IsArray_v<Type>, 
+    //                             _CanArrayDelete<_Ty>, 
+    //                             _CanScalarDelete<_Ty>>,
+    //                 _SharedPtrConvertible<_Ty, Type>>,
+    // bool> = true>
+    // explicit SharedPtr(_Ty* ptr) {              // construct SharedPtr object that owns ptr
+    //     if (IsArray_v<Type>)
+    //         _Setpd(ptr, DefaultDelete<_Ty[]>{});
+    //     else
+    //     {
+    //         _Temporary_owner<_Ty> _Owner(ptr);
+    //         _Set_ptr_rep_and_enable_shared(_Owner._Ptr, new _RefCount<_Ty>(_Owner._Ptr));
+    //         _Owner._Ptr = nullptr;
+    //     }
+    // }
+
     SharedPtr(const SharedPtr& other) noexcept { // construct SharedPtr object that owns same resource as other
-        this->_copy(other);
+        this->_copy_construct(other);
     }
 
     SharedPtr(SharedPtr&& other) noexcept {     // construct SharedPtr object that takes resource from other
-        this->_move(custom::move(other));
+        this->_move_construct(custom::move(other));
+    }
+
+    template<class _Ty>
+    SharedPtr(const SharedPtr<_Ty>& other, ElementType* ptr) noexcept { // copy construct SharedPtr object that aliases _Right
+        this->_alias_copy_construct(other, ptr);
+    }
+
+    template<class _Ty>
+    SharedPtr(SharedPtr<_Ty>&& other, ElementType* ptr) noexcept {      // move construct SharedPtr object that aliases _Right
+        this->_alias_move_construct(custom::move(other), ptr);
     }
 
     ~SharedPtr() {                              // release resource
@@ -603,23 +672,31 @@ public:
 
     template<EnableIf_t<!Disjunction_v<IsArray<Type>, IsVoid<Type>>, bool> = true>
     Type& operator*() const noexcept {
-        return *this->_get();
+        return *get();
     }
 
     template<EnableIf_t<!IsArray_v<Type>, bool> = true>
     Type* operator->() const noexcept {
-        return this->_get();
+        return get();
+    }
+
+    explicit operator bool() const noexcept {
+        return get() != nullptr;
     }
 
 public:
     // Main functions
 
-    void swap(SharedPtr& other) noexcept {
-        this->_swap(other);
+    // void swap(SharedPtr& other) noexcept {   // TODO: check if needed or can work only with base
+    //     this->_swap(other);
+    // }
+
+    void reset() noexcept {             // release resource and convert to empty SharedPtr object
+        SharedPtr().swap(*this);
     }
 
-    void reset() noexcept { // release resource and convert to empty SharedPtr object
-        SharedPtr().swap(*this);
+    bool unique() const noexcept {      // return true if no other SharedPtr object owns this resource
+        return this->use_count() == 1;
     }
 
 }; // END SharedPtr
