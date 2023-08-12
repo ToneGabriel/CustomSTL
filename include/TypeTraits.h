@@ -4,6 +4,10 @@
 
 CUSTOM_BEGIN
 
+// false value attached to a dependent name (for static_assert)
+template<class>
+constexpr bool AlwaysFalse = false;
+
 // Class template IntegerSequence
 template<class Ty, Ty... Vals>
 struct IntegerSequence
@@ -157,6 +161,12 @@ struct AddRvalueReference { using Type = typename _AddReference<Ty>::Rvalue; };
 
 template<class Ty>
 using AddRvalueReference_t = typename AddRvalueReference<Ty>::Type;
+
+// declval (ex: used in decltype)
+template<class Ty>
+AddRvalueReference_t<Ty> declval() noexcept {
+    static_assert(AlwaysFalse<Ty>, "declval not allowed in an evaluated context");
+}
 
 // add pointer
 template<class Ty, class = void>                // add pointer (pointer Type cannot be formed)
@@ -331,7 +341,7 @@ struct _IsConvertible           // TODO: check
     static auto test_returnable(...) -> FalseType;
 
     template<class _From, class _To>
-    static auto test_implicitly_convertible(int) -> decltype(void(std::declval<void(&)(_To)>()(std::declval<_From>())), TrueType{});
+    static auto test_implicitly_convertible(int) -> decltype(void(custom::declval<void(&)(_To)>()(custom::declval<_From>())), TrueType{});
 
     template<class, class>
     static auto test_implicitly_convertible(...) -> FalseType;
@@ -570,7 +580,7 @@ constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
 template<class Ty>
 struct _IsDestructibleTest
 {
-    template<class _Ty, class = decltype(std::declval<_Ty&>().~_Ty())>
+    template<class _Ty, class = decltype(custom::declval<_Ty&>().~_Ty())>
     static TrueType test_destructible(int);
 
     template<class>
@@ -612,7 +622,7 @@ template<class Ty>
 struct _IsNothrowDestructibleTest
 {
     template<typename _Ty>
-    static BoolConstant<noexcept(std::declval<_Ty&>().~_Ty())> test_nothrow_destructible(int);
+    static BoolConstant<noexcept(custom::declval<_Ty&>().~_Ty())> test_nothrow_destructible(int);
 
     template<class>
     static FalseType test_nothrow_destructible(...);

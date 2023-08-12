@@ -586,13 +586,13 @@ template<class _Ty, class = void>
 struct _CanScalarDelete : FalseType {};
 
 template<class _Ty>
-struct _CanScalarDelete<_Ty, Void_t<decltype(delete std::declval<_Ty*>())>> : TrueType {};
+struct _CanScalarDelete<_Ty, Void_t<decltype(delete custom::declval<_Ty*>())>> : TrueType {};
 
 template<class _Ty, class = void>
 struct _CanArrayDelete : FalseType {};
 
 template<class _Ty>
-struct _CanArrayDelete<_Ty, Void_t<decltype(delete[] std::declval<_Ty*>())>> : TrueType {};
+struct _CanArrayDelete<_Ty, Void_t<decltype(delete[] custom::declval<_Ty*>())>> : TrueType {};
 
 template<class _Ty1, class _Ty2>
 struct _SharedPtrConvertible : IsConvertible<_Ty1*, _Ty2*>::Type {};
@@ -600,8 +600,8 @@ struct _SharedPtrConvertible : IsConvertible<_Ty1*, _Ty2*>::Type {};
 template<class _Ty1, class _Ty2>
 struct _SharedPtrConvertible<_Ty1, _Ty2[]> : IsConvertible<_Ty1(*)[], _Ty2(*)[]>::Type {};
 
-template<class _Ty1, class _Ty2, size_t _Ext>
-struct _SharedPtrConvertible<_Ty1, _Ty2[_Ext]> : IsConvertible<_Ty1(*)[_Ext], _Ty2(*)[_Ext]>::Type {};
+template<class _Ty1, class _Ty2, size_t Nx>
+struct _SharedPtrConvertible<_Ty1, _Ty2[Nx]> : IsConvertible<_Ty1(*)[Nx], _Ty2(*)[Nx]>::Type {};
 
 
 template<class Type>
@@ -672,16 +672,16 @@ public:
 
     template<EnableIf_t<!Disjunction_v<IsArray<Type>, IsVoid<Type>>, bool> = true>
     Type& operator*() const noexcept {
-        return *get();
+        return *this->get();
     }
 
     template<EnableIf_t<!IsArray_v<Type>, bool> = true>
     Type* operator->() const noexcept {
-        return get();
+        return this->get();
     }
 
     explicit operator bool() const noexcept {
-        return get() != nullptr;
+        return this->get() != nullptr;
     }
 
 public:

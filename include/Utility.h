@@ -206,7 +206,7 @@ template<class Ty, class Base, class = void>
 struct _RefwrapHasConstructorFrom : FalseType {};
 
 template<class Ty, class Base>
-struct _RefwrapHasConstructorFrom<Ty, Base, Void_t<decltype(_RefwrapConstructorFunc<Ty>(std::declval<Base>()))>>
+struct _RefwrapHasConstructorFrom<Ty, Base, Void_t<decltype(_RefwrapConstructorFunc<Ty>(custom::declval<Base>()))>>
 : TrueType {}; // _RefwrapConstructorFunc is qualified: avoid ADL, handle incomplete types
 
 template<class Ty>
