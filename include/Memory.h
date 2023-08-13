@@ -499,8 +499,8 @@ public:
         return _rep ? _rep->_use_count() : 0;
     }
 
-    template<class _Ty>
-    bool owner_before(const SharedWeakBase<_Ty>& other) const noexcept { // compare addresses of manager objects
+    template<class Ty>
+    bool owner_before(const SharedWeakBase<Ty>& other) const noexcept { // compare addresses of manager objects
         return _rep < other._rep;
     }
 
@@ -511,8 +511,8 @@ public:
 
 protected:
 
-    template<class _Ty>
-    void _move_construct(SharedWeakBase<_Ty>&& other) noexcept {
+    template<class Ty>
+    void _move_construct(SharedWeakBase<Ty>&& other) noexcept {
         _ptr = other._ptr;
         _rep = other._rep;
 
@@ -520,24 +520,24 @@ protected:
         other._rep = nullptr;
     }
 
-    template<class _Ty>
-    void _copy_construct(const SharedPtr<_Ty>& other) noexcept {     // Only SharedPtr can copy
+    template<class Ty>
+    void _copy_construct(const SharedPtr<Ty>& other) noexcept {     // Only SharedPtr can copy
         other._incref();
 
         _ptr = other._ptr;
         _rep = other._rep;
     }
 
-    template<class _Ty>
-    void _alias_copy_construct(const SharedPtr<_Ty>& other, ElementType* ptr) noexcept {
+    template<class Ty>
+    void _alias_copy_construct(const SharedPtr<Ty>& other, ElementType* ptr) noexcept {
         other._incref();
 
         _ptr = ptr;
         _rep = other._rep;
     }
 
-    template<class _Ty>
-    void _alias_move_construct(SharedPtr<_Ty>&& other, ElementType* ptr) noexcept {
+    template<class Ty>
+    void _alias_move_construct(SharedPtr<Ty>&& other, ElementType* ptr) noexcept {
         _ptr = ptr;
         _rep = other._rep;
 
@@ -545,8 +545,8 @@ protected:
         other._rep = nullptr;
     }
 
-    // template<class _Ty>
-    // bool _construct_from_weak(const WeakPtr<_Ty>& other) noexcept {     // TODO: check _incref here
+    // template<class Ty>
+    // bool _construct_from_weak(const WeakPtr<Ty>& other) noexcept {     // TODO: check _incref here
     //     // implement shared_ptr's ctor from weak_ptr, and weak_ptr::lock()
     //     if (other._rep && other._rep->_incref())
     //     {
@@ -582,17 +582,17 @@ protected:
 
 
 // Helpers for SharedPtr constructor
-template<class _Ty, class = void>
+template<class Ty, class = void>
 struct _CanScalarDelete : FalseType {};
 
-template<class _Ty>
-struct _CanScalarDelete<_Ty, Void_t<decltype(delete custom::declval<_Ty*>())>> : TrueType {};
+template<class Ty>
+struct _CanScalarDelete<Ty, Void_t<decltype(delete custom::declval<Ty*>())>> : TrueType {};
 
-template<class _Ty, class = void>
+template<class Ty, class = void>
 struct _CanArrayDelete : FalseType {};
 
-template<class _Ty>
-struct _CanArrayDelete<_Ty, Void_t<decltype(delete[] custom::declval<_Ty*>())>> : TrueType {};
+template<class Ty>
+struct _CanArrayDelete<Ty, Void_t<decltype(delete[] custom::declval<Ty*>())>> : TrueType {};
 
 template<class _Ty1, class _Ty2>
 struct _SharedPtrConvertible : IsConvertible<_Ty1*, _Ty2*>::Type {};
@@ -602,6 +602,94 @@ struct _SharedPtrConvertible<_Ty1, _Ty2[]> : IsConvertible<_Ty1(*)[], _Ty2(*)[]>
 
 template<class _Ty1, class _Ty2, size_t Nx>
 struct _SharedPtrConvertible<_Ty1, _Ty2[Nx]> : IsConvertible<_Ty1(*)[Nx], _Ty2(*)[Nx]>::Type {};
+
+template<class Ty, class = void>
+struct _CanEnableShared : FalseType {}; // detect unambiguous and accessible inheritance from EnableSharedFromThis
+
+template<class Ty>
+struct _CanEnableShared<Ty, Void_t<typename Ty::Esft_t>>
+    : IsConvertible<RemoveCV_t<Ty>*, typename Ty::Esft_t*>::Type {};
+
+// Temporary owner helper
+template<class Type>
+struct _TemporaryOwner
+{
+    Type* _Ptr;
+
+    explicit _TemporaryOwner(Type* const ptr) noexcept 
+        : _Ptr(ptr) { /*Empty*/ }
+
+    _TemporaryOwner(const _TemporaryOwner&)             = delete;
+    _TemporaryOwner& operator=(const _TemporaryOwner&)  = delete;
+
+    ~_TemporaryOwner() {
+        delete _Ptr;
+    }
+};
+
+template<class Type, class Deleter>  // TODO: why _UxptrOrNullptr and not just Type?
+struct _TemporaryOwnerDel
+{
+    Type _Ptr;
+    Deleter& _Deleter;
+    bool _CallDeleter = true;   // modified by user when needed
+
+    explicit _TemporaryOwnerDel(const Type ptr, Deleter& deleter) noexcept 
+        : _Ptr(ptr), _Deleter(deleter) { /*Empty*/ }
+
+    _TemporaryOwnerDel(const _TemporaryOwnerDel&)               = delete;
+    _TemporaryOwnerDel& operator=(const _TemporaryOwnerDel&)    = delete;
+
+    ~_TemporaryOwnerDel() {
+        if (_CallDeleter) {
+            _Deleter(_Ptr);
+        }
+    }
+};
+
+
+template<class Type>
+class EnableSharedFromThis { // provide member functions that create SharedPtr to this
+public:
+    using Esft_t = EnableSharedFromThis;
+
+private:
+    template<class _Type>
+    friend class SharedPtr;
+
+    mutable WeakPtr<Type> _wptr;
+
+public:
+
+    SharedPtr<Type> shared_from_this() {
+        return SharedPtr<Type>(_wptr);
+    }
+
+    SharedPtr<const Type> shared_from_this() const {
+        return SharedPtr<const Type>(_wptr);
+    }
+
+    WeakPtr<Type> weak_from_this() noexcept {
+        return _wptr;
+    }
+
+    WeakPtr<const Type> weak_from_this() const noexcept {
+        return _wptr;
+    }
+
+protected:
+    constexpr EnableSharedFromThis() noexcept : _wptr() {}
+
+    EnableSharedFromThis(const EnableSharedFromThis&) noexcept : _wptr() {
+        // construct (must value-initialize _wptr)
+    }
+
+    EnableSharedFromThis& operator=(const EnableSharedFromThis&) noexcept { // assign (must not change _wptr)
+        return *this;
+    }
+
+    ~EnableSharedFromThis() = default;
+};
 
 
 template<class Type>
@@ -620,23 +708,24 @@ public:
     SharedPtr() noexcept = default;
     SharedPtr(std::nullptr_t) noexcept { /*Empty*/ }
 
-    // template<class _Ty,
-    // EnableIf_t<Conjunction_v<
-    //                 Conditional_t<IsArray_v<Type>, 
-    //                             _CanArrayDelete<_Ty>, 
-    //                             _CanScalarDelete<_Ty>>,
-    //                 _SharedPtrConvertible<_Ty, Type>>,
-    // bool> = true>
-    // explicit SharedPtr(_Ty* ptr) {              // construct SharedPtr object that owns ptr
-    //     if (IsArray_v<Type>)
-    //         _Setpd(ptr, DefaultDelete<_Ty[]>{});
-    //     else
-    //     {
-    //         _Temporary_owner<_Ty> _Owner(ptr);
-    //         _Set_ptr_rep_and_enable_shared(_Owner._Ptr, new _RefCount<_Ty>(_Owner._Ptr));
-    //         _Owner._Ptr = nullptr;
-    //     }
-    // }
+    // TODO: not ready
+    template<class Ty,
+    EnableIf_t<Conjunction_v<
+                    Conditional_t<IsArray_v<Type>, 
+                                _CanArrayDelete<Ty>, 
+                                _CanScalarDelete<Ty>>,
+                    _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    explicit SharedPtr(Ty* ptr) {              // construct SharedPtr object that owns ptr
+        if (IsArray_v<Type>)
+            _set_pointer_default(ptr, DefaultDelete<Ty[]>{});
+        else
+        {
+            _TemporaryOwner<Ty> temp(ptr);
+            _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCount<Ty>(temp._Ptr));
+            temp._Ptr = nullptr;
+        }
+    }
 
     SharedPtr(const SharedPtr& other) noexcept { // construct SharedPtr object that owns same resource as other
         this->_copy_construct(other);
@@ -646,13 +735,13 @@ public:
         this->_move_construct(custom::move(other));
     }
 
-    template<class _Ty>
-    SharedPtr(const SharedPtr<_Ty>& other, ElementType* ptr) noexcept { // copy construct SharedPtr object that aliases _Right
+    template<class Ty>
+    SharedPtr(const SharedPtr<Ty>& other, ElementType* ptr) noexcept { // copy construct SharedPtr object that aliases _Right
         this->_alias_copy_construct(other, ptr);
     }
 
-    template<class _Ty>
-    SharedPtr(SharedPtr<_Ty>&& other, ElementType* ptr) noexcept {      // move construct SharedPtr object that aliases _Right
+    template<class Ty>
+    SharedPtr(SharedPtr<Ty>&& other, ElementType* ptr) noexcept {      // move construct SharedPtr object that aliases _Right
         this->_alias_move_construct(custom::move(other), ptr);
     }
 
@@ -697,6 +786,27 @@ public:
 
     bool unique() const noexcept {      // return true if no other SharedPtr object owns this resource
         return this->use_count() == 1;
+    }
+
+private:
+    // Helpers
+
+    template<class Ty, class Deleter>  // TODO: why _UxptrOrNullptr and not Type
+    void _set_pointer_default(const Ty ptr, Deleter deleter) { // take ownership of ptr, deleter
+        _TemporaryOwnerDel<Ty, Deleter> temp(ptr, deleter);
+        _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCountDeleter<Ty, Deleter>(temp._Ptr, custom::move(deleter)));
+        temp._CallDeleter = false;
+    }
+
+    template<class _Ux> // TODO: _Ux change
+    void _set_ptr_rep_and_enable_shared(_Ux* const ptr, _RefCountBase* const refCount) noexcept { // take ownership of ptr
+        this->_ptr = ptr;
+        this->_rep = refCount;
+        if (Conjunction_v<Negation<IsArray<_Ty>>, Negation<IsVolatile<_Ux>>, _CanEnableShared<_Ux>>) {
+            if (ptr && ptr->_wptr.expired()) {
+                ptr->_wptr = SharedPtr<RemoveCV_t<_Ux>>(*this, const_cast<RemoveCV_t<_Ux>*>(ptr));
+            }
+        }
     }
 
 }; // END SharedPtr
