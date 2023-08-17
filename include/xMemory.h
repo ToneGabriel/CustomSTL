@@ -65,14 +65,20 @@ struct _CanArrayDelete : FalseType {};
 template<class Ty>
 struct _CanArrayDelete<Ty, Void_t<decltype(delete[] custom::declval<Ty*>())>> : TrueType {};
 
-template<class _Ty1, class _Ty2>
-struct _SharedPtrConvertible : IsConvertible<_Ty1*, _Ty2*>::Type {};
+template<class Func, class Arg, class = void>
+struct _CanCallFunctionObject : FalseType {};
 
-template<class _Ty1, class _Ty2>
-struct _SharedPtrConvertible<_Ty1, _Ty2[]> : IsConvertible<_Ty1(*)[], _Ty2(*)[]>::Type {};
+template<class Func, class Arg>
+struct _CanCallFunctionObject<Func, Arg, Void_t<decltype(custom::declval<Func>()(custom::declval<Arg>()))>> : TrueType {};
 
-template<class _Ty1, class _Ty2, size_t Nx>
-struct _SharedPtrConvertible<_Ty1, _Ty2[Nx]> : IsConvertible<_Ty1(*)[Nx], _Ty2(*)[Nx]>::Type {};
+template<class Ty1, class Ty2>
+struct _SharedPtrConvertible : IsConvertible<Ty1*, Ty2*>::Type {};
+
+template<class Ty1, class Ty2>
+struct _SharedPtrConvertible<Ty1, Ty2[]> : IsConvertible<Ty1(*)[], Ty2(*)[]>::Type {};
+
+template<class Ty1, class Ty2, size_t Nx>
+struct _SharedPtrConvertible<Ty1, Ty2[Nx]> : IsConvertible<Ty1(*)[Nx], Ty2(*)[Nx]>::Type {};
 
 // a pointer type Ty1* is said to be compatible with a pointer type Ty2*
 // when either Ty1* is convertible to Ty2*
@@ -117,14 +123,14 @@ struct _TemporaryOwner
     }
 };
 
-template<class Type, class Deleter>  // TODO: why _UxptrOrNullptr and not just Type?
+template<class TypePtr, class Deleter>  // TODO: why _UxptrOrNullptr and not just Type?
 struct _TemporaryOwnerDel
 {
-    Type _Ptr;
+    TypePtr _Ptr;
     Deleter& _Deleter;
     bool _CallDeleter = true;   // modified by user when needed
 
-    explicit _TemporaryOwnerDel(const Type ptr, Deleter& deleter) noexcept 
+    explicit _TemporaryOwnerDel(const TypePtr ptr, Deleter& deleter) noexcept 
         : _Ptr(ptr), _Deleter(deleter) { /*Empty*/ }
 
     _TemporaryOwnerDel(const _TemporaryOwnerDel&)               = delete;
@@ -351,14 +357,14 @@ protected:
     // WeakPtr contructor helpers
     template<class Ty>
     void _weak_construct(const _SharedWeakBase<Ty>& other) noexcept {
-        if (other._rep) {
+        if (other._rep)
+        {
             _ptr = other._ptr;
             _rep = other._rep;
             _rep->_incwref();
         }
-        else {
-            // _STL_INTERNAL_CHECK(!_ptr && !_rep); // TODOP: check this
-        }
+        else
+            CUSTOM_ASSERT(!_ptr && !_rep, "Pointer components for this should remain nullptr");
     }
 
     // _Refcount operations

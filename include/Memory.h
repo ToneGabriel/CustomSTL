@@ -8,7 +8,7 @@ template<class Type, class Deleter = DefaultDelete<Type>>
 class UniquePtr                                             // non-copyable pointer to an object
 {
 public:
-    using ValueType     = Type;
+    using ElementType   = Type;
     using DeleterType   = Deleter;
     using Pointer       = typename _GetDeleterPointerType<Type, RemoveReference_t<Deleter>>::Type;
 
@@ -19,47 +19,47 @@ private:
 public:
     // Constructors
 
-    template<class Deleter2 = Deleter, _UniquePtrEnableDefault_t<Deleter2> = true>
+    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
     UniquePtr() { /*Empty*/ }
 
-    template<class Deleter2 = Deleter, _UniquePtrEnableDefault_t<Deleter2> = true>
+    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
     UniquePtr(std::nullptr_t) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter, _UniquePtrEnableDefault_t<Deleter2> = true>
+    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
     explicit UniquePtr(Pointer ptr)
         : _ptr(ptr) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter,
-    EnableIf_t<IsConstructible_v<Deleter2, const Deleter2&>, bool> = true>
+    template<class Del = Deleter,
+    EnableIf_t<IsConstructible_v<Del, const Del&>, bool> = true>
     UniquePtr(Pointer ptr, const Deleter& del)
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter,
+    template<class Del = Deleter,
     EnableIf_t<Conjunction_v<
-                    Negation<IsReference<Deleter2>>,
-                    IsConstructible<Deleter2, Deleter2>>, bool> = true>
+                    Negation<IsReference<Del>>,
+                    IsConstructible<Del, Del>>, bool> = true>
     UniquePtr(Pointer ptr, Deleter&& del)
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
-    template<class Deleter2 = Deleter,
+    template<class Del = Deleter,
     EnableIf_t<Conjunction_v<
-                    IsReference<Deleter2>,
-                    IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
+                    IsReference<Del>,
+                    IsConstructible<Del, RemoveReference_t<Del>>>, bool> = true>
     UniquePtr(Pointer, RemoveReference_t<Deleter>&&) = delete;
 
-    template<class Deleter2 = Deleter,
-    EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
+    template<class Del = Deleter,
+    EnableIf_t<IsMoveConstructible_v<Del>, bool> = true>
     UniquePtr(UniquePtr&& other) noexcept
         : _ptr(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
-    template<class Type2, class Deleter2,
+    template<class Ty, class Del,
     EnableIf_t<Conjunction_v<
-                    Negation<IsArray<Type2>>,
-                    IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>,
-                    Conditional_t<IsReference_v<Deleter>, IsSame<Deleter2, Deleter>, IsConvertible<Deleter2, Deleter>>>,
+                    Negation<IsArray<Ty>>,
+                    IsConvertible<typename UniquePtr<Ty, Del>::Pointer, Pointer>,
+                    Conditional_t<IsReference_v<Deleter>, IsSame<Del, Deleter>, IsConvertible<Del, Deleter>>>,
     bool> = true>
-    UniquePtr(UniquePtr<Type2, Deleter2>&& other) noexcept
-        : _ptr(other.release()), _deleter(custom::forward<Deleter2>(other.get_deleter())) { /*Empty*/ }
+    UniquePtr(UniquePtr<Ty, Del>&& other) noexcept
+        : _ptr(other.release()), _deleter(custom::forward<Del>(other.get_deleter())) { /*Empty*/ }
 
     UniquePtr(const UniquePtr&) = delete;
 
@@ -76,21 +76,21 @@ public:
         return *this;
     }
 
-    template<class Type2, class Deleter2,
+    template<class Ty, class Del,
     EnableIf_t<Conjunction_v<
-                    Negation<IsArray<Type2>>,
-                    IsAssignable<Deleter&, Deleter2>,
-                    IsConvertible<typename UniquePtr<Type2, Deleter2>::Pointer, Pointer>>,
+                    Negation<IsArray<Ty>>,
+                    IsAssignable<Deleter&, Del>,
+                    IsConvertible<typename UniquePtr<Ty, Del>::Pointer, Pointer>>,
     bool> = true>
-    UniquePtr& operator=(UniquePtr<Type2, Deleter2>&& other) noexcept {
+    UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
         reset(other.release());
-        _deleter = custom::forward<Deleter2>(other._deleter);
+        _deleter = custom::forward<Del>(other._deleter);
 
         return *this;
     }
 
-    template<class Deleter2 = Deleter,
-    EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
+    template<class Del = Deleter,
+    EnableIf_t<IsMoveAssignable_v<Del>, bool> = true>
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         if (_ptr != other._ptr) {
             reset(other.release());
@@ -146,28 +146,28 @@ template<class Type, class Deleter>
 class UniquePtr<Type[], Deleter>                            // non-copyable pointer to an array object
 {
 public:
-    using ValueType     = Type;
+    using ElementType   = Type;
     using DeleterType   = Deleter;
     using Pointer       = typename _GetDeleterPointerType<Type, RemoveReference_t<Deleter>>::Type;
 
-    template<class Type2, class IsNullptr = IsSame<Type2, std::nullptr_t>>
+    template<class Ty, class IsNullptr = IsSame<Ty, std::nullptr_t>>
     using _EnableConstructorReset = EnableIf_t<Disjunction_v<
-                                                    IsSame<Type2, Pointer>,
+                                                    IsSame<Ty, Pointer>,
                                                     IsNullptr,
                                                     Conjunction<
-                                                        IsSame<Pointer, ValueType*>,
-                                                        IsPointer<Type2>,
-                                                        IsConvertible<RemovePointer_t<Type2>(*)[], ValueType(*)[]>>>,
+                                                        IsSame<Pointer, ElementType*>,
+                                                        IsPointer<Ty>,
+                                                        IsConvertible<RemovePointer_t<Ty>(*)[], ElementType(*)[]>>>,
                                     bool>;
 
-    template<class Type2, class Del, class More,
-    class UpPointer         = typename UniquePtr<Type2, Del>::Pointer,
-    class UpValueType       = typename UniquePtr<Type2, Del>::ValueType>
+    template<class Ty, class Del, class More,
+    class UpPointer         = typename UniquePtr<Ty, Del>::Pointer,
+    class UpValueType       = typename UniquePtr<Ty, Del>::ElementType>
     using _EnableConversion =   EnableIf_t<Conjunction_v<
-                                                IsArray<Type2>,
-                                                IsSame<Pointer, ValueType*>,
+                                                IsArray<Ty>,
+                                                IsSame<Pointer, ElementType*>,
                                                 IsSame<UpPointer, UpValueType*>,
-                                                IsConvertible<UpValueType(*)[], ValueType(*)[]>,
+                                                IsConvertible<UpValueType(*)[], ElementType(*)[]>,
                                                 More>,  // More is used for additional enable traits
                                 bool>;  // TODO: check
 
@@ -178,38 +178,38 @@ private:
 public:
     // Constructors
 
-    template<class Deleter2 = Deleter,
-    _UniquePtrEnableDefault_t<Deleter2> = true>
+    template<class Del = Deleter,
+    _UniquePtrEnableDefault_t<Del> = true>
     UniquePtr() { /*Empty*/ }
 
-    template<class Type2, class Deleter2 = Deleter,
-    _UniquePtrEnableDefault_t<Deleter2> = true,
-    _EnableConstructorReset<Type2> = true>
-    explicit UniquePtr(Type2 ptr)
+    template<class Ty, class Del = Deleter,
+    _UniquePtrEnableDefault_t<Del> = true,
+    _EnableConstructorReset<Ty> = true>
+    explicit UniquePtr(Ty ptr)
         : _ptr(ptr) { /*Empty*/ }
 
-    template<class Type2, class Deleter2 = Deleter, 
-    EnableIf_t<IsCopyConstructible_v<Deleter2>, bool> = true,
-    _EnableConstructorReset<Type2> = true>
-    UniquePtr(Type2 ptr, const Deleter& del)
+    template<class Ty, class Del = Deleter, 
+    EnableIf_t<IsCopyConstructible_v<Del>, bool> = true,
+    _EnableConstructorReset<Ty> = true>
+    UniquePtr(Ty ptr, const Deleter& del)
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
-    template<class Type2, class Deleter2 = Deleter,
+    template<class Ty, class Del = Deleter,
     EnableIf_t<Conjunction_v<
-                    Negation<IsReference<Deleter2>>,
-                    IsMoveConstructible<Deleter2>>, bool> = true,
-    _EnableConstructorReset<Type2> = true>
-    UniquePtr(Type2 ptr, Deleter&& del) noexcept
+                    Negation<IsReference<Del>>,
+                    IsMoveConstructible<Del>>, bool> = true,
+    _EnableConstructorReset<Ty> = true>
+    UniquePtr(Ty ptr, Deleter&& del) noexcept
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
-    template<class Type2, class Deleter2 = Deleter,
+    template<class Ty, class Del = Deleter,
     EnableIf_t<Conjunction_v<
-                    IsReference<Deleter2>,
-                    IsConstructible<Deleter2, RemoveReference_t<Deleter2>>>, bool> = true>
-    UniquePtr(Type2, RemoveReference_t<Deleter>&&) = delete;
+                    IsReference<Del>,
+                    IsConstructible<Del, RemoveReference_t<Del>>>, bool> = true>
+    UniquePtr(Ty, RemoveReference_t<Deleter>&&) = delete;
 
-    template<class Deleter2 = Deleter,
-    EnableIf_t<IsMoveConstructible_v<Deleter2>, bool> = true>
+    template<class Del = Deleter,
+    EnableIf_t<IsMoveConstructible_v<Del>, bool> = true>
     UniquePtr(UniquePtr&& other) noexcept
         : _ptr(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
@@ -228,17 +228,17 @@ public:
         return *this;
     }
 
-    template<class Type2, class Deleter2,
-    _EnableConversion<Type2, Deleter2, IsAssignable<Deleter&, Deleter2>> = true>
-    UniquePtr& operator=(UniquePtr<Type2, Deleter2>&& other) noexcept {
+    template<class Ty, class Del,
+    _EnableConversion<Ty, Del, IsAssignable<Deleter&, Del>> = true>
+    UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
         reset(other.release());
-        _deleter = custom::forward<Deleter2>(other._deleter);
+        _deleter = custom::forward<Del>(other._deleter);
 
         return *this;
     }
 
-    template<class Deleter2 = Deleter,
-    EnableIf_t<IsMoveAssignable_v<Deleter2>, bool> = true>
+    template<class Del = Deleter,
+    EnableIf_t<IsMoveAssignable_v<Del>, bool> = true>
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         if (_ptr != other._ptr) {
             reset(other.release());
@@ -277,8 +277,8 @@ public:
         return custom::exchange(_ptr, nullptr);
     }
 
-    template<class Type2, _EnableConstructorReset<Type2, FalseType> = true>     // FalseType (don't allow nullptr ???)
-    void reset(Type2 ptr) noexcept {                                            // Replaces the managed object and deletes old
+    template<class Ty, _EnableConstructorReset<Ty, FalseType> = true>     // FalseType (don't allow nullptr ???)
+    void reset(Ty ptr) noexcept {                                            // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_ptr, ptr);
 
         if (old)
@@ -310,7 +310,7 @@ public:
     using Esft_t = EnableSharedFromThis;
 
 private:
-    template<class _Type>
+    template<class Ty>
     friend class SharedPtr;
 
     mutable WeakPtr<Type> _wptr;
@@ -359,7 +359,7 @@ public:
     using WeakType      = WeakPtr<Type>;
 
 public:
-    // Constructors & Operators
+    // Constructors
 
     SharedPtr() noexcept = default;
     SharedPtr(std::nullptr_t) noexcept { /*Empty*/ }
@@ -367,9 +367,7 @@ public:
     // TODO: not ready
     template<class Ty,
     EnableIf_t<Conjunction_v<
-                    Conditional_t<IsArray_v<Type>, 
-                                _CanArrayDelete<Ty>, 
-                                _CanScalarDelete<Ty>>,
+                    Conditional_t<IsArray_v<Type>, _CanArrayDelete<Ty>, _CanScalarDelete<Ty>>,
                     _SharedPtrConvertible<Ty, Type>>,
     bool> = true>
     explicit SharedPtr(Ty* ptr) {              // construct SharedPtr object that owns ptr
@@ -383,35 +381,117 @@ public:
         }
     }
 
+    template<class Ty, class Del,
+    EnableIf_t<Conjunction_v<
+                    IsMoveConstructible<Del>, 
+                    _CanCallFunctionObject<Del&, Ty*&>,
+                    _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    SharedPtr(Ty* ptr, Del deleter) {           // construct with ptr, deleter
+        _set_pointer_default(ptr, custom::move(deleter));
+    }
+
+    template<class Del,
+    EnableIf_t<Conjunction_v<
+                    IsMoveConstructible<Del>, 
+                    _CanCallFunctionObject<Del&, std::nullptr_t&>>, 
+    bool> = true>
+    SharedPtr(std::nullptr_t, Del deleter) {    // construct with nullptr, deleter
+        _set_pointer_default(nullptr, custom::move(deleter));
+    }
+
     SharedPtr(const SharedPtr& other) noexcept { // construct SharedPtr object that owns same resource as other
         this->_copy_construct(other);
     }
 
-    SharedPtr(SharedPtr&& other) noexcept {     // construct SharedPtr object that takes resource from other
+    template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    SharedPtr(const SharedPtr<Ty>& other) noexcept {
+        this->_copy_construct(other);
+    }
+
+    template<class Ty>
+    SharedPtr(const SharedPtr<Ty>& other, ElementType* ptr) noexcept {  // copy construct SharedPtr object that aliases other
+        this->_alias_copy_construct(other, ptr);
+    }
+
+    SharedPtr(SharedPtr&& other) noexcept {                             // construct SharedPtr object that takes resource from other
+        this->_move_construct(custom::move(other));
+    }
+
+    template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    SharedPtr(SharedPtr<Ty>&& other) noexcept {
         this->_move_construct(custom::move(other));
     }
 
     template<class Ty>
-    SharedPtr(const SharedPtr<Ty>& other, ElementType* ptr) noexcept { // copy construct SharedPtr object that aliases other
-        this->_alias_copy_construct(other, ptr);
+    SharedPtr(SharedPtr<Ty>&& other, ElementType* ptr) noexcept {       // move construct SharedPtr object that aliases other
+        this->_alias_move_construct(custom::move(other), ptr);
     }
 
-    template<class Ty>
-    SharedPtr(SharedPtr<Ty>&& other, ElementType* ptr) noexcept {      // move construct SharedPtr object that aliases other
-        this->_alias_move_construct(custom::move(other), ptr);
+    template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    explicit SharedPtr(const WeakPtr<Ty>& other) {                      // construct SharedPtr object that owns resource *other
+        if (!this->_construct_from_weak(other))
+            throw std::runtime_error("Bad weak ptr...");
+            // TODO: _Throw_bad_weak_ptr();
+    }
+
+    template<class Ty, class Del,
+    EnableIf_t<Conjunction_v<
+                    _SharedPtrCompatible<Ty, Type>,
+                    IsConvertible<typename UniquePtr<Ty, Del>::Pointer, ElementType*>>,
+    bool> = true>
+    SharedPtr(UniquePtr<Ty, Del>&& unique) {    // TODO: check
+        using UnqPointer_t  = typename UniquePtr<Ty, Del>::Pointer;
+        using UnqRaw_t      = typename UniquePtr<Ty, Del>::ElementType*;
+        using UnqDeleter_t  = Conditional_t<IsReference_v<Del>, decltype(custom::ref(unique.get_deleter())), Del>;
+
+        const UnqPointer_t ptr = unique.get();
+
+        if (ptr)
+        {
+            const UnqRaw_t raw  = ptr;
+            const auto refCount = new _RefCountDeleter<UnqPointer_t, UnqDeleter_t>(ptr, custom::forward<Del>(unique.get_deleter()));
+            _set_ptr_rep_and_enable_shared(raw, refCount);
+            unique.release();
+        }
     }
 
     ~SharedPtr() {                              // release resource
         this->_decref();
     }
 
+public:
+    // Operators
+
     SharedPtr& operator=(const SharedPtr& other) noexcept {
+        SharedPtr(other).swap(*this);
+        return *this;
+    }
+
+    template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    SharedPtr& operator=(const SharedPtr<Ty>& other) noexcept {
         SharedPtr(other).swap(*this);
         return *this;
     }
 
     SharedPtr& operator=(SharedPtr&& other) noexcept {
         SharedPtr(custom::move(other)).swap(*this);
+        return *this;
+    }
+
+    template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    SharedPtr& operator=(SharedPtr<Ty>&& other) noexcept {
+        SharedPtr(custom::move(other)).swap(*this);
+        return *this;
+    }
+
+    template<class Ty, class Del,
+    EnableIf_t<Conjunction_v<
+                    _SharedPtrCompatible<Ty, Type>,
+                    IsConvertible<typename UniquePtr<Ty, Del>::Pointer, ElementType*>>,
+    bool> = true>
+    SharedPtr& operator=(UniquePtr<Ty, Del>&& unique) { // move from UniquePtr
+        SharedPtr(custom::move(unique)).swap(*this);
         return *this;
     }
 
@@ -440,6 +520,25 @@ public:
         SharedPtr().swap(*this);
     }
 
+    template<class Ty,
+    EnableIf_t<Conjunction_v<
+                    Conditional_t<IsArray_v<Type>, _CanArrayDelete<Ty>, _CanScalarDelete<Ty>>,
+                    _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    void reset(Ty* ptr) {               // release, take ownership of ptr
+        SharedPtr(ptr).swap(*this);
+    }
+
+    template<class Ty, class Del,
+    EnableIf_t<Conjunction_v<
+                    IsMoveConstructible<Del>, 
+                    _CanCallFunctionObject<Del&, Ty*&>,
+                    _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    void reset(Ty* ptr, Del deleter) { // release, take ownership of ptr, with deleter
+        SharedPtr(ptr, deleter).swap(*this);
+    }
+
     bool unique() const noexcept {      // return true if no other SharedPtr object owns this resource
         return this->use_count() == 1;
     }
@@ -447,20 +546,25 @@ public:
 private:
     // Helpers
 
-    template<class Ty, class Deleter>  // TODO: why _UxptrOrNullptr and not Type
-    void _set_pointer_default(const Ty ptr, Deleter deleter) { // take ownership of ptr, deleter
-        _TemporaryOwnerDel<Ty, Deleter> temp(ptr, deleter);
-        _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCountDeleter<Ty, Deleter>(temp._Ptr, custom::move(deleter)));
+    template<class TypePtr, class Deleter>  // TODO: why _UxptrOrNullptr and not Type
+    void _set_pointer_default(const TypePtr ptr, Deleter deleter) { // take ownership of ptr, deleter
+        _TemporaryOwnerDel<TypePtr, Deleter> temp(ptr, deleter);
+        _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCountDeleter<TypePtr, Deleter>(temp._Ptr, custom::move(deleter)));
         temp._CallDeleter = false;
     }
 
-    template<class _Ux> // TODO: _Ux change
-    void _set_ptr_rep_and_enable_shared(_Ux* const ptr, _RefCountBase* const refCount) noexcept { // take ownership of ptr
+    template<class Ty>
+    void _set_ptr_rep_and_enable_shared(Ty* const ptr, _RefCountBase* const refCount) noexcept { // take ownership of ptr
         this->_ptr = ptr;
         this->_rep = refCount;
-        if (Conjunction_v<Negation<IsArray<Type>>, Negation<IsVolatile<_Ux>>, _CanEnableShared<_Ux>>)
+        if (Conjunction_v<Negation<IsArray<Type>>, Negation<IsVolatile<Ty>>, _CanEnableShared<Ty>>)
             if (ptr && ptr->_wptr.expired()) 
-                ptr->_wptr = SharedPtr<RemoveCV_t<_Ux>>(*this, const_cast<RemoveCV_t<_Ux>*>(ptr));
+                ptr->_wptr = SharedPtr<RemoveCV_t<Ty>>(*this, const_cast<RemoveCV_t<Ty>*>(ptr));
+    }
+
+    void _set_ptr_rep_and_enable_shared(std::nullptr_t, _RefCountBase* const refCount) noexcept { // take ownership of nullptr
+        this->_Ptr = nullptr;
+        this->_Rep = refCount;
     }
 }; // END SharedPtr
 
@@ -469,7 +573,7 @@ template<class Type>
 class WeakPtr : public _SharedWeakBase<Type>    // class for pointer to reference counted resource
 {
 public:
-    // Constructors & Operators
+    // Constructors
     
     WeakPtr() noexcept { /*Empty*/ }
 
@@ -489,6 +593,9 @@ public:
     ~WeakPtr() {
         this->_decwref();
     }
+
+public:
+    // Operators
 
     WeakPtr& operator=(const WeakPtr& other) noexcept {
         WeakPtr(other).swap(*this);
@@ -525,8 +632,8 @@ public:
         WeakPtr().swap(*this);  // TODO: why WeakPtr{} ??? instead of ()
     }
 
-    // void swap(weak_ptr& _Other) noexcept {
-    //     this->_Swap(_Other);
+    // void swap(weak_ptr& other) noexcept {
+    //     this->_Swap(other);
     // }
 
     bool expired() const noexcept {
