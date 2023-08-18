@@ -1,17 +1,17 @@
 #pragma once
-#include "Node.h"
+#include "xNode.h"
 #include "Utility.h"
 
 CUSTOM_BEGIN
 
 template<class Traits>
-class HashTable;
+class _HashTable;
 
 template<class Type>
 struct ListData 
 {
 	using ValueType		= Type;									// Type for stored values
-	using Node			= DoubleNode<ValueType>;				// Node type
+	using Node			= node::_DoubleNode<ValueType>;			// Node type
 	using Alloc			= Allocator<Node>;						// Allocator type
 
 	size_t _Size		= 0;									// Number of Nodes held
@@ -144,7 +144,7 @@ class List				// Doubly Linked List
 {
 private:
 	template<class>
-	friend class HashTable;													// Needed in HashTable class
+	friend class _HashTable;													// Needed in _HashTable class
 
 public:
 	using Data 					= ListData<Type>;							// Members that are modified

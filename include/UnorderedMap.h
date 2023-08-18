@@ -1,5 +1,5 @@
 #pragma once
-#include "HashTable.h"
+#include "xHashTable.h"
 
 CUSTOM_BEGIN
 
@@ -27,10 +27,10 @@ public:
 
 
 template<class Key, class Type, class Hasher = std::hash<Key>>
-class UnorderedMap : public HashTable<UmapTraits<Key, Type, Hasher>>	// UnorderedMap Template
+class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hasher>>	// UnorderedMap Template
 {
 private:
-	using Base = HashTable<UmapTraits<Key, Type, Hasher>>;
+	using Base = _HashTable<UmapTraits<Key, Type, Hasher>>;
 
 public:
 	using KeyType 		= typename Base::KeyType;

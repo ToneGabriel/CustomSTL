@@ -10,7 +10,7 @@
 CUSTOM_BEGIN
 
 template<class Traits>
-class HashTable				// HashTable Template implemented as vector of lists
+class _HashTable				// _HashTable Template implemented as vector of lists
 {
 protected:
     using KeyType           	= typename Traits::KeyType;				// Type of Key
@@ -39,26 +39,26 @@ protected:
 protected:
     // Constructors
 
-    HashTable() {
+    _HashTable() {
 		rehash(_DEFAULT_BUCKETS);
 	}
 
-	HashTable(const size_t& buckets) {
+	_HashTable(const size_t& buckets) {
 		rehash((buckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : buckets);
 	}
 
-	HashTable(const HashTable& other)
+	_HashTable(const _HashTable& other)
 		: _elems(other._elems), _buckets(other._buckets) { /*Empty*/ }
 
-	HashTable(HashTable&& other) noexcept
+	_HashTable(_HashTable&& other) noexcept
 		: _elems(custom::move(other._elems)), _buckets(custom::move(other._buckets)) { /*Empty*/ }
 
-	virtual ~HashTable() = default;
+	virtual ~_HashTable() = default;
 
 protected:
 	// Operators
 
-	HashTable& operator=(const HashTable& other) {
+	_HashTable& operator=(const _HashTable& other) {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= other._elems;
@@ -68,7 +68,7 @@ protected:
 		return *this;
 	}
 
-	HashTable& operator=(HashTable&& other) noexcept {
+	_HashTable& operator=(_HashTable&& other) noexcept {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= custom::move(other._elems);
@@ -78,7 +78,7 @@ protected:
 		return *this;
 	}
 
-	bool operator==(const HashTable& other) const {					// Contains the same elems, but not the same hashtable
+	bool operator==(const _HashTable& other) const {					// Contains the same elems, but not the same hashtable
 		if (size() != other.size())
 			return false;
 
@@ -92,7 +92,7 @@ protected:
 		return true;
 	}
 
-	bool operator!=(const HashTable& other) const {
+	bool operator!=(const _HashTable& other) const {
 		return !(*this == other);
 	}
 
@@ -101,9 +101,9 @@ public:
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {
-		Node* newNode = new Node(custom::forward<Args>(args)...);
-		const KeyType& newKey = Traits::extract_key(newNode->_Value);
-		Iterator it = find(newKey);
+		Node* newNode 			= new Node(custom::forward<Args>(args)...);
+		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
+		Iterator it 			= find(newKey);
 
 		if (it != end()) {		// Destroy newly-created Node if key exists
 			delete newNode;
@@ -118,8 +118,8 @@ public:
 	}
 
 	Iterator erase(const KeyType& key) {
-		size_t index = bucket(key);
-		BucketIterator it = _find_in_array(key);
+		size_t index 		= bucket(key);
+		BucketIterator it 	= _find_in_array(key);
 
 		if (it == _buckets[index].end())
 			return end();
@@ -251,6 +251,7 @@ protected:
 
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
 		ConstBucketIterator it = _find_in_array(key);
+		
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
@@ -259,6 +260,7 @@ protected:
 
 	MappedType& _at(const KeyType& key) {
 		BucketIterator it = _find_in_array(key);
+
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
 
@@ -269,8 +271,9 @@ private:
 	// Helpers
 
 	BucketIterator _find_in_array(const KeyType& key) {
-		Bucket& currentBucket = _buckets[bucket(key)];
-		BucketIterator it = currentBucket.begin();
+		Bucket& currentBucket 	= _buckets[bucket(key)];
+		BucketIterator it 		= currentBucket.begin();
+
 		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 			++it;
 
@@ -279,7 +282,8 @@ private:
 
 	ConstBucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
 		const Bucket& currentBucket = _buckets[bucket(key)];
-		ConstBucketIterator it = currentBucket.begin();
+		ConstBucketIterator it 		= currentBucket.begin();
+
 		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 			++it;
 
@@ -302,6 +306,6 @@ private:
 	size_t _min_load_factor_buckets(const size_t& size) const {		// returns the minimum number of buckets necessary for the elements in List
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
-}; // END HashTable Template
+}; // END _HashTable Template
 
 CUSTOM_END

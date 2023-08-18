@@ -1,5 +1,5 @@
 #pragma once
-#include "SearchTree.h"
+#include "xSearchTree.h"
 
 CUSTOM_BEGIN
 
@@ -27,10 +27,10 @@ public:
 
 
 template<class Key, class Compare = std::less<Key>>
-class Set : public SearchTree<SetTraits<Key, Compare>>		// Set Template
+class Set : public _SearchTree<SetTraits<Key, Compare>>		// Set Template
 {
 private:
-	using Base = SearchTree<SetTraits<Key, Compare>>;
+	using Base = _SearchTree<SetTraits<Key, Compare>>;
 
 public:
 	using KeyType				= typename Base::KeyType;

@@ -8,24 +8,24 @@
 
 CUSTOM_BEGIN
 
-enum class TreeChild : char
+enum class _TreeChild : char
 {
 	Left,
 	Right
 };
 
 template<class Node>
-struct TreeNodeID 			// Indicator for child placement
+struct _TreeNodeID 			// Indicator for child placement
 {							
 	Node* _Parent		= nullptr;
-	TreeChild _Child	= TreeChild::Left;
+	_TreeChild _Child	= _TreeChild::Left;
 };
 
 template<class Traits>
-struct SearchTreeData
+struct _SearchTreeData
 {
 	using ValueType		= typename Traits::ValueType;			// Type for stored values
-	using Node			= TreeNode<ValueType>;					// Node type
+	using Node			= node::_TreeNode<ValueType>;			// Node type
 	using Alloc			= Allocator<Node>;						// Allocator type
 
 	size_t _Size		= 0;									// Number of Nodes held
@@ -46,13 +46,13 @@ struct SearchTreeData
 	}
 };
 
-template<class SearchTree>
-class ConstSearchTreeIterator
+template<class _SearchTree>
+class _ConstSearchTreeIterator
 {
 public:
-	using Data			= typename SearchTree::Data;
-	using ValueType 	= typename SearchTree::ValueType;
-	using Node			= typename SearchTree::Node;
+	using Data			= typename _SearchTree::Data;
+	using ValueType 	= typename _SearchTree::ValueType;
+	using Node			= typename _SearchTree::Node;
 	using Reference		= const ValueType&;
 	using Pointer		= const Node*;
 
@@ -60,10 +60,10 @@ public:
 	const Data* _Data	= nullptr;
 
 public:
-	explicit ConstSearchTreeIterator(Node* ptr, const Data* data) noexcept
+	explicit _ConstSearchTreeIterator(Node* ptr, const Data* data) noexcept
 		:_Ptr(ptr), _Data(data) { /*Empty*/ }
 
-	ConstSearchTreeIterator& operator++() noexcept {
+	_ConstSearchTreeIterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot increment end iterator...");
 
 		if (_Ptr->_Right->_IsNil)
@@ -82,13 +82,13 @@ public:
 		return *this;
 	}
 
-	ConstSearchTreeIterator operator++(int) noexcept {
-		ConstSearchTreeIterator temp = *this;
+	_ConstSearchTreeIterator operator++(int) noexcept {
+		_ConstSearchTreeIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ConstSearchTreeIterator& operator--() noexcept {
+	_ConstSearchTreeIterator& operator--() noexcept {
 		CUSTOM_ASSERT(_Ptr != _Data->_Head->_Left, "Cannot decrement begin iterator...");
 
 		if (_Ptr->_IsNil)
@@ -111,8 +111,8 @@ public:
 		return *this;
 	}
 
-	ConstSearchTreeIterator operator--(int) noexcept {
-		ConstSearchTreeIterator temp = *this;
+	_ConstSearchTreeIterator operator--(int) noexcept {
+		_ConstSearchTreeIterator temp = *this;
 		--(*this);
 		return temp;
 	}
@@ -127,51 +127,51 @@ public:
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ConstSearchTreeIterator& other) const noexcept {
+	bool operator==(const _ConstSearchTreeIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ConstSearchTreeIterator& other) const noexcept {
+	bool operator!=(const _ConstSearchTreeIterator& other) const noexcept {
 		return !(*this == other);
 	}
-}; // END ConstSearchTreeIterator
+}; // END _ConstSearchTreeIterator
 
-template<class SearchTree>
-class SearchTreeIterator : public ConstSearchTreeIterator<SearchTree>			// SearchTree Iterator
+template<class _SearchTree>
+class _SearchTreeIterator : public _ConstSearchTreeIterator<_SearchTree>			// _SearchTree Iterator
 {
 private:
-	using Base		= ConstSearchTreeIterator<SearchTree>;
+	using Base		= _ConstSearchTreeIterator<_SearchTree>;
 
 public:
-	using Data		= typename SearchTree::Data;
-	using ValueType = typename SearchTree::ValueType;
-	using Node		= typename SearchTree::Node;
+	using Data		= typename _SearchTree::Data;
+	using ValueType = typename _SearchTree::ValueType;
+	using Node		= typename _SearchTree::Node;
 	using Reference	= ValueType&;
 	using Pointer	= Node*;
 
 public:
 
-	explicit SearchTreeIterator(Node* ptr, const Data* data) noexcept
+	explicit _SearchTreeIterator(Node* ptr, const Data* data) noexcept
 		:Base(ptr, data) { /*Empty*/ }
 
-	SearchTreeIterator& operator++() noexcept {
+	_SearchTreeIterator& operator++() noexcept {
 		Base::operator++();
 		return *this;
 	}
 
-	SearchTreeIterator operator++(int) noexcept {
-		SearchTreeIterator temp = *this;
+	_SearchTreeIterator operator++(int) noexcept {
+		_SearchTreeIterator temp = *this;
 		Base::operator++();
 		return temp;
 	}
 
-	SearchTreeIterator& operator--() noexcept {
+	_SearchTreeIterator& operator--() noexcept {
 		Base::operator--();
 		return *this;
 	}
 
-	SearchTreeIterator operator--(int) noexcept {
-		SearchTreeIterator temp = *this;
+	_SearchTreeIterator operator--(int) noexcept {
+		_SearchTreeIterator temp = *this;
 		Base::operator--();
 		return temp;
 	}
@@ -183,11 +183,11 @@ public:
 	Reference operator*() const noexcept {
 		return const_cast<Reference>(Base::operator*());
 	}
-}; // END SearchTreeIterator
+}; // END _SearchTreeIterator
 
 
 template<class Traits>
-class SearchTree			// SearchTree Template implemented as Red-Black Tree
+class _SearchTree			// _SearchTree Template implemented as Red-Black Tree
 {
 public:
     using KeyType       		= typename Traits::KeyType;						// Type of Key
@@ -195,12 +195,12 @@ public:
     using ValueType     		= typename Traits::ValueType;					// Type of values stored in container (raw or pair)
     using KeyCompare    		= typename Traits::KeyCompare;					// Comparison struct
 
-	using Data					= SearchTreeData<Traits>;
+	using Data					= _SearchTreeData<Traits>;
 	using Node 					= typename Data::Node;							// Node component from Tree
 	using Alloc					= typename Data::Alloc;							// Allocator for Node type
 	
-	using Iterator				= SearchTreeIterator<SearchTree<Traits>>;		// Iterator type
-	using ConstIterator			= ConstSearchTreeIterator<SearchTree<Traits>>;
+	using Iterator				= _SearchTreeIterator<_SearchTree<Traits>>;		// Iterator type
+	using ConstIterator			= _ConstSearchTreeIterator<_SearchTree<Traits>>;
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;			// ReverseIterator type
 	using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
 
@@ -212,19 +212,19 @@ protected:
 protected:
 	// Constructors
 
-	SearchTree() {
+	_SearchTree() {
 		_create_head();
 	}
 
-	SearchTree(const SearchTree& other) : SearchTree() {
+	_SearchTree(const _SearchTree& other) : _SearchTree() {
 		_copy(other);
 	}
 
-	SearchTree(SearchTree&& other) noexcept : SearchTree() {
+	_SearchTree(_SearchTree&& other) noexcept : _SearchTree() {
 		_move(custom::move(other));
 	}
 
-	virtual ~SearchTree() {
+	virtual ~_SearchTree() {
 		_destroy_all(_data._Head->_Parent);
 		_free_head();
 	}
@@ -232,7 +232,7 @@ protected:
 protected:
 	// Operators
 
-	SearchTree& operator=(const SearchTree& other) {
+	_SearchTree& operator=(const _SearchTree& other) {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -242,7 +242,7 @@ protected:
 		return *this;
 	}
 
-	SearchTree& operator=(SearchTree&& other) noexcept {
+	_SearchTree& operator=(_SearchTree&& other) noexcept {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -252,7 +252,7 @@ protected:
 		return *this;
 	}
 
-	bool operator==(const SearchTree& other) const {				// Contains the same elems, but not the same tree
+	bool operator==(const _SearchTree& other) const {				// Contains the same elems, but not the same tree
 		if (size() != other.size())
 			return false;
 
@@ -265,7 +265,7 @@ protected:
 		return true;
 	}
 
-	bool operator!=(const SearchTree& other) const {
+	bool operator!=(const _SearchTree& other) const {
 		return !(*this == other);
 	}
 
@@ -540,8 +540,8 @@ private:
 		return found;
 	}
 
-	TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {	// Find parent for newly created node
-		TreeNodeID<Node> position;
+	_TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {	// Find parent for newly created node
+		_TreeNodeID<Node> position;
 
 		if (_data._Head->_Parent == _data._Head)					// first node
 			position._Parent = _data._Head;
@@ -553,20 +553,20 @@ private:
 				{
 					iterNode = iterNode->_Left;
 					if (iterNode->_IsNil)
-						position._Child = TreeChild::Left;
+						position._Child = _TreeChild::Left;
 				}
 				else
 				{
 					iterNode = iterNode->_Right;
 					if (iterNode->_IsNil)
-						position._Child = TreeChild::Right;
+						position._Child = _TreeChild::Right;
 				}
 			}
 
 		return position;
 	}
 
-	void _insert(Node* newNode, const TreeNodeID<Node>& position) {
+	void _insert(Node* newNode, const _TreeNodeID<Node>& position) {
 		++_data._Size;
 
 		// Raw Insert
@@ -579,7 +579,7 @@ private:
 			_data._Head->_Right		= newNode;
 			newNode->_Color 		= Node::Colors::Black;
 		}
-		else if (position._Child == TreeChild::Left)				// add to left
+		else if (position._Child == _TreeChild::Left)				// add to left
 		{
 			position._Parent->_Left = newNode;
 			if (position._Parent == _data._Head->_Left)
@@ -840,7 +840,7 @@ private:
 		delete oldNode;
 	}
 
-	void _copy(const SearchTree& other) {
+	void _copy(const _SearchTree& other) {
 		_data._Head->_Parent 			= _copy_all(other._data._Head->_Parent);	// copy from root
 		_data._Head->_Left 				= _data.leftmost(_data._Head->_Parent);
 		_data._Head->_Right 			= _data.rightmost(_data._Head->_Parent);
@@ -848,12 +848,12 @@ private:
 		_data._Size 					= other._data._Size;
 	}
 
-	void _move(SearchTree&& other) {
+	void _move(_SearchTree&& other) {
 		custom::swap(_data._Head, other._data._Head);
 
 		_data._Size 		= other._data._Size;
 		other._data._Size 	= 0;
 	}
-}; // END SearchTree Template
+}; // END _SearchTree Template
 
 CUSTOM_END
