@@ -389,7 +389,7 @@ private:
 	// Others
 
 	void _create_head() {
-		_data._Head 			= _alloc.alloc(1);
+		_data._Head 			= _alloc.allocate(1);
 		_data._Head->_Next 		= _data._Head;
 		_data._Head->_Previous 	= _data._Head;
 	}

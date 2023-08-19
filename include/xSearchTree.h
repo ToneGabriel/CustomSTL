@@ -801,7 +801,7 @@ private:
 	}
 
 	void _create_head() {
-		_data._Head 			= _alloc.alloc(1);
+		_data._Head 			= _alloc.allocate(1);
 		_data._Head->_Parent	= _data._Head;
 		_data._Head->_Left		= _data._Head;
 		_data._Head->_Right		= _data._Head;

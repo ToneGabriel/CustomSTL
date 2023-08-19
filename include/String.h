@@ -1,5 +1,5 @@
 #pragma once
-#include "Allocator.h"
+#include "xMemory.h"
 #include "Utility.h"
 
 #include <cstring>
@@ -312,7 +312,7 @@ public:
 			_data._Last = _data._First + newCapacity;
 
 		size_t newSize	= size();
-		char* newString = _alloc.alloc(newCapacity + 1);
+		char* newString = _alloc.allocate(newCapacity + 1);
 		memcpy(newString, _data._First, size());
 		_alloc.dealloc(_data._First, capacity() + 1);
 
@@ -358,7 +358,7 @@ public:
 	}
 
 	String& append(const size_t& nchar, const char& chr) {								// Appends n consecutive copies of character c
-		char* seq = _alloc.alloc(nchar + 1);
+		char* seq = _alloc.allocate(nchar + 1);
 		for (size_t i = 0; i < nchar; ++i)
 			seq[i] = chr;
 
@@ -390,7 +390,7 @@ public:
 	}
 
 	String& insert(const size_t& pos, const size_t& nchar, const char& chr) {
-		char* seq = _alloc.alloc(nchar + 1);
+		char* seq = _alloc.allocate(nchar + 1);
 		for (size_t i = 0; i < nchar; ++i)
 			seq[i] = chr;
 
@@ -609,7 +609,7 @@ private:
 	// Others
 
 	void _alloc_empty(const size_t& capacity) {
-		_data._First 	= _alloc.alloc(capacity + 1);
+		_data._First 	= _alloc.allocate(capacity + 1);
 		_data._Last 	= _data._First;
 		_data._Final 	= _data._First + capacity;
 		_data._Last[0] 	= _NULLCHR;
@@ -617,13 +617,13 @@ private:
 
 	void _initialize_from_cstring(const char* cstring) {
 		if (cstring == nullptr) {
-			_data._First 	= _alloc.alloc(1);
+			_data._First 	= _alloc.allocate(1);
 			_data._Last 	= _data._First;
 			_data._Final 	= _data._First;
 		}
 		else {
 			size_t len 		= strlen(cstring);
-			_data._First 	= _alloc.alloc(len + 1);
+			_data._First 	= _alloc.allocate(len + 1);
 			_data._Last 	= _data._First + len;
 			_data._Final 	= _data._First + len;
 			memcpy(_data._First, cstring, len);

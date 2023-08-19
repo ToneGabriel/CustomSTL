@@ -1,5 +1,5 @@
 #pragma once
-#include "Allocator.h"
+#include "xMemory.h"
 #include "Utility.h"
 
 
@@ -284,7 +284,7 @@ public:
 		if (newCapacity < size())
 			_data._Last = _data._First + newCapacity;
 
-		ValueType* newArray = _alloc.alloc(newCapacity);
+		ValueType* newArray = _alloc.allocate(newCapacity);
 		size_t newSize		= size();
 
 		for (size_t i = 0; i < newSize; ++i)
@@ -303,7 +303,7 @@ public:
 	void realloc(const size_t& newCapacity) {									// Allocate memory and populate it with default values (delete old)
 		_clean_up_array();
 
-		_data._First	= _alloc.alloc(newCapacity);
+		_data._First	= _alloc.allocate(newCapacity);
 		_data._Last		= _data._First + newCapacity;
 		_data._Final	= _data._First + newCapacity;
 		_alloc.construct_range(_data._First, newCapacity);
@@ -312,7 +312,7 @@ public:
 	void realloc(const size_t& newCapacity, const ValueType& copyValue) {		// Allocate memory and populate it with given reference (delete old)
 		_clean_up_array();
 
-		_data._First	= _alloc.alloc(newCapacity);
+		_data._First	= _alloc.allocate(newCapacity);
 		_data._Last		= _data._First + newCapacity;
 		_data._Final	= _data._First + newCapacity;
 		_alloc.construct_range(_data._First, newCapacity, copyValue);
@@ -497,7 +497,7 @@ private:
 	// Helpers
 
 	void _copy(const Vector& other) {											// Generic copy function for vector
-		_data._First	= _alloc.alloc(other.capacity());
+		_data._First	= _alloc.allocate(other.capacity());
 		size_t newSize	= other.size();
 
 		for (size_t i = 0; i < newSize; ++i)

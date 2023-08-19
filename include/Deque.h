@@ -1,5 +1,5 @@
 #pragma once
-#include "Allocator.h"
+#include "xMemory.h"
 #include "Utility.h"
 
 
@@ -329,7 +329,7 @@ public:
 		size_t block		= _data.get_block(backOffset);
 
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.alloc(_data.BLOCK_SIZE);
+			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
 
 		_alloc.construct(_data._Map[block] + backOffset % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
@@ -364,7 +364,7 @@ public:
 
 		size_t block = _data.get_block(--_data._First);
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.alloc(_data.BLOCK_SIZE);
+			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
 
 		_alloc.construct(_data._Map[block] + _data._First % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
