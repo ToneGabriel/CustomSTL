@@ -714,13 +714,24 @@ struct Select<false>
     using Apply = Ty2;
 };
 
-// decay
+// decay - Performs the type conversions equivalent to the ones performed when passing function arguments by value
 template<class Ty>
-struct Decay                                    // determines decayed version of Ty
+struct Decay
 {
-    using Ty1   = RemoveReference_t<Ty>;
-    using Ty2   = typename Select<IsFunction_v<Ty1>>::template Apply<AddPointer<Ty1>, RemoveCV<Ty1>>;
-    using Type  = typename Select<IsArray_v<Ty1>>::template Apply<AddPointer<RemoveExtent_t<Ty1>>, Ty2>::Type;
+    // old
+    // using Ty1   = RemoveReference_t<Ty>;
+    // using Ty2   = typename Select<IsFunction_v<Ty1>>::template Apply<AddPointer<Ty1>, RemoveCV<Ty1>>;
+    // using Type  = typename Select<IsArray_v<Ty1>>::template Apply<AddPointer<RemoveExtent_t<Ty1>>, Ty2>::Type;
+
+private:
+    using NoRefTy = RemoveReference_t<Ty>;
+
+public:
+    using Type = Conditional_t<IsArray_v<NoRefTy>,
+                                    AddPointer_t<RemoveExtent_t<NoRefTy>>,
+                                    Conditional_t<IsFunction_v<NoRefTy>,
+                                                        AddPointer_t<NoRefTy>,
+                                                        RemoveCV_t<NoRefTy>>>;
 };
 
 template<class Ty>

@@ -2,8 +2,8 @@
 
 #if defined __GNUG__
 #include "Utility.h"
-#include "Functional.h"
 #include "Tuple.h"
+#include "Memory.h"
 
 #include <pthread.h>
 #include <chrono>
@@ -33,9 +33,9 @@ private:
 
     template<class CallableTuple, size_t... Indices>
     static void* _invoke_impl(void* args) noexcept {
-        CallableTuple* callable = static_cast<CallableTuple*>(args);
-        custom::invoke(custom::move(custom::get<Indices>(*callable))...);
-        delete callable;
+        const UniquePtr<CallableTuple> callable(static_cast<CallableTuple*>(args));
+        CallableTuple& derefCallable = *callable;
+        custom::invoke(custom::move(custom::get<Indices>(derefCallable))...);
 
         return nullptr;
     }
@@ -52,18 +52,19 @@ public:
     Thread(const Thread&)   = delete;
 
     template<class Functor, class... Args, 
-    EnableIf_t<!IsSame<Decay_t<Functor>, Thread>::Value, bool> = true>
+    EnableIf_t<!IsSame_v<Decay_t<Functor>, Thread>, bool> = true>
     Thread(Functor&& func, Args&&... args) {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
+        using CallableTuple = Tuple<Decay_t<Functor>, Decay_t<Args>...>;
 
-        using CallableTuple     = Tuple<Decay_t<Functor>, Decay_t<Args>...>;
-        Invoker invoker         = _get_invoke_impl<CallableTuple>(MakeIndexSequence<1 + sizeof...(Args)>{});
-        CallableTuple* callable = new CallableTuple(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+        Invoker invoker = _get_invoke_impl<CallableTuple>(MakeIndexSequence<1 + sizeof...(Args)>{});
+        auto callable   = custom::make_unique<CallableTuple>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 
-        if (pthread_create(&_thread, nullptr, invoker, callable) != 0)
+        if (pthread_create(&_thread, nullptr, invoker, callable.get()) == 0)
+            (void)callable.release();     // ownership transferred to the thread
+        else
         {
             _thread = 0;
-            delete callable;
             throw std::runtime_error("Thread creation failed...");
         }
     }
