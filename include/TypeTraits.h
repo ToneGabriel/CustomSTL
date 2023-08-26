@@ -346,9 +346,9 @@ struct _IsConvertible           // TODO: check
     template<class, class>
     static auto test_implicitly_convertible(...) -> FalseType;
 
-    static constexpr bool Value = ((decltype(test_returnable<To>(0))::Value &&
-        decltype(test_implicitly_convertible<From, To>(0))::Value) ||
-        (IsVoid_v<From> && IsVoid_v<To>));
+    static constexpr bool Value = 
+    ((decltype(test_returnable<To>(0))::Value && decltype(test_implicitly_convertible<From, To>(0))::Value) ||
+    (IsVoid_v<From> && IsVoid_v<To>));
 };
 
 template<class From, class To>
@@ -573,9 +573,6 @@ constexpr bool IsNothrowMoveAssignable_v = IsNothrowMoveAssignable<Ty>::Value;
 #if defined _MSC_VER
 template<class Ty>
 struct IsDestructible : BoolConstant<__is_destructible(Ty)> {};
-
-template<class Ty>
-constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
 #elif defined __GNUG__
 template<class Ty>
 struct _IsDestructibleTest
@@ -605,18 +602,15 @@ struct _IsDestructible<Ty, false, true> : TrueType {};
 
 template<class Ty>
 struct IsDestructible : _IsDestructible<Ty>::Type {};
+#endif  // is destructible
 
 template<class Ty>
 constexpr bool IsDestructible_v = IsDestructible<Ty>::Value;
-#endif  // is destructible
 
 // is nothrow destructible
 #if defined _MSC_VER
 template<class Ty>
 struct IsNothrowDestructible : BoolConstant<__is_nothrow_destructible(Ty)> {};
-
-template<class Ty>
-constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
 #elif defined __GNUG__
 template<class Ty>
 struct _IsNothrowDestructibleTest
@@ -646,10 +640,10 @@ struct _IsNothrowDestructible<Ty, false, true> : TrueType {};
 
 template<class Ty>
 struct IsNothrowDestructible : _IsNothrowDestructible<Ty>::Type {};
+#endif  // is nothrow destructible
 
 template<class Ty>
 constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
-#endif  // is nothrow destructible
 
 // is base of
 template<class Base, class Derived>

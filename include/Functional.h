@@ -95,8 +95,8 @@ constexpr bool IsBindExpression_v = IsBindExpression<Ty>::Value;
 // bind fixers & callers
 template<   class BoundArgType,
             bool = IsSpecialization_v<RemoveCV_t<BoundArgType>, ReferenceWrapper>,
-            bool = IsBindExpression_v<BoundArgType>,        // TODO: not implemented
-            int = IsPlaceholder_v<BoundArgType>>
+            bool = IsBindExpression_v<BoundArgType>,
+            int  = IsPlaceholder_v<BoundArgType>>
 struct _BoundArgFixer;
 
 template<class BoundArgType>
@@ -122,10 +122,18 @@ struct _BoundArgFixer<BoundArgType, false, false, 0>        // identity fixer
 template<class BoundArgType>
 struct _BoundArgFixer<BoundArgType, false, true, 0>         // nested bind fixer
 {
+private:
+    template<class UnboundTuple, size_t... Ix>
+    static constexpr auto _fix_impl(BoundArgType& boundArg, UnboundTuple&& unboundTuple, IndexSequence<Ix...>) noexcept
+    -> decltype(boundArg(cusom::get<Ix>(custom::move(unboundTuple))...)) {
+        return boundArg(cusom::get<Ix>(custom::move(unboundTuple))...);
+    }
+
+public:
     template<class UnboundTuple>
     static constexpr auto fix(BoundArgType& boundArg, UnboundTuple&& unboundTuple) noexcept
-    -> decltype(auto) {
-        // TODO: implement
+    -> decltype(_fix_impl(boundArg, custom::move(unboundTuple), MakeIndexSequence<TupleSize_v<UnboundTuple>>{})) {
+        return _fix_impl(boundArg, custom::move(unboundTuple), MakeIndexSequence<TupleSize_v<UnboundTuple>>{});
     }
 };
 

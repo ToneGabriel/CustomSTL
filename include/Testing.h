@@ -15,6 +15,8 @@
 #include "Set.h"
 #include "Functional.h"
 #include "Memory.h"
+#include "Limits.h"
+#include "Chrono.h"
 
 #if defined __GNUG__
 #include "Thread.h"
@@ -36,6 +38,8 @@
 #include <set>
 #include <functional>
 #include <memory>
+#include <limits>
+#include <chrono>
 
 #include <thread>
 #include <mutex>

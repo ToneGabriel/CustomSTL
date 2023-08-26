@@ -831,7 +831,6 @@ public:
     explicit SharedPtr(const WeakPtr<Ty>& other) {                      // construct SharedPtr object that owns resource *other
         if (!this->_construct_from_weak(other))
             throw std::runtime_error("Bad weak ptr...");
-            // TODO: _Throw_bad_weak_ptr();
     }
 
     template<class Ty, class Del,

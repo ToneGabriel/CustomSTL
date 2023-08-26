@@ -1,6 +1,9 @@
 0. Check lock functions on Mutex
-1. Check ALL components for explicit and noexcept operators
-2. Learn and implement smart pointers
-3. Learn and implement condition_variable_any
-4. Complete TypeTraits
-5. Refactor Function class
+1. Check and implement numeric_limits
+    1*. Check and implement chrono
+
+2. Check ALL components for explicit and noexcept operators
+3. Learn and implement smart pointers
+4. Learn and implement condition_variable_any
+5. Complete TypeTraits
+6. Refactor Function class

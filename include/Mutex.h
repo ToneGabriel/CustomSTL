@@ -221,7 +221,7 @@ public:
         return temp;
     }
 
-    MutexType* mutex() const {
+    MutexType* mutex() const noexcept{
         return _ownedMutex;
     }
 
@@ -270,6 +270,7 @@ public:
 // lock
 template<size_t... Indices, class... Locks>
 void _lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
+    // use this to mimic a loop aver Indices
     int ignored[] = {((static_cast<int>(Indices) == target ? (void) locks.lock() : void()), 0)...};
     (void) ignored;
 }
@@ -294,7 +295,7 @@ template<class... Locks>
 int _try_lock_range(const int first, const int last, Locks&... locks) {
     using Indices = IndexSequenceFor<Locks...>;
 
-    int next = first;
+    int next = first;   // initialized here because of catch
     try
     {
         for (; next != last; ++next)
@@ -307,7 +308,7 @@ int _try_lock_range(const int first, const int last, Locks&... locks) {
     catch (...)
     {
         _unlock_locks(first, next, Indices{}, locks...);
-        // _RERAISE; // TODO: ???
+        throw;      // terminates
     }
 
     return -1;
@@ -338,7 +339,7 @@ int _lock_attempt(const int hardLock, Locks&... locks) {
     catch (...)
     {
         _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
-        // _RERAISE; // TODO: ???
+        throw;  // terminates
     }
 
     // didn't get all the locks, backout
