@@ -125,8 +125,8 @@ struct _BoundArgFixer<BoundArgType, false, true, 0>         // nested bind fixer
 private:
     template<class UnboundTuple, size_t... Ix>
     static constexpr auto _fix_impl(BoundArgType& boundArg, UnboundTuple&& unboundTuple, IndexSequence<Ix...>) noexcept
-    -> decltype(boundArg(cusom::get<Ix>(custom::move(unboundTuple))...)) {
-        return boundArg(cusom::get<Ix>(custom::move(unboundTuple))...);
+    -> decltype(boundArg(custom::get<Ix>(custom::move(unboundTuple))...)) {
+        return boundArg(custom::get<Ix>(custom::move(unboundTuple))...);
     }
 
 public:

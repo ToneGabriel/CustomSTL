@@ -813,7 +813,7 @@ private:
 		_data._Head->_Parent	= nullptr;
 		_data._Head->_Left		= nullptr;
 		_data._Head->_Right		= nullptr;
-		_alloc.dealloc(_data._Head, 1);
+		_alloc.deallocate(_data._Head, 1);
 	}
 
 	template<class... Args>

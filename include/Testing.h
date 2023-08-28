@@ -17,13 +17,14 @@
 #include "Memory.h"
 #include "Limits.h"
 #include "Chrono.h"
+#include "Algorithm.h"
 
 #if defined __GNUG__
 #include "Thread.h"
 #include "Mutex.h"
 #include "Semaphore.h"
 #include "Barrier.h"
-#endif	// __GNUG__
+#endif	// __GNUG__ for threads
 
 #include <string>
 #include <array>
@@ -40,6 +41,7 @@
 #include <memory>
 #include <limits>
 #include <chrono>
+#include <algorithm>
 
 #include <thread>
 #include <mutex>

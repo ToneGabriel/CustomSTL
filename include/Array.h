@@ -219,6 +219,7 @@ public:
 	// Main functions
 
     void fill(const ValueType& copyValue) {							// Fill the container with values
+		// TODO: use fill_n(...)
 		for (size_t i = 0; i < Size; ++i)
 			_array[i] = copyValue;
 	}

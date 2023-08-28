@@ -66,7 +66,7 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 
 
 template<class Type>
-struct _TreeNode				// Used in SearchTree
+struct _TreeNode			// Used in _SearchTree
 {
 	using ValueType = Type;
 	

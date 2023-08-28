@@ -6,7 +6,7 @@ CUSTOM_BEGIN
 
 enum FloatRoundStyle
 {
-    Roundindeterminate      = -1, // Intermediate.
+    RoundIndeterminate      = -1, // Indeterminate.
     RoundTowardZero         = 0,  // To zero.
     RoundToNearest          = 1,  // To the nearest representable value.
     RoundTowardInfinity     = 2,  // To infinity.
@@ -26,11 +26,13 @@ struct NumericLimits
     // Static parameters
 
     /* This will be true for all fundamental types (which have
-	specializations), and false for everything else.  */
+	specializations), and false for everything else. */
     static constexpr bool IsSpecialized = false;
 
+    /* True if the type is signed. */
     static constexpr bool IsSigned = false;
 
+    /* True if the type is integer. */
     static constexpr bool IsInteger = false;
 
     /* True if the type uses an exact representation. All integer types are
@@ -40,39 +42,39 @@ struct NumericLimits
 
     /* The number of @c radix digits that be represented without change:  for
 	integer types, the number of non-sign bits in the mantissa; for
-	floating types, the number of @c radix digits in the mantissa.  */
+	floating types, the number of @c radix digits in the mantissa. */
     static constexpr int Digits = 0;
 
     /* The number of base 10 digits that can be represented without change. */
     static constexpr int Digits10 = 0;
 
     /* The number of base 10 digits required to ensure that values which
-	differ are always differentiated.  */
+	differ are always differentiated. */
     static constexpr int MaxDigits10 = 0;
 
     /* For integer types, specifies the base of the representation.  For
-	floating types, specifies the base of the exponent representation.  */
+	floating types, specifies the base of the exponent representation. */
     static constexpr int Radix = 0;
 
     /* The minimum negative integer such that @c radix raised to the power of
-	(one less than that integer) is a normalized floating point number.  */
+	(one less than that integer) is a normalized floating point number. */
     static constexpr int MinExponent = 0;
 
     /* The minimum negative integer such that 10 raised to that power is in
-	the range of normalized floating point numbers.  */
+	the range of normalized floating point numbers. */
     static constexpr int MinExponent10 = 0;
 
     /* The maximum positive integer such that @c radix raised to the power of
 	(one less than that integer) is a representable finite floating point
-	number.  */
+	number. */
     static constexpr int MaxExponent = 0;
 
     /* The maximum positive integer such that 10 raised to that power is in
-	the range of representable finite floating point numbers.  */
+	the range of representable finite floating point numbers. */
     static constexpr int MaxExponent10 = 0;
 
     /* True if-and-only-if the type adheres to the IEC 559 standard, also
-	known as IEEE 754.  (Only makes sense for floating point types.)  */
+	known as IEEE 754.  (Only makes sense for floating point types.) */
     static constexpr bool Is_IEC559 = false;
 
     /* True if the set of values representable by the type is
@@ -86,69 +88,69 @@ struct NumericLimits
 	returned differs from the true value by an integer multiple of
 	max() - min() + 1. On most machines, this is false for floating
 	types, true for unsigned integers, and true for signed integers.
-	See PR22200 about signed integers.  */
+	See PR22200 about signed integers. */
     static constexpr bool IsModulo = false;
 
-    /* See std::float_denorm_style for more information.  */
+    /* See std::float_denorm_style for more information. */
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
     /* True if loss of accuracy is detected as a denormalization loss,
 	rather than as an inexact result. */
     static constexpr bool HasDenormLoss = false;
 
-    /* True if the type has a representation for positive infinity.  */
+    /* True if the type has a representation for positive infinity. */
     static constexpr bool HasInfinity = false;
 
     /* True if the type has a representation for a quiet (non-signaling)
-	Not a Number.  */
+	Not a Number. */
     static constexpr bool HasQuietNaN = false;
 
     /* True if the type has a representation for a signaling
-	Not a Number.  */
+	Not a Number. */
     static constexpr bool HasSignalingNaN = false;
 
-    /* True if trapping is implemented for this type.  */
+    /* True if trapping is implemented for this type. */
     static constexpr bool Traps = false;
 
-    /* True if tininess is detected before rounding.  (see IEC 559)  */
+    /* True if tininess is detected before rounding.  (see IEC 559) */
     static constexpr bool TinynessBefore = false;
 
     /* This is only meaningful for floating types; integer types will all be
-	RoundTowardZero.  */
+	RoundTowardZero. */
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
 
     // Main functions
 
     /* The minimum finite value, or for floating types with
-	denormalization, the minimum positive normalized value.  */
+	denormalization, the minimum positive normalized value. */
     static constexpr Type min() noexcept { 
         return Type();
     }
 
-    /* The maximum finite value.  */
+    /* The maximum finite value. */
     static constexpr Type max() noexcept { 
         return Type();
     }
 
     /* A finite value x such that there is no other finite value y
-    where y < x.  */
+    where y < x. */
     static constexpr Type lowest() noexcept {
         return Type();
     }
 
     /* The @e machine @e epsilon:  the difference between 1 and the least
-    value greater than 1 that is representable.  */
+    value greater than 1 that is representable. */
     static constexpr Type epsilon() noexcept {
         return Type();
     }
 
-    /* The maximum rounding error measurement (see LIA-1).  */
+    /* The maximum rounding error measurement (see LIA-1). */
     static constexpr Type round_error() noexcept {
         return Type();
     }
 
-    /* The representation of positive infinity, if @c HasInfinity.  */
+    /* The representation of positive infinity, if @c HasInfinity. */
     static constexpr Type infinity() noexcept {
         return Type();
     }
@@ -166,7 +168,7 @@ struct NumericLimits
     }
 
     /* The minimum positive denormalized value.  For types where
-    @c HasDenorm is false, this is the minimum positive normalized value.  */
+    @c HasDenorm is false, this is the minimum positive normalized value. */
     static constexpr Type denorm_min() noexcept {
         return Type();
     }
@@ -1290,6 +1292,219 @@ struct NumericLimits<bool>
 //     static constexpr bool TinynessBefore = false;
 //     static constexpr FloatRoundStyle RoundStyle
 //     = RoundTowardZero;
+// };
+
+/// numeric_limits<float> specialization.
+// template<>
+// struct numeric_limits<float>
+// {
+//     static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+
+//     static _GLIBCXX_CONSTEXPR float
+//     min() _GLIBCXX_USE_NOEXCEPT { return __FLT_MIN__; }
+
+//     static _GLIBCXX_CONSTEXPR float
+//     max() _GLIBCXX_USE_NOEXCEPT { return __FLT_MAX__; }
+
+// #if __cplusplus >= 201103L
+//     static constexpr float
+//     lowest() noexcept { return -__FLT_MAX__; }
+// #endif
+
+//     static _GLIBCXX_USE_CONSTEXPR int digits = __FLT_MANT_DIG__;
+//     static _GLIBCXX_USE_CONSTEXPR int digits10 = __FLT_DIG__;
+// #if __cplusplus >= 201103L
+//     static constexpr int max_digits10
+//     = __glibcxx_max_digits10 (__FLT_MANT_DIG__);
+// #endif
+//     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
+//     static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
+
+//     static _GLIBCXX_CONSTEXPR float
+//     epsilon() _GLIBCXX_USE_NOEXCEPT { return __FLT_EPSILON__; }
+
+//     static _GLIBCXX_CONSTEXPR float
+//     round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5F; }
+
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent = __FLT_MIN_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __FLT_MIN_10_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent = __FLT_MAX_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = __FLT_MAX_10_EXP__;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool has_infinity = __FLT_HAS_INFINITY__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = __FLT_HAS_QUIET_NAN__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = has_quiet_NaN;
+//     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
+// = bool(__FLT_HAS_DENORM__) ? denorm_present : denorm_absent;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
+//     = __glibcxx_float_has_denorm_loss;
+
+//     static _GLIBCXX_CONSTEXPR float
+//     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_valf(); }
+
+//     static _GLIBCXX_CONSTEXPR float
+//     quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanf(""); }
+
+//     static _GLIBCXX_CONSTEXPR float
+//     signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansf(""); }
+
+//     static _GLIBCXX_CONSTEXPR float
+//     denorm_min() _GLIBCXX_USE_NOEXCEPT { return __FLT_DENORM_MIN__; }
+
+//     static _GLIBCXX_USE_CONSTEXPR bool is_iec559
+// = has_infinity && has_quiet_NaN && has_denorm == denorm_present;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_float_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
+//     = __glibcxx_float_tinyness_before;
+//     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
+//     = round_to_nearest;
+// };
+
+// /// numeric_limits<double> specialization.
+// template<>
+// struct numeric_limits<double>
+// {
+//     static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+
+//     static _GLIBCXX_CONSTEXPR double
+//     min() _GLIBCXX_USE_NOEXCEPT { return __DBL_MIN__; }
+
+//     static _GLIBCXX_CONSTEXPR double
+//     max() _GLIBCXX_USE_NOEXCEPT { return __DBL_MAX__; }
+
+// #if __cplusplus >= 201103L
+//     static constexpr double
+//     lowest() noexcept { return -__DBL_MAX__; }
+// #endif
+
+//     static _GLIBCXX_USE_CONSTEXPR int digits = __DBL_MANT_DIG__;
+//     static _GLIBCXX_USE_CONSTEXPR int digits10 = __DBL_DIG__;
+// #if __cplusplus >= 201103L
+//     static constexpr int max_digits10
+//     = __glibcxx_max_digits10 (__DBL_MANT_DIG__);
+// #endif
+//     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
+//     static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
+
+//     static _GLIBCXX_CONSTEXPR double
+//     epsilon() _GLIBCXX_USE_NOEXCEPT { return __DBL_EPSILON__; }
+
+//     static _GLIBCXX_CONSTEXPR double
+//     round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5; }
+
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent = __DBL_MIN_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __DBL_MIN_10_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent = __DBL_MAX_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = __DBL_MAX_10_EXP__;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool has_infinity = __DBL_HAS_INFINITY__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = __DBL_HAS_QUIET_NAN__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = has_quiet_NaN;
+//     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
+// = bool(__DBL_HAS_DENORM__) ? denorm_present : denorm_absent;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
+//     = __glibcxx_double_has_denorm_loss;
+
+//     static _GLIBCXX_CONSTEXPR double
+//     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_val(); }
+
+//     static _GLIBCXX_CONSTEXPR double
+//     quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nan(""); }
+
+//     static _GLIBCXX_CONSTEXPR double
+//     signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nans(""); }
+
+//     static _GLIBCXX_CONSTEXPR double
+//     denorm_min() _GLIBCXX_USE_NOEXCEPT { return __DBL_DENORM_MIN__; }
+
+//     static _GLIBCXX_USE_CONSTEXPR bool is_iec559
+// = has_infinity && has_quiet_NaN && has_denorm == denorm_present;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_double_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
+//     = __glibcxx_double_tinyness_before;
+//     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
+//     = round_to_nearest;
+// };
+
+/// numeric_limits<long double> specialization.
+// template<>
+// struct numeric_limits<long double>
+// {
+//     static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MIN__; }
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     max() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MAX__; }
+
+// #if __cplusplus >= 201103L
+//     static constexpr long double
+//     lowest() noexcept { return -__LDBL_MAX__; }
+// #endif
+
+//     static _GLIBCXX_USE_CONSTEXPR int digits = __LDBL_MANT_DIG__;
+//     static _GLIBCXX_USE_CONSTEXPR int digits10 = __LDBL_DIG__;
+// #if __cplusplus >= 201103L
+//     static _GLIBCXX_USE_CONSTEXPR int max_digits10
+//     = __glibcxx_max_digits10 (__LDBL_MANT_DIG__);
+// #endif
+//     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
+//     static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     epsilon() _GLIBCXX_USE_NOEXCEPT { return __LDBL_EPSILON__; }
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5L; }
+
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent = __LDBL_MIN_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __LDBL_MIN_10_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent = __LDBL_MAX_EXP__;
+//     static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = __LDBL_MAX_10_EXP__;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool has_infinity = __LDBL_HAS_INFINITY__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = __LDBL_HAS_QUIET_NAN__;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = has_quiet_NaN;
+//     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
+// = bool(__LDBL_HAS_DENORM__) ? denorm_present : denorm_absent;
+//     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
+// = __glibcxx_long_double_has_denorm_loss;
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_vall(); }
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanl(""); }
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansl(""); }
+
+//     static _GLIBCXX_CONSTEXPR long double
+//     denorm_min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_DENORM_MIN__; }
+
+//     static _GLIBCXX_USE_CONSTEXPR bool is_iec559
+// = has_infinity && has_quiet_NaN && has_denorm == denorm_present;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
+//     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
+
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_long_double_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before =
+//                     __glibcxx_long_double_tinyness_before;
+//     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style =
+//                             round_to_nearest;
 // };
 
 CUSTOM_END

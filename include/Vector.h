@@ -526,7 +526,7 @@ private:
 		if (_data._First != nullptr)
 		{
 			_alloc.destroy_range(_data._First, size());
-			_alloc.dealloc(_data._First, capacity());
+			_alloc.deallocate(_data._First, capacity());
 			_data._First	= nullptr;
 			_data._Last		= nullptr;
 			_data._Final	= nullptr;

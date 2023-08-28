@@ -397,7 +397,7 @@ private:
 	void _free_head() {
 		_data._Head->_Next 		= nullptr;
 		_data._Head->_Previous 	= nullptr;
-		_alloc.dealloc(_data._Head, 1);
+		_alloc.deallocate(_data._Head, 1);
 	}
 
 	void _insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node before another

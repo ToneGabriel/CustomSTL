@@ -27,12 +27,12 @@ public:
 public:
 	// Main functions
 
-	Type* allocate(const size_t& capacity) {										// Allocate memory
+	Type* allocate(const size_t& capacity) {
 		static_assert(sizeof(Type) > 0, "Type must be complete before calling alloc");
 		return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
 	}
 
-	void dealloc(Type* address, const size_t& capacity) {						// Deallocate memory
+	void deallocate(Type* address, const size_t& capacity) {
 		CUSTOM_ASSERT(address != nullptr || capacity > 0, "Invalid block deallocation");
 		::operator delete(address, capacity * sizeof(Type));
 	}
@@ -60,6 +60,6 @@ public:
 		for (size_t i = 0; i < length; ++i)
 			destroy(address + i);
 	}
-}; // END Allocator Template
+}; // END Allocator
 
 CUSTOM_END

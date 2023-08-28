@@ -476,7 +476,7 @@ public:
 		for (size_t i = 0; i < _data._MapCapacity; ++i)
 			if (_data._Map[i] != nullptr)
 			{
-				_alloc.dealloc(_data._Map[i], _data.BLOCK_SIZE);
+				_alloc.deallocate(_data._Map[i], _data.BLOCK_SIZE);
 				_data._Map[i] = nullptr;
 			}
 	}

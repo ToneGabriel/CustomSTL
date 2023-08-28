@@ -230,7 +230,7 @@ public:
 	}
 
 	~String() {
-		_alloc.dealloc(_data._First, capacity() + 1);
+		_alloc.deallocate(_data._First, capacity() + 1);
 	}
 
 public:
@@ -249,7 +249,7 @@ public:
 	String& operator=(const String& other) {
 		if (_data._First != other._data._First)
 		{
-			_alloc.dealloc(_data._First, capacity() + 1);
+			_alloc.deallocate(_data._First, capacity() + 1);
 			_copy(other);
 		}
 
@@ -259,7 +259,7 @@ public:
 	String& operator=(String&& other) noexcept {
 		if (_data._First != other._data._First)
 		{
-			_alloc.dealloc(_data._First, capacity() + 1);
+			_alloc.deallocate(_data._First, capacity() + 1);
 			_move(custom::move(other));
 		}
 
@@ -296,7 +296,7 @@ public:
 
 	friend std::istream& operator>>(std::istream& is, String& string) {
 		if (string._data._First != nullptr)
-			string._alloc.dealloc(string._data._First, string.capacity() + 1);
+			string._alloc.deallocate(string._data._First, string.capacity() + 1);
 
 		string._alloc_empty(String::_ISTREAM_CAPACITY);
 		is.getline(string._data._First, String::_ISTREAM_CAPACITY);
@@ -314,7 +314,7 @@ public:
 		size_t newSize	= size();
 		char* newString = _alloc.allocate(newCapacity + 1);
 		memcpy(newString, _data._First, size());
-		_alloc.dealloc(_data._First, capacity() + 1);
+		_alloc.deallocate(_data._First, capacity() + 1);
 
 		_data._First 	= newString;
 		_data._Last		= _data._First + newSize;
@@ -363,7 +363,7 @@ public:
 			seq[i] = chr;
 
 		_insert_from_cstring(size(), seq, 0, nchar);
-		_alloc.dealloc(seq, nchar + 1);
+		_alloc.deallocate(seq, nchar + 1);
 		return *this;
 	}
 	// end Append
@@ -395,7 +395,7 @@ public:
 			seq[i] = chr;
 
 		_insert_from_cstring(pos, seq, 0, nchar);
-		_alloc.dealloc(seq, nchar + 1);
+		_alloc.deallocate(seq, nchar + 1);
 		return *this;
 	}
 
