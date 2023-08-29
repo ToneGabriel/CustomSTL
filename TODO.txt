@@ -1,6 +1,9 @@
 0. Check lock functions on Mutex
-1. Check and implement numeric_limits
-    1*. Check and implement chrono
+1. Check and implement
+- numeric_limits
+- chrono
+- algorithm
+- numeric
 
 2. Check ALL components for explicit and noexcept operators
 3. Learn and implement smart pointers

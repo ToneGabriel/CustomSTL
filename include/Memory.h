@@ -40,7 +40,8 @@ struct DefaultDelete<Type[]>                                // default deleter f
     }
 }; // END DefaultDelete[]
 
-#pragma endregion
+#pragma endregion Deleters
+
 
 #pragma region UniquePtr
 
@@ -359,10 +360,10 @@ UniquePtr<Ty> make_unique(const size_t size) {
 template<class Ty, class... Args, EnableIf_t<Extent_v<Ty> != 0, bool> = true>
 void make_unique(Args&&...) = delete;
 
-#pragma endregion
+#pragma endregion UniquePtr
+
 
 #pragma region SharedPtr
-
 template<class Type>
 class SharedPtr;
 
@@ -966,10 +967,10 @@ private:
     }
 }; // END SharedPtr
 
-#pragma endregion
+#pragma endregion SharedPtr
+
 
 #pragma region WeakPtr
-
 template<class Type>
 class WeakPtr : public _SharedWeakBase<Type>    // class for pointer to reference counted resource
 {
@@ -1047,7 +1048,11 @@ public:
         return shared;
     }
 }; // END WeakPtr
+#pragma endregion WeakPtr
 
-#pragma endregion
+
+#pragma region Operations on uninitialized memory
+// TODO: implement
+#pragma endregion Operations on uninitialized memory
 
 CUSTOM_END

@@ -13,3 +13,7 @@ Components not fully operational:
 - Barrier.h
 - Functional.h
 - Memory.h
+- Algorithm.h
+- Numeric.h
+- Chrono.h
+- Limits.h
