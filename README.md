@@ -17,3 +17,4 @@ Components not fully operational:
 - Numeric.h
 - Chrono.h
 - Limits.h
+- Iterator.h

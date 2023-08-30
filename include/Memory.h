@@ -1,6 +1,6 @@
 #pragma once
 #include "Utility.h"
-//#include "xMemory.h"
+#include "xMemory.h"
 
 #include <atomic>
 #include <typeinfo>
@@ -1049,10 +1049,5 @@ public:
     }
 }; // END WeakPtr
 #pragma endregion WeakPtr
-
-
-#pragma region Operations on uninitialized memory
-// TODO: implement
-#pragma endregion Operations on uninitialized memory
 
 CUSTOM_END

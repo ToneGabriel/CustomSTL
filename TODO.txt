@@ -4,6 +4,8 @@
 - chrono
 - algorithm
 - numeric
+- iterator
+
 
 2. Check ALL components for explicit and noexcept operators
 3. Learn and implement smart pointers

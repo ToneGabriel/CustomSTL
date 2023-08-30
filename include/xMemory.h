@@ -4,6 +4,62 @@
 
 CUSTOM_BEGIN
 
+#pragma region Operations on uninitialized memory
+// TODO: implement
+
+// uninitialized_copy
+template<class InputIt, class NoThrowForwardIt>
+NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first) {
+    using Type = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+
+    NoThrowForwardIt current = d_first;
+    
+    try
+    {
+        for (; first != last; ++first, (void) ++current)
+            ::new (static_cast<void*>(&(*current))) Type(*first);
+
+        return current;
+    }
+    catch (...)
+    {
+        for (; d_first != current; ++d_first)
+            d_first->~Type();
+
+        throw;
+    }
+}
+// END uninitialized_copy
+
+
+// destroy, destroy_at, destroy_n
+template<class Type>
+constexpr void destroy_at(Type* p) {
+    if (IsArray_v<Type>)
+        for (auto &elem : *p)
+            destroy_at(&(elem));
+    else
+        p->~Type(); 
+}
+
+template<class ForwardIt>
+constexpr void destroy(ForwardIt first, ForwardIt last) {
+    for (; first != last; ++first)
+        custom::destroy_at(&(*first));
+}
+
+template<class ForwardIt, class Size>
+constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
+    for (; n > 0; (void) ++first, --n)
+        custom::destroy_at(&(*first));
+
+    return first;
+}
+// END destroy, destroy_at, destroy_n
+#pragma endregion Operations on uninitialized memory
+
+
+#pragma region Allocator
 template<class Type>
 class Allocator			// Allocator Template
 {
@@ -61,5 +117,6 @@ public:
 			destroy(address + i);
 	}
 }; // END Allocator
+#pragma endregion Allocator
 
 CUSTOM_END
