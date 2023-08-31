@@ -4,6 +4,37 @@
 
 CUSTOM_BEGIN
 
+
+#define CHAR_BIT    8
+#define SCHAR_MIN   (-128)
+#define SCHAR_MAX   127
+#define UCHAR_MAX   0xff
+
+#ifndef _CHAR_UNSIGNED
+#define CHAR_MIN    SCHAR_MIN
+#define CHAR_MAX    SCHAR_MAX
+#else
+#define CHAR_MIN    0
+#define CHAR_MAX    UCHAR_MAX
+#endif
+
+#define WCHAR_MIN   0x0000
+#define WCHAR_MAX   0xffff
+
+#define SHRT_MIN    (-32768)
+#define SHRT_MAX    32767
+#define USHRT_MAX   0xffff
+#define INT_MIN     (-2147483647 - 1)
+#define INT_MAX     2147483647
+#define UINT_MAX    0xffffffff
+#define LONG_MIN    (-2147483647L - 1)
+#define LONG_MAX    2147483647L
+#define ULONG_MAX   0xffffffffUL
+#define LLONG_MAX   9223372036854775807i64
+#define LLONG_MIN   (-9223372036854775807i64 - 1)
+#define ULLONG_MAX  0xffffffffffffffffui64
+
+
 enum FloatRoundStyle
 {
     RoundIndeterminate      = -1, // Indeterminate.
@@ -260,220 +291,218 @@ struct NumericLimits<bool>
 };  // END bool specialization
 
 
-// // char specialization
-// template<>
-// struct NumericLimits<char>
-// {
-//     static constexpr bool IsSpecialized = true;
+// char specialization
+template<>
+struct NumericLimits<char>
+{
+    static constexpr bool IsSpecialized = true;
+    static constexpr bool IsSigned      = CHAR_MIN != 0;
+    static constexpr bool IsInteger     = true;
+    static constexpr bool IsExact       = true;
 
-//     //static constexpr int Digits = __glibcxx_digits (char);
-//     //static constexpr int Digits10 = __glibcxx_digits10 (char);
-//     static constexpr int MaxDigits10 = 0;
+    static constexpr int Digits         = 8 - (CHAR_MIN != 0);
+    static constexpr int Digits10       = 2;
+    static constexpr int MaxDigits10    = 0;
+    static constexpr int Radix          = 2;
 
-//     //static constexpr bool IsSigned = __glibcxx_signed (char);
-//     static constexpr bool IsInteger = true;
-//     static constexpr bool IsExact = true;
-//     static constexpr int Radix = 2;
+    static constexpr int MinExponent    = 0;
+    static constexpr int MinExponent10  = 0;
+    static constexpr int MaxExponent    = 0;
+    static constexpr int MaxExponent10  = 0;
 
-//     static constexpr int MinExponent = 0;
-//     static constexpr int MinExponent10 = 0;
-//     static constexpr int MaxExponent = 0;
-//     static constexpr int MaxExponent10 = 0;
+    static constexpr bool IsIEC559      = false;
+    static constexpr bool IsBounded     = true;
+    static constexpr bool IsModulo      = !IsSigned;
 
-//     static constexpr bool HasInfinity = false;
-//     static constexpr bool HasQuietNaN = false;
-//     static constexpr bool HasSignalingNaN = false;
-//     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
-//     static constexpr bool HasDenormLoss = false;
+    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-//     static constexpr bool IsIEC559 = false;
-//     static constexpr bool IsBounded = true;
-//     static constexpr bool IsModulo = !IsSigned;
+    static constexpr bool Traps                 = true;
+    static constexpr bool TinynessBefore        = false;
+    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
-//     static constexpr bool Traps = true;
-//     static constexpr bool TinynessBefore = false;
-//     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
+    static constexpr char min() noexcept {
+        return CHAR_MIN;
+    }
 
-//     static constexpr char min() noexcept {
-//         return 0; //__glibcxx_min(char);
-//     }
+    static constexpr char max() noexcept {
+        return CHAR_MAX;
+    }
 
-//     static constexpr char max() noexcept {
-//         return 0; //__glibcxx_max(char);
-//     }
+    static constexpr char lowest() noexcept {
+        return min();
+    }
 
-//     static constexpr char lowest() noexcept {
-//         return min();
-//     }
+    static constexpr char epsilon() noexcept {
+        return 0;
+    }
 
-//     static constexpr char epsilon() noexcept {
-//         return 0;
-//     }
+    static constexpr char round_error() noexcept {
+        return 0;
+    }
 
-//     static constexpr char round_error() noexcept {
-//         return 0;
-//     }
+    static constexpr char infinity() noexcept {
+        return 0;
+    }
 
-//     static constexpr char infinity() noexcept {
-//         return char();
-//     }
+    static constexpr char quiet_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr char quiet_NaN() noexcept {
-//         return char();
-//     }
+    static constexpr char signaling_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr char signaling_NaN() noexcept {
-//         return char();
-//     }
-
-//     static constexpr char denorm_min() noexcept {
-//         return static_cast<char>(0);
-//     }
-// };
+    static constexpr char denorm_min() noexcept {
+        return 0;
+    }
+};  // END char specialization
 
 
-// // NumericLimits<signed char> specialization.
-// template<>
-// struct NumericLimits<signed char>
-// {
-//     static constexpr bool IsSpecialized = true;
+// signed char specialization
+template<>
+struct NumericLimits<signed char>
+{
+    static constexpr bool IsSpecialized = true;
+    static constexpr bool IsSigned      = true;
+    static constexpr bool IsInteger     = true;
+    static constexpr bool IsExact       = true;
 
-//     static constexpr signed char
-//     min() noexcept { return -__SCHAR_MAX__ - 1; }
+    static constexpr int Digits         = 7;
+    static constexpr int Digits10       = 2;
+    static constexpr int MaxDigits10    = 0;
+    static constexpr int Radix          = 2;
 
-//     static constexpr signed char
-//     max() noexcept { return __SCHAR_MAX__; }
+    static constexpr int MinExponent    = 0;
+    static constexpr int MinExponent10  = 0;
+    static constexpr int MaxExponent    = 0;
+    static constexpr int MaxExponent10  = 0;
 
-// #if __cplusplus >= 201103L
-//     static constexpr signed char
-//     lowest() noexcept { return min(); }
-// #endif
+    static constexpr bool IsIEC559      = false;
+    static constexpr bool IsBounded     = true;
+    static constexpr bool IsModulo      = !IsSigned;
 
-//     static constexpr int Digits = __glibcxx_digits (signed char);
-//     static constexpr int Digits10
-//     = __glibcxx_digits10 (signed char);
-// #if __cplusplus >= 201103L
-//     static constexpr int MaxDigits10 = 0;
-// #endif
-//     static constexpr bool IsSigned = true;
-//     static constexpr bool IsInteger = true;
-//     static constexpr bool IsExact = true;
-//     static constexpr int Radix = 2;
+    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-//     static constexpr signed char
-//     epsilon() noexcept { return 0; }
+    static constexpr bool Traps                 = true;
+    static constexpr bool TinynessBefore        = false;
+    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
-//     static constexpr signed char
-//     round_error() noexcept { return 0; }
+    static constexpr signed char min() noexcept {
+        return SCHAR_MIN;
+    }
 
-//     static constexpr int MinExponent = 0;
-//     static constexpr int MinExponent10 = 0;
-//     static constexpr int MaxExponent = 0;
-//     static constexpr int MaxExponent10 = 0;
+    static constexpr signed char max() noexcept {
+        return SCHAR_MAX;
+    }
 
-//     static constexpr bool HasInfinity = false;
-//     static constexpr bool HasQuietNaN = false;
-//     static constexpr bool HasSignalingNaN = false;
-//     static constexpr FloatDenormStyle HasDenorm
-//     = DenormAbsent;
-//     static constexpr bool HasDenormLoss = false;
+    static constexpr signed char lowest() noexcept {
+        return min();
+    }
 
-//     static constexpr signed char
-//     infinity() noexcept { return static_cast<signed char>(0); }
+    static constexpr signed char epsilon() noexcept {
+        return 0;
+    }
 
-//     static constexpr signed char
-//     quiet_NaN() noexcept { return static_cast<signed char>(0); }
+    static constexpr signed char round_error() noexcept {
+        return 0;
+    }
 
-//     static constexpr signed char
-//     signaling_NaN() noexcept
-//     { return static_cast<signed char>(0); }
+    static constexpr signed char infinity() noexcept {
+        return 0;
+    }
 
-//     static constexpr signed char
-//     denorm_min() noexcept
-//     { return static_cast<signed char>(0); }
+    static constexpr signed char quiet_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr bool IsIEC559 = false;
-//     static constexpr bool IsBounded = true;
-//     static constexpr bool IsModulo = false;
+    static constexpr signed char signaling_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr bool Traps = true;
-//     static constexpr bool TinynessBefore = false;
-//     static constexpr FloatRoundStyle RoundStyle
-//     = RoundTowardZero;
-// };
+    static constexpr signed char denorm_min() noexcept {
+        return 0;
+    }
+};  // END signed char specialization
 
-// /// NumericLimits<unsigned char> specialization.
-// template<>
-// struct NumericLimits<unsigned char>
-// {
-//     static constexpr bool IsSpecialized = true;
 
-//     static constexpr unsigned char
-//     min() noexcept { return 0; }
+// unsigned char specialization
+template<>
+struct NumericLimits<unsigned char>
+{
+    static constexpr bool IsSpecialized = true;
+    static constexpr bool IsSigned      = true;
+    static constexpr bool IsInteger     = true;
+    static constexpr bool IsExact       = true;
 
-//     static constexpr unsigned char
-//     max() noexcept { return __SCHAR_MAX__ * 2U + 1; }
+    static constexpr int Digits         = 8;
+    static constexpr int Digits10       = 2;
+    static constexpr int MaxDigits10    = 0;
+    static constexpr int Radix          = 2;
 
-// #if __cplusplus >= 201103L
-//     static constexpr unsigned char
-//     lowest() noexcept { return min(); }
-// #endif
+    static constexpr int MinExponent    = 0;
+    static constexpr int MinExponent10  = 0;
+    static constexpr int MaxExponent    = 0;
+    static constexpr int MaxExponent10  = 0;
 
-//     static constexpr int Digits
-//     = __glibcxx_digits (unsigned char);
-//     static constexpr int Digits10
-//     = __glibcxx_digits10 (unsigned char);
-// #if __cplusplus >= 201103L
-//     static constexpr int MaxDigits10 = 0;
-// #endif
-//     static constexpr bool IsSigned = false;
-//     static constexpr bool IsInteger = true;
-//     static constexpr bool IsExact = true;
-//     static constexpr int Radix = 2;
+    static constexpr bool IsIEC559      = false;
+    static constexpr bool IsBounded     = true;
+    static constexpr bool IsModulo      = true;
 
-//     static constexpr unsigned char
-//     epsilon() noexcept { return 0; }
+    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-//     static constexpr unsigned char
-//     round_error() noexcept { return 0; }
+    static constexpr bool Traps                 = true;
+    static constexpr bool TinynessBefore        = false;
+    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
-//     static constexpr int MinExponent = 0;
-//     static constexpr int MinExponent10 = 0;
-//     static constexpr int MaxExponent = 0;
-//     static constexpr int MaxExponent10 = 0;
+    static constexpr unsigned char min() noexcept {
+        return 0;
+    }
 
-//     static constexpr bool HasInfinity = false;
-//     static constexpr bool HasQuietNaN = false;
-//     static constexpr bool HasSignalingNaN = false;
-//     static constexpr FloatDenormStyle HasDenorm
-//     = DenormAbsent;
-//     static constexpr bool HasDenormLoss = false;
+    static constexpr unsigned char max() noexcept {
+        return UCHAR_MAX;
+    }
 
-//     static constexpr unsigned char
-//     infinity() noexcept
-//     { return static_cast<unsigned char>(0); }
+    static constexpr unsigned char lowest() noexcept {
+        return min();
+    }
 
-//     static constexpr unsigned char
-//     quiet_NaN() noexcept
-//     { return static_cast<unsigned char>(0); }
+    static constexpr unsigned char epsilon() noexcept {
+        return 0;
+    }
 
-//     static constexpr unsigned char
-//     signaling_NaN() noexcept
-//     { return static_cast<unsigned char>(0); }
+    static constexpr unsigned char round_error() noexcept {
+        return 0;
+    }
 
-//     static constexpr unsigned char
-//     denorm_min() noexcept
-//     { return static_cast<unsigned char>(0); }
+    static constexpr unsigned char infinity() noexcept {
+        return 0;
+    }
 
-//     static constexpr bool IsIEC559 = false;
-//     static constexpr bool IsBounded = true;
-//     static constexpr bool IsModulo = true;
+    static constexpr unsigned char quiet_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr bool Traps = true;
-//     static constexpr bool TinynessBefore = false;
-//     static constexpr FloatRoundStyle RoundStyle
-//     = RoundTowardZero;
-// };
+    static constexpr unsigned char signaling_NaN() noexcept {
+        return 0;
+    }
+
+    static constexpr unsigned char denorm_min() noexcept {
+        return 0;
+    }
+};  // END unsigned char specialization
+
 
 // /// NumericLimits<wchar_t> specialization.
 // template<>
