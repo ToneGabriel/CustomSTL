@@ -1,52 +1,8 @@
 #pragma once
 
-#include "Pair.h"
-#include "Tuple.h"
-#include "String.h"
-#include "Array.h"
-#include "Vector.h"
-#include "Deque.h"
-#include "List.h"
-#include "Queue.h"
-#include "Stack.h"
-#include "UnorderedMap.h"
-#include "UnorderedSet.h"
-#include "Map.h"
-#include "Set.h"
-#include "Functional.h"
-#include "Memory.h"
-#include "Limits.h"
-#include "Chrono.h"
-#include "Algorithm.h"
+#include "__LocalTestingInclude.h"
+#include "__STDTestingInclude.h"
 
-#if defined __GNUG__
-#include "Thread.h"
-#include "Mutex.h"
-#include "Semaphore.h"
-#include "Barrier.h"
-#endif	// __GNUG__ for threads
-
-#include <string>
-#include <array>
-#include <vector>
-#include <deque>
-#include <list>
-#include <queue>
-#include <stack>
-#include <unordered_map>
-#include <unordered_set>
-#include <map>
-#include <set>
-#include <functional>
-#include <memory>
-#include <limits>
-#include <chrono>
-#include <algorithm>
-
-#include <thread>
-#include <mutex>
-#include <semaphore>
-#include <barrier>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }
