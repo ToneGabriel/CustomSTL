@@ -2,38 +2,26 @@
 #include "xCommon.h"
 
 
+// Helpers
+#define _CUSTOM_SIGNED_B(T,B)       ((T)(-1) < 0)
+#define _CUSTOM_DIGITS_B(T,B)	    (B - _CUSTOM_SIGNED_B (T,B))
+#define _CUSTOM_MAX_B(T,B)		    (_CUSTOM_SIGNED_B (T,B) ?  \
+                                    (((((T)1 << (_CUSTOM_DIGITS_B (T,B) - 1)) - 1) << 1) + 1) : ~(T)0)
+#define _CUSTOM_MIN_B(T,B)		    (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
+#define _CUSTOM_DIGITS10_B(T,B)     (_CUSTOM_DIGITS_B (T,B) * 643L / 2136)
+
+
+// __CHAR_BIT__ Specialization
+#define _CUSTOM_SIGNED(T)           _CUSTOM_SIGNED_B (T, sizeof(T) * __CHAR_BIT__)
+#define _CUSTOM_MAX(T)              _CUSTOM_MAX_B (T, sizeof(T) * __CHAR_BIT__)
+#define _CUSTOM_MIN(T)              _CUSTOM_MIN_B (T, sizeof(T) * __CHAR_BIT__)
+#define _CUSTOM_DIGITS(T)           _CUSTOM_DIGITS_B (T, sizeof(T) * __CHAR_BIT__)
+#define _CUSTOM_DIGITS10(T)         _CUSTOM_DIGITS10_B (T, sizeof(T) * __CHAR_BIT__)
+#define _CUSTOM_MAX_DIGITS10(T)     (2 + (T) * 643L / 2136)
+// The fraction 643/2136 approximates log10(2) to 7 significant digits
+
+
 CUSTOM_BEGIN
-
-
-#define CHAR_BIT    8
-#define SCHAR_MIN   (-128)
-#define SCHAR_MAX   127
-#define UCHAR_MAX   0xff
-
-#ifndef _CHAR_UNSIGNED
-#define CHAR_MIN    SCHAR_MIN
-#define CHAR_MAX    SCHAR_MAX
-#else
-#define CHAR_MIN    0
-#define CHAR_MAX    UCHAR_MAX
-#endif
-
-#define WCHAR_MIN   0x0000
-#define WCHAR_MAX   0xffff
-
-#define SHRT_MIN    (-32768)
-#define SHRT_MAX    32767
-#define USHRT_MAX   0xffff
-#define INT_MIN     (-2147483647 - 1)
-#define INT_MAX     2147483647
-#define UINT_MAX    0xffffffff
-#define LONG_MIN    (-2147483647L - 1)
-#define LONG_MAX    2147483647L
-#define ULONG_MAX   0xffffffffUL
-#define LLONG_MAX   9223372036854775807i64
-#define LLONG_MIN   (-9223372036854775807i64 - 1)
-#define ULLONG_MAX  0xffffffffffffffffui64
-
 
 enum FloatRoundStyle
 {
@@ -46,9 +34,9 @@ enum FloatRoundStyle
 
 enum FloatDenormStyle
 {
-    DenormIndeterminate = -1,  // Indeterminate at compile time whether denormalized values are allowed.
-    DenormAbsent        = 0,   // The type does not allow denormalized values.
-    DenormPresent       = 1    // The type allows denormalized values.
+    DenormIndeterminate     = -1,  // Indeterminate at compile time whether denormalized values are allowed.
+    DenormAbsent            = 0,   // The type does not allow denormalized values.
+    DenormPresent           = 1    // The type allows denormalized values.
 };
 
 template<class Type>
@@ -296,12 +284,12 @@ template<>
 struct NumericLimits<char>
 {
     static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned      = CHAR_MIN != 0;
+    static constexpr bool IsSigned      = _CUSTOM_SIGNED(char);
     static constexpr bool IsInteger     = true;
     static constexpr bool IsExact       = true;
 
-    static constexpr int Digits         = 8 - (CHAR_MIN != 0);
-    static constexpr int Digits10       = 2;
+    static constexpr int Digits         = _CUSTOM_DIGITS(char);
+    static constexpr int Digits10       = _CUSTOM_DIGITS10(char);
     static constexpr int MaxDigits10    = 0;
     static constexpr int Radix          = 2;
 
@@ -325,11 +313,11 @@ struct NumericLimits<char>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
     static constexpr char min() noexcept {
-        return CHAR_MIN;
+        return _CUSTOM_MIN(char);
     }
 
     static constexpr char max() noexcept {
-        return CHAR_MAX;
+        return _CUSTOM_MAX(char);
     }
 
     static constexpr char lowest() noexcept {
@@ -371,8 +359,8 @@ struct NumericLimits<signed char>
     static constexpr bool IsInteger     = true;
     static constexpr bool IsExact       = true;
 
-    static constexpr int Digits         = 7;
-    static constexpr int Digits10       = 2;
+    static constexpr int Digits         = _CUSTOM_DIGITS(signed char);
+    static constexpr int Digits10       = _CUSTOM_DIGITS10(signed char);
     static constexpr int MaxDigits10    = 0;
     static constexpr int Radix          = 2;
 
@@ -383,7 +371,7 @@ struct NumericLimits<signed char>
 
     static constexpr bool IsIEC559      = false;
     static constexpr bool IsBounded     = true;
-    static constexpr bool IsModulo      = !IsSigned;
+    static constexpr bool IsModulo      = false;
 
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
     static constexpr bool HasDenormLoss         = false;
@@ -396,11 +384,11 @@ struct NumericLimits<signed char>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
 
     static constexpr signed char min() noexcept {
-        return SCHAR_MIN;
+        return -__SCHAR_MAX__ - 1;
     }
 
     static constexpr signed char max() noexcept {
-        return SCHAR_MAX;
+        return __SCHAR_MAX__;
     }
 
     static constexpr signed char lowest() noexcept {
@@ -438,12 +426,12 @@ template<>
 struct NumericLimits<unsigned char>
 {
     static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned      = true;
+    static constexpr bool IsSigned      = false;
     static constexpr bool IsInteger     = true;
     static constexpr bool IsExact       = true;
 
-    static constexpr int Digits         = 8;
-    static constexpr int Digits10       = 2;
+    static constexpr int Digits         = _CUSTOM_DIGITS(unsigned char);
+    static constexpr int Digits10       = _CUSTOM_DIGITS10(unsigned char);
     static constexpr int MaxDigits10    = 0;
     static constexpr int Radix          = 2;
 
@@ -471,7 +459,7 @@ struct NumericLimits<unsigned char>
     }
 
     static constexpr unsigned char max() noexcept {
-        return UCHAR_MAX;
+        return __SCHAR_MAX__ * 2U + 1;
     }
 
     static constexpr unsigned char lowest() noexcept {
@@ -511,23 +499,23 @@ struct NumericLimits<unsigned char>
 //     static constexpr bool IsSpecialized = true;
 
 //     static constexpr wchar_t
-//     min() noexcept { return __glibcxx_min (wchar_t); }
+//     min() noexcept { return _CUSTOM_MIN (wchar_t); }
 
 //     static constexpr wchar_t
-//     max() noexcept { return __glibcxx_max (wchar_t); }
+//     max() noexcept { return _CUSTOM_MAX (wchar_t); }
 
 // #if __cplusplus >= 201103L
 //     static constexpr wchar_t
 //     lowest() noexcept { return min(); }
 // #endif
 
-//     static constexpr int Digits = __glibcxx_digits (wchar_t);
+//     static constexpr int Digits = _CUSTOM_DIGITS (wchar_t);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (wchar_t);
+//     = _CUSTOM_DIGITS10 (wchar_t);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
-//     static constexpr bool IsSigned = __glibcxx_signed (wchar_t);
+//     static constexpr bool IsSigned = _CUSTOM_SIGNED (wchar_t);
 //     static constexpr bool IsInteger = true;
 //     static constexpr bool IsExact = true;
 //     static constexpr int Radix = 2;
@@ -580,18 +568,18 @@ struct NumericLimits<unsigned char>
 //     static constexpr bool IsSpecialized = true;
 
 //     static constexpr char8_t
-//     min() noexcept { return __glibcxx_min (char8_t); }
+//     min() noexcept { return _CUSTOM_MIN (char8_t); }
 
 //     static constexpr char8_t
-//     max() noexcept { return __glibcxx_max (char8_t); }
+//     max() noexcept { return _CUSTOM_MAX (char8_t); }
 
 //     static constexpr char8_t
 //     lowest() noexcept { return min(); }
 
-//     static constexpr int Digits = __glibcxx_digits (char8_t);
-//     static constexpr int Digits10 = __glibcxx_digits10 (char8_t);
+//     static constexpr int Digits = _CUSTOM_DIGITS (char8_t);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (char8_t);
 //     static constexpr int MaxDigits10 = 0;
-//     static constexpr bool IsSigned = __glibcxx_signed (char8_t);
+//     static constexpr bool IsSigned = _CUSTOM_SIGNED (char8_t);
 //     static constexpr bool IsInteger = true;
 //     static constexpr bool IsExact = true;
 //     static constexpr int Radix = 2;
@@ -645,18 +633,18 @@ struct NumericLimits<unsigned char>
 //     static constexpr bool IsSpecialized = true;
 
 //     static constexpr char16_t
-//     min() noexcept { return __glibcxx_min (char16_t); }
+//     min() noexcept { return _CUSTOM_MIN (char16_t); }
 
 //     static constexpr char16_t
-//     max() noexcept { return __glibcxx_max (char16_t); }
+//     max() noexcept { return _CUSTOM_MAX (char16_t); }
 
 //     static constexpr char16_t
 //     lowest() noexcept { return min(); }
 
-//     static constexpr int Digits = __glibcxx_digits (char16_t);
-//     static constexpr int Digits10 = __glibcxx_digits10 (char16_t);
+//     static constexpr int Digits = _CUSTOM_DIGITS (char16_t);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (char16_t);
 //     static constexpr int MaxDigits10 = 0;
-//     static constexpr bool IsSigned = __glibcxx_signed (char16_t);
+//     static constexpr bool IsSigned = _CUSTOM_SIGNED (char16_t);
 //     static constexpr bool IsInteger = true;
 //     static constexpr bool IsExact = true;
 //     static constexpr int Radix = 2;
@@ -706,18 +694,18 @@ struct NumericLimits<unsigned char>
 //     static constexpr bool IsSpecialized = true;
 
 //     static constexpr char32_t
-//     min() noexcept { return __glibcxx_min (char32_t); }
+//     min() noexcept { return _CUSTOM_MIN (char32_t); }
 
 //     static constexpr char32_t
-//     max() noexcept { return __glibcxx_max (char32_t); }
+//     max() noexcept { return _CUSTOM_MAX (char32_t); }
 
 //     static constexpr char32_t
 //     lowest() noexcept { return min(); }
 
-//     static constexpr int Digits = __glibcxx_digits (char32_t);
-//     static constexpr int Digits10 = __glibcxx_digits10 (char32_t);
+//     static constexpr int Digits = _CUSTOM_DIGITS (char32_t);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (char32_t);
 //     static constexpr int MaxDigits10 = 0;
-//     static constexpr bool IsSigned = __glibcxx_signed (char32_t);
+//     static constexpr bool IsSigned = _CUSTOM_SIGNED (char32_t);
 //     static constexpr bool IsInteger = true;
 //     static constexpr bool IsExact = true;
 //     static constexpr int Radix = 2;
@@ -778,8 +766,8 @@ struct NumericLimits<unsigned char>
 //     lowest() noexcept { return min(); }
 // #endif
 
-//     static constexpr int Digits = __glibcxx_digits (short);
-//     static constexpr int Digits10 = __glibcxx_digits10 (short);
+//     static constexpr int Digits = _CUSTOM_DIGITS (short);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (short);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -846,9 +834,9 @@ struct NumericLimits<unsigned char>
 // #endif
 
 //     static constexpr int Digits
-//     = __glibcxx_digits (unsigned short);
+//     = _CUSTOM_DIGITS (unsigned short);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (unsigned short);
+//     = _CUSTOM_DIGITS10 (unsigned short);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -918,8 +906,8 @@ struct NumericLimits<unsigned char>
 //     lowest() noexcept { return min(); }
 // #endif
 
-//     static constexpr int Digits = __glibcxx_digits (int);
-//     static constexpr int Digits10 = __glibcxx_digits10 (int);
+//     static constexpr int Digits = _CUSTOM_DIGITS (int);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (int);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -986,9 +974,9 @@ struct NumericLimits<unsigned char>
 // #endif
 
 //     static constexpr int Digits
-//     = __glibcxx_digits (unsigned int);
+//     = _CUSTOM_DIGITS (unsigned int);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (unsigned int);
+//     = _CUSTOM_DIGITS10 (unsigned int);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -1057,8 +1045,8 @@ struct NumericLimits<unsigned char>
 //     lowest() noexcept { return min(); }
 // #endif
 
-//     static constexpr int Digits = __glibcxx_digits (long);
-//     static constexpr int Digits10 = __glibcxx_digits10 (long);
+//     static constexpr int Digits = _CUSTOM_DIGITS (long);
+//     static constexpr int Digits10 = _CUSTOM_DIGITS10 (long);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -1125,9 +1113,9 @@ struct NumericLimits<unsigned char>
 // #endif
 
 //     static constexpr int Digits
-//     = __glibcxx_digits (unsigned long);
+//     = _CUSTOM_DIGITS (unsigned long);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (unsigned long);
+//     = _CUSTOM_DIGITS10 (unsigned long);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -1198,9 +1186,9 @@ struct NumericLimits<unsigned char>
 // #endif
 
 //     static constexpr int Digits
-//     = __glibcxx_digits (long long);
+//     = _CUSTOM_DIGITS (long long);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (long long);
+//     = _CUSTOM_DIGITS10 (long long);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -1268,9 +1256,9 @@ struct NumericLimits<unsigned char>
 // #endif
 
 //     static constexpr int Digits
-//     = __glibcxx_digits (unsigned long long);
+//     = _CUSTOM_DIGITS (unsigned long long);
 //     static constexpr int Digits10
-//     = __glibcxx_digits10 (unsigned long long);
+//     = _CUSTOM_DIGITS10 (unsigned long long);
 // #if __cplusplus >= 201103L
 //     static constexpr int MaxDigits10 = 0;
 // #endif
@@ -1344,7 +1332,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR int digits10 = __FLT_DIG__;
 // #if __cplusplus >= 201103L
 //     static constexpr int max_digits10
-//     = __glibcxx_max_digits10 (__FLT_MANT_DIG__);
+//     = _CUSTOM_MAX_DIGITS10 (__FLT_MANT_DIG__);
 // #endif
 //     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
@@ -1368,7 +1356,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
 // = bool(__FLT_HAS_DENORM__) ? denorm_present : denorm_absent;
 //     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
-//     = __glibcxx_float_has_denorm_loss;
+//     = __custom_float_has_denorm_loss;
 
 //     static _GLIBCXX_CONSTEXPR float
 //     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_valf(); }
@@ -1387,9 +1375,9 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
-//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_float_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __custom_float_traps;
 //     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
-//     = __glibcxx_float_tinyness_before;
+//     = __custom_float_tinyness_before;
 //     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
 //     = round_to_nearest;
 // };
@@ -1415,7 +1403,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR int digits10 = __DBL_DIG__;
 // #if __cplusplus >= 201103L
 //     static constexpr int max_digits10
-//     = __glibcxx_max_digits10 (__DBL_MANT_DIG__);
+//     = _CUSTOM_MAX_DIGITS10 (__DBL_MANT_DIG__);
 // #endif
 //     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
@@ -1439,7 +1427,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
 // = bool(__DBL_HAS_DENORM__) ? denorm_present : denorm_absent;
 //     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
-//     = __glibcxx_double_has_denorm_loss;
+//     = __custom_double_has_denorm_loss;
 
 //     static _GLIBCXX_CONSTEXPR double
 //     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_val(); }
@@ -1458,9 +1446,9 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
-//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_double_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __custom_double_traps;
 //     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
-//     = __glibcxx_double_tinyness_before;
+//     = __custom_double_tinyness_before;
 //     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
 //     = round_to_nearest;
 // };
@@ -1486,7 +1474,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR int digits10 = __LDBL_DIG__;
 // #if __cplusplus >= 201103L
 //     static _GLIBCXX_USE_CONSTEXPR int max_digits10
-//     = __glibcxx_max_digits10 (__LDBL_MANT_DIG__);
+//     = _CUSTOM_MAX_DIGITS10 (__LDBL_MANT_DIG__);
 // #endif
 //     static _GLIBCXX_USE_CONSTEXPR bool is_signed = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
@@ -1510,7 +1498,7 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
 // = bool(__LDBL_HAS_DENORM__) ? denorm_present : denorm_absent;
 //     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
-// = __glibcxx_long_double_has_denorm_loss;
+// = __custom_long_double_has_denorm_loss;
 
 //     static _GLIBCXX_CONSTEXPR long double
 //     infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_vall(); }
@@ -1529,11 +1517,25 @@ struct NumericLimits<unsigned char>
 //     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
 //     static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
-//     static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_long_double_traps;
+//     static _GLIBCXX_USE_CONSTEXPR bool traps = __custom_long_double_traps;
 //     static _GLIBCXX_USE_CONSTEXPR bool tinyness_before =
-//                     __glibcxx_long_double_tinyness_before;
+//                     __custom_long_double_tinyness_before;
 //     static _GLIBCXX_USE_CONSTEXPR float_round_style round_style =
 //                             round_to_nearest;
 // };
 
 CUSTOM_END
+
+
+#undef _CUSTOM_SIGNED_B
+#undef _CUSTOM_DIGITS_B
+#undef _CUSTOM_MAX_B
+#undef _CUSTOM_MIN_B
+#undef _CUSTOM_DIGITS10_B
+
+#undef _CUSTOM_SIGNED
+#undef _CUSTOM_MAX
+#undef _CUSTOM_MIN
+#undef _CUSTOM_DIGITS
+#undef _CUSTOM_DIGITS10
+#undef _CUSTOM_MAX_DIGITS10
