@@ -1,6 +1,10 @@
 #pragma once
 #include "xCommon.h"
 
+#include <climits>
+#include <float.h>
+
+
 
 #if defined _MSC_VER
 
@@ -92,6 +96,16 @@
 
 #ifndef _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE
 #define _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE false
+#endif
+
+// Fixup for double radix
+#ifndef DBL_RADIX
+#define DBL_RADIX FLT_RADIX
+#endif
+
+// Fixup for long double radix
+#ifndef LDBL_RADIX
+#define LDBL_RADIX FLT_RADIX
 #endif
 
 #endif
