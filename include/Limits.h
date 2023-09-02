@@ -1,15 +1,108 @@
 #pragma once
 #include "xCommon.h"
 
-#include <climits>
+
+#if defined _MSC_VER
+
+// integral
+#ifndef _CUSTOM_INTEGRAL_TRAPS
+#define _CUSTOM_INTEGRAL_TRAPS false
+#endif
+
+// float
+#ifndef _CUSTOM_FLOAT_HAS_DENORM_LOSS
+#define _CUSTOM_FLOAT_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_FLOAT_TRAPS
+#define _CUSTOM_FLOAT_TRAPS false
+#endif
+
+#ifndef _CUSTOM_FLOAT_TINYNESS_BEFORE
+#define _CUSTOM_FLOAT_TINYNESS_BEFORE false
+#endif
+
+// double
+#ifndef _CUSTOM_DOUBLE_HAS_DENORM_LOSS
+#define _CUSTOM_DOUBLE_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_DOUBLE_TRAPS
+#define _CUSTOM_DOUBLE_TRAPS false
+#endif
+
+#ifndef _CUSTOM_DOUBLE_TINYNESS_BEFORE
+#define _CUSTOM_DOUBLE_TINYNESS_BEFORE false
+#endif
+
+// long double
+#ifndef _CUSTOM_LONG_DOUBLE_HAS_DENORM_LOSS
+#define _CUSTOM_LONG_DOUBLE_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_LONG_DOUBLE_TRAPS
+#define _CUSTOM_LONG_DOUBLE_TRAPS false
+#endif
+
+#ifndef _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE
+#define _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE false
+#endif
+
+#elif defined __GNUG__
+
+// integral
+#ifndef _CUSTOM_INTEGRAL_TRAPS
+#define _CUSTOM_INTEGRAL_TRAPS true
+#endif
+
+// float
+#ifndef _CUSTOM_FLOAT_HAS_DENORM_LOSS
+#define _CUSTOM_FLOAT_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_FLOAT_TRAPS
+#define _CUSTOM_FLOAT_TRAPS false
+#endif
+
+#ifndef _CUSTOM_FLOAT_TINYNESS_BEFORE
+#define _CUSTOM_FLOAT_TINYNESS_BEFORE false
+#endif
+
+// double
+#ifndef _CUSTOM_DOUBLE_HAS_DENORM_LOSS
+#define _CUSTOM_DOUBLE_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_DOUBLE_TRAPS
+#define _CUSTOM_DOUBLE_TRAPS false
+#endif
+
+#ifndef _CUSTOM_DOUBLE_TINYNESS_BEFORE
+#define _CUSTOM_DOUBLE_TINYNESS_BEFORE false
+#endif
+
+// long double
+#ifndef _CUSTOM_LONG_DOUBLE_HAS_DENORM_LOSS
+#define _CUSTOM_LONG_DOUBLE_HAS_DENORM_LOSS false
+#endif
+
+#ifndef _CUSTOM_LONG_DOUBLE_TRAPS
+#define _CUSTOM_LONG_DOUBLE_TRAPS false
+#endif
+
+#ifndef _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE
+#define _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE false
+#endif
+
+#endif
 
 
-// Helpers
+// Helpers  TODO: check if MIN/MAX are needed
 #define _CUSTOM_SIGNED_B(T,B)       ((T)(-1) < 0)
 #define _CUSTOM_DIGITS_B(T,B)	    (B - _CUSTOM_SIGNED_B (T,B))
-#define _CUSTOM_MAX_B(T,B)		    (_CUSTOM_SIGNED_B (T,B) ?  \
+#define _CUSTOM_MAX_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ?  \
                                     (((((T)1 << (_CUSTOM_DIGITS_B (T,B) - 1)) - 1) << 1) + 1) : ~(T)0)
-#define _CUSTOM_MIN_B(T,B)		    (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
+#define _CUSTOM_MIN_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
 #define _CUSTOM_DIGITS10_B(T,B)     (_CUSTOM_DIGITS_B (T,B) * 643L / 2136)
 
 
@@ -86,7 +179,7 @@ struct NumericLimits
 
     /* True if-and-only-if the type adheres to the IEC 559 standard, also
     known as IEEE 754.  (Only makes sense for floating point types.) */
-    static constexpr bool Is_IEC559 = false;
+    static constexpr bool IsIEC559 = false;
 
     /* True if the set of values representable by the type is
     finite.  All built-in types are bounded, this member would be
@@ -227,7 +320,7 @@ struct NumericLimits<bool>
     static constexpr bool IsBounded             = true;
     static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
     static constexpr int Digits                 = 1;
@@ -299,7 +392,7 @@ struct NumericLimits<char>
     static constexpr bool IsBounded             = true;
     static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
     static constexpr int Digits                 = _CUSTOM_DIGITS(char);
@@ -314,11 +407,11 @@ struct NumericLimits<char>
 
 
     static constexpr char min() noexcept {
-        return _CUSTOM_MIN(char);
+        return CHAR_MIN;
     }
 
     static constexpr char max() noexcept {
-        return _CUSTOM_MAX(char);
+        return CHAR_MAX;
     }
 
     static constexpr char lowest() noexcept {
@@ -371,7 +464,7 @@ struct NumericLimits<signed char>
     static constexpr bool IsBounded             = true;
     static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
     static constexpr int Digits                 = _CUSTOM_DIGITS(signed char);
@@ -443,7 +536,7 @@ struct NumericLimits<unsigned char>
     static constexpr bool IsBounded             = true;
     static constexpr bool IsModulo              = true;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
     static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
@@ -508,18 +601,18 @@ struct NumericLimits<wchar_t>
     static constexpr bool HasSignalingNaN       = false;
 
     static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = false;
+    static constexpr bool IsSigned              = _CUSTOM_SIGNED(wchar_t);
     static constexpr bool IsInteger             = true;
     static constexpr bool IsExact               = true;
     static constexpr bool IsIEC559              = false;
     static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = true;
+    static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned char);
+    static constexpr int Digits                 = _CUSTOM_DIGITS(wchar_t);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(wchar_t);
     static constexpr int MaxDigits10            = 0;
     static constexpr int Radix                  = 2;
 
@@ -580,18 +673,18 @@ struct NumericLimits<char8_t>
     static constexpr bool HasSignalingNaN       = false;
 
     static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = false;
+    static constexpr bool IsSigned              = _CUSTOM_SIGNED(char8_t);
     static constexpr bool IsInteger             = true;
     static constexpr bool IsExact               = true;
     static constexpr bool IsIEC559              = false;
     static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = true;
+    static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned char);
+    static constexpr int Digits                 = _CUSTOM_DIGITS(char8_t);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(char8_t);
     static constexpr int MaxDigits10            = 0;
     static constexpr int Radix                  = 2;
 
@@ -652,18 +745,18 @@ struct NumericLimits<char16_t>
     static constexpr bool HasSignalingNaN       = false;
 
     static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = false;
+    static constexpr bool IsSigned              = _CUSTOM_SIGNED(char16_t);
     static constexpr bool IsInteger             = true;
     static constexpr bool IsExact               = true;
     static constexpr bool IsIEC559              = false;
     static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = true;
+    static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned char);
+    static constexpr int Digits                 = _CUSTOM_DIGITS(char16_t);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(char16_t);
     static constexpr int MaxDigits10            = 0;
     static constexpr int Radix                  = 2;
 
@@ -724,18 +817,18 @@ struct NumericLimits<char32_t>
     static constexpr bool HasSignalingNaN       = false;
 
     static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = false;
+    static constexpr bool IsSigned              = _CUSTOM_SIGNED(char32_t);
     static constexpr bool IsInteger             = true;
     static constexpr bool IsExact               = true;
     static constexpr bool IsIEC559              = false;
     static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = true;
+    static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned char);
+    static constexpr int Digits                 = _CUSTOM_DIGITS(char32_t);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(char32_t);
     static constexpr int MaxDigits10            = 0;
     static constexpr int Radix                  = 2;
 
@@ -796,18 +889,18 @@ struct NumericLimits<short>
     static constexpr bool HasSignalingNaN       = false;
 
     static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = false;
+    static constexpr bool IsSigned              = true;
     static constexpr bool IsInteger             = true;
     static constexpr bool IsExact               = true;
     static constexpr bool IsIEC559              = false;
     static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps                 = true;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned char);
+    static constexpr int Digits                 = _CUSTOM_DIGITS(short);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(short);
     static constexpr int MaxDigits10            = 0;
     static constexpr int Radix                  = 2;
 
@@ -862,39 +955,39 @@ struct NumericLimits<unsigned short>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = false;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = true;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned short);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned short);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr unsigned short min() noexcept {
-        return SHRT_MIN;
+        return 0;
     }
 
     static constexpr unsigned short max() noexcept {
-        return SHRT_MAX;
+        return USHRT_MAX;
     }
 
     static constexpr unsigned short lowest() noexcept {
@@ -934,39 +1027,39 @@ struct NumericLimits<int>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(int);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(int);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr int min() noexcept {
-        return SHRT_MIN;
+        return INT_MIN;
     }
 
     static constexpr int max() noexcept {
-        return SHRT_MAX;
+        return INT_MAX;
     }
 
     static constexpr int lowest() noexcept {
@@ -1006,39 +1099,39 @@ struct NumericLimits<unsigned int>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = false;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = true;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned int);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned int);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr unsigned int min() noexcept {
-        return SHRT_MIN;
+        return 0;
     }
 
     static constexpr unsigned int max() noexcept {
-        return SHRT_MAX;
+        return UINT_MAX;
     }
 
     static constexpr unsigned int lowest() noexcept {
@@ -1078,39 +1171,39 @@ struct NumericLimits<long>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(long);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(long);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr long min() noexcept {
-        return SHRT_MIN;
+        return LONG_MIN;
     }
 
     static constexpr long max() noexcept {
-        return SHRT_MAX;
+        return LONG_MAX;
     }
 
     static constexpr long lowest() noexcept {
@@ -1150,39 +1243,39 @@ struct NumericLimits<unsigned long>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = false;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = true;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned long);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned long);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr unsigned long min() noexcept {
-        return SHRT_MIN;
+        return 0;
     }
 
     static constexpr unsigned long max() noexcept {
-        return SHRT_MAX;
+        return ULONG_MAX;
     }
 
     static constexpr unsigned long lowest() noexcept {
@@ -1222,39 +1315,39 @@ struct NumericLimits<long long>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(long long);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(long long);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr long long min() noexcept {
-        return SHRT_MIN;
+        return LLONG_MIN;
     }
 
     static constexpr long long max() noexcept {
-        return SHRT_MAX;
+        return LLONG_MAX;
     }
 
     static constexpr long long lowest() noexcept {
@@ -1294,39 +1387,39 @@ struct NumericLimits<unsigned long long>
     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = false;
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = true;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(unsigned long long);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(unsigned long long);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
     static constexpr unsigned long long min() noexcept {
-        return SHRT_MIN;
+        return 0;
     }
 
     static constexpr unsigned long long max() noexcept {
-        return SHRT_MAX;
+        return ULLONG_MAX;
     }
 
     static constexpr unsigned long long lowest() noexcept {
@@ -1363,70 +1456,70 @@ struct NumericLimits<unsigned long long>
 template<>
 struct NumericLimits<float>
 {
-    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
-    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr FloatRoundStyle RoundStyle = RoundToNearest;
+    static constexpr FloatDenormStyle HasDenorm = DenormPresent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = _CUSTOM_FLOAT_HAS_DENORM_LOSS;
+    static constexpr bool HasInfinity           = true;
+    static constexpr bool HasQuietNaN           = true;
+    static constexpr bool HasSignalingNaN       = true;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = false;
+    static constexpr bool IsExact               = false;
+    static constexpr bool IsIEC559              = true;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_FLOAT_TRAPS;
+    static constexpr bool TinynessBefore        = _CUSTOM_FLOAT_TINYNESS_BEFORE;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = FLT_MANT_DIG;
+    static constexpr int Digits10               = FLT_DIG;
+    static constexpr int MaxDigits10            = _CUSTOM_MAX_DIGITS10(FLT_MANT_DIG);
+    static constexpr int Radix                  = FLT_RADIX;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = FLT_MIN_EXP;
+    static constexpr int MinExponent10          = FLT_MIN_10_EXP;
+    static constexpr int MaxExponent            = FLT_MAX_EXP;
+    static constexpr int MaxExponent10          = FLT_MAX_10_EXP;
 
 
     static constexpr float min() noexcept {
-        return SHRT_MIN;
+        return FLT_MIN;
     }
 
     static constexpr float max() noexcept {
-        return SHRT_MAX;
+        return FLT_MAX;
     }
 
     static constexpr float lowest() noexcept {
-        return min();
+        return -max();
     }
 
     static constexpr float epsilon() noexcept {
-        return 0;
+        return FLT_EPSILON;
     }
 
     static constexpr float round_error() noexcept {
-        return 0;
+        return 0.5f;
     }
 
     static constexpr float infinity() noexcept {
-        return 0;
+        return __builtin_huge_valf();
     }
 
     static constexpr float quiet_NaN() noexcept {
-        return 0;
+        return __builtin_nanf("");
     }
 
     static constexpr float signaling_NaN() noexcept {
-        return 0;
+        return __builtin_nansf("");
     }
 
     static constexpr float denorm_min() noexcept {
-        return 0;
+        return FLT_TRUE_MIN;
     }
 };  // END float specialization
 
@@ -1435,70 +1528,70 @@ struct NumericLimits<float>
 template<>
 struct NumericLimits<double>
 {
-    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
-    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr FloatRoundStyle RoundStyle = RoundToNearest;
+    static constexpr FloatDenormStyle HasDenorm = DenormPresent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = _CUSTOM_DOUBLE_HAS_DENORM_LOSS;
+    static constexpr bool HasInfinity           = true;
+    static constexpr bool HasQuietNaN           = true;
+    static constexpr bool HasSignalingNaN       = true;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = false;
+    static constexpr bool IsExact               = false;
+    static constexpr bool IsIEC559              = true;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_DOUBLE_TRAPS;
+    static constexpr bool TinynessBefore        = _CUSTOM_DOUBLE_TINYNESS_BEFORE;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = DBL_MANT_DIG;
+    static constexpr int Digits10               = DBL_DIG;
+    static constexpr int MaxDigits10            = _CUSTOM_MAX_DIGITS10(DBL_MANT_DIG);
+    static constexpr int Radix                  = DBL_RADIX;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = DBL_MIN_EXP;
+    static constexpr int MinExponent10          = DBL_MIN_10_EXP;
+    static constexpr int MaxExponent            = DBL_MAX_EXP;
+    static constexpr int MaxExponent10          = DBL_MAX_10_EXP;
 
 
     static constexpr double min() noexcept {
-        return SHRT_MIN;
+        return DBL_MIN;
     }
 
     static constexpr double max() noexcept {
-        return SHRT_MAX;
+        return DBL_MAX;
     }
 
     static constexpr double lowest() noexcept {
-        return min();
+        return -max();
     }
 
     static constexpr double epsilon() noexcept {
-        return 0;
+        return DBL_EPSILON;
     }
 
     static constexpr double round_error() noexcept {
-        return 0;
+        return 0.5;
     }
 
     static constexpr double infinity() noexcept {
-        return 0;
+        return __builtin_huge_val();
     }
 
     static constexpr double quiet_NaN() noexcept {
-        return 0;
+        return __builtin_nan("");
     }
 
     static constexpr double signaling_NaN() noexcept {
-        return 0;
+        return __builtin_nans("");
     }
 
     static constexpr double denorm_min() noexcept {
-        return 0;
+        return DBL_TRUE_MIN;
     }
 };  // END double specialization
 
@@ -1507,70 +1600,70 @@ struct NumericLimits<double>
 template<>
 struct NumericLimits<long double>
 {
-    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
-    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+    static constexpr FloatRoundStyle RoundStyle = RoundToNearest;
+    static constexpr FloatDenormStyle HasDenorm = DenormPresent;
 
-    static constexpr bool HasDenormLoss = false;
-    static constexpr bool HasInfinity = false;
-    static constexpr bool HasQuietNaN = false;
-    static constexpr bool HasSignalingNaN = false;
+    static constexpr bool HasDenormLoss         = _CUSTOM_LONG_DOUBLE_HAS_DENORM_LOSS;
+    static constexpr bool HasInfinity           = true;
+    static constexpr bool HasQuietNaN           = true;
+    static constexpr bool HasSignalingNaN       = true;
 
-    static constexpr bool IsSpecialized = true;
-    static constexpr bool IsSigned = false;
-    static constexpr bool IsInteger = true;
-    static constexpr bool IsExact = true;
-    static constexpr bool IsIEC559 = false;
-    static constexpr bool IsBounded = true;
-    static constexpr bool IsModulo = true;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = true;
+    static constexpr bool IsInteger             = false;
+    static constexpr bool IsExact               = false;
+    static constexpr bool IsIEC559              = true;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = false;
 
-    static constexpr bool Traps = true;
-    static constexpr bool TinynessBefore = false;
+    static constexpr bool Traps                 = _CUSTOM_LONG_DOUBLE_TRAPS;
+    static constexpr bool TinynessBefore        = _CUSTOM_LONG_DOUBLE_TINYNESS_BEFORE;
 
-    static constexpr int Digits = _CUSTOM_DIGITS(unsigned char);
-    static constexpr int Digits10 = _CUSTOM_DIGITS10(unsigned char);
-    static constexpr int MaxDigits10 = 0;
-    static constexpr int Radix = 2;
+    static constexpr int Digits                 = LDBL_MANT_DIG;
+    static constexpr int Digits10               = LDBL_DIG;
+    static constexpr int MaxDigits10            = _CUSTOM_MAX_DIGITS10(LDBL_MANT_DIG);
+    static constexpr int Radix                  = LDBL_RADIX;
 
-    static constexpr int MinExponent = 0;
-    static constexpr int MinExponent10 = 0;
-    static constexpr int MaxExponent = 0;
-    static constexpr int MaxExponent10 = 0;
+    static constexpr int MinExponent            = LDBL_MIN_EXP;
+    static constexpr int MinExponent10          = LDBL_MIN_10_EXP;
+    static constexpr int MaxExponent            = LDBL_MAX_EXP;
+    static constexpr int MaxExponent10          = LDBL_MAX_10_EXP;
 
 
     static constexpr long double min() noexcept {
-        return SHRT_MIN;
+        return LDBL_MIN;
     }
 
     static constexpr long double max() noexcept {
-        return SHRT_MAX;
+        return LDBL_MAX;
     }
 
     static constexpr long double lowest() noexcept {
-        return min();
+        return -max();
     }
 
     static constexpr long double epsilon() noexcept {
-        return 0;
+        return LDBL_EPSILON;
     }
 
     static constexpr long double round_error() noexcept {
-        return 0;
+        return 0.5L;
     }
 
     static constexpr long double infinity() noexcept {
-        return 0;
+        return __builtin_huge_val();
     }
 
     static constexpr long double quiet_NaN() noexcept {
-        return 0;
+        return __builtin_nan("");
     }
 
     static constexpr long double signaling_NaN() noexcept {
-        return 0;
+        return __builtin_nans("");
     }
 
     static constexpr long double denorm_min() noexcept {
-        return 0;
+        return LDBL_TRUE_MIN;
     }
 };  // END long double specialization
 

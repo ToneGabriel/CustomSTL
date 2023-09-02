@@ -16,6 +16,7 @@
 #include <limits>
 #include <chrono>
 #include <algorithm>
+#include <numeric>
 
 #include <thread>
 #include <mutex>

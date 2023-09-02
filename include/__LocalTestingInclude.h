@@ -18,6 +18,7 @@
 #include "Limits.h"
 #include "Chrono.h"
 #include "Algorithm.h"
+#include "Numeric.h"
 
 #if defined __GNUG__
 #include "Thread.h"

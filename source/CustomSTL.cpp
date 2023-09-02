@@ -17,7 +17,9 @@ int main()
 	//test::function_test();
 	//test::invoke_test();
 	//test::tuple_test();
-	test::memory_test();
+	//test::memory_test();
+	//test::print_numeric_limits_statics<long double>();
+	//test::print_numeric_limits_functions<long double>();
 
 	return 0;
 }

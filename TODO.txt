@@ -1,6 +1,5 @@
 0. Check lock functions on Mutex
 1. Check and implement
-- numeric_limits
 - chrono
 - algorithm
 - numeric
