@@ -1,5 +1,6 @@
 0. Check lock functions on Mutex
 1. Check and implement
+- ratio
 - chrono
 - algorithm
 - numeric

@@ -731,4 +731,44 @@ public:
 template<class Ty>
 using Decay_t = typename Decay<Ty>::Type;
 
+// common type
+template<class Ty1, class Ty2>
+using ConditionalResult_t = decltype(false ? custom::declval<Ty1>() : custom::declval<Ty2>());
+
+template<class, class, class = void>
+struct DecayConditionalResult {};
+
+template<class T1, class T2>
+struct DecayConditionalResult<T1, T2, Void_t<ConditionalResult_t<T1, T2>>> : Decay<ConditionalResult_t<T1, T2>> {};
+
+template<class... Ty>
+struct CommonType;
+
+template<class... Ty>
+using CommonType_t = typename CommonType<Ty...>::Type;
+
+template<>
+struct CommonType<> {};     // 0 types
+
+template<class Ty>
+struct CommonType<Ty> : CommonType<Ty, Ty> {};  // 1 type
+
+template<class Ty1, class Ty2, class Decayed1 = Decay_t<Ty1>, class Decayed2 = Decay_t<Ty2>>
+struct _CommonType2 : CommonType<Decayed1, Decayed2> {};
+
+template<class Ty1, class Ty2>
+struct _CommonType2<Ty1, Ty2, Ty1, Ty2> : DecayConditionalResult<Ty1, Ty2> {};
+
+template<class Ty1, class Ty2>
+struct CommonType<Ty1, Ty2> : _CommonType2<Ty1, Ty2> {};   // 2 types
+
+template<class AlwaysVoid, class Ty1, class Ty2, class... _Rest>
+struct _CommonType3 {};
+
+template<class Ty1, class Ty2, class... _Rest>
+struct _CommonType3<Void_t<CommonType_t<Ty1, Ty2>>, Ty1, Ty2, _Rest...> : CommonType<CommonType_t<Ty1, Ty2>, _Rest...> {};
+
+template<class Ty1, class Ty2, class... _Rest>
+struct CommonType<Ty1, Ty2, _Rest...> : _CommonType3<void, Ty1, Ty2, _Rest...> {}; // 3+ types
+
 CUSTOM_END

@@ -20,6 +20,7 @@ int main()
 	//test::memory_test();
 	//test::print_numeric_limits_statics<long double>();
 	//test::print_numeric_limits_functions<long double>();
+	test::chrono_test();
 
 	return 0;
 }

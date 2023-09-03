@@ -6,16 +6,42 @@
 
 CUSTOM_BEGIN
 
-// ratio
-template<intmax_t N, intmax_t D = 1>
-struct Ratio    // holds the Ratio of N to D
-{
-    static_assert(D != 0, "zero denominator");
-    static_assert(-INTMAX_MAX <= N, "numerator too negative");
-    static_assert(-INTMAX_MAX <= D, "denominator too negative");
+// helpers
+constexpr intmax_t _abs(const intmax_t val) noexcept {
+    return val < 0 ? -val : val;
+}
 
-    static constexpr intmax_t Num = _Sign_of(N) * _Sign_of(D) * _Abs(N) / _Gcd(N, D);
-    static constexpr intmax_t Den = _Abs(D) / _Gcd(N, D);
+constexpr intmax_t _sign(const intmax_t val) noexcept {
+    return val < 0 ? -1 : 1;
+}
+
+constexpr intmax_t _gcd(intmax_t first, intmax_t second) noexcept {  // computes GCD of abs(first) and abs(second)
+    if (first == 0 && second == 0)
+        return 1; // contrary to mathematical convention; avoids division by 0 in ratio_less
+
+    first   = _abs(first);
+    second  = _abs(second);
+
+    while (second != 0)
+    {
+        auto aux    = first;
+        first       = second;
+        second      = aux % second;
+    }
+
+    return first;
+}
+
+// ratio
+template<intmax_t Numerator, intmax_t Denominator = 1>
+struct Ratio    // holds the Ratio of Numerator to Denominator
+{
+    static_assert(Denominator != 0, "zero denominator");
+    static_assert(-INTMAX_MAX <= Numerator, "numerator too negative");
+    static_assert(-INTMAX_MAX <= Denominator, "denominator too negative");
+
+    static constexpr intmax_t Num = _sign(Numerator) * _sign(Denominator) * _abs(Numerator) / _gcd(Numerator, Denominator);
+    static constexpr intmax_t Den = _abs(Denominator) / _gcd(Numerator, Denominator);
 
     using Type = Ratio<Num, Den>;
 };
@@ -27,22 +53,33 @@ constexpr bool IsRatio_v = false;
 template<intmax_t Rat1, intmax_t Rat2>
 constexpr bool IsRatio_v<Ratio<Rat1, Rat2>> = true;
 
-// ration multiply
+// safe multiply
+template<intmax_t First, intmax_t Second, bool Sfinae = false,
+bool Good = _abs(First) <= INTMAX_MAX / (Second == 0 ? 1 : _abs(Second))>
+struct _SafeMultiply : IntegralConstant<intmax_t, First * Second> {}; // computes First * Second without overflow
+
+template<intmax_t First, intmax_t Second, bool Sfinae>
+struct _SafeMultiply<First, Second, Sfinae, false>
+{
+    static_assert(Sfinae, "integer arithmetic overflow");   // First * Second would overflow
+};
+
+// ratio multiply
 template<class Rat1, class Rat2>
 struct _RatioMultiply  // multiply two ratios
 {
     static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioMultiply<R1, R2> requires R1 and R2 to be ratios.");
 
-    static constexpr intmax_t Num1 = Rat1::Num;
-    static constexpr intmax_t Den1 = Rat1::Den;
-    static constexpr intmax_t Num2 = Rat2::Num;
-    static constexpr intmax_t Den2 = Rat2::Den;
+private:
+    static constexpr intmax_t _gcd1 = _gcd(Rat1::Num, Rat2::Den);
+    static constexpr intmax_t _gcd2 = _gcd(Rat2::Num, Rat1::Den);
 
-    static constexpr intmax_t _Gx = _Gcd(Num1, Den2);
-    static constexpr intmax_t _Gy = _Gcd(Num2, Den1);
+public:
+    using Num = _SafeMultiply<  Rat1::Num / _gcd1,
+                                Rat2::Num / _gcd2, true>;
 
-    using Num = _Safe_mult<Num1 / _Gx, Num2 / _Gy, true>;
-    using Den = _Safe_mult<Den1 / _Gy, Den2 / _Gx, true>;
+    using Den = _SafeMultiply<  Rat1::Den / _gcd2,
+                                Rat2::Den / _gcd1, true>;
 };
 
 template<class Rat1, class Rat2, bool Sfinae = true, class = void>
@@ -68,10 +105,7 @@ struct _RatioDivide    // divide two ratios
 {
     static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioDivide<R1, R2> requires R1 and R2 to be ratios.");
 
-    static constexpr intmax_t Num2 = Rat2::Num;
-    static constexpr intmax_t Den2 = Rat2::Den;
-
-    using Rat2Inverse = Ratio<Den2, Num2>;
+    using Rat2Inverse = Ratio<Rat2::Den, Rat2::Num>;
 };
 
 template<class Rat1, class Rat2, bool Sfinae = true>

@@ -369,6 +369,14 @@ void print_numeric_limits_functions() {
 	std::cout << std::numeric_limits<Type>::denorm_min()		<< ' ' << custom::NumericLimits<Type>::denorm_min() << '\n';
 }
 
+void chrono_test() {
+	std::chrono::milliseconds dur(2000000);
+	std::cout << std::chrono::floor<std::chrono::seconds>(dur);
+
+	custom::chrono::Microseconds dur1(2000000);
+	//std::cout << custom::chrono::floor<custom::chrono::Seconds>(dur1).count();	//TODO: need overload <<, <, >, ...
+}
+
 TEST_END
 
 
