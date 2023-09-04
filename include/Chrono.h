@@ -29,23 +29,6 @@ struct DurationValues  // gets arithmetic properties of a type
     }
 };
 
-// is clock
-//template<class Clock, class = void>
-//constexpr bool _IsClock_v = false;
-//
-//template<class Clock>
-//constexpr bool _IsClock_v<Clock, Void_t<  typename Clock::Rep,
-//                                          typename Clock::Period,
-//                                          typename Clock::Duration,
-//                                          typename Clock::TimePoint,
-//                                          decltype(Clock::IsSteady),
-//                                          decltype(Clock::now())>> = true;
-//
-//template<class Clock>
-//struct IsClock : BoolConstant<_IsClock_v<Clock>> {};
-//
-//template<class Clock>
-//constexpr bool IsClock_v = IsClock::Value;
 
 // Duration
 template<class RepType, class PeriodRatio = Ratio<1>>
@@ -331,7 +314,26 @@ public:
 #pragma endregion TimePoint
 
 
-#pragma region time units
+#pragma region others
+// is clock
+template<class Clock, class = void>
+constexpr bool _IsClock_v = false;
+
+template<class Clock>
+constexpr bool _IsClock_v<Clock, Void_t<typename Clock::Rep,
+                                        typename Clock::Period,
+                                        typename Clock::Duration,
+                                        typename Clock::TimePoint,
+                                        decltype(Clock::IsSteady),
+                                        decltype(Clock::now())>> = true;
+
+template<class Clock>
+struct IsClock : BoolConstant<_IsClock_v<Clock>> {};
+
+template<class Clock>
+constexpr bool IsClock_v = IsClock::Value;
+
+
 // time units
 using Nanoseconds   = Duration<long long, Nano>;
 using Microseconds  = Duration<long long, Micro>;
@@ -344,7 +346,7 @@ using Days          = Duration<int, RatioMultiply<Ratio<24>, Hours::Period>>;
 using Weeks         = Duration<int, RatioMultiply<Ratio<7>, Days::Period>>;
 using Years         = Duration<int, RatioMultiply<Ratio<146097, 400>, Days::Period>>;
 using Months        = Duration<int, RatioDivide<Years::Period, Ratio<12>>>;
-#pragma endregion time units
+#pragma endregion others
 
 CUSTOM_CHRONO_END
 

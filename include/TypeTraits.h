@@ -732,8 +732,11 @@ template<class Ty>
 using Decay_t = typename Decay<Ty>::Type;
 
 // common type
+
+// this "thing" decides if Ty1 and Ty2 are compatible
+// and the result is the implicit conversion type
 template<class Ty1, class Ty2>
-using ConditionalResult_t = decltype(false ? custom::declval<Ty1>() : custom::declval<Ty2>());
+using ConditionalResult_t = decltype(true /*or false*/ ? custom::declval<Ty1>() : custom::declval<Ty2>());
 
 template<class, class, class = void>
 struct DecayConditionalResult {};
