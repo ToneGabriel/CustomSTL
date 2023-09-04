@@ -32,6 +32,15 @@ constexpr intmax_t _gcd(intmax_t first, intmax_t second) noexcept {  // computes
     return first;
 }
 
+inline void _safe_add_integer_arithmetic_overflow_error() noexcept {}   // TODO: what is this?
+
+constexpr intmax_t _safe_add(const intmax_t first, const intmax_t second) noexcept {
+    if (_sign(first) == _sign(second) && _abs(first) > INTMAX_MAX - _abs(second))
+        _safe_add_integer_arithmetic_overflow_error();
+
+    return first + second;
+}
+
 // ratio
 template<intmax_t Numerator, intmax_t Denominator = 1>
 struct Ratio    // holds the Ratio of Numerator to Denominator
@@ -63,6 +72,36 @@ struct _SafeMultiply<First, Second, Sfinae, false>
 {
     static_assert(Sfinae, "integer arithmetic overflow");   // First * Second would overflow
 };
+
+// ratio add
+template<class Rat1, class Rat2>
+struct _RatioAdd
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioAdd<R1, R2> requires R1 and R2 to be ratios.");
+
+private:
+    static constexpr intmax_t _gcd1 = _gcd(Rat1::Den, Rat2::Den);
+
+public:
+    using Type = typename Ratio<_safe_add(  _SafeMultiply<Rat1::Num, Rat2::Den / _gcd1>::Value,
+                                            _SafeMultiply<Rat2::Num, Rat1::Den / _gcd1>::Value),
+                                _SafeMultiply<Rat1::Den, Rat2::Den / _gcd1>::Value>::Type;
+};
+
+template<class Rat1, class Rat2>
+using RatioAdd = typename _RatioAdd<Rat1, Rat2>::Type;
+
+// ratio subtract
+template<class Rat1, class Rat2>
+struct _RatioSubtract
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioSubtract<R1, R2> requires R1 and R2 to be ratios.");
+
+    using Type = RatioAdd<Rat1, Ratio<-Rat2::Num, Rat2::Den>>;
+};
+
+template<class Rat1, class Rat2>
+using RatioSubtract = typename _RatioSubtract<Rat1, Rat2>::Type;
 
 // ratio multiply
 template<class Rat1, class Rat2>
@@ -114,7 +153,34 @@ using _RatioDivideSfinae = typename _RatioMultiplySfinae<Rat1, typename _RatioDi
 template<class Rat1, class Rat2>
 using RatioDivide = _RatioDivideSfinae<Rat1, Rat2, false>;
 
-// ratios
+// ratio equal
+template<class Rat1, class Rat2>
+struct RatioEqual : BoolConstant<Rat1::Num == Rat2::Num && Rat1::Den == Rat2::Den>
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioEqual<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioEqual_v = RatioEqual<Rat1, Rat2>::Value;
+
+// ratio not equal
+template<class Rat1, class Rat2>
+struct RatioNotEqual : BoolConstant<!RatioEqual_v<Rat1, Rat2>>
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioNotEqual<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioNotEqual_v = RatioNotEqual<Rat1, Rat2>::Value;
+
+// TODO: here
+// ratio less
+// ratio less equal
+// ratio greater
+// ratio greater equal
+
+
+// constant ratios
 using Atto  = Ratio<1, 1000000000000000000LL>;
 using Femto = Ratio<1, 1000000000000000LL>;
 using Pico  = Ratio<1, 1000000000000LL>;

@@ -48,7 +48,7 @@ struct DurationValues  // gets arithmetic properties of a type
 //constexpr bool IsClock_v = IsClock::Value;
 
 // Duration
-template<class _Rep, class _Period = Ratio<1>>
+template<class RepType, class PeriodRatio = Ratio<1>>
 class Duration;
 
 template<class Type>
@@ -58,16 +58,16 @@ template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, b
 constexpr ToDur duration_cast(const Duration<Rep, Period>&) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>);
 
 
-template<class _Rep, class _Period>
+template<class RepType, class PeriodRatio>
 class Duration  // represents a time duration
 {
-    static_assert(!IsDuration_v<_Rep>, "duration can't have duration as first template argument");
-    static_assert(IsRatio_v<_Period>, "period not an instance of Ratio");
-    static_assert(0 < _Period::Num, "period negative or zero");
+    static_assert(!IsDuration_v<RepType>, "duration can't have duration as first template argument");
+    static_assert(IsRatio_v<PeriodRatio>, "period not an instance of Ratio");
+    static_assert(0 < PeriodRatio::Num, "period negative or zero");
 
 public:
-    using Rep       = _Rep;
-    using Period    = typename _Period::Type;
+    using Rep       = RepType;
+    using Period    = typename PeriodRatio::Type;
 
 private:
     Rep _rep;       // the stored rep
@@ -255,16 +255,16 @@ constexpr Duration<Rep, Period> abs(const Duration<Rep, Period> duration) noexce
 
 #pragma region TimePoint
 // TimePoint
-template<class _Clock, class _Duration = typename _Clock::Duration>
+template<class ClockType, class DurationType = typename ClockType::Duration>
 class TimePoint    // represents a point in time
 {
-    static_assert(IsDuration_v<_Duration>, "Duration needs to be a specialization of chrono::Duration.");
+    static_assert(IsDuration_v<DurationType>, "Duration needs to be a specialization of chrono::Duration.");
 
 public:
-    using Clock     = _Clock;
-    using Duration  = _Duration;
-    using Rep       = typename _Duration::Rep;
-    using Period    = typename _Duration::Period;
+    using Clock     = ClockType;
+    using Duration  = DurationType;
+    using Rep       = typename DurationType::Rep;
+    using Period    = typename DurationType::Period;
 
 private:
     Duration _dur   = Duration::zero();   // duration since the epoch
