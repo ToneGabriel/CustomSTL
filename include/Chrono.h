@@ -3,6 +3,8 @@
 #include "Limits.h"
 #include "Ratio.h"  // TODO: implement
 
+#include <ctime>    // std::time_t
+
 
 CUSTOM_BEGIN
 
@@ -103,12 +105,12 @@ public:
         return Duration(_rep--);
     }
 
-    Duration& operator+=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {
+    Duration& operator+=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
         _rep += other._rep;
         return *this;
     }
 
-    Duration& operator-=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {
+    Duration& operator-=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
         _rep -= other._rep;
         return *this;
     }
@@ -128,9 +130,74 @@ public:
         return *this;
     }
 
-    Duration& operator%=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {
-        _rep %= other.count();
+    Duration& operator%=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
+        _rep %= other._rep;
         return *this;
+    }
+
+public:
+    // Operators (different durations)
+
+    template<class _Rep, class _Period>
+    constexpr CommonType_t<Duration, Duration<_Rep, _Period>> operator+(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(CD(*this).count() + CD(other).count());
+    }
+
+    template<class _Rep, class _Period>
+    constexpr CommonType_t<Duration, Duration<_Rep, _Period>> operator-(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(CD(*this).count() - CD(other).count());
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator==(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(*this).count() == CD(other).count();
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator!=(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        return !(*this == other);
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator<(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(*this).count() < CD(other).count();
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator<=(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(*this).count() <= CD(other).count();
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator>(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(*this).count() > CD(other).count();
+    }
+
+    template<class _Rep, class _Period>
+    constexpr bool operator>=(const Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+
+        return CD(*this).count() >= CD(other).count();
     }
 
 public:
@@ -153,6 +220,22 @@ public:
     }
 };  // END Duration
 
+// Duration binary operators
+template<class Rep, class Period, class RightRep,
+EnableIf_t<IsConvertible_v<const RightRep&, CommonType_t<Rep, RightRep>>, bool> = true>
+constexpr Duration<CommonType_t<Rep, RightRep>, Period> operator*(const Duration<Rep, Period>& duration, const RightRep& rep) 
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<RightRep>) {
+    using CRDur = Duration<CommonType_t<Rep, RightRep>, Period>;
+
+    return CRDur(CRDur(duration).count() * rep);
+}
+
+template<class Rep, class Period, class LeftRep,
+EnableIf_t<IsConvertible_v<const LeftRep&, CommonType_t<Rep, LeftRep>>, bool> = true>
+constexpr Duration<CommonType_t<Rep, LeftRep>, Period> operator*(const LeftRep& rep, const Duration<Rep, Period>& duration)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<LeftRep>) {
+    return duration * rep;
+}
 
 // duration cast impl
 template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, bool> /* = true (redefinition) */>
@@ -209,7 +292,7 @@ constexpr ToDur ceil(const Duration<Rep, Period>& duration) noexcept(IsArithmeti
 // round
 // convert duration to another duration, round to nearest, ties to even
 template<class ToDur, class Rep, class Period,
-EnableIf_t<IsDuration_v<ToDur> && !IsFloatingPoint_v<typename ToDur::rep>, bool> = true>
+EnableIf_t<IsDuration_v<ToDur> && !IsFloatingPoint_v<typename ToDur::Rep>, bool> = true>
 constexpr ToDur round(const Duration<Rep, Period>& duration) noexcept(IsArithmetic_v<Rep>&& IsArithmetic_v<typename ToDur::Rep>) {
     ToDur durationFloored   = custom::chrono::floor<ToDur>(duration);
     ToDur durationCeiled    = durationFloored + ToDur{ 1 };
@@ -233,6 +316,19 @@ constexpr Duration<Rep, Period> abs(const Duration<Rep, Period> duration) noexce
     else
         return duration;
 }
+
+// time units
+using Nanoseconds   = Duration<long long, Nano>;
+using Microseconds  = Duration<long long, Micro>;
+using Milliseconds  = Duration<long long, Milli>;
+using Seconds       = Duration<long long>;
+using Minutes       = Duration<int, Ratio<60>>;
+using Hours         = Duration<int, Ratio<3600>>;
+
+using Days          = Duration<int, RatioMultiply<Ratio<24>, Hours::Period>>;
+using Weeks         = Duration<int, RatioMultiply<Ratio<7>, Days::Period>>;
+using Years         = Duration<int, RatioMultiply<Ratio<146097, 400>, Days::Period>>;
+using Months        = Duration<int, RatioDivide<Years::Period, Ratio<12>>>;
 #pragma endregion Duration
 
 
@@ -314,13 +410,84 @@ public:
 #pragma endregion TimePoint
 
 
-#pragma region others
+#pragma region Clock
+// system clock
+struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
+{
+    using Rep       = long long;
+    using Period    = Ratio<1, 10'000'000>; // 100 nanoseconds
+    using Duration  = custom::chrono::Duration<Rep, Period>;
+    using TimePoint = custom::chrono::TimePoint<SystemClock>;
+
+    static constexpr bool IsSteady = false;
+
+    // TODO: check
+    // static TimePoint now() noexcept { // get current time
+    //     return TimePoint(Duration(_Xtime_get_ticks()));
+    // }
+
+    static std::time_t to_time_t(const TimePoint& time) noexcept { // convert to std::time_t
+        return duration_cast<Seconds>(time.time_since_epoch()).count();
+    }
+
+    static TimePoint from_time_t(std::time_t time) noexcept { // convert from std::time_t
+        return TimePoint{ Seconds{time} };
+    }
+};  // END SystemClock
+
+template<class _Duration>
+using SysTime       = TimePoint<SystemClock, _Duration>;
+using SysSeconds    = SysTime<Seconds>;
+using SysDays       = SysTime<Days>;
+
+
+// steady clock
+struct SteadyClock     // wraps QueryPerformanceCounter
+{
+    using Rep       = long long;
+    using Period    = Nano;
+    using Duration  = Nanoseconds;
+    using TimePoint = custom::chrono::TimePoint<SteadyClock>;
+
+    static constexpr bool IsSteady = true;
+
+    // static TimePoint now() noexcept {
+    //     const long long _Freq = 0;// _Query_perf_frequency(); // doesn't change after system boot
+    //     const long long _Ctr = 0;//_Query_perf_counter();
+    //     static_assert(Period::Num == 1, "This assumes period::num == 1.");
+    //     // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
+    //     // this specific frequency can double the performance of this function by
+    //     // avoiding the expensive frequency conversion path.
+    //     constexpr long long _TenMHz = 10'000'000;
+    //     if (_Freq == _TenMHz)
+    //     {
+    //         static_assert(Period::Den % _TenMHz == 0, "It should never fail.");
+    //         constexpr long long _Multiplier = Period::Den / _TenMHz;
+    //         return TimePoint(Duration(_Ctr * _Multiplier));
+    //     }
+    //     else
+    //     {
+    //         // Instead of just having "(_Ctr * period::den) / _Freq",
+    //         // the algorithm below prevents overflow when _Ctr is sufficiently large.
+    //         // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
+    //         // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
+    //         // but the initial value of _Ctr could be large.
+
+    //         const long long _Whole = (_Ctr / _Freq) * Period::Den;
+    //         const long long _Part = (_Ctr % _Freq) * Period::Den / _Freq;
+    //         return TimePoint(Duration(_Whole + _Part));
+    //     }
+    // }
+};  // END SteadyClock
+
+using HighResolutionClock = SteadyClock;    // TODO: check
+
 // is clock
 template<class Clock, class = void>
-constexpr bool _IsClock_v = false;
+constexpr bool IsClock_v = false;
 
 template<class Clock>
-constexpr bool _IsClock_v<Clock, Void_t<typename Clock::Rep,
+constexpr bool IsClock_v<Clock, Void_t< typename Clock::Rep,
                                         typename Clock::Period,
                                         typename Clock::Duration,
                                         typename Clock::TimePoint,
@@ -328,25 +495,8 @@ constexpr bool _IsClock_v<Clock, Void_t<typename Clock::Rep,
                                         decltype(Clock::now())>> = true;
 
 template<class Clock>
-struct IsClock : BoolConstant<_IsClock_v<Clock>> {};
-
-template<class Clock>
-constexpr bool IsClock_v = IsClock::Value;
-
-
-// time units
-using Nanoseconds   = Duration<long long, Nano>;
-using Microseconds  = Duration<long long, Micro>;
-using Milliseconds  = Duration<long long, Milli>;
-using Seconds       = Duration<long long>;
-using Minutes       = Duration<int, Ratio<60>>;
-using Hours         = Duration<int, Ratio<3600>>;
-
-using Days          = Duration<int, RatioMultiply<Ratio<24>, Hours::Period>>;
-using Weeks         = Duration<int, RatioMultiply<Ratio<7>, Days::Period>>;
-using Years         = Duration<int, RatioMultiply<Ratio<146097, 400>, Days::Period>>;
-using Months        = Duration<int, RatioDivide<Years::Period, Ratio<12>>>;
-#pragma endregion others
+struct IsClock : BoolConstant<IsClock_v<Clock>> {};
+#pragma endregion Clock
 
 CUSTOM_CHRONO_END
 
