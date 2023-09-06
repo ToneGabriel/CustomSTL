@@ -675,75 +675,75 @@ struct NumericLimits<wchar_t>
 
 
 // char8_t specialization
-template<>
-struct NumericLimits<char8_t>
-{
-    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
-    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+// template<>
+// struct NumericLimits<char8_t>
+// {
+//     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
+//     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-    static constexpr bool HasDenormLoss         = false;
-    static constexpr bool HasInfinity           = false;
-    static constexpr bool HasQuietNaN           = false;
-    static constexpr bool HasSignalingNaN       = false;
+//     static constexpr bool HasDenormLoss         = false;
+//     static constexpr bool HasInfinity           = false;
+//     static constexpr bool HasQuietNaN           = false;
+//     static constexpr bool HasSignalingNaN       = false;
 
-    static constexpr bool IsSpecialized         = true;
-    static constexpr bool IsSigned              = _CUSTOM_SIGNED(char8_t);
-    static constexpr bool IsInteger             = true;
-    static constexpr bool IsExact               = true;
-    static constexpr bool IsIEC559              = false;
-    static constexpr bool IsBounded             = true;
-    static constexpr bool IsModulo              = !IsSigned;
+//     static constexpr bool IsSpecialized         = true;
+//     static constexpr bool IsSigned              = _CUSTOM_SIGNED(char8_t);
+//     static constexpr bool IsInteger             = true;
+//     static constexpr bool IsExact               = true;
+//     static constexpr bool IsIEC559              = false;
+//     static constexpr bool IsBounded             = true;
+//     static constexpr bool IsModulo              = !IsSigned;
 
-    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
-    static constexpr bool TinynessBefore        = false;
+//     static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+//     static constexpr bool TinynessBefore        = false;
 
-    static constexpr int Digits                 = _CUSTOM_DIGITS(char8_t);
-    static constexpr int Digits10               = _CUSTOM_DIGITS10(char8_t);
-    static constexpr int MaxDigits10            = 0;
-    static constexpr int Radix                  = 2;
+//     static constexpr int Digits                 = _CUSTOM_DIGITS(char8_t);
+//     static constexpr int Digits10               = _CUSTOM_DIGITS10(char8_t);
+//     static constexpr int MaxDigits10            = 0;
+//     static constexpr int Radix                  = 2;
 
-    static constexpr int MinExponent            = 0;
-    static constexpr int MinExponent10          = 0;
-    static constexpr int MaxExponent            = 0;
-    static constexpr int MaxExponent10          = 0;
+//     static constexpr int MinExponent            = 0;
+//     static constexpr int MinExponent10          = 0;
+//     static constexpr int MaxExponent            = 0;
+//     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr char8_t min() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t min() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t max() noexcept {
-        return UCHAR_MAX;
-    }
+//     static constexpr char8_t max() noexcept {
+//         return UCHAR_MAX;
+//     }
 
-    static constexpr char8_t lowest() noexcept {
-        return min();
-    }
+//     static constexpr char8_t lowest() noexcept {
+//         return min();
+//     }
 
-    static constexpr char8_t epsilon() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t epsilon() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t round_error() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t round_error() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t infinity() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t infinity() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t quiet_NaN() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t quiet_NaN() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t signaling_NaN() noexcept {
-        return 0;
-    }
+//     static constexpr char8_t signaling_NaN() noexcept {
+//         return 0;
+//     }
 
-    static constexpr char8_t denorm_min() noexcept {
-        return 0;
-    }
-};  // END char8_t specialization
+//     static constexpr char8_t denorm_min() noexcept {
+//         return 0;
+//     }
+// };  // END char8_t specialization
 
 
 // char16_t specialization

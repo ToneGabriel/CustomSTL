@@ -370,19 +370,21 @@ void print_numeric_limits_functions() {
 }
 
 void chrono_test() {
-	std::chrono::nanoseconds a1(6);
-	std::chrono::nanoseconds b1(5);
-	std::cout << (a1 >= b1);
+	std::cout << std::chrono::system_clock::now().time_since_epoch().count() << '\n';
+	std::cout << custom::chrono::SystemClock::now().time_since_epoch().count() << '\n';
 
-	std::cout << "\n\n";
 
-	custom::chrono::Nanoseconds a(6);
-	custom::chrono::Seconds b(5);
-	std::cout << (a >= b);
+	// std::chrono::nanoseconds a1(6);
+	// std::chrono::nanoseconds b1(5);
+	// std::cout << (a1 >= b1);
+	// std::cout << "\n\n";
+	// custom::chrono::Nanoseconds a(6);
+	// custom::chrono::Seconds b(5);
+	// std::cout << (a >= b);
+
 
 	//std::chrono::milliseconds dur(2000000);
 	//std::cout << std::chrono::floor<std::chrono::seconds>(dur);
-
 	//custom::chrono::Microseconds dur1(2000000);
 	//std::cout << custom::chrono::floor<custom::chrono::Seconds>(dur1).count();	//TODO: need overload <<, <, >, ...
 }

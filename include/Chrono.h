@@ -5,6 +5,13 @@
 
 #include <ctime>    // std::time_t
 
+#if defined _WIN32
+#include <windows.h>    // for now()
+#define UNIX_EPOCH 116444736000000000LL
+#elif defined __linux__
+#include <sys/time.h>
+#endif      // _WIN32 and __linux__
+
 
 CUSTOM_BEGIN
 
@@ -407,6 +414,14 @@ public:
     }
 
 };  // END TimePoint
+
+// time point cast
+template<class ToDur, class Clock, class Duration, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
+constexpr TimePoint<Clock, ToDur> time_point_cast(const TimePoint<Clock, Duration>& time)
+noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+    // change the duration type of a TimePoint (truncate)
+    return TimePoint<Clock, ToDur>(custom::chrono::duration_cast<ToDur>(time.time_since_epoch()));
+}
 #pragma endregion TimePoint
 
 
@@ -415,23 +430,32 @@ public:
 struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
 {
     using Rep       = long long;
-    using Period    = Ratio<1, 10'000'000>; // 100 nanoseconds
+    using Period    = custom::Nano; // TODO: check change in _WIN32 Ratio<1, 10'000'000>; // 100 nanoseconds
     using Duration  = custom::chrono::Duration<Rep, Period>;
     using TimePoint = custom::chrono::TimePoint<SystemClock>;
 
     static constexpr bool IsSteady = false;
 
-    // TODO: check
-    // static TimePoint now() noexcept { // get current time
-    //     return TimePoint(Duration(_Xtime_get_ticks()));
-    // }
+    // TODO: check for _WIN32
+    static TimePoint now() noexcept { // get current time
+#if defined _WIN32
+        FILETIME ft;
+        GetSystemTimePreciseAsFileTime(&ft);
+        return TimePoint(Duration(((long long)ft.dwHighDateTime << 32) + ft.dwLowDateTime - UNIX_EPOCH));
+#elif defined __linux__
+        timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return TimePoint(Duration(Seconds(ts.tv_sec) + Nanoseconds(ts.tv_nsec)));
+#endif
+    }
 
     static std::time_t to_time_t(const TimePoint& time) noexcept { // convert to std::time_t
         return duration_cast<Seconds>(time.time_since_epoch()).count();
     }
 
+    // TODO: check
     static TimePoint from_time_t(std::time_t time) noexcept { // convert from std::time_t
-        return TimePoint{ Seconds{time} };
+        return TimePoint(Seconds(time));
     }
 };  // END SystemClock
 
