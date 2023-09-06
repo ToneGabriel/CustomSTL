@@ -29,12 +29,12 @@ struct DurationValues  // gets arithmetic properties of a type
         return Rep(0);
     }
 
-    static constexpr Rep min() noexcept { // get smallest value
+    static constexpr Rep (min)() noexcept { // get smallest value
         return NumericLimits<Rep>::lowest();
     }
 
-    static constexpr Rep max () noexcept { // get largest value
-        return NumericLimits<Rep>::max();
+    static constexpr Rep (max)() noexcept { // get largest value
+        return (NumericLimits<Rep>::max)();
     }
 };
 
@@ -218,12 +218,12 @@ public:
         return Duration(DurationValues<Rep>::zero());
     }
 
-    static constexpr Duration min() noexcept {
-        return Duration(DurationValues<Rep>::min());
+    static constexpr Duration (min)() noexcept {
+        return Duration((DurationValues<Rep>::min)());
     }
 
-    static constexpr Duration max() noexcept {
-        return Duration(DurationValues<Rep>::max());
+    static constexpr Duration (max)() noexcept {
+        return Duration((DurationValues<Rep>::max)());
     }
 };  // END Duration
 
@@ -405,12 +405,12 @@ public:
         return _dur;
     }
 
-    static constexpr TimePoint min() noexcept {
-        return TimePoint(Duration::min());
+    static constexpr TimePoint (min)() noexcept {
+        return TimePoint((Duration::min)());
     }
 
-    static constexpr TimePoint max() noexcept {
-        return TimePoint(Duration::max());
+    static constexpr TimePoint (max)() noexcept {
+        return TimePoint((Duration::max)());
     }
 
 };  // END TimePoint
@@ -436,7 +436,7 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
 
     static constexpr bool IsSteady = false;
 
-    // TODO: check for _WIN32
+    // TODO: check for _WIN32 (seems ok for MSVC, try again for GNUG)
     static TimePoint now() noexcept { // get current time
 #if defined _WIN32
         FILETIME ft;

@@ -210,12 +210,12 @@ constexpr RandomIt is_heap_until(RandomIt first, RandomIt last, Compare comp) {
 #pragma region Minimum/maximum operations
 // max
 template<class Type>
-constexpr const Type& max(const Type& a, const Type& b) {
+constexpr const Type& (max)(const Type& a, const Type& b) {
     return (a > b) ? a : b;
 }
 
 template<class Type, class Compare>
-constexpr const Type& max(const Type& a, const Type& b, Compare comp) {
+constexpr const Type& (max)(const Type& a, const Type& b, Compare comp) {
     return (comp(a, b)) ? a : b;
 }
 // END max

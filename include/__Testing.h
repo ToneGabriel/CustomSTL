@@ -358,8 +358,8 @@ void print_numeric_limits_statics() {
 
 template<class Type>
 void print_numeric_limits_functions() {
-	std::cout << std::numeric_limits<Type>::min()				<< ' ' << custom::NumericLimits<Type>::min() << '\n';
-	std::cout << std::numeric_limits<Type>::max()				<< ' ' << custom::NumericLimits<Type>::max() << '\n';
+	std::cout << (std::numeric_limits<Type>::min)()				<< ' ' << (custom::NumericLimits<Type>::min)() << '\n';
+	std::cout << (std::numeric_limits<Type>::max)()				<< ' ' << (custom::NumericLimits<Type>::max)() << '\n';
 	std::cout << std::numeric_limits<Type>::lowest()			<< ' ' << custom::NumericLimits<Type>::lowest() << '\n';
 	std::cout << std::numeric_limits<Type>::epsilon()			<< ' ' << custom::NumericLimits<Type>::epsilon() << '\n';
 	std::cout << std::numeric_limits<Type>::round_error()		<< ' ' << custom::NumericLimits<Type>::round_error() << '\n';
