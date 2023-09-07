@@ -7,7 +7,32 @@
 
 #if defined _WIN32
 #include <windows.h>    // for now()
+
 #define UNIX_EPOCH 116444736000000000LL
+
+long long _get_system_time_precise() noexcept {
+    FILETIME fileTime;
+    ULARGE_INTEGER theTime;
+    
+    GetSystemTimePreciseAsFileTime(&fileTime);
+    theTime.LowPart     = fileTime.dwLowDateTime;
+    theTime.HighPart    = fileTime.dwHighDateTime;
+
+    return theTime.QuadPart;
+}
+
+long long _query_performance_counter() noexcept {
+    LARGE_INTEGER itCount{};
+    QueryPerformanceCounter(&itCount);
+    return itCount.QuadPart;
+}
+
+long long _query_performance_frequency() noexcept {
+    LARGE_INTEGER itFreq{};
+    QueryPerformanceFrequency(&itFreq);
+    return itFreq.QuadPart;
+}
+
 #elif defined __linux__
 #include <sys/time.h>
 #endif      // _WIN32 and __linux__
@@ -430,23 +455,16 @@ noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur
 struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
 {
     using Rep       = long long;
-    using Period    = custom::Nano; // TODO: check change in _WIN32 Ratio<1, 10'000'000>; // 100 nanoseconds
+    using Period    = custom::Nano;
     using Duration  = custom::chrono::Nanoseconds;
     using TimePoint = custom::chrono::TimePoint<SystemClock>;
 
     static constexpr bool IsSteady = false;
 
-    // TODO: check for _WIN32 (seems ok for MSVC, try again for GNUG)
     static TimePoint now() noexcept { // get current time
 #if defined _WIN32
-        FILETIME fileTime;
-        ULARGE_INTEGER theTime;
-        
-        GetSystemTimePreciseAsFileTime(&fileTime);
-        theTime.LowPart     = fileTime.dwLowDateTime;
-        theTime.HighPart    = fileTime.dwHighDateTime;
-
-        return TimePoint(Duration((theTime.QuadPart - UNIX_EPOCH) * 100LL));    // 100 nanosec for GNUG, check MSVC
+        long long sysTime = _get_system_time_precise();
+        return TimePoint(Duration(sysTime - UNIX_EPOCH));
 #elif defined __linux__
         timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
@@ -489,7 +507,7 @@ struct SteadyClock     // wraps QueryPerformanceCounter
         // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
         // this specific frequency can double the performance of this function by
         // avoiding the expensive frequency conversion path.
-        constexpr long long tenMHz = 10000000;
+        constexpr long long tenMHz = 10000000LL;
         if (freq == tenMHz)
         {
             static_assert(Period::Den % tenMHz == 0, "It should never fail.");
@@ -514,22 +532,6 @@ struct SteadyClock     // wraps QueryPerformanceCounter
         return TimePoint(Duration(Seconds(ts.tv_sec) + Nanoseconds(ts.tv_nsec)));
 #endif
     }
-
-//private:
-    // Helpers
-
-    static long long _query_performance_counter() noexcept {
-	    LARGE_INTEGER itCount{};
-        QueryPerformanceCounter(&itCount);
-        return itCount.QuadPart;
-    }
-
-    static long long _query_performance_frequency() noexcept {
-	    LARGE_INTEGER itFreq{};
-        QueryPerformanceFrequency(&itFreq);
-        return itFreq.QuadPart;
-    }
-
 };  // END SteadyClock
 
 using HighResolutionClock = SystemClock;
