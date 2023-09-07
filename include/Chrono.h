@@ -431,7 +431,7 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
 {
     using Rep       = long long;
     using Period    = custom::Nano; // TODO: check change in _WIN32 Ratio<1, 10'000'000>; // 100 nanoseconds
-    using Duration  = custom::chrono::Duration<Rep, Period>;
+    using Duration  = custom::chrono::Nanoseconds;
     using TimePoint = custom::chrono::TimePoint<SystemClock>;
 
     static constexpr bool IsSteady = false;
@@ -439,9 +439,14 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
     // TODO: check for _WIN32 (seems ok for MSVC, try again for GNUG)
     static TimePoint now() noexcept { // get current time
 #if defined _WIN32
-        FILETIME ft;
-        GetSystemTimePreciseAsFileTime(&ft);
-        return TimePoint(Duration(((long long)ft.dwHighDateTime << 32) + ft.dwLowDateTime - UNIX_EPOCH));
+        FILETIME fileTime;
+        ULARGE_INTEGER theTime;
+        
+        GetSystemTimePreciseAsFileTime(&fileTime);
+        theTime.LowPart     = fileTime.dwLowDateTime;
+        theTime.HighPart    = fileTime.dwHighDateTime;
+
+        return TimePoint(Duration((theTime.QuadPart - UNIX_EPOCH) * 100LL));    // 100 nanosec for GNUG, check MSVC
 #elif defined __linux__
         timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
@@ -469,42 +474,65 @@ using SysDays       = SysTime<Days>;
 struct SteadyClock     // wraps QueryPerformanceCounter
 {
     using Rep       = long long;
-    using Period    = Nano;
-    using Duration  = Nanoseconds;
+    using Period    = custom::Nano;
+    using Duration  = custom::chrono::Nanoseconds;
     using TimePoint = custom::chrono::TimePoint<SteadyClock>;
 
     static constexpr bool IsSteady = true;
 
-    // static TimePoint now() noexcept {
-    //     const long long _Freq = 0;// _Query_perf_frequency(); // doesn't change after system boot
-    //     const long long _Ctr = 0;//_Query_perf_counter();
-    //     static_assert(Period::Num == 1, "This assumes period::num == 1.");
-    //     // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
-    //     // this specific frequency can double the performance of this function by
-    //     // avoiding the expensive frequency conversion path.
-    //     constexpr long long _TenMHz = 10'000'000;
-    //     if (_Freq == _TenMHz)
-    //     {
-    //         static_assert(Period::Den % _TenMHz == 0, "It should never fail.");
-    //         constexpr long long _Multiplier = Period::Den / _TenMHz;
-    //         return TimePoint(Duration(_Ctr * _Multiplier));
-    //     }
-    //     else
-    //     {
-    //         // Instead of just having "(_Ctr * period::den) / _Freq",
-    //         // the algorithm below prevents overflow when _Ctr is sufficiently large.
-    //         // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
-    //         // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
-    //         // but the initial value of _Ctr could be large.
+    static TimePoint now() noexcept {
+#if defined _WIN32
+        const long long freq    = _query_performance_frequency(); // doesn't change after system boot
+        const long long count   = _query_performance_counter();
 
-    //         const long long _Whole = (_Ctr / _Freq) * Period::Den;
-    //         const long long _Part = (_Ctr % _Freq) * Period::Den / _Freq;
-    //         return TimePoint(Duration(_Whole + _Part));
-    //     }
-    // }
+        static_assert(Period::Num == 1, "This assumes Period::Num == 1.");
+        // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
+        // this specific frequency can double the performance of this function by
+        // avoiding the expensive frequency conversion path.
+        constexpr long long tenMHz = 10000000;
+        if (freq == tenMHz)
+        {
+            static_assert(Period::Den % tenMHz == 0, "It should never fail.");
+            constexpr long long multiplier = Period::Den / tenMHz;
+            return TimePoint(Duration(count * multiplier));
+        }
+        else
+        {
+            // Instead of just having "(count * Period::Den) / freq",
+            // the algorithm below prevents overflow when count is sufficiently large.
+            // It assumes that freq * Period::Den does not overflow, which is currently true for nano period.
+            // It is not realistic for count to accumulate to large values from zero with this assumption,
+            // but the initial value of count could be large.
+
+            const long long whole   = (count / freq) * Period::Den;
+            const long long part    = (count % freq) * Period::Den / freq;
+            return TimePoint(Duration(whole + part));
+        }
+#elif defined __linux__
+        timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return TimePoint(Duration(Seconds(ts.tv_sec) + Nanoseconds(ts.tv_nsec)));
+#endif
+    }
+
+//private:
+    // Helpers
+
+    static long long _query_performance_counter() noexcept {
+	    LARGE_INTEGER itCount{};
+        QueryPerformanceCounter(&itCount);
+        return itCount.QuadPart;
+    }
+
+    static long long _query_performance_frequency() noexcept {
+	    LARGE_INTEGER itFreq{};
+        QueryPerformanceFrequency(&itFreq);
+        return itFreq.QuadPart;
+    }
+
 };  // END SteadyClock
 
-using HighResolutionClock = SteadyClock;    // TODO: check
+using HighResolutionClock = SystemClock;
 
 // is clock
 template<class Clock, class = void>
