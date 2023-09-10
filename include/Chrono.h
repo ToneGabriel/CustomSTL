@@ -45,6 +45,13 @@ CUSTOM_BEGIN
 
 CUSTOM_CHRONO_BEGIN
 
+template<class RepType, class PeriodRatio>
+class Duration;
+
+template<class ClockType, class DurationType>
+class TimePoint;
+
+
 #pragma region Duration
 // duration values
 template<class Rep>
@@ -72,7 +79,8 @@ template<class Type>
 constexpr bool IsDuration_v = IsSpecialization_v<Type, Duration>;
 
 template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
-constexpr ToDur duration_cast(const Duration<Rep, Period>&) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>);
+constexpr ToDur duration_cast(const Duration<Rep, Period>&)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>);
 
 
 template<class RepType, class PeriodRatio>
@@ -92,77 +100,77 @@ private:
 public:
     // Constructors
 
-    Duration() = default;
+    constexpr Duration() = default;
 
     template<class _Rep,
     EnableIf_t< IsConvertible_v<const _Rep&, Rep> && 
                 (IsFloatingPoint_v<Rep> || !IsFloatingPoint_v<_Rep>), bool> = true>
-    explicit Duration(const _Rep& val) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>)
+    constexpr explicit Duration(const _Rep& val) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>)
         : _rep(static_cast<Rep>(val)) { /*Empty*/ }
 
     template<class _Rep, class _Period,
     EnableIf_t< IsFloatingPoint_v<Rep> ||
                 (_RatioDivideSfinae<_Period, Period>::Den == 1 && !IsFloatingPoint_v<_Rep>), bool> = true>
-    Duration(const Duration<_Rep, _Period>& other) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>)
+    constexpr Duration(const Duration<_Rep, _Period>& other) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>)
         : _rep(custom::chrono::duration_cast<Duration>(other).count()) { /*Empty*/ }
 
 public:
     // Operators
 
-    Duration& operator=(const Duration& other) = default;
+    constexpr Duration& operator=(const Duration& other) = default;
 
-    CommonType_t<Duration> operator+() const noexcept(IsArithmetic_v<Rep>) {
+    constexpr CommonType_t<Duration> operator+() const noexcept(IsArithmetic_v<Rep>) {
         return CommonType_t<Duration>(*this);
     }
 
-    CommonType_t<Duration> operator-() const noexcept(IsArithmetic_v<Rep>) {
+    constexpr CommonType_t<Duration> operator-() const noexcept(IsArithmetic_v<Rep>) {
         return CommonType_t<Duration>(-_rep);
     }
 
-    Duration& operator++() noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration& operator++() noexcept(IsArithmetic_v<Rep>) {
         ++_rep;
         return *this;
     }
 
-    Duration operator++(int) noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration operator++(int) noexcept(IsArithmetic_v<Rep>) {
         return Duration(_rep++);
     }
 
-    Duration& operator--() noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration& operator--() noexcept(IsArithmetic_v<Rep>) {
         --_rep;
         return *this;
     }
 
-    Duration operator--(int) noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration operator--(int) noexcept(IsArithmetic_v<Rep>) {
         return Duration(_rep--);
     }
 
-    Duration& operator+=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
+    constexpr Duration& operator+=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
         _rep += other._rep;
         return *this;
     }
 
-    Duration& operator-=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
+    constexpr Duration& operator-=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
         _rep -= other._rep;
         return *this;
     }
 
-    Duration& operator*=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration& operator*=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
         _rep *= otherRep;
         return *this;
     }
 
-    Duration& operator/=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration& operator/=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
         _rep /= otherRep;
         return *this;
     }
 
-    Duration& operator%=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration& operator%=(const Rep& otherRep) noexcept(IsArithmetic_v<Rep>) {
         _rep %= otherRep;
         return *this;
     }
 
-    Duration& operator%=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
+    constexpr Duration& operator%=(const Duration& other) noexcept(IsArithmetic_v<Rep>) {     // need axact same duration
         _rep %= other._rep;
         return *this;
     }
@@ -170,72 +178,109 @@ public:
 public:
     // Operators (different durations)
 
-    template<class _Rep, class _Period>
-    constexpr CommonType_t<Duration, Duration<_Rep, _Period>> operator+(const Duration<_Rep, _Period>& other)
-    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+    template<class _Clock, class _Duration>     // Duration + TimePoint (return TP)
+    constexpr TimePoint<_Clock, CommonType_t<Duration, _Duration>>
+    operator+(const TimePoint<_Clock, _Duration>& time)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        using CDTime = TimePoint<_Clock, CommonType_t<_Duration, Duration>>;
+        return CDTime(*this + time.time_since_epoch());
+    }
 
+    template<class _Rep, class _Period>         // Duration + Duration
+    constexpr CommonType_t<Duration, chrono::Duration<_Rep, _Period>>
+    operator+(const chrono::Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(CD(*this).count() + CD(other).count());
     }
 
-    template<class _Rep, class _Period>
-    constexpr CommonType_t<Duration, Duration<_Rep, _Period>> operator-(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration - Duration
+    constexpr CommonType_t<Duration, chrono::Duration<_Rep, _Period>>
+    operator-(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
-
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(CD(*this).count() - CD(other).count());
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator==(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration / Duration
+    constexpr CommonType_t<Duration, chrono::Duration<_Rep, _Period>>
+    operator/(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
+        return CD(CD(*this).count() / CD(other).count());
+    }
 
+    template<class _Rep, class _Period>         // Duration % Duration
+    constexpr CommonType_t<Duration, chrono::Duration<_Rep, _Period>>
+    operator%(const chrono::Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep>&& IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
+        return CD(CD(*this).count() % CD(other).count());
+    }
+
+    template<class RightRep,
+    EnableIf_t<IsConvertible_v<const RightRep&, CommonType_t<Rep, RightRep>>, bool> = true>     // Duration / constant
+    constexpr typename chrono::Duration<CommonType_t<Rep, RightRep>, Period>
+    operator/(const RightRep& rep)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<RightRep>) {
+        using CRDur = chrono::Duration<CommonType_t<Rep, RightRep>, Period>;
+        return CRDur(CRDur(*this).count() / rep);
+    }
+
+    template<class RightRep,
+    EnableIf_t<IsConvertible_v<const RightRep&, CommonType_t<Rep, RightRep>>, bool> = true>     // Duration % constant
+    constexpr typename chrono::Duration<CommonType_t<Rep, RightRep>, Period>
+    operator%(const RightRep& rep)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<RightRep>) {
+        using CRDur = chrono::Duration<CommonType_t<Rep, RightRep>, Period>;
+        return CRDur(CRDur(*this).count() % rep);
+    }
+
+    template<class _Rep, class _Period>         // Duration == Duration
+    constexpr bool operator==(const chrono::Duration<_Rep, _Period>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(*this).count() == CD(other).count();
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator!=(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration != Duration
+    constexpr bool operator!=(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
         return !(*this == other);
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator<(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration < Duration
+    constexpr bool operator<(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
-
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(*this).count() < CD(other).count();
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator<=(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration <= Duration
+    constexpr bool operator<=(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
-
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(*this).count() <= CD(other).count();
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator>(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration > Duration
+    constexpr bool operator>(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
-
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(*this).count() > CD(other).count();
     }
 
-    template<class _Rep, class _Period>
-    constexpr bool operator>=(const Duration<_Rep, _Period>& other)
+    template<class _Rep, class _Period>         // Duration >= Duration
+    constexpr bool operator>=(const chrono::Duration<_Rep, _Period>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<_Rep>) {
-        using CD = CommonType_t<Duration, Duration<_Rep, _Period>>;
-
+        using CD = CommonType_t<Duration, chrono::Duration<_Rep, _Period>>;
         return CD(*this).count() >= CD(other).count();
     }
 
 public:
     // Main functions
 
-    Rep count() const noexcept(IsArithmetic_v<Rep>) {
+    constexpr Rep count() const noexcept(IsArithmetic_v<Rep>) {
         return _rep;
     }
 
@@ -255,23 +300,32 @@ public:
 // Duration binary operators
 template<class Rep, class Period, class RightRep,
 EnableIf_t<IsConvertible_v<const RightRep&, CommonType_t<Rep, RightRep>>, bool> = true>
-constexpr Duration<CommonType_t<Rep, RightRep>, Period> operator*(const Duration<Rep, Period>& duration, const RightRep& rep) 
+constexpr Duration<CommonType_t<Rep, RightRep>, Period>         // Duration * constant
+operator*(const Duration<Rep, Period>& duration, const RightRep& rep) 
 noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<RightRep>) {
-    using CRDur = Duration<CommonType_t<Rep, RightRep>, Period>;
-
+    using CRDur = chrono::Duration<CommonType_t<Rep, RightRep>, Period>;
     return CRDur(CRDur(duration).count() * rep);
 }
 
 template<class Rep, class Period, class LeftRep,
 EnableIf_t<IsConvertible_v<const LeftRep&, CommonType_t<Rep, LeftRep>>, bool> = true>
-constexpr Duration<CommonType_t<Rep, LeftRep>, Period> operator*(const LeftRep& rep, const Duration<Rep, Period>& duration)
+constexpr Duration<CommonType_t<Rep, LeftRep>, Period>         // constant * Duration
+operator*(const LeftRep& rep, const Duration<Rep, Period>& duration)
 noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<LeftRep>) {
     return duration * rep;
 }
 
+//template<class _Rep1, class _Period1, class _Rep2, class _Period2>
+//constexpr bool operator<(const Duration<_Rep1, _Period1>& _Left, const Duration<_Rep2, _Period2>& _Right)
+//noexcept(IsArithmetic_v<_Rep1> && IsArithmetic_v<_Rep2>) {
+//    using _CT = CommonType_t<Duration<_Rep1, _Period1>, Duration<_Rep2, _Period2>>;
+//    return _CT(_Left).count() < _CT(_Right).count();
+//}
+
 // duration cast impl
 template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, bool> /* = true (redefinition) */>
-constexpr ToDur duration_cast(const Duration<Rep, Period>& duration) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+constexpr ToDur duration_cast(const Duration<Rep, Period>& duration)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
     // convert duration to another duration (truncate)
 
     using ToDurRep  = typename ToDur::Rep;
@@ -295,11 +349,12 @@ constexpr ToDur duration_cast(const Duration<Rep, Period>& duration) noexcept(Is
     }
 }
 
-// floor
+// duration floor
 // convert duration to another duration; round towards negative infinity
 // i.e. the greatest integral result such that the result <= duration
 template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
-constexpr ToDur floor(const Duration<Rep, Period>& duration) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+constexpr ToDur floor(const Duration<Rep, Period>& duration)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
     const ToDur durationCasted = custom::chrono::duration_cast<ToDur>(duration);
 
     if (durationCasted > duration)
@@ -308,11 +363,12 @@ constexpr ToDur floor(const Duration<Rep, Period>& duration) noexcept(IsArithmet
     return durationCasted;
 }
 
-// ceil
+// duration ceil
 // convert duration to another duration; round towards positive infinity
 // i.e. the least integral result such that duration <= the result
 template<class ToDur, class Rep, class Period, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
-constexpr ToDur ceil(const Duration<Rep, Period>& duration) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+constexpr ToDur ceil(const Duration<Rep, Period>& duration)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
     const ToDur durationCasted = custom::chrono::duration_cast<ToDur>(duration);
 
     if (durationCasted < duration)
@@ -321,11 +377,12 @@ constexpr ToDur ceil(const Duration<Rep, Period>& duration) noexcept(IsArithmeti
     return durationCasted;
 }
 
-// round
+// duration round
 // convert duration to another duration, round to nearest, ties to even
 template<class ToDur, class Rep, class Period,
 EnableIf_t<IsDuration_v<ToDur> && !IsFloatingPoint_v<typename ToDur::Rep>, bool> = true>
-constexpr ToDur round(const Duration<Rep, Period>& duration) noexcept(IsArithmetic_v<Rep>&& IsArithmetic_v<typename ToDur::Rep>) {
+constexpr ToDur round(const Duration<Rep, Period>& duration)
+noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename ToDur::Rep>) {
     ToDur durationFloored   = custom::chrono::floor<ToDur>(duration);
     ToDur durationCeiled    = durationFloored + ToDur{ 1 };
     auto floorAdjustment    = duration - durationFloored;
@@ -338,7 +395,7 @@ constexpr ToDur round(const Duration<Rep, Period>& duration) noexcept(IsArithmet
     return durationCeiled;
 }
 
-// abs
+// duration abs
 // create a duration whose count() is the absolute value of duration.count()
 template<class Rep, class Period, EnableIf_t<NumericLimits<Rep>::IsSigned, bool> = true>
 constexpr Duration<Rep, Period> abs(const Duration<Rep, Period> duration) noexcept(IsArithmetic_v<Rep>) {
@@ -383,50 +440,113 @@ private:
 public:
     // Constructors
 
-    TimePoint() = default;
+    constexpr TimePoint() = default;
 
-    explicit TimePoint(const Duration& val) noexcept(IsArithmetic_v<Rep>)
+    constexpr explicit TimePoint(const Duration& val) noexcept(IsArithmetic_v<Rep>)
         : _dur(val) { /*Empty*/ }
 
     template<class _Duration, EnableIf_t<IsConvertible_v<_Duration, Duration>, bool> = true>
-    TimePoint(const TimePoint<Clock, _Duration>& other) noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename _Duration::Rep>)
+    constexpr TimePoint(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename _Duration::Rep>)
         : _dur(other.time_since_epoch()) { /*Empty*/ }
 
 public:
     // Operators
 
-    TimePoint& operator++() noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint& operator++() noexcept(IsArithmetic_v<Rep>) {
         ++_dur;
         return *this;
     }
 
-    TimePoint operator++(int) noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint operator++(int) noexcept(IsArithmetic_v<Rep>) {
         return TimePoint(_dur++);
     }
 
-    TimePoint& operator--() noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint& operator--() noexcept(IsArithmetic_v<Rep>) {
         --_dur;
         return *this;
     }
 
-    TimePoint operator--(int) noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint operator--(int) noexcept(IsArithmetic_v<Rep>) {
         return TimePoint(_dur--);
     }
 
-    TimePoint& operator+=(const Duration& otherDuration) noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint& operator+=(const Duration& otherDuration) noexcept(IsArithmetic_v<Rep>) {
         _dur += otherDuration;
         return *this;
     }
 
-    TimePoint& operator-=(const Duration& otherDuration) noexcept(IsArithmetic_v<Rep>) {
+    constexpr TimePoint& operator-=(const Duration& otherDuration) noexcept(IsArithmetic_v<Rep>) {
         _dur -= otherDuration;
         return *this;
     }
 
 public:
+    // Operators (different time points)
+
+    template<class _Rep, class _Period>     // TimePoint + Duration
+    constexpr TimePoint<Clock, CommonType_t<Duration, chrono::Duration<_Rep, _Period>>>
+    operator+(const chrono::Duration<_Rep, _Period>& duration)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<_Rep>) {
+        using CDTime = TimePoint<Clock, CommonType_t<Duration, chrono::Duration<_Rep, _Period>>>;
+        return CDTime(time_since_epoch() + duration);
+    }
+
+    template<class _Rep, class _Period>     // TimePoint - Duration
+    constexpr TimePoint<Clock, CommonType_t<Duration, chrono::Duration<_Rep, _Period>>>
+    operator-(const chrono::Duration<_Rep, _Period>& duration)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<_Rep>) {
+        using CDTime = TimePoint<Clock, CommonType_t<Duration, chrono::Duration<_Rep, _Period>>>;
+        return CDTime(time_since_epoch() - duration);
+    }
+
+    template<class _Duration>               // TimePoint - TimePoint (NO "+" between TP)
+    constexpr CommonType_t<Duration, _Duration>
+    operator-(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() - other.time_since_epoch();
+    }
+
+    template<class _Duration>               // TimePoint == TimePoint
+    constexpr bool operator==(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() == other.time_since_epoch();
+    }
+
+    template<class _Duration>               // TimePoint != TimePoint
+    constexpr bool operator!=(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return !(*this == other);
+    }
+
+    template<class _Duration>               // TimePoint < TimePoint
+    constexpr bool operator<(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() < other.time_since_epoch();
+    }
+
+    template<class _Duration>               // TimePoint <= TimePoint
+    constexpr bool operator<=(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() <= other.time_since_epoch();
+    }
+
+    template<class _Duration>               // TimePoint > TimePoint
+    constexpr bool operator>(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() > other.time_since_epoch();
+    }
+
+    template<class _Duration>               // TimePoint >= TimePoint
+    constexpr bool operator>=(const TimePoint<Clock, _Duration>& other)
+    noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename _Duration::Rep>) {
+        return time_since_epoch() >= other.time_since_epoch();
+    }
+
+public:
     // Main functions
 
-    Duration time_since_epoch() const noexcept(IsArithmetic_v<Rep>) {
+    constexpr Duration time_since_epoch() const noexcept(IsArithmetic_v<Rep>) {
         return _dur;
     }
 
@@ -440,12 +560,38 @@ public:
 
 };  // END TimePoint
 
+
 // time point cast
+// change the duration type of a TimePoint (truncate)
 template<class ToDur, class Clock, class Duration, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
 constexpr TimePoint<Clock, ToDur> time_point_cast(const TimePoint<Clock, Duration>& time)
 noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur::Rep>) {
-    // change the duration type of a TimePoint (truncate)
     return TimePoint<Clock, ToDur>(custom::chrono::duration_cast<ToDur>(time.time_since_epoch()));
+}
+
+// time point floor
+// change the duration type of a TimePoint; round towards negative infinity
+template<class ToDur, class Clock, class Duration, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
+constexpr TimePoint<Clock, ToDur> floor(const TimePoint<Clock, Duration>& time)
+noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+    return TimePoint<Clock, ToDur>(custom::chrono::floor<ToDur>(time.time_since_epoch()));  // use Duration floor
+}
+
+// time point ceil
+// change the duration type of a TimePoint; round towards positive infinity
+template<class ToDur, class Clock, class Duration, EnableIf_t<IsDuration_v<ToDur>, bool> = true>
+constexpr TimePoint<Clock, ToDur> ceil(const TimePoint<Clock, Duration>& time) noexcept(
+    IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+    return TimePoint<Clock, ToDur>(custom::chrono::ceil<ToDur>(time.time_since_epoch()));   // use Duration ceil
+}
+
+// time point round
+// change the duration type of a TimePoint; round to nearest, ties to even
+template<class ToDur, class Clock, class Duration,
+EnableIf_t<IsDuration_v<ToDur> && !IsFloatingPoint_v<typename ToDur::Rep>, bool> = true>
+constexpr TimePoint<Clock, ToDur> round(const TimePoint<Clock, Duration>& time)
+noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur::Rep>) {
+    return TimePoint<Clock, ToDur>(custom::chrono::round<ToDur>(time.time_since_epoch()));  // use Duration round
 }
 #pragma endregion TimePoint
 
@@ -481,11 +627,6 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
         return TimePoint(Seconds(time));
     }
 };  // END SystemClock
-
-template<class _Duration>
-using SysTime       = TimePoint<SystemClock, _Duration>;
-using SysSeconds    = SysTime<Seconds>;
-using SysDays       = SysTime<Days>;
 
 
 // steady clock
@@ -534,7 +675,13 @@ struct SteadyClock     // wraps QueryPerformanceCounter
     }
 };  // END SteadyClock
 
+
 using HighResolutionClock = SystemClock;
+
+template<class _Duration>
+using SysTime       = TimePoint<SystemClock, _Duration>;
+using SysSeconds    = SysTime<Seconds>;
+using SysDays       = SysTime<Days>;
 
 // is clock
 template<class Clock, class = void>

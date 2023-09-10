@@ -370,9 +370,17 @@ void print_numeric_limits_functions() {
 }
 
 void chrono_test() {
-	std::cout << std::chrono::system_clock::now().time_since_epoch().count() << '\n';
-	std::cout << custom::chrono::SystemClock::now().time_since_epoch().count() << '\n';
+	using namespace std::chrono;
+	using namespace custom::chrono;
 
+	//std::cout << system_clock::now().time_since_epoch().count() << '\n';
+	//std::cout << SystemClock::now().time_since_epoch().count() << '\n';
+
+	nanoseconds ns(10);
+	std::cout << ceil<microseconds>(ns).count() << '\n';
+
+	Nanoseconds ns1(10);
+	std::cout << ceil<Microseconds>(ns1).count() << '\n';
 
 	// std::chrono::nanoseconds a1(6);
 	// std::chrono::nanoseconds b1(5);
