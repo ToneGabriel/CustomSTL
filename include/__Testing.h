@@ -372,29 +372,17 @@ void print_numeric_limits_functions() {
 void chrono_test() {
 	using namespace std::chrono;
 	using namespace custom::chrono;
+	using namespace std::chrono_literals;
 
-	//std::cout << system_clock::now().time_since_epoch().count() << '\n';
-	//std::cout << SystemClock::now().time_since_epoch().count() << '\n';
+	microseconds ms(100000);
+	time_point<system_clock, microseconds> absoluteTime(ms);
 
-	nanoseconds ns(10);
-	std::cout << ceil<microseconds>(ns).count() << '\n';
+	auto _seconds        = time_point_cast<seconds>(absoluteTime);
+	auto _nanoseconds    = duration_cast<nanoseconds>(absoluteTime - _seconds);
 
-	Nanoseconds ns1(10);
-	std::cout << ceil<Microseconds>(ns1).count() << '\n';
-
-	// std::chrono::nanoseconds a1(6);
-	// std::chrono::nanoseconds b1(5);
-	// std::cout << (a1 >= b1);
-	// std::cout << "\n\n";
-	// custom::chrono::Nanoseconds a(6);
-	// custom::chrono::Seconds b(5);
-	// std::cout << (a >= b);
-
-
-	//std::chrono::milliseconds dur(2000000);
-	//std::cout << std::chrono::floor<std::chrono::seconds>(dur);
-	//custom::chrono::Microseconds dur1(2000000);
-	//std::cout << custom::chrono::floor<custom::chrono::Seconds>(dur1).count();	//TODO: need overload <<, <, >, ...
+	std::cout << absoluteTime.time_since_epoch().count() << '\n';
+	std::cout << _seconds.time_since_epoch().count() << '\n';
+	std::cout << _nanoseconds.count() << '\n';
 }
 
 TEST_END
