@@ -1,7 +1,5 @@
-0. Check lock functions on Mutex
+0. Refactor Testing Environment
 1. Check and implement
-- ratio
-- chrono
 - algorithm
 - numeric
 - iterator

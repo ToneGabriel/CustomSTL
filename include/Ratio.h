@@ -17,7 +17,7 @@ constexpr intmax_t _sign(const intmax_t val) noexcept {
 
 constexpr intmax_t _gcd(intmax_t first, intmax_t second) noexcept {  // computes GCD of abs(first) and abs(second)
     if (first == 0 && second == 0)
-        return 1; // contrary to mathematical convention; avoids division by 0 in ratio_less
+        return 1; // contrary to mathematical convention; avoids division by 0 in RatioLess
 
     first   = _abs(first);
     second  = _abs(second);
@@ -39,6 +39,40 @@ constexpr intmax_t _safe_add(const intmax_t first, const intmax_t second) noexce
         _safe_add_integer_arithmetic_overflow_error();
 
     return first + second;
+}
+
+struct _BigUint128
+{
+    uint64_t Upper;
+    uint64_t Lower;
+
+    constexpr bool operator<(const _BigUint128 other) const noexcept {
+        if (Upper != other.Upper)
+            return Upper < other.Upper;
+
+        return Lower < other.Lower;
+    }
+};
+
+// multiply two 64-bit integers into a 128-bit integer, Knuth's algorithm M
+constexpr _BigUint128 _big_multiply(const uint64_t left, const uint64_t right) noexcept {
+    const uint64_t leftLow      = left & 0xFFFF'FFFFULL;
+    const uint64_t leftHigh     = left >> 32;
+    const uint64_t rightLow     = right & 0xFFFF'FFFFULL;
+    const uint64_t rightHigh    = right >> 32;
+
+    uint64_t aux                = leftLow * rightLow;
+    uint64_t carry              = aux >> 32;
+    const uint64_t lower32      = aux & 0xFFFF'FFFFULL;
+
+    aux                         = leftLow * rightHigh + carry;
+    const uint64_t midLower     = aux & 0xFFFF'FFFFULL;
+    const uint64_t midUpper     = aux >> 32;
+
+    aux                         = leftHigh * rightLow + midLower;
+    carry                       = aux >> 32;
+
+    return { leftHigh * rightHigh + midUpper + carry, (aux << 32) + lower32 };
 }
 
 // ratio
@@ -173,11 +207,59 @@ struct RatioNotEqual : BoolConstant<!RatioEqual_v<Rat1, Rat2>>
 template<class Rat1, class Rat2>
 constexpr bool RatioNotEqual_v = RatioNotEqual<Rat1, Rat2>::Value;
 
-// TODO: here
 // ratio less
+constexpr bool _ratio_less( const int64_t num1, const int64_t den1,
+                            const int64_t num2, const int64_t den2) noexcept {
+                                
+    if (num1 >= 0 && num2 >= 0)
+        return  _big_multiply(static_cast<uint64_t>(num1), static_cast<uint64_t>(den2)) <
+                _big_multiply(static_cast<uint64_t>(num2), static_cast<uint64_t>(den1));
+
+    if (num1 < 0 && num2 < 0)
+        return  _big_multiply(static_cast<uint64_t>(-num2), static_cast<uint64_t>(den1)) <
+                _big_multiply(static_cast<uint64_t>(-num1), static_cast<uint64_t>(den2));
+
+    return num1 < num2;
+}
+
+template<class Rat1, class Rat2>
+struct RatioLess : BoolConstant<_ratio_less(Rat1::Num, Rat1::Den, Rat2::Num, Rat2::Den)>
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioLess<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioLess_v = RatioLess<Rat1, Rat2>::Value;
+
 // ratio less equal
+template<class Rat1, class Rat2>
+struct RatioLessEqual : BoolConstant<!RatioLess_v<Rat2, Rat1>>
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioLessEqual<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioLessEqual_v = RatioLessEqual<Rat1, Rat2>::Value;
+
 // ratio greater
+template<class Rat1, class Rat2>
+struct RatioGreater : RatioLess<Rat2, Rat1>::Type
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioGreater<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioGreater_v = RatioGreater<Rat1, Rat2>::Value;
+
 // ratio greater equal
+template<class Rat1, class Rat2>
+struct RatioGreaterEqual : BoolConstant<!RatioLess_v<Rat1, Rat2>>
+{
+    static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioGreaterEqual<R1, R2> requires R1 and R2 to be ratios.");
+};
+
+template<class Rat1, class Rat2>
+constexpr bool RatioGreaterEqual_v = RatioGreaterEqual<Rat1, Rat2>::Value;
 
 
 // constant ratios

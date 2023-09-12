@@ -4,17 +4,15 @@
 #include "Utility.h"
 #include "Tuple.h"
 #include "Memory.h"
+#include "Chrono.h"
 
 #include <pthread.h>
-#include <chrono>
-
 
 #if defined _WIN32
 #include <windows.h>    // for hardware_concurrency()
 #elif defined __linux__
 #include <sys/sysinfo.h>
 #endif      // _WIN32 and __linux__
-
 
 CUSTOM_BEGIN
 
@@ -168,12 +166,14 @@ namespace this_thread   // TODO: check
     }
 
     template<class Rep, class Period>
-    void sleep_for(const std::chrono::duration<Rep, Period>& relativetime) {
-        if (relativetime <= relativetime.zero())
+    void sleep_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+        if (relativeTime <= relativeTime.zero())
 	        return;
 
-        auto seconds        = std::chrono::duration_cast<std::chrono::seconds>(relativetime);
-	    auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(relativetime - seconds);
+        // if relativeTime duration cast to seconds is 0, then nanoseconds duration will be representative
+        // else if relativeTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
+        auto seconds        = custom::chrono::duration_cast<custom::chrono::Seconds>(relativeTime);
+	    auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(relativeTime - seconds);
         struct timespec ts  =   {
                                     static_cast<std::time_t>(seconds.count()),
                                     static_cast<long>(nanoseconds.count())
@@ -191,7 +191,7 @@ namespace this_thread   // TODO: check
     }
 
     template<class Clock, class Duration>
-    void sleep_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
+    void sleep_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
         auto now = Clock::now();
 
         while (now < absoluteTime)

@@ -17,8 +17,3 @@
 #include <chrono>
 #include <algorithm>
 #include <numeric>
-
-#include <thread>
-#include <mutex>
-#include <semaphore>
-#include <barrier>

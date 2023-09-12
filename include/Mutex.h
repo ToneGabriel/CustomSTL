@@ -1,10 +1,7 @@
 #pragma once
 
 #if defined __GNUG__
-#include "Utility.h"
 #include "Thread.h"
-#include "Chrono.h"
-
 
 CUSTOM_BEGIN
 
@@ -256,6 +253,8 @@ public:
     explicit LockGuard(MutexType& mtx) : _mutex(mtx) {
         _mutex.lock();
     }
+
+    LockGuard(MutexType& mtx, AdoptLock_t) : _mutex(mtx) { /*Empty*/ } // construct but don't lock
 
     ~LockGuard() {
         _mutex.unlock();

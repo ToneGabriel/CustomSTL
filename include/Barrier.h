@@ -1,7 +1,6 @@
 #pragma once
 
 #if defined __GNUG__
-#include "Utility.h"
 #include "Thread.h"
 
 CUSTOM_BEGIN

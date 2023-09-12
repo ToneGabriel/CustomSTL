@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined __GNUG__
-#include "Utility.h"
+#include "Thread.h"
 
 #include <semaphore.h>
 
@@ -50,9 +50,9 @@ public:
     }
 
     template<class Clock, class Duration>
-    bool try_acquire_until(const std::chrono::time_point<Clock, Duration>& absoluteTime) {
-        auto seconds        = std::chrono::time_point_cast<std::chrono::seconds>(absoluteTime);
-	    auto nanoseconds    = std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - seconds);
+    bool try_acquire_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+        auto seconds        = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
+	    auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - seconds);
         struct timespec ts  =   {
                                     static_cast<std::time_t>(seconds.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
@@ -62,9 +62,9 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_acquire_for(const std::chrono::duration<Rep, Period>& relativeTime) {
-        return try_acquire_until(   std::chrono::steady_clock::now() + 
-                                    std::chrono::ceil<typename std::chrono::steady_clock::duration>(relativeTime));
+    bool try_acquire_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+        return try_acquire_until(   custom::chrono::SteadyClock::now() + 
+                                    custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
     }   // TODO: check
 }; // END CountingSemaphore
 
