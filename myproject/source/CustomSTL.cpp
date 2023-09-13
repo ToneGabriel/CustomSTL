@@ -1,5 +1,5 @@
-#include "../include/Testing/__Testing.h"
-#include "../include/Testing/__TestingThread.h"
+#include "../../testing/include/TestingCommon.h"
+#include "../../testing/include/TestingThread.h"
 
 int main()
 {

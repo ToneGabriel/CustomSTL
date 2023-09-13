@@ -1,9 +1,60 @@
-#pragma once
-
-#include "__xTesting.h"
+#include "../include/TestingCommon.h"
 
 
 TEST_BEGIN
+
+Test::Test() {
+	std::cout << "Default Construct\n";
+}
+
+Test::Test(int x) {
+	value = x;
+	std::cout << "Custom Construct " << value << '\n';
+}
+
+Test::Test(const Test& other) {
+	value = other.value;
+	std::cout << "Copy Construct " << value << '\n';
+}
+
+Test::Test(Test&& other) noexcept {
+	value = custom::move(other.value);
+	std::cout << "Move Construct " << value << '\n';
+}
+
+Test::~Test() {
+	std::cout << "Destruct " << value << '\n';
+}
+
+Test& Test::operator=(const Test& other) {
+	value = other.value;
+	std::cout << "Copy Assign " << value << '\n';
+	return *this;
+}
+
+Test& Test::operator=(Test&& other) noexcept {
+	value = custom::move(other.value);
+	std::cout << "Move Assign " << value << '\n';
+	return *this;
+}
+
+bool Test::operator==(const Test& other) const {
+	return value == other.value;
+}
+
+bool Test::operator!=(const Test& other) const {
+	return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& os, const Test& test) {
+	os << "Test val = " << test.value;
+	return os;
+}
+
+int Test::test_function(int x) {
+	return x;
+}
+
 
 template<typename T, T... ints>
 void print_sequence(custom::IntegerSequence<T, ints...> int_seq)
