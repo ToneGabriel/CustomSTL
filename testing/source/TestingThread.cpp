@@ -4,7 +4,7 @@
 
 TEST_BEGIN
 
-THREAD_HELP_BEGIN   // helpers for thread test functions (not intended for external use)
+TEST_HELP_BEGIN   // helpers for thread test functions (not intended for external use)
 
 std::string Employee::output() const
 {
@@ -55,19 +55,19 @@ void assign_lunch_partner(Employee &e1, Employee &e2)
     send_mail(e2, e1);
 }
 
-THREAD_HELP_END
+TEST_HELP_END
 
 
 // actual thread test functions
 void lock_locks_test() {
-    thread_help::Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
+    test_help::Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
  
     // assign in parallel threads because mailing users about lunch assignments takes a long time
     custom::Vector<custom::Thread> threads;
-    threads.emplace_back(thread_help::assign_lunch_partner, custom::ref(alice), custom::ref(bob));
-    threads.emplace_back(thread_help::assign_lunch_partner, custom::ref(christina), custom::ref(bob));
-    threads.emplace_back(thread_help::assign_lunch_partner, custom::ref(christina), custom::ref(alice));
-    threads.emplace_back(thread_help::assign_lunch_partner, custom::ref(dave), custom::ref(bob));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(alice), custom::ref(bob));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(christina), custom::ref(bob));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(christina), custom::ref(alice));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(dave), custom::ref(bob));
  
     for (auto &thread : threads) thread.join();
         std::cout   << alice.output() << '\n'

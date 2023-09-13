@@ -8,10 +8,7 @@
 
 TEST_BEGIN
 
-#define THREAD_HELP_BEGIN namespace thread_help {
-#define THREAD_HELP_END }
-
-THREAD_HELP_BEGIN   // helpers for thread test functions (not intended for external use)
+TEST_HELP_BEGIN   // helpers for thread test functions (not intended for external use)
 
 struct Employee
 {
@@ -27,7 +24,7 @@ struct Employee
 void send_mail(Employee &, Employee &);
 void assign_lunch_partner(Employee &e1, Employee &e2);
 
-THREAD_HELP_END
+TEST_HELP_END
 
 void lock_locks_test();
 void thread_test();

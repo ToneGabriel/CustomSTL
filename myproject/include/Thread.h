@@ -161,7 +161,7 @@ namespace this_thread   // TODO: check
 {
     Thread::ID get_id() noexcept;
 
-    void yield() noexcept {
+    inline void yield() noexcept {
         sched_yield();
     }
 
@@ -236,11 +236,11 @@ private:
 
 
 // other definitions
-Thread::ID Thread::get_id() const noexcept {
+inline Thread::ID Thread::get_id() const noexcept {
     return _thread;             // calls private constructor of Thread::ID
 }
 
-Thread::ID this_thread::get_id() noexcept {
+inline Thread::ID this_thread::get_id() noexcept {
     return pthread_self();      // calls private constructor of Thread::ID
 }
 
