@@ -1,9 +1,9 @@
 #pragma once
 
+#if defined __GNUG__    // thread tests available only on __GNUG__
 #include "__CTMThreadInclude.h"
 #include "__STDThreadInclude.h"
 #include "TestingCommon.h"
-
 
 
 TEST_BEGIN
@@ -11,7 +11,7 @@ TEST_BEGIN
 #define THREAD_HELP_BEGIN namespace thread_help {
 #define THREAD_HELP_END }
 
-THREAD_HELP_BEGIN
+THREAD_HELP_BEGIN   // helpers for thread test functions (not intended for external use)
 
 struct Employee
 {
@@ -33,3 +33,5 @@ void lock_locks_test();
 void thread_test();
 
 TEST_END
+
+#endif	// __GNUG__ for thread tests

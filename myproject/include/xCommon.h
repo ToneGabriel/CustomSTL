@@ -11,10 +11,9 @@
 #define STD_BEGIN namespace std {
 #define STD_END }
 
-#define CUSTOM_ASSERT(Expr, Msg) \
-            __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
+#define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
-void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
+inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
     {
         std::cerr   << "Assert failed:\t"   << msg      << "\n"

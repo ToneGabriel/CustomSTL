@@ -757,8 +757,6 @@ private:
 	}
 
 	void _swap_parents(Node* first, Node* second) {
-		Node* aux;
-
 		// check head first
 		if (first->_Parent != _data._Head)
 			if (first == first->_Parent->_Left)
@@ -781,8 +779,6 @@ private:
 	}
 
 	void _swap_children(Node* first, Node* second) {
-		Node* aux;
-
 		// left child
 		custom::swap(first->_Left, second->_Left);
 

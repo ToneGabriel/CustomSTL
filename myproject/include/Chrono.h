@@ -10,7 +10,7 @@
 
 #define UNIX_EPOCH 116444736000000000LL
 
-long long _get_system_time_precise() noexcept {
+inline long long _get_system_time_precise() noexcept {
     FILETIME fileTime;
     ULARGE_INTEGER theTime;
     
@@ -21,13 +21,13 @@ long long _get_system_time_precise() noexcept {
     return theTime.QuadPart;
 }
 
-long long _query_performance_counter() noexcept {
+inline long long _query_performance_counter() noexcept {
     LARGE_INTEGER itCount{};
     QueryPerformanceCounter(&itCount);
     return itCount.QuadPart;
 }
 
-long long _query_performance_frequency() noexcept {
+inline long long _query_performance_frequency() noexcept {
     LARGE_INTEGER itFreq{};
     QueryPerformanceFrequency(&itFreq);
     return itFreq.QuadPart;
