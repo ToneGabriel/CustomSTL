@@ -202,12 +202,12 @@ public:
 public:
 	// Operators
 
-	constexpr const ValueType& operator[](const size_t& index) const noexcept {	// Acces object at index (read only)
+	constexpr ConstReference operator[](const size_t& index) const noexcept {	// Acces object at index (read only)
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
 
-	constexpr ValueType& operator[](const size_t& index) noexcept {				// Acces object at index
+	constexpr Reference operator[](const size_t& index) noexcept {				// Acces object at index
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
@@ -226,22 +226,22 @@ public:
     //     _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
     // }
 
-    constexpr ValueType& front() noexcept {									// Get the value of the first component
+    constexpr Reference front() noexcept {									// Get the value of the first component
 		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[0];
 	}
 
-	constexpr const ValueType& front() const noexcept {
+	constexpr ConstReference front() const noexcept {
 		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[0];
 	}
 
-	constexpr ValueType& back() noexcept {									// Get the value of the last component
+	constexpr Reference back() noexcept {									// Get the value of the last component
 		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[Size - 1];
 	}
 
-	constexpr const ValueType& back() const noexcept {
+	constexpr ConstReference back() const noexcept {
 		CUSTOM_ASSERT(Size > 0, "Container is empty...");
 		return _array[Size - 1];
 	}
@@ -258,25 +258,25 @@ public:
 		return Size == 0;
 	}
 
-	constexpr const ValueType& at(const size_t& index) const {			// Acces object at index with check (read only)
+	constexpr ConstReference at(const size_t& index) const {			// Acces object at index with check (read only)
 		if (index >= Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
 	}
 
-	constexpr ValueType& at(const size_t& index) {						// Acces object at index with check
+	constexpr Reference at(const size_t& index) {						// Acces object at index with check
 		if (index >= Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
 	}
 
-	constexpr ValueType* data() noexcept {
+	constexpr Pointer data() noexcept {
 		return _array;
 	}
 
-	constexpr const ValueType* data() const noexcept {
+	constexpr ConstPointer data() const noexcept {
 		return _array;
 	}
 
@@ -319,9 +319,7 @@ public:
 // Array binary operators
 template<class Ty, size_t Size>
 constexpr bool operator==(const Array<Ty, Size>& left, const Array<Ty, Size>& right) {
-	return false;
-	// TODO: implement
-    //return _STD equal(left.begin(), left.end(), right.begin());
+    return custom::equal(left.begin(), left.end(), right.begin());
 }
 
 template<class Ty, size_t Size>
@@ -344,17 +342,17 @@ Array(First, Rest...) -> Array<typename _AssertSame<First, Rest...>::Type, 1 + s
 
 // to array
 template<class Ty, size_t Size, size_t... Idx>
-constexpr Array<RemoveCV_t<Ty>, Size> _to_array_copy_impl(Ty(&builtInArray)[Size], IndexSequence<Idx...>) {
+constexpr Array<RemoveCV_t<Ty>, Size> _to_array_copy_impl(Ty (&builtInArray)[Size], IndexSequence<Idx...>) {
 	return { builtInArray[Idx]... };
 }
 
 template<class Ty, size_t Size, size_t... Idx>
-constexpr Array<RemoveCV_t<Ty>, Size> _to_array_move_impl(Ty(&&builtInArray)[Size], IndexSequence<Idx...>) {
+constexpr Array<RemoveCV_t<Ty>, Size> _to_array_move_impl(Ty (&&builtInArray)[Size], IndexSequence<Idx...>) {
 	return { custom::move(builtInArray[Idx])... };
 }
 
 template<class Ty, size_t Size>
-constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty(&builtInArray)[Size]) {
+constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty (&builtInArray)[Size]) {
 	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
 	static_assert(IsCopyConstructible_v<Ty>, "to_array requires copy constructible elements...");
 
@@ -362,7 +360,7 @@ constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty(&builtInArray)[Size]) {
 }
 
 template<class Ty, size_t Size>
-constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty(&&builtInArray)[Size]) {
+constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty (&&builtInArray)[Size]) {
 	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
 	static_assert(IsMoveConstructible_v<Ty>, "to_array requires move constructible elements...");
 

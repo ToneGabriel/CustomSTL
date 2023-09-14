@@ -69,6 +69,9 @@ public:
 	static_assert(!IsReference_v<Type>, "The C++ Standard forbids allocators for reference elements ");
 
 public:
+	using ValueType = Type;
+
+public:
 	// Constructors & Operators
 
 	Allocator() noexcept = default;

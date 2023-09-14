@@ -783,4 +783,10 @@ struct _CommonType3<Void_t<CommonType_t<Ty1, Ty2>>, Ty1, Ty2, _Rest...> : Common
 template<class Ty1, class Ty2, class... _Rest>
 struct CommonType<Ty1, Ty2, _Rest...> : _CommonType3<void, Ty1, Ty2, _Rest...> {}; // 3+ types
 
+template<class Ty>
+Ty _fake_copy_init(Ty) noexcept;
+// _fake_copy_init<T>(E):
+// (1) has type T [Decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 CUSTOM_END
