@@ -1,6 +1,6 @@
 # CustomSTL
 
-Actual code is found in "include" folder.
+Actual code is found in "myproject/include" folder.
 
 Code build requirements:
 
@@ -15,4 +15,3 @@ Components not fully operational:
 - Memory.h
 - Algorithm.h
 - Numeric.h
-- Iterator.h

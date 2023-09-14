@@ -1,5 +1,6 @@
 #pragma once
 
+#pragma region Common tests
 #include "__CTMCommonInclude.h"
 #include "__STDCommonInclude.h"
 
@@ -10,6 +11,8 @@ TEST_BEGIN
 
 #define TEST_HELP_BEGIN namespace test_help {
 #define TEST_HELP_END }
+
+TEST_HELP_BEGIN   // helpers (not intended for external use)
 
 class Test      // basic test class
 {
@@ -38,6 +41,7 @@ public:
 	int test_function(int x);
 };  // END Test
 
+TEST_HELP_END
 
 void print_sequence_test();
 void piecewise_pair_test();
@@ -57,7 +61,6 @@ void function_test();
 void invoke_test();
 void memory_test();
 void chrono_test();
-
 
 template<typename T, T... ints>
 void print_sequence(custom::IntegerSequence<T, ints...> int_seq)
@@ -108,3 +111,50 @@ void print_numeric_limits_functions() {
 }
 
 TEST_END
+#pragma endregion Common tests
+
+
+#pragma region Thread tests
+#if defined __GNUG__    // thread tests available only on __GNUG__
+#include "__CTMThreadInclude.h"
+#include "__STDThreadInclude.h"
+
+TEST_BEGIN
+
+TEST_HELP_BEGIN		// helpers (not intended for external use)
+
+struct Employee
+{
+    std::string _ID;
+    custom::Vector<std::string> _LunchPartners;
+    custom::Mutex _Mutex;
+    
+    Employee(std::string id) : _ID(id) { /*Empty*/ }
+
+    std::string output() const;
+};  // END Employee
+
+
+void send_mail(Employee &, Employee &);
+void assign_lunch_partner(Employee &e1, Employee &e2);
+
+TEST_HELP_END
+
+void lock_locks_test();
+void thread_test();
+
+TEST_END
+#endif
+#pragma endregion Thread tests
+
+
+
+STD_BEGIN
+template<>
+struct less<test::test_help::Test>
+{
+	bool operator()(const test::test_help::Test& left, const test::test_help::Test& right) const {
+		return left.value < right.value;
+	}
+};
+STD_END

@@ -1,7 +1,9 @@
-#include "../include/TestingCommon.h"
+#include "../include/Testing.h"
 
-
+#pragma region Common tests
 TEST_BEGIN
+
+TEST_HELP_BEGIN		// helpers (not intended for external use)
 
 Test::Test() {
 	std::cout << "Default Construct\n";
@@ -55,6 +57,8 @@ int Test::test_function(int x) {
 	return x;
 }
 
+TEST_HELP_END
+
 
 void print_sequence_test() {
 	print_sequence(custom::IntegerSequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
@@ -64,7 +68,7 @@ void print_sequence_test() {
 }
 
 void piecewise_pair_test() {
-	 custom::Pair<int, Test> p(
+	 custom::Pair<int, test_help::Test> p(
 		 custom::PiecewiseConstruct,
 		 custom::forward_as_tuple(3),
 		 custom::forward_as_tuple(3));
@@ -74,8 +78,8 @@ void piecewise_pair_test() {
 
 void tuple_test() {
 	{
-		std::tuple<int, Test> tuple1(3, Test(3));
-		std::tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		std::tuple<int, test_help::Test> tuple1(3, test_help::Test(3));
+		std::tuple<test_help::Test, int, float> tuple2(test_help::Test(3), 3, 3.3);
 		auto tuple3 = std::tuple_cat(std::move(tuple1), std::move(tuple2));
 		std::cout << std::get<4>(tuple3) << '\n';
 		std::cout << std::get<1>(tuple1) << '\n';
@@ -84,8 +88,8 @@ void tuple_test() {
 	std::cout << "\n\n";
 
 	{
-		custom::Tuple<int, Test> tuple1(3, Test(3));
-		custom::Tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		custom::Tuple<int, test_help::Test> tuple1(3, test_help::Test(3));
+		custom::Tuple<test_help::Test, int, float> tuple2(test_help::Test(3), 3, 3.3);
 		auto tuple3 = custom::tuple_cat(custom::move(tuple1), custom::move(tuple2));
 		std::cout << custom::get<4>(tuple3) << '\n';
 		std::cout << custom::get<1>(tuple1) << '\n';
@@ -93,8 +97,8 @@ void tuple_test() {
 }
 
 void list_test() {
-	custom::List<Test> list;
-	custom::List<Test> list1;
+	custom::List<test_help::Test> list;
+	custom::List<test_help::Test> list1;
 
 	list.emplace_back(1);
 	list.emplace_back(2);
@@ -201,7 +205,7 @@ void deque_test() {
 }
 
 void queue_test() {
-	custom::Queue<Test> q;
+	custom::Queue<test_help::Test> q;
 
 	for (size_t i = 0; i < 50; ++i)
 		q.emplace(i);
@@ -279,8 +283,8 @@ void string_test() {
 }
 
 void array_test() {
-	custom::Array<Test, 5> arr;
-	arr.fill(Test(3));
+	custom::Array<test_help::Test, 5> arr;
+	arr.fill(test_help::Test(3));
 
 	for (auto& val : arr)
 		std::cout << val << '\n';
@@ -293,12 +297,12 @@ void function_test() {
 }
 
 void invoke_test() {
-	Test t;
-	std::cout << custom::invoke(&Test::test_function, t, 3) << '\n';
+	test_help::Test t;
+	std::cout << custom::invoke(&test_help::Test::test_function, t, 3) << '\n';
 }
 
 void memory_test() {
-	custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+	custom::UniquePtr<test_help::Test> up = custom::make_unique<test_help::Test>(3);
 }
 
 void chrono_test() {
@@ -318,14 +322,91 @@ void chrono_test() {
 }
 
 TEST_END
+#pragma endregion Common tests
 
 
+#pragma region Thread tests
+#if defined __GNUG__    // thread tests available only on __GNUG__
 
-STD_BEGIN
-template<>
-struct less<test::Test> {
-	bool operator()(const test::Test& left, const test::Test& right) const {
-		return left.value < right.value;
-	}
-};
-STD_END
+TEST_BEGIN
+
+TEST_HELP_BEGIN		// helpers (not intended for external use)
+
+std::string Employee::output() const
+{
+    std::string ret = "Employee " + _ID + " has lunch partners: ";
+    for(const auto& partner : _LunchPartners)
+        ret += partner + " ";
+    return ret;
+}
+
+void send_mail(Employee &, Employee &)
+{
+    // simulate a time-consuming messaging operation
+    custom::this_thread::sleep_for(custom::chrono::Seconds(1));
+}
+
+void assign_lunch_partner(Employee &e1, Employee &e2)
+{
+    static custom::Mutex io_mutex;
+
+    {
+        custom::LockGuard<custom::Mutex> lk(io_mutex);
+        std::cout << e1._ID << " and " << e2._ID << " are waiting for locks" << std::endl;
+    }
+ 
+    // use custom::lock to acquire two locks without worrying about 
+    // other calls to assign_lunch_partner deadlocking us
+    {
+        custom::lock(e1._Mutex, e2._Mutex);
+        custom::LockGuard<custom::Mutex> lk1(e1._Mutex, custom::AdoptLock);
+        custom::LockGuard<custom::Mutex> lk2(e2._Mutex, custom::AdoptLock);
+// Equivalent code (if UniqueLocks are needed, e.g. for condition variables)
+		// custom::UniqueLock<custom::Mutex> lk1(e1._Mutex, custom::DeferLock);
+		// custom::UniqueLock<custom::Mutex> lk2(e2._Mutex, custom::DeferLock);
+		// custom::lock(lk1, lk2);
+// Superior solution available in C++17
+		// custom::ScopedLock lk(e1._Mutex, e2._Mutex);
+
+        {
+            custom::LockGuard<custom::Mutex> lk(io_mutex);
+            std::cout << e1._ID << " and " << e2._ID << " got locks" << std::endl;
+        }
+
+        e1._LunchPartners.push_back(e2._ID);
+        e2._LunchPartners.push_back(e1._ID);
+    }
+
+    send_mail(e1, e2);
+    send_mail(e2, e1);
+}
+
+TEST_HELP_END
+
+// actual thread test functions
+void lock_locks_test() {
+    test_help::Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
+ 
+    // assign in parallel threads because mailing users about lunch assignments takes a long time
+    custom::Vector<custom::Thread> threads;
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(alice), custom::ref(bob));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(christina), custom::ref(bob));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(christina), custom::ref(alice));
+    threads.emplace_back(test_help::assign_lunch_partner, custom::ref(dave), custom::ref(bob));
+ 
+    for (auto &thread : threads) thread.join();
+        std::cout   << alice.output() << '\n'
+                    << bob.output() << '\n'
+                    << christina.output() << '\n'
+                    << dave.output() << '\n';
+}
+
+void thread_test() {
+	std::cout << custom::this_thread::get_id();
+	// custom::Thread t(deque_test);
+	// t.join();
+}
+
+TEST_END
+#endif		// __GNUG__
+#pragma endregion Thread tests

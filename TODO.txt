@@ -1,12 +1,10 @@
-0. Refactor Testing Environment
 1. Check and implement
 - algorithm
 - numeric
-- iterator
 
-
-2. Check ALL components for explicit and noexcept operators
+2. Check ALL components for constexpr, explicit and noexcept specifiers
 3. Learn and implement smart pointers
 4. Learn and implement condition_variable_any
 5. Complete TypeTraits
 6. Refactor Function class
+7. Complete String

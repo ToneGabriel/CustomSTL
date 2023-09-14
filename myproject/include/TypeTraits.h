@@ -494,6 +494,15 @@ struct IsDefaultConstructible : BoolConstant<__is_constructible(Ty)> {};
 template<class Ty>
 constexpr bool IsDefaultConstructible_v = IsDefaultConstructible<Ty>::Value;
 
+template<class Ty, class = void>
+struct IsImplicitlyDefaultConstructible : FalseType {}; // determine whether Ty can be copy-initialized with {}
+
+template<class Ty>
+void _ImplicitlyDefaultConstruct(const Ty&);
+
+template<class Ty>
+struct IsImplicitlyDefaultConstructible<Ty, Void_t<decltype(_ImplicitlyDefaultConstruct<Ty>({}))>> : TrueType {};
+
 template<class Ty>
 struct IsCopyConstructible : BoolConstant<__is_constructible(Ty, AddLvalueReference_t<const Ty>)> {};
 
