@@ -10,12 +10,15 @@ class _HashTable;
 template<class Type>
 struct ListData 
 {
-	using ValueType		= Type;									// Type for stored values
-	using Node			= node::_DoubleNode<ValueType>;			// Node type
-	using Alloc			= Allocator<Node>;						// Allocator type
+	using ValueType			= Type;									// Type for stored values
+	using Node				= node::_DoubleNode<ValueType>;			// Node type
+	using Reference			= ValueType&;
+	using ConstReference	= const Reference;
+	using Pointer			= Node*;
+	using ConstPointer		= const Pointer;
 
-	size_t _Size		= 0;									// Number of Nodes held
-	Node* _Head			= nullptr;								// Head of list
+	size_t _Size			= 0;									// Number of Nodes held
+	Pointer _Head 			= nullptr;								// Head of list
 };
 
 template<class List>
@@ -25,13 +28,15 @@ public:
 	using Data			= typename List::Data;
 	using ValueType		= typename List::ValueType;
 	using Node			= typename List::Node;
-	using Reference		= const ValueType&;
-	using Pointer		= const Node*;
+	using Reference		= typename List::ConstReference;
+	using Pointer		= typename List::ConstPointer;
 
 	Node* _Ptr			= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
+
+	ListConstIterator() noexcept = default;
 
 	explicit ListConstIterator(Node* nodePtr, const Data* data) noexcept
 		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
@@ -80,11 +85,11 @@ public:
 
 public:
 
-	const bool is_begin() const noexcept {
+	bool is_begin() const noexcept {
 		return _Ptr == _Data->_Head->_Next;
 	}
 
-	const bool is_end() const noexcept {
+	bool is_end() const noexcept {
 		return _Ptr == _Data->_Head;
 	}
 }; // END ListConstIterator
@@ -96,13 +101,15 @@ private:
 	using Base		= ListConstIterator<List>;
 
 public:
-	using Data		= typename List::Data;
+	using Data 		= typename List::Data;
 	using ValueType = typename List::ValueType;
 	using Node		= typename List::Node;
-	using Reference	= ValueType&;
-	using Pointer	= Node*;
+	using Reference = typename List::Reference;
+	using Pointer 	= typename List::Pointer;
 
 public:
+
+	ListIterator() noexcept = default;
 
 	explicit ListIterator(Node* nodePtr, const Data* data) noexcept
 		: Base(nodePtr, data) { /*Empty*/ }
@@ -139,27 +146,32 @@ public:
 }; // END ListIterator
 
 
-template<class Type>
+// TODO: Allocator should be Allocator<Node>
+template<class Type /*, class Alloc = custom::Allocator<Type>*/>
 class List				// Doubly Linked List
 {
 private:
 	template<class>
-	friend class _HashTable;													// Needed in _HashTable class
+	friend class _HashTable;												// Needed in _HashTable class
 
 public:
 	using Data 					= ListData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
 	using Node 					= typename Data::Node;						// Node in list
-	using Alloc					= typename Data::Alloc;						// Allocator type
-	
+	using Reference				= typename Data::Reference;
+	using ConstReference		= typename Data::ConstReference;
+	using Pointer				= typename Data::Pointer;
+	using ConstPointer			= typename Data::ConstPointer;
+	using AllocatorType			= custom::Allocator<Node>; //Alloc;
+
 	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
 	using ConstIterator			= ListConstIterator<List<ValueType>>;		// Const Iterator type
 	using ReverseIterator		= custom::ReverseIterator<Iterator>;		// Reverse Iterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Data _data;														// Actual container data
-	Alloc _alloc;													// Allocator
+	Data _data;																// Actual container data
+	AllocatorType _alloc;													// Allocator
 
 public:
 	// Constructors
@@ -168,11 +180,11 @@ public:
 		_create_head();
 	}
 
-	List(const size_t& newSize, const ValueType& value)	: List() {	// Add multiple copies Constructor
+	List(const size_t& newSize, const ValueType& value) : List() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
 	}
 
-	List(const List& other)	: List() {
+	List(const List& other) : List() {
 		_copy(other);
 	}
 
@@ -180,7 +192,7 @@ public:
 		_move(custom::move(other));
 	}
 
-	~List() {
+	~List() noexcept {
 		clear();
 		_free_head();
 	}
@@ -208,70 +220,54 @@ public:
 		return *this;
 	}
 
-	bool operator==(const List& other) const {
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const List& other) const {
-		return !(*this == other);
-	}
-
 public:
 	// Main functions
 
-	void resize(const size_t& newSize) {								// Resize the list by removing or adding default elements to the tail
+	void resize(const size_t& newSize) {						// Resize the list by removing or adding default elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize);
 	}
 
-	void resize(const size_t& newSize, const ValueType& copyValue) {	// Resize the list by removing or adding copy elements to the tail
+	void resize(	const size_t& newSize,
+							const ValueType& copyValue) {		// Resize the list by removing or adding copy elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
 	}
 
 	template<class... Args>
-	void emplace_back(Args&&... args) {									// Construct object using arguments (Args) and add it to the tail
+	void emplace_back(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
 		Node* newNode = new Node(custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head, newNode);
 	}
 
-	void push_back(const ValueType& copyValue) {						// Construct object using reference and add it to the tail
+	void push_back(const ValueType& copyValue) {				// Construct object using reference and add it to the tail
 		emplace_back(copyValue);
 	}
 
-	void push_back(ValueType&& moveValue) {                             // Construct object using temporary and add it to the tail
+	void push_back(ValueType&& moveValue) {						// Construct object using temporary and add it to the tail
 		emplace_back(custom::move(moveValue));
 	}
 	
-	void pop_back() {													// Remove last component
+	void pop_back() {											// Remove last component
 		if (_data._Size > 0)
 			_remove_node(_data._Head->_Previous);
 	}
 
 	template<class... Args>
-	void emplace_front(Args&&... args) {                                // Construct object using arguments (Args) and add it to the head
+	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the head
 		Node* newNode = new Node(custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head->_Next, newNode);
 	}
 
-	void push_front(const ValueType& copyValue) {                       // Construct object using reference and add it to the head
+	void push_front(const ValueType& copyValue) {				// Construct object using reference and add it to the head
 		emplace_front(copyValue);
 	}
 
-	void push_front(ValueType&& moveValue) {                            // Construct object using temporary and add it to the head
+	void push_front(ValueType&& moveValue) {					// Construct object using temporary and add it to the head
 		emplace_front(custom::move(moveValue));
 	}
 
-	void pop_front() {                                                  // Remove first component
+	void pop_front() {											// Remove first component
 		if (_data._Size > 0)
 			_remove_node(_data._Head->_Next);
 	}
@@ -285,15 +281,15 @@ public:
 		return Iterator(newNode, &_data);
 	}
 
-	Iterator push(ConstIterator iterator, const ValueType& copyValue) {   // Construct object using reference and add it BEFORE the iterator position
+	Iterator push(ConstIterator iterator, const ValueType& copyValue) {		// Construct object using reference and add it BEFORE the iterator position
 		return emplace(iterator, copyValue);
 	}
 
-	Iterator push(ConstIterator iterator, ValueType&& moveValue) {        // Construct object using temporary and add it BEFORE the iterator position
+	Iterator push(ConstIterator iterator, ValueType&& moveValue) {			// Construct object using temporary and add it BEFORE the iterator position
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	Iterator pop(ConstIterator iterator) {                                // Remove component at iterator position
+	Iterator pop(ConstIterator iterator) {									// Remove component at iterator position
 		if (iterator.is_end())
 			throw std::out_of_range("Cannot pop end iterator...");
 
@@ -304,45 +300,50 @@ public:
 		return prevIterator;
 	}
 
-	ValueType& front() {                                                    // Get the value of the first component
+	Reference front() noexcept {								// Get the value of the first component
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Next->_Value;
 	}
 
-	const ValueType& front() const {
+	ConstReference front() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Next->_Value;
 	}
 
-	ValueType& back() {                                                     // Get the value of the last component
+	Reference back() noexcept {									// Get the value of the last component
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Previous->_Value;
 	}
 
-	const ValueType& back() const {
+	ConstReference back() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return _data._Head->_Previous->_Value;
 	}
 
-	ValueType& at(const size_t& index) {
+	Reference at(const size_t& index) {
 		if (index >= _data._Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _scroll_node(index)->_Value;
 	}
 
-	const ValueType& at(const size_t& index) const {
+	ConstReference at(const size_t& index) const {
 		if (index >= _data._Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _scroll_node(index)->_Value;
 	}
 
-	const size_t size() const {
+	size_t size() const noexcept {
 		return _data._Size;
 	}
 
-	bool empty() const {
+	// TODO: implement
+	// size_t max_size() const noexcept {
+	
+	// }
+
+	bool empty() const noexcept {
 		return _data._Size == 0;
 	}
 
@@ -353,35 +354,35 @@ public:
 public:
 	// Iterator specific functions
 
-	Iterator begin() {
+	Iterator begin() noexcept {
 		return Iterator(_data._Head->_Next, &_data);
 	}
 
-	ConstIterator begin() const {
+	ConstIterator begin() const noexcept {
 		return ConstIterator(_data._Head->_Next, &_data);
 	}
 
-	ReverseIterator rbegin() {
+	ReverseIterator rbegin() noexcept {
 		return ReverseIterator(end());
 	}
 
-	ConstReverseIterator rbegin() const {
+	ConstReverseIterator rbegin() const noexcept {
 		return ConstReverseIterator(end());
 	}
 
-	Iterator end() {
+	Iterator end() noexcept {
 		return Iterator(_data._Head, &_data);
 	}
 
-	ConstIterator end() const {
+	ConstIterator end() const noexcept {
 		return ConstIterator(_data._Head, &_data);
 	}
 
-	ReverseIterator rend() {
+	ReverseIterator rend() noexcept {
 		return ReverseIterator(begin());
 	}
 
-	ConstReverseIterator rend() const {
+	ConstReverseIterator rend() const noexcept {
 		return ConstReverseIterator(begin());
 	}
 
@@ -400,7 +401,7 @@ private:
 		_alloc.deallocate(_data._Head, 1);
 	}
 
-	void _insert_node_before(Node* beforeNode, Node* newNode) {				// Insert Node before another
+	void _insert_node_before(Node* beforeNode, Node* newNode) {	// Insert Node before another
 		newNode->_Previous 				= beforeNode->_Previous;
 		newNode->_Next 					= beforeNode;
 
@@ -410,7 +411,7 @@ private:
 		++_data._Size;
 	}
 
-	void _remove_node(Node* junkNode) {										// Remove Node and relink
+	void _remove_node(Node* junkNode) {							// Remove Node and relink
 		junkNode->_Previous->_Next = junkNode->_Next;
 		junkNode->_Next->_Previous = junkNode->_Previous;
 
@@ -418,7 +419,7 @@ private:
 		--_data._Size;
 	}
 
-	void _copy(const List& other) {											// Generic copy function for list
+	void _copy(const List& other) {								// Generic copy function for list
 		Node* temp = other._data._Head->_Next;
 		while (_data._Size < other._data._Size) {
 			push_back(temp->_Value);
@@ -426,7 +427,7 @@ private:
 		}
 	}
 
-	void _move(List&& other) {												// Generic move function for list
+	void _move(List&& other) noexcept {							// Generic move function for list
 		custom::swap(_data._Head, other._data._Head);
 
 		_data._Size 		= other._data._Size;
@@ -457,5 +458,20 @@ private:
 		return _data._Head;
 	}
 }; // END Linked List
+
+
+// List binary operators
+template<class _Type/*, class _Alloc*/>
+bool operator==(const List<_Type/*, class _Alloc*/>& left, const List<_Type/*, class _Alloc*/>& right) {
+    if (left.size() != right.size())
+		return false;
+
+	return custom::equal(left.begin(), left.end(), right.begin());
+}
+
+template<class _Type/*, class _Alloc*/>
+bool operator!=(const List<_Type/*, class _Alloc*/>& left, const List<_Type/*, class _Alloc*/>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END

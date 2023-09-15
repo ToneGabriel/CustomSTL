@@ -17,12 +17,12 @@ private:
 public:
     // Constructors & Operators
 
-    explicit CountingSemaphore(int desired) {
+    constexpr explicit CountingSemaphore(int desired) noexcept {
         CUSTOM_ASSERT(desired >= 0 && desired <= LeastMaxValue, "Invalid desired value...");
         sem_init(&_semaphore, 0, desired);
     }
 
-    ~CountingSemaphore() {
+    constexpr ~CountingSemaphore() noexcept {
         sem_destroy(&_semaphore);
     }
 
@@ -32,7 +32,7 @@ public:
 public:
     // Main functions
 
-    static int max() noexcept {
+    static constexpr int max() noexcept {
         return LeastMaxValue;
     }
 

@@ -513,13 +513,9 @@ private:
 	}
 
 	constexpr void _move(Vector&& other) noexcept {								// Generic move function for vector
-		_data._First	= other._data._First;
-		_data._Last		= other._data._Last;
-		_data._Final	= other._data._Final;
-
-		other._data._First	= nullptr;
-		other._data._Last	= nullptr;
-		other._data._Final	= nullptr;
+		_data._First 	= custom::exchange(other._data._First, nullptr);
+		_data._Last 	= custom::exchange(other._data._Last, nullptr);
+		_data._Final 	= custom::exchange(other._data._Final, nullptr);
 	}
 
 	constexpr void _extend_if_full() {											// Reserve 50% more capacity when full
@@ -541,16 +537,16 @@ private:
 
 
 // Vector binary operators
-template<class Ty, class Alloc>
-constexpr bool operator==(const Vector<Ty, Alloc>& left, const Vector<Ty, Alloc>& right) {
+template<class _Type, class _Alloc>
+constexpr bool operator==(const Vector<_Type, _Alloc>& left, const Vector<_Type, _Alloc>& right) {
 	if (left.size() != right.size())
 		return false;
 
 	return custom::equal(left.begin(), left.end(), right.begin());
 }
 
-template<class Ty, class Alloc>
-constexpr bool operator!=(const Vector<Ty, Alloc>& left, const Vector<Ty, Alloc>& right) {
+template<class _Type, class _Alloc>
+constexpr bool operator!=(const Vector<_Type, _Alloc>& left, const Vector<_Type, _Alloc>& right) {
 	return !(left == right);
 }
 

@@ -8,13 +8,19 @@ CUSTOM_BEGIN
 template<class Type>
 struct DequeData
 {
-	using ValueType 	= Type;
-	using Alloc			= Allocator<ValueType>;
+	using ValueType 		= Type;
+	using Reference			= ValueType&;
+	using ConstReference	= const Reference;
+	using Pointer			= ValueType*;
+	using ConstPointer		= const Pointer;
 
-	ValueType** _Map	= nullptr;
-	size_t _MapCapacity = 0;
-	size_t _First 		= 0;
-	size_t _Size 		= 0;
+	using MapPtr 			= ValueType**;
+	//using Alloc				= Allocator<ValueType>;
+
+	MapPtr _Map				= nullptr;
+	size_t _MapCapacity 	= 0;
+	size_t _First 			= 0;
+	size_t _Size 			= 0;
 
 	static constexpr size_t BLOCK_SIZE = 4;
 
@@ -29,8 +35,8 @@ class DequeConstIterator
 public:
 	using Data			= typename Deque::Data;
 	using ValueType		= typename Deque::ValueType;
-	using Reference		= const ValueType&;
-	using Pointer		= const ValueType*;
+	using Reference		= typename Deque::ConstReference;
+	using Pointer		= typename Deque::ConstPointer;
 
 	size_t _Offset		= 0;
 	const Data* _Data	= nullptr;
@@ -122,15 +128,15 @@ public:
 
 public:
 
-	const size_t get_offset() const noexcept {
+	size_t get_offset() const noexcept {
 		return _Offset;
 	}
 
-	const bool is_begin() const noexcept {
+	bool is_begin() const noexcept {
 		return _Offset == _Data->_First;
 	}
 
-	const bool is_end() const noexcept {
+	bool is_end() const noexcept {
 		return _Offset == _Data->_First + _Data->_Size;
 	}
 }; // END DequeConstIterator
@@ -144,8 +150,8 @@ private:
 public:
 	using Data		= typename Deque::Data;
 	using ValueType	= typename Deque::ValueType;
-	using Reference	= ValueType&;
-	using Pointer	= ValueType*;
+	using Reference	= typename Deque::Reference;
+	using Pointer	= typename Deque::Pointer;
 
 public:
 
@@ -206,13 +212,17 @@ public:
 }; // END Deque Iterator
 
 
-template<class Type>
+template<class Type, class Alloc = custom::Allocator<Type>>
 class Deque					// Deque Template implemented as map of blocks
 {
 public:
 	using Data					= DequeData<Type>;
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using Alloc					= typename Data::Alloc;						// Allocator for block
+	using Reference				= typename Data::Reference;
+	using ConstReference		= typename Data::ConstReference;
+	using Pointer				= typename Data::Pointer;
+	using ConstPointer			= typename Data::ConstPointer;
+	using AllocatorType 		= Alloc;									// Allocator for block
 
 	using Iterator				= DequeIterator<Deque<ValueType>>;			// Iterator type
 	using ConstIterator			= DequeConstIterator<Deque<ValueType>>;		// Const Iterator type
@@ -248,7 +258,7 @@ public:
 		_move(custom::move(other));
 	}
 
-	~Deque() {
+	~Deque() noexcept {
 		_clean_up_map();
 	}
 
@@ -283,23 +293,6 @@ public:
 		}
 
 		return *this;
-	}
-
-	bool operator==(const Deque& other) const {
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const Deque& other) const {
-		return !(*this == other);
 	}
 
 public:
@@ -461,14 +454,6 @@ public:
 		return begin() + off;
 	}
 
-	const size_t size() const {
-		return _data._Size;
-	}
-
-	bool empty() const {
-		return (_data._Size == 0);
-	}
-
 	void clear() {
 		while (!empty())
 			pop_back();
@@ -481,36 +466,44 @@ public:
 			}
 	}
 
-	const ValueType& at(const size_t& index) const {
+	size_t size() const noexcept {
+		return _data._Size;
+	}
+
+	bool empty() const noexcept {
+		return (_data._Size == 0);
+	}
+
+	ConstReference at(const size_t& index) const {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
 		return *(begin() + index);
 	}
 
-	ValueType& at(const size_t& index) {
+	Reference at(const size_t& index) {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
 		return *(begin() + index);
 	}
 
-	const ValueType& front() const {
+	ConstReference front() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *begin();
 	}
 
-	ValueType& front() {                                                     	// Get the value of the first component
+	Reference front() noexcept {										// Get the value of the first component
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *begin();
 	}
 
-	const ValueType& back() const {
+	ConstReference back() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *(--end());
 	}
 
-	ValueType& back() {                                                      	// Get the value of the last component
+	Reference back() noexcept {                                                      	// Get the value of the last component
 		CUSTOM_ASSERT(!empty(), "Container is empty...");
 		return *(--end());
 	}
@@ -537,35 +530,35 @@ public:
 public:
 	// Iterator specific functions
 
-	Iterator begin() {
+	Iterator begin() noexcept {
 		return Iterator(_data._First, &_data);
 	}
 
-	ConstIterator begin() const {
+	ConstIterator begin() const noexcept {
 		return ConstIterator(_data._First, &_data);
 	}
 
-	ReverseIterator rbegin() {
+	ReverseIterator rbegin() noexcept {
 		return ReverseIterator(end());
 	}
 
-	ConstReverseIterator rbegin() const {
+	ConstReverseIterator rbegin() const noexcept {
 		return ConstReverseIterator(end());
 	}
 
-	Iterator end() {
+	Iterator end() noexcept {
 		return Iterator(_data._First + _data._Size, &_data);
 	}
 
-	ConstIterator end() const {
+	ConstIterator end() const noexcept {
 		return ConstIterator(_data._First + _data._Size, &_data);
 	}
 
-	ReverseIterator rend() {
+	ReverseIterator rend() noexcept {
 		return ReverseIterator(begin());
 	}
 
-	ConstReverseIterator rend() const {
+	ConstReverseIterator rend() const noexcept {
 		return ConstReverseIterator(begin());
 	}
 
@@ -619,16 +612,11 @@ private:
 			push_back(val);
 	}
 
-	void _move(Deque&& other) {
-		_data._Map 					= other._data._Map;
-		_data._MapCapacity 			= other._data._MapCapacity;
-		_data._Size 				= other._data._Size;
-		_data._First 				= other._data._First;
-
-		other._data._Map 			= nullptr;
-		other._data._MapCapacity 	= 0;
-		other._data._Size 			= 0;
-		other._data._First 			= 0;
+	void _move(Deque&& other) noexcept {
+		_data._Map 			= custom::exchange(other._data._Map, nullptr);
+		_data._MapCapacity 	= custom::exchange(other._data._MapCapacity, 0);
+		_data._Size 		= custom::exchange(other._data._Size, 0);
+		_data._First 		= custom::exchange(other._data._First, 0);
 	}
 
 	void _init_map(const size_t& newMapCapacity) {
@@ -649,5 +637,20 @@ private:
 		}
 	}
 }; // END Deque Template
+
+
+// Deque binary operators
+template<class _Type, class _Alloc>
+bool operator==(const Deque<_Type, _Alloc>& left, const Deque<_Type, _Alloc>& right) {
+	if (left.size() != right.size())
+		return false;
+
+	return custom::equal(left.begin(), left.end(), right.begin());
+}
+
+template<class _Type, class _Alloc>
+bool operator!=(const Deque<_Type, _Alloc>& left, const Deque<_Type, _Alloc>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END

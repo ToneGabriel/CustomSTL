@@ -5,14 +5,19 @@
 
 CUSTOM_BEGIN
 
-template<class Type>
+template<class Type, class Container = custom::Vector<Type>>
 class Stack				// Stack Template implemented as Vector wrapper
 {
 public:
-	using ValueType = Type;									// Type for stored values
+	using ValueType			= Type;									// Type for stored values
+	using ContainerType 	= Container;
+	using Reference			= typename ContainerType::Reference;
+	using ConstReference	= typename ContainerType::ConstReference;
+	using Pointer			= typename ContainerType::Pointer;
+	using ConstPointer		= typename ContainerType::ConstPointer;
 
 private:
-	Vector<ValueType> _baseContainer;
+	ContainerType _baseContainer;
 
 public:
 	// Constructors
@@ -22,10 +27,10 @@ public:
 	Stack(const Stack& other)
 		: _baseContainer(other._baseContainer) { /*Empty*/ }
 
-	Stack(Stack&& other)
+	Stack(Stack&& other) noexcept
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
-	~Stack() = default;
+	~Stack() noexcept = default;
 
 public:
 	// Operators
@@ -40,13 +45,8 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Stack& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const Stack& other) const {
-		return !(*this == other);
-	}
+	template<class Ty, class _Container>
+	friend bool operator==(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right);
 
 public:
 	// Main Functions
@@ -68,25 +68,37 @@ public:
 		_baseContainer.pop_back();
 	}
 
-	const ValueType& top() const {
-		return _baseContainer.back();
-	}
-
-	ValueType& top() {
-		return _baseContainer.back();
-	}
-
-	const size_t size() const {
-		return _baseContainer.size();
-	}
-
-	bool empty() const {
-		return _baseContainer.empty();
-	}
-
 	void clear() {
 		_baseContainer.clear();
 	}
+
+	ConstReference top() const noexcept {
+		return _baseContainer.back();
+	}
+
+	Reference top() noexcept {
+		return _baseContainer.back();
+	}
+
+	size_t size() const noexcept {
+		return _baseContainer.size();
+	}
+
+	bool empty() const noexcept {
+		return _baseContainer.empty();
+	}
 }; // END Stack Template
+
+
+// Stack binary operators
+template<class Ty, class _Container>
+bool operator==(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right) {
+	return left._baseContainer == right._baseContainer;
+}
+
+template<class Ty, class _Container>
+bool operator!=(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END

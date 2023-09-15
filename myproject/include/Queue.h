@@ -8,14 +8,19 @@
 
 CUSTOM_BEGIN
 
-template<class Type>
+template<class Type, class Container = custom::Deque<Type>>
 class Queue			// Queue template implemented as Deque wrapper
 {
 public:
-	using ValueType = Type;									// Type for stored values
+	using ValueType 		= Type;									// Type for stored values
+	using ContainerType 	= Container;
+	using Reference			= typename ContainerType::Reference;
+	using ConstReference	= typename ContainerType::ConstReference;
+	using Pointer			= typename ContainerType::Pointer;
+	using ConstPointer		= typename ContainerType::ConstPointer;
 
 private:
-	Deque<ValueType> _baseContainer;
+	ContainerType _baseContainer;
 
 public:
 	// Constructors
@@ -28,7 +33,7 @@ public:
 	Queue(Queue&& other) noexcept							// Move Constructor
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
-	~Queue() = default;										// Destructor
+	~Queue() noexcept = default;							// Destructor
 
 public:
 	// Operators
@@ -43,13 +48,8 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Queue& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const Queue& other) const {
-		return !(*this == other);
-	}
+	template<class _Type, class _Container>
+	friend bool operator==(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right);
 
 public:
 	// Main functions
@@ -71,45 +71,62 @@ public:
 		_baseContainer.pop_front();
 	}
 
-	ValueType& front() {
-		return _baseContainer.front();
+	void clear() {								// Remove ALL components
+		return _baseContainer.clear();
 	}
-	const ValueType& front() const {
+
+	Reference front() noexcept {
 		return _baseContainer.front();
 	}
 
-	ValueType& back() {
+	ConstReference front() const noexcept {
+		return _baseContainer.front();
+	}
+
+	Reference back() noexcept {
 		return _baseContainer.back();
 	}
 
-	const ValueType& back() const {
+	ConstReference back() const noexcept {
 		return _baseContainer.back();
 	}
 
-	const size_t size() const {								// Get size
+	size_t size() const noexcept {				// Get size
 		return _baseContainer.size();
 	}
 
-	bool empty() const {									// Check if list is empty
+	bool empty() const noexcept {					// Check if list is empty
 		return _baseContainer.empty();
-	}
-
-	void clear() {											// Remove ALL components
-		return _baseContainer.clear();
 	}
 }; // END Queue template
 
 
+// Queue binary operators
+template<class _Type, class _Container>
+bool operator==(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right) {
+	return left._baseContainer == right._baseContainer;
+}
 
-template<class Type, class Compare = std::less<Type>>
+template<class _Type, class _Container>
+bool operator!=(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right) {
+	return !(left == right);
+}
+
+
+template<class Type, class Container = custom::Vector<Type>, class Compare = std::less<Type>>
 class PriorityQueue		// Priority Queue Template implemented as array heap
 {
 public:
-	using ValueType 	= Type;									// Type for stored values
-	using ValueCompare 	= Compare;
+	using ValueType 		= Type;									// Type for stored values
+	using ContainerType 	= Container;
+	using ValueCompare 		= Compare;
+	using Reference			= typename ContainerType::Reference;
+	using ConstReference	= typename ContainerType::ConstReference;
+	using Pointer			= typename ContainerType::Pointer;
+	using ConstPointer		= typename ContainerType::ConstPointer;
 
 private:
-	Vector<ValueType> _baseContainer;
+	ContainerType _baseContainer;
 	ValueCompare _less;
 
 public:
@@ -123,7 +140,7 @@ public:
 	PriorityQueue(PriorityQueue&& other) noexcept
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
-	~PriorityQueue() = default;
+	~PriorityQueue() noexcept = default;
 
 public:
 	// Operators
@@ -138,13 +155,9 @@ public:
 		return *this;
 	}
 
-	bool operator==(const PriorityQueue& other) const {
-		return _baseContainer == other._baseContainer;
-	}
-
-	bool operator!=(const PriorityQueue& other) const {
-		return !(*this == other);
-	}
+	template<class _Type, class _Container, class _Compare>
+	friend bool operator==(	const PriorityQueue<_Type, _Container, _Compare>& left,
+										const PriorityQueue<_Type, _Container, _Compare>& right);
 
 public:
 	// Main Functions
@@ -171,21 +184,25 @@ public:
 			_heap_pop_adjust();
 		}
 	}
+	
+	void clear() {
+		return _baseContainer.clear();
+	}
 
-	const ValueType& front() const {
+	Reference front() noexcept {
 		return _baseContainer.front();
 	}
 
-	const size_t size() const {
+	ConstReference front() const noexcept {
+		return _baseContainer.front();
+	}
+
+	size_t size() const noexcept {
 		return _baseContainer.size();
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return _baseContainer.empty();
-	}
-
-	void clear() {
-		return _baseContainer.clear();
 	}
 
 	void print_details() {
@@ -268,5 +285,19 @@ private:
 		return index;	// 0 (root)
 	}
 }; // END PriorityQueue Template
+
+
+// PriorityQueue binary operators
+template<class _Type, class _Container, class _Compare>
+bool operator==(	const PriorityQueue<_Type, _Container, _Compare>& left,
+							const PriorityQueue<_Type, _Container, _Compare>& right) {
+	return left._baseContainer == right._baseContainer;
+}
+
+template<class _Type, class _Container, class _Compare>
+bool operator!=(	const PriorityQueue<_Type, _Container, _Compare>& left,
+							const PriorityQueue<_Type, _Container, _Compare>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END
