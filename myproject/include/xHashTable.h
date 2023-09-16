@@ -295,7 +295,7 @@ private:
 		_buckets.resize(buckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); ++it)
-			_buckets[bucket(Traits::extract_key(it->_Value))].push_back(it._Ptr);
+			_buckets[bucket(Traits::extract_key(*it))].push_back(it._Ptr);
 	}
 
 	void _rehash_if_overload() {									// Check load factor and rehash if needed

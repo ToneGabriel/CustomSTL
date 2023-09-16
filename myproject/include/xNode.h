@@ -4,8 +4,10 @@
 
 CUSTOM_BEGIN
 
-namespace node
-{
+#define CUSTOM_NODE_BEGIN namespace node {
+#define CUSTOM_NODE_END }
+
+CUSTOM_NODE_BEGIN
 
 template<class Type>
 struct _ForwardNode			// Struct that holds data and references to next struct
@@ -15,7 +17,7 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	ValueType _Value;
 	_ForwardNode* _Next;
 
-	_ForwardNode()								= default;
+	_ForwardNode()									= default;
 	_ForwardNode(const _ForwardNode&)				= delete;
 	_ForwardNode& operator=(const _ForwardNode&)	= delete;
 
@@ -108,5 +110,6 @@ struct _TreeNode			// Used in _SearchTree
 	}
 }; // END Tree Node
 
-}	// END namespace node
+CUSTOM_NODE_END
+
 CUSTOM_END

@@ -14,12 +14,12 @@ private:
 public:
     // Constructors & Operators
 
-    explicit Barrier(int expected) noexcept {
+    constexpr explicit Barrier(int expected) noexcept {
         CUSTOM_ASSERT(expected >= 0, "Invalid expected value...");
         pthread_barrier_init(&_barrier, nullptr, expected);
     }
 
-    ~Barrier() {
+    constexpr ~Barrier() noexcept {
         pthread_barrier_destroy(&_barrier);
     }
 
@@ -29,7 +29,7 @@ public:
 public:
     // Main functions // TODO: implement
 
-    static int max() noexcept {
+    static constexpr int (max)() noexcept {
         return INT_MAX;
     }
 

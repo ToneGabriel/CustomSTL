@@ -11,14 +11,16 @@ template<class Type>
 struct ListData 
 {
 	using ValueType			= Type;									// Type for stored values
-	using Node				= node::_DoubleNode<ValueType>;			// Node type
 	using Reference			= ValueType&;
 	using ConstReference	= const Reference;
-	using Pointer			= Node*;
+	using Pointer			= ValueType*;
 	using ConstPointer		= const Pointer;
 
+	using Node				= node::_DoubleNode<ValueType>;			// Node type
+	using NodePtr			= Node*;
+
 	size_t _Size			= 0;									// Number of Nodes held
-	Pointer _Head 			= nullptr;								// Head of list
+	NodePtr _Head 			= nullptr;								// Head of list
 };
 
 template<class List>
@@ -27,18 +29,18 @@ class ListConstIterator
 public:
 	using Data			= typename List::Data;
 	using ValueType		= typename List::ValueType;
-	using Node			= typename List::Node;
 	using Reference		= typename List::ConstReference;
 	using Pointer		= typename List::ConstPointer;
+	using NodePtr		= typename List::NodePtr;
 
-	Node* _Ptr			= nullptr;
+	NodePtr _Ptr		= nullptr;
 	const Data* _Data	= nullptr;
 
 public:
 
 	ListConstIterator() noexcept = default;
 
-	explicit ListConstIterator(Node* nodePtr, const Data* data) noexcept
+	explicit ListConstIterator(NodePtr nodePtr, const Data* data) noexcept
 		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
 
 	ListConstIterator& operator++() noexcept {
@@ -67,7 +69,7 @@ public:
 
 	Pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot access end iterator...");
-		return _Ptr;
+		return &(**this);
 	}
 
 	Reference operator*() const noexcept {
@@ -103,15 +105,15 @@ private:
 public:
 	using Data 		= typename List::Data;
 	using ValueType = typename List::ValueType;
-	using Node		= typename List::Node;
 	using Reference = typename List::Reference;
 	using Pointer 	= typename List::Pointer;
+	using NodePtr	= typename List::NodePtr;
 
 public:
 
 	ListIterator() noexcept = default;
 
-	explicit ListIterator(Node* nodePtr, const Data* data) noexcept
+	explicit ListIterator(NodePtr nodePtr, const Data* data) noexcept
 		: Base(nodePtr, data) { /*Empty*/ }
 
 	ListIterator& operator++() noexcept {
@@ -146,8 +148,7 @@ public:
 }; // END ListIterator
 
 
-// TODO: Allocator should be Allocator<Node>
-template<class Type /*, class Alloc = custom::Allocator<Type>*/>
+template<class Type, class Alloc = custom::Allocator<Type>>
 class List				// Doubly Linked List
 {
 private:
@@ -155,14 +156,20 @@ private:
 	friend class _HashTable;												// Needed in _HashTable class
 
 public:
+	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(IsObject_v<Type>, "Containers require object type!");
+
 	using Data 					= ListData<Type>;							// Members that are modified
 	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using Node 					= typename Data::Node;						// Node in list
 	using Reference				= typename Data::Reference;
 	using ConstReference		= typename Data::ConstReference;
 	using Pointer				= typename Data::Pointer;
 	using ConstPointer			= typename Data::ConstPointer;
-	using AllocatorType			= custom::Allocator<Node>; //Alloc;
+	using AllocatorType			= Alloc;
+
+	using Node 					= typename Data::Node;						// Node in list
+	using NodePtr				= typename Data::NodePtr;
+	using NodeAllocatorType		= custom::Allocator<Node>;
 
 	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
 	using ConstIterator			= ListConstIterator<List<ValueType>>;		// Const Iterator type
@@ -171,7 +178,7 @@ public:
 
 private:
 	Data _data;																// Actual container data
-	AllocatorType _alloc;													// Allocator
+	NodeAllocatorType _alloc;												// Allocator for nodes
 
 public:
 	// Constructors
@@ -228,15 +235,17 @@ public:
 		_create_until_size(newSize);
 	}
 
-	void resize(	const size_t& newSize,
-							const ValueType& copyValue) {		// Resize the list by removing or adding copy elements to the tail
+	void resize(const size_t& newSize,
+				const ValueType& copyValue) {					// Resize the list by removing or adding copy elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
 	}
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
-		Node* newNode = new Node(custom::forward<Args>(args)...);
+		AllocatorType al{};
+		Node* newNode = _alloc.allocate(1);
+		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head, newNode);
 	}
 
@@ -255,7 +264,9 @@ public:
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the head
-		Node* newNode = new Node(custom::forward<Args>(args)...);
+		AllocatorType al{};
+		Node* newNode = _alloc.allocate(1);
+		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head->_Next, newNode);
 	}
 
@@ -273,9 +284,11 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(ConstIterator iterator, Args&&... args) {			// Construct object using arguments (Args) and add it BEFORE the iterator position
-		Node* temp 		= iterator._Ptr;
-		Node* newNode 	= new Node(custom::forward<Args>(args)...);
+	Iterator emplace(ConstIterator iterator, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the iterator position
+		AllocatorType al{};
+		Node* temp		= iterator._Ptr;
+		Node* newNode	= _alloc.allocate(1);
+		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
 		_insert_node_before(temp, newNode);
 
 		return Iterator(newNode, &_data);
@@ -412,11 +425,14 @@ private:
 	}
 
 	void _remove_node(Node* junkNode) {							// Remove Node and relink
+		AllocatorType al{};
+
 		junkNode->_Previous->_Next = junkNode->_Next;
 		junkNode->_Next->_Previous = junkNode->_Previous;
-
-		delete junkNode;
 		--_data._Size;
+
+		al.destroy(&(junkNode->_Value));
+		_alloc.deallocate(junkNode, 1);
 	}
 
 	void _copy(const List& other) {								// Generic copy function for list

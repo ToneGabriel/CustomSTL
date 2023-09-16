@@ -32,7 +32,7 @@ public:
 public:
     // Main functions
 
-    static constexpr int max() noexcept {
+    static constexpr int (max)() noexcept {
         return LeastMaxValue;
     }
 

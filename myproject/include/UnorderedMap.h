@@ -60,11 +60,11 @@ public:
 	// Operators
 
 	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->_Value.Second;
+		return try_emplace(key)->Second;
 	}
 
 	MappedType& operator[](Key&& key) {
-		return try_emplace(custom::move(key))->_Value.Second;
+		return try_emplace(custom::move(key))->Second;
 	}
 
 	UnorderedMap& operator=(const UnorderedMap& other) {

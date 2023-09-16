@@ -51,7 +51,7 @@ public:
 
     template<class Functor, class... Args, 
     EnableIf_t<!IsSame_v<Decay_t<Functor>, Thread>, bool> = true>
-    Thread(Functor&& func, Args&&... args) {
+    explicit Thread(Functor&& func, Args&&... args) {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
         using CallableTuple = Tuple<Decay_t<Functor>, Decay_t<Args>...>;
 
@@ -213,21 +213,10 @@ public:
 
     ID() : _threadID(0) { /*Empty*/ }
 
-    bool operator==(const ID& other) const {
-        return (pthread_equal(_threadID, other._threadID) != 0);
-    }
-
-    bool operator!=(const ID& other) const {
-        return !(*this == other);
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const ID& id) {
-        os << id._threadID;
-        return os;
-    }
-
     friend Thread::ID Thread::get_id() const noexcept;
     friend Thread::ID this_thread::get_id() noexcept;
+    friend std::ostream& operator<<(std::ostream& os, const Thread::ID& id);
+    friend bool operator==(Thread::ID left, Thread::ID right) noexcept;
 
 private:
 
@@ -242,6 +231,19 @@ inline Thread::ID Thread::get_id() const noexcept {
 
 inline Thread::ID this_thread::get_id() noexcept {
     return pthread_self();      // calls private constructor of Thread::ID
+}
+
+inline bool operator==(Thread::ID left, Thread::ID right) noexcept {
+    return (pthread_equal(left._threadID, right._threadID) != 0);
+}
+
+inline bool operator==(Thread::ID left, Thread::ID right) noexcept {
+    return !(left == right);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Thread::ID& id) {
+    os << id._threadID;
+    return os;
 }
 
 CUSTOM_END
