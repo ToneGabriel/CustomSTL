@@ -5,6 +5,156 @@
 
 CUSTOM_BEGIN
 
+// unary function
+template<class Arg, class Res>
+struct UnaryFunction
+{
+    using ArgumentType  = Arg;
+    using ResultType    = Res;
+};
+
+// binary function
+template<class Arg1, class Arg2, class Res>
+struct BinaryFunction
+{
+    using FirstArgumentType     = Arg1;
+    using SecondArgumentType    = Arg2;
+    using ResultType            = Res;
+};
+
+// equal to
+template<class Ty = void>
+struct EqualTo : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left == right;
+    }
+};
+
+template<>
+struct EqualTo<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) == custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) == custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) == custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// not equal to
+template<class Ty = void>
+struct NotEqualTo : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left != right;
+    }
+};
+
+template<>
+struct NotEqualTo<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) != custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) != custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) != custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// greater
+template<class Ty = void>
+struct Greater : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left > right;
+    }
+};
+
+template<>
+struct Greater<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) > custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) > custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) > custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// greater equal
+template<class Ty = void>
+struct GreaterEqual : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left >= right;
+    }
+};
+
+template<>
+struct GreaterEqual<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) >= custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) >= custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) >= custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// less
+template<class Ty = void>
+struct Less : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left < right;
+    }
+};
+
+template<>
+struct Less<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) < custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) < custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) < custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// less equal
+template<class Ty = void>
+struct LessEqual : public BinaryFunction<Ty, Ty, bool>
+{
+    constexpr bool operator()(const Ty& left, const Ty& right) const {
+        return left <= right;
+    }
+};
+
+template<>
+struct LessEqual<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) <= custom::forward<Ty2>(right)))
+    -> decltype(custom::forward<Ty1>(left) <= custom::forward<Ty2>(right)) {
+        return custom::forward<Ty1>(left) <= custom::forward<Ty2>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+
 template<class>
 class Callable;
 

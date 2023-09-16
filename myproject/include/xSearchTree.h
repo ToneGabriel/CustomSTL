@@ -2,8 +2,7 @@
 #include "List.h"
 #include "Pair.h"
 #include "Utility.h"
-
-#include <functional>	// std::less
+#include "Functional.h"	// for custom::Less
 
 
 CUSTOM_BEGIN

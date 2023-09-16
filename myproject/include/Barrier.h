@@ -14,12 +14,12 @@ private:
 public:
     // Constructors & Operators
 
-    constexpr explicit Barrier(int expected) noexcept {
+    explicit Barrier(int expected) noexcept {
         CUSTOM_ASSERT(expected >= 0, "Invalid expected value...");
         pthread_barrier_init(&_barrier, nullptr, expected);
     }
 
-    constexpr ~Barrier() noexcept {
+    ~Barrier() noexcept {
         pthread_barrier_destroy(&_barrier);
     }
 

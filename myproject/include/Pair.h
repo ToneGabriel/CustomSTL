@@ -26,7 +26,8 @@ public:
     // (H1) Helper for (5)
     template<class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
     constexpr Pair(Tuple1&& val1, Tuple2&& val2, IndexSequence<Indexes1...>, IndexSequence<Indexes2...>)
-        : First(get<Indexes1>(custom::forward<Tuple1>(val1))...), Second(get<Indexes2>(custom::forward<Tuple2>(val2))...) { /*Empty*/ }     // Can copy or Move
+        :   First(get<Indexes1>(custom::forward<Tuple1>(val1))...),
+            Second(get<Indexes2>(custom::forward<Tuple2>(val2))...) { /*Empty*/ }
 
 public:
     // Constructors
@@ -78,16 +79,19 @@ public:
                                         IsConvertible<Other2, Type2>>)
     Pair(Pair<Other1, Other2>&& other)
     noexcept(IsNothrowConstructible_v<Type1, Other1> && IsNothrowConstructible_v<Type2, Other2>)
-        : First(custom::forward<Other1>(other.First)), Second(custom::forward<Other2>(other.Second)) { /*Empty*/ }
+        :   First(custom::forward<Other1>(other.First)),
+            Second(custom::forward<Other2>(other.Second)) { /*Empty*/ }
 
     // (5) Piecewise constructor
     template<class... Types1, class... Types2>
     constexpr Pair(PiecewiseConstruct_t, Tuple<Types1...>&& val1, Tuple<Types2...>&& val2)
-        : Pair( custom::move(val1), custom::move(val2),
-                IndexSequenceFor<Types1...>{}, IndexSequenceFor<Types2...>{}) { /*Empty*/ }   // Uses (H1)
+        : Pair( custom::move(val1),
+                custom::move(val2),
+                IndexSequenceFor<Types1...>{},
+                IndexSequenceFor<Types2...>{}) { /*Empty*/ }   // Uses (H1)
 
-    constexpr Pair(const Pair&)   = default;
-    constexpr Pair(Pair&&)        = default;
+    Pair(const Pair&)   = default;
+    Pair(Pair&&)        = default;
 
 public:
     // Operators
@@ -116,15 +120,20 @@ public:
         return *this;
     }
 
-    constexpr Pair& operator=(const Pair&)            = default;
-    constexpr Pair& operator=(Pair&&)                 = default;
-    constexpr Pair& operator=(const volatile Pair&)   = delete;
+    Pair& operator=(const Pair&)            = default;
+    Pair& operator=(Pair&&)                 = default;
+    Pair& operator=(const volatile Pair&)   = delete;
 }; // END Pair Template
 
 
 template<class Type1, class Type2>
 constexpr bool operator==(const Pair<Type1, Type2>& left, const Pair<Type1, Type2>& right) {
     return left.First == right.First && left.Second == right.Second;
+}
+
+template<class Type1, class Type2>
+constexpr bool operator!=(const Pair<Type1, Type2>& left, const Pair<Type1, Type2>& right) {
+    return !(left == right);
 }
 
 template<class Type1, class Type2>

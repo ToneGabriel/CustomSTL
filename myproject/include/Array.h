@@ -1,5 +1,6 @@
 #pragma once
 #include "Utility.h"
+#include "Algorithm.h"
 
 
 CUSTOM_BEGIN

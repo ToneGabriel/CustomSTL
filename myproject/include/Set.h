@@ -26,7 +26,7 @@ public:
 }; // END Set Traits
 
 
-template<class Key, class Compare = std::less<Key>>
+template<class Key, class Compare = custom::Less<Key>>
 class Set : public _SearchTree<SetTraits<Key, Compare>>		// Set Template
 {
 private:

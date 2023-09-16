@@ -1,6 +1,8 @@
 #pragma once
 #include "xNode.h"
 #include "Utility.h"
+#include "Algorithm.h"
+
 
 CUSTOM_BEGIN
 

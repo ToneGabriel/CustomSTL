@@ -237,7 +237,7 @@ inline bool operator==(Thread::ID left, Thread::ID right) noexcept {
     return (pthread_equal(left._threadID, right._threadID) != 0);
 }
 
-inline bool operator==(Thread::ID left, Thread::ID right) noexcept {
+inline bool operator!=(Thread::ID left, Thread::ID right) noexcept {
     return !(left == right);
 }
 

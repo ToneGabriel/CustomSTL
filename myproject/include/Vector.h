@@ -1,6 +1,7 @@
 #pragma once
 #include "xMemory.h"
 #include "Utility.h"
+#include "Algorithm.h"
 
 
 CUSTOM_BEGIN

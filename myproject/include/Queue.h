@@ -2,8 +2,7 @@
 #include "Deque.h"
 #include "Vector.h"
 #include "Utility.h"
-
-#include <functional>	// std::less
+#include "Functional.h"	// for custom::Less
 
 
 CUSTOM_BEGIN
@@ -113,7 +112,7 @@ bool operator!=(const Queue<_Type, _Container>& left, const Queue<_Type, _Contai
 }
 
 
-template<class Type, class Container = custom::Vector<Type>, class Compare = std::less<Type>>
+template<class Type, class Container = custom::Vector<Type>, class Compare = custom::Less<Type>>
 class PriorityQueue		// Priority Queue Template implemented as array heap
 {
 public:

@@ -1,5 +1,5 @@
 #pragma once
-#include "xCommon.h"
+#include "Functional.h"
 
 
 CUSTOM_BEGIN
@@ -223,7 +223,33 @@ constexpr const Type& (max)(const Type& a, const Type& b, Compare comp) {
 
 
 #pragma region Comparison operations
-// TODO: implement
+template<class InputIt1, class InputIt2, class BinaryPredicate>
+constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2, BinaryPredicate pred) {
+    // compare [first1, last1) to [first2, ...)
+
+    //_Adl_verify_range(first1, last1);
+    //auto _UFirst1 = _Get_unwrapped(first1);
+    //const auto _ULast1 = _Get_unwrapped(last1);
+    //auto _UFirst2 = _Get_unwrapped_n(first2, _Idl_distance<InputIt1>(_UFirst1, _ULast1));
+
+    while (first1 != last1)
+    {
+        if (!pred(*first1, *first2))
+            return false;
+
+        ++first1;
+        ++first2;
+    }
+
+    return true;
+}
+
+template<class InputIt1, class InputIt2>
+constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2) {
+    // compare [first1, last1) to [first2, ...)
+
+    return custom::equal(first1, last1, first2, EqualTo<>{});
+}
 #pragma endregion Comparison operations
 
 

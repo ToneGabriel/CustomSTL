@@ -17,12 +17,12 @@ private:
 public:
     // Constructors & Operators
 
-    constexpr explicit CountingSemaphore(int desired) noexcept {
+    explicit CountingSemaphore(int desired) noexcept {
         CUSTOM_ASSERT(desired >= 0 && desired <= LeastMaxValue, "Invalid desired value...");
         sem_init(&_semaphore, 0, desired);
     }
 
-    constexpr ~CountingSemaphore() noexcept {
+    ~CountingSemaphore() noexcept {
         sem_destroy(&_semaphore);
     }
 

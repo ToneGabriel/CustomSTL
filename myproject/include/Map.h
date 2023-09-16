@@ -26,7 +26,7 @@ public:
 }; // END Map Traits
 
 
-template<class Key, class Type, class Compare = std::less<Key>>
+template<class Key, class Type, class Compare = custom::Less<Key>>
 class Map : public _SearchTree<MapTraits<Key, Type, Compare>>		// Map Template
 {
 private:
