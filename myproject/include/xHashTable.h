@@ -3,6 +3,7 @@
 #include "Vector.h"
 #include "Pair.h"		// For _try_emplace
 #include "Utility.h"
+#include "Functional.h"	// EqualTo
 
 #include <cmath>		// std::ceil
 #include <functional>	// std::hash
@@ -15,8 +16,14 @@ class _HashTable				// _HashTable Template implemented as vector of lists
 protected:
     using KeyType           	= typename Traits::KeyType;				// Type of Key
     using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
+    using Hasher            	= typename Traits::Hasher;				// Hash struct
+	using KeyEqual 				= typename Traits::KeyEqual;
 	using ValueType				= typename Traits::ValueType;			// Type of values stored in container
-    using Hasher            	= typename Traits::HasherType;			// Hash struct
+	using Reference 			= typename Traits::Reference;
+	using ConstReference 		= typename Traits::ConstReference;
+	using Pointer 				= typename Traits::Pointer;
+	using ConstPointer 			= typename Traits::ConstPointer;
+	using AllocatorType 		= typename Traits::AllocatorType;
 
 	using IterList				= List<ValueType>;						// List of ValueType used for iterating
 	using Node					= typename IterList::Node;				// Node component from List

@@ -3,14 +3,20 @@
 
 CUSTOM_BEGIN
 
-template<class Key, class Type, class Hasher>
-class UmapTraits								// UnorderedMap Traits
+template<class Key, class Type, class Hash, class Compare, class Alloc>
+class UmapTraits		// UnorderedMap Traits
 {
 public:
-	using KeyType 		= Key;
-	using MappedType 	= Type;
-	using HasherType 	= Hasher;
-	using ValueType 	= Pair<Key, Type>;
+	using KeyType 			= Key;
+	using MappedType 		= Type;
+	using Hasher 			= Hash;
+	using KeyEqual 			= Compare;
+	using AllocatorType 	= Alloc;
+	using ValueType 		= Pair<Key, Type>;
+	using Reference 		= ValueType&;
+	using ConstReference 	= const Reference;
+	using Pointer 			= ValueType*;
+	using ConstPointer 		= const Pointer;
 
 public:
 
@@ -26,18 +32,29 @@ public:
 }; // END UnorderedMap Traits
 
 
-template<class Key, class Type, class Hasher = std::hash<Key>>
-class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hasher>>	// UnorderedMap Template
+template<class Key, class Type,
+class Hash 		= std::hash<Key>,
+class Compare 	= custom::EqualTo<Key>,
+class Alloc 	= custom::Allocator<custom::Pair<Key, Type>>>
+class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>	// UnorderedMap Template
 {
 private:
-	using Base = _HashTable<UmapTraits<Key, Type, Hasher>>;
+	using Base = _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>;
 
 public:
-	using KeyType 		= typename Base::KeyType;
-	using MappedType 	= typename Base::MappedType;
-	using ValueType 	= typename Base::ValueType;
-	using Iterator		= typename Base::Iterator;
-	using ConstIterator = typename Base::ConstIterator;
+	using KeyType 			= typename Base::KeyType;
+	using MappedType 		= typename Base::MappedType;
+	using Hasher 			= typename Base::Hasher;
+	using KeyEqual 			= typename Base::KeyEqual;
+	using ValueType 		= typename Base::ValueType;
+	using Reference 		= typename Base::Reference;
+	using ConstReference 	= typename Base::ConstReference;
+	using Pointer 			= typename Base::Pointer;
+	using ConstPointer 		= typename Base::ConstPointer;
+	using AllocatorType 	= typename Base::AllocatorType;
+
+	using Iterator			= typename Base::Iterator;
+	using ConstIterator 	= typename Base::ConstIterator;
 
 public:
 	// Constructors
