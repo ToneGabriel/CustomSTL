@@ -25,28 +25,28 @@ struct ListData
 	NodePtr _Head 			= nullptr;								// Head of list
 };
 
-template<class List>
+template<class ListData>
 class ListConstIterator
 {
 public:
-	using Data			= typename List::Data;
-	using ValueType		= typename List::ValueType;
-	using Reference		= typename List::ConstReference;
-	using Pointer		= typename List::ConstPointer;
-	using NodePtr		= typename List::NodePtr;
+	using _Data			= ListData;
+	using ValueType		= typename _Data::ValueType;
+	using Reference		= typename _Data::ConstReference;
+	using Pointer		= typename _Data::ConstPointer;
+	using NodePtr		= typename _Data::NodePtr;
 
-	NodePtr _Ptr		= nullptr;
-	const Data* _Data	= nullptr;
+	NodePtr _Ptr			= nullptr;
+	const _Data* _RefData	= nullptr;
 
 public:
 
 	ListConstIterator() noexcept = default;
 
-	explicit ListConstIterator(NodePtr nodePtr, const Data* data) noexcept
-		:_Ptr(nodePtr), _Data(data) { /*Empty*/ }
+	explicit ListConstIterator(NodePtr nodePtr, const _Data* data) noexcept
+		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
 	ListConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator...");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
@@ -58,7 +58,7 @@ public:
 	}
 
 	ListConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head->_Next, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Next, "Cannot decrement begin iterator...");
 		_Ptr = _Ptr->_Previous;
 		return *this;
 	}
@@ -70,12 +70,12 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
 		return &(**this);
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
 
@@ -90,32 +90,32 @@ public:
 public:
 
 	bool is_begin() const noexcept {
-		return _Ptr == _Data->_Head->_Next;
+		return _Ptr == _RefData->_Head->_Next;
 	}
 
 	bool is_end() const noexcept {
-		return _Ptr == _Data->_Head;
+		return _Ptr == _RefData->_Head;
 	}
 }; // END ListConstIterator
 
-template<class List>
-class ListIterator : public ListConstIterator<List>		// Linked List Iterator
+template<class ListData>
+class ListIterator : public ListConstIterator<ListData>		// Linked List Iterator
 {
 private:
-	using Base		= ListConstIterator<List>;
+	using Base		= ListConstIterator<ListData>;
 
 public:
-	using Data 		= typename List::Data;
-	using ValueType = typename List::ValueType;
-	using Reference = typename List::Reference;
-	using Pointer 	= typename List::Pointer;
-	using NodePtr	= typename List::NodePtr;
+	using _Data 	= ListData;
+	using ValueType = typename _Data::ValueType;
+	using Reference = typename _Data::Reference;
+	using Pointer 	= typename _Data::Pointer;
+	using NodePtr	= typename _Data::NodePtr;
 
 public:
 
 	ListIterator() noexcept = default;
 
-	explicit ListIterator(NodePtr nodePtr, const Data* data) noexcept
+	explicit ListIterator(NodePtr nodePtr, const _Data* data) noexcept
 		: Base(nodePtr, data) { /*Empty*/ }
 
 	ListIterator& operator++() noexcept {
@@ -161,25 +161,26 @@ public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using Data 					= ListData<Type>;							// Members that are modified
-	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using Reference				= typename Data::Reference;
-	using ConstReference		= typename Data::ConstReference;
-	using Pointer				= typename Data::Pointer;
-	using ConstPointer			= typename Data::ConstPointer;
+	using _Data 				= ListData<Type>;							// Members that are modified
+	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using Reference				= typename _Data::Reference;
+	using ConstReference		= typename _Data::ConstReference;
+	using Pointer				= typename _Data::Pointer;
+	using ConstPointer			= typename _Data::ConstPointer;
 	using AllocatorType			= Alloc;
 
-	using Node 					= typename Data::Node;						// Node in list
-	using NodePtr				= typename Data::NodePtr;
-	using NodeAllocatorType		= custom::Allocator<Node>;
-
-	using Iterator				= ListIterator<List<ValueType>>;			// Iterator type
-	using ConstIterator			= ListConstIterator<List<ValueType>>;		// Const Iterator type
+	using Iterator				= ListIterator<_Data>;						// Iterator type
+	using ConstIterator			= ListConstIterator<_Data>;					// Const Iterator type
 	using ReverseIterator		= custom::ReverseIterator<Iterator>;		// Reverse Iterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Data _data;																// Actual container data
+	using Node 					= typename _Data::Node;						// Node in list
+	using NodePtr				= typename _Data::NodePtr;
+	using NodeAllocatorType		= custom::Allocator<Node>;
+
+private:
+	_Data _data;															// Actual container data
 	NodeAllocatorType _alloc;												// Allocator for nodes
 
 public:

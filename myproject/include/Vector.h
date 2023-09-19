@@ -20,27 +20,27 @@ struct VectorData
 	Pointer _Final			= nullptr;			// Pointer to capacity end
 };
 
-template<class Vector>
+template<class VectorData>
 class VectorConstIterator
 {
 public:
-	using Data			= typename Vector::Data;
-	using ValueType		= typename Vector::ValueType;
-	using Reference		= typename Vector::ConstReference;
-	using Pointer		= typename Vector::ConstPointer;
+	using _Data		= VectorData;
+	using ValueType = typename _Data::ValueType;
+	using Reference = typename _Data::ConstReference;
+	using Pointer	= typename _Data::ConstPointer;
 
-	ValueType* _Ptr		= nullptr;
-	const Data* _Data	= nullptr;
+	ValueType* _Ptr			= nullptr;
+	const _Data* _RefData	= nullptr;
 
 public:
 
 	constexpr VectorConstIterator() noexcept : _Ptr() { /*Empty*/ }
 
-	constexpr explicit VectorConstIterator(ValueType* ptr, const Data* data) noexcept
-		:_Ptr(ptr), _Data(data) { /*Empty*/ }
+	constexpr explicit VectorConstIterator(ValueType* ptr, const _Data* data) noexcept
+		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
 	constexpr VectorConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator...");
 		++_Ptr;
 		return *this;
 	}
@@ -52,7 +52,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator+=(const size_t& diff) noexcept {
-		CUSTOM_ASSERT(_Ptr + diff < _Data->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
@@ -64,7 +64,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr > _Data->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator...");
 		--_Ptr;
 		return *this;
 	}
@@ -76,7 +76,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator-=(const size_t& diff) noexcept {
-		CUSTOM_ASSERT(_Ptr - diff > _Data->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
@@ -88,12 +88,12 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
 		return _Ptr;
 	}
 
 	constexpr Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _Data->_Last, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator...");
 		return *_Ptr;
 	}
 
@@ -108,29 +108,29 @@ public:
 public:
 
 	constexpr size_t get_index() const noexcept {					// Get the position for the element in array from iterator
-		return static_cast<size_t>(_Ptr - _Data->_First);
+		return static_cast<size_t>(_Ptr - _RefData->_First);
 	}
 
 	constexpr bool is_begin() const noexcept {
-		return _Ptr == _Data->_First;
+		return _Ptr == _RefData->_First;
 	}
 
 	constexpr bool is_end() const noexcept {
-		return _Ptr == _Data->_Last;
+		return _Ptr == _RefData->_Last;
 	}
 }; // END VectorConstIterator
 
-template<class Vector>
-class VectorIterator : public VectorConstIterator<Vector>			// Vector Iterator
+template<class VectorData>
+class VectorIterator : public VectorConstIterator<VectorData>			// Vector Iterator
 {
 private:
-	using Base		= VectorConstIterator<Vector>;
+	using Base		= VectorConstIterator<VectorData>;
 	
 public:
-	using Data		= typename Vector::Data;
-	using ValueType = typename Vector::ValueType;
-	using Reference	= typename Vector::Reference;
-	using Pointer	= typename Vector::Pointer;
+	using Data		= VectorData;
+	using ValueType = typename Data::ValueType;
+	using Reference	= typename Data::Reference;
+	using Pointer	= typename Data::Pointer;
 
 public:
 
@@ -200,21 +200,21 @@ public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using Data					= VectorData<Type>;							// Members that are modified
-	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using Reference				= typename Data::Reference;
-	using ConstReference		= typename Data::ConstReference;
-	using Pointer				= typename Data::Pointer;
-	using ConstPointer			= typename Data::ConstPointer;
+	using _Data					= VectorData<Type>;							// Members that are modified
+	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using Reference				= typename _Data::Reference;
+	using ConstReference		= typename _Data::ConstReference;
+	using Pointer				= typename _Data::Pointer;
+	using ConstPointer			= typename _Data::ConstPointer;
 	using AllocatorType			= Alloc;
 	
-	using Iterator				= VectorIterator<Vector<ValueType>>;		// Iterator type
-	using ConstIterator			= VectorConstIterator<Vector<ValueType>>;	// Const Iterator type
+	using Iterator				= VectorIterator<_Data>;					// Iterator type
+	using ConstIterator			= VectorConstIterator<_Data>;				// Const Iterator type
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Data _data;																// Actual container data
+	_Data _data;															// Actual container data
 	AllocatorType _alloc;													// Allocator
 	
 	static constexpr size_t _DEFAULT_CAPACITY = 8;
