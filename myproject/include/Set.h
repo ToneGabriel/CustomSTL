@@ -3,14 +3,19 @@
 
 CUSTOM_BEGIN
 
-template<class Key, class Compare>
+template<class Key, class Compare, class Alloc>
 class SetTraits										// Set Traits
 {
 public:
-	using KeyType		= Key;
-	using MappedType	= Key;
-	using KeyCompare	= Compare;
-	using ValueType		= MappedType;
+	using KeyType 			= Key;
+	using MappedType 		= Key;
+	using KeyCompare 		= Compare;
+	using ValueType 		= MappedType;
+	using Reference 		= ValueType&;
+	using ConstReference 	= const Reference;
+	using Pointer 			= ValueType*;
+	using ConstPointer 		= const Pointer;
+	using AllocatorType 	= Alloc;
 
 public:
 
@@ -26,11 +31,13 @@ public:
 }; // END Set Traits
 
 
-template<class Key, class Compare = custom::Less<Key>>
-class Set : public _SearchTree<SetTraits<Key, Compare>>		// Set Template
+template<class Key,
+class Compare 	= custom::Less<Key>,
+class Alloc		= custom::Allocator<Key>>
+class Set : public _SearchTree<SetTraits<Key, Compare, Alloc>>		// Set Template
 {
 private:
-	using Base = _SearchTree<SetTraits<Key, Compare>>;
+	using Base = _SearchTree<SetTraits<Key, Compare, Alloc>>;
 
 public:
 	using KeyType				= typename Base::KeyType;

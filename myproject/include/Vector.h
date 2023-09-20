@@ -7,7 +7,7 @@
 CUSTOM_BEGIN
 
 template<class Type>
-struct VectorData
+struct _VectorData
 {
 	using ValueType			= Type;				// Type for stored values
 	using Reference			= ValueType&;
@@ -20,11 +20,11 @@ struct VectorData
 	Pointer _Final			= nullptr;			// Pointer to capacity end
 };
 
-template<class VectorData>
+template<class VecData>
 class VectorConstIterator
 {
 public:
-	using _Data		= VectorData;
+	using _Data		= VecData;
 	using ValueType = typename _Data::ValueType;
 	using Reference = typename _Data::ConstReference;
 	using Pointer	= typename _Data::ConstPointer;
@@ -120,23 +120,23 @@ public:
 	}
 }; // END VectorConstIterator
 
-template<class VectorData>
-class VectorIterator : public VectorConstIterator<VectorData>			// Vector Iterator
+template<class VecData>
+class VectorIterator : public VectorConstIterator<VecData>			// Vector Iterator
 {
 private:
-	using Base		= VectorConstIterator<VectorData>;
+	using Base		= VectorConstIterator<VecData>;
 	
 public:
-	using Data		= VectorData;
-	using ValueType = typename Data::ValueType;
-	using Reference	= typename Data::Reference;
-	using Pointer	= typename Data::Pointer;
+	using _Data		= VecData;
+	using ValueType = typename _Data::ValueType;
+	using Reference	= typename _Data::Reference;
+	using Pointer	= typename _Data::Pointer;
 
 public:
 
 	constexpr VectorIterator() noexcept = default;
 
-	constexpr explicit VectorIterator(ValueType* ptr, const Data* data) noexcept
+	constexpr explicit VectorIterator(ValueType* ptr, const _Data* data) noexcept
 		:Base(ptr, data) { /*Empty*/ }
 
 	constexpr VectorIterator& operator++() noexcept {
@@ -200,7 +200,7 @@ public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using _Data					= VectorData<Type>;							// Members that are modified
+	using _Data					= _VectorData<Type>;						// Members that are modified
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;

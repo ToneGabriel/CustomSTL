@@ -3,14 +3,19 @@
 
 CUSTOM_BEGIN
 
-template<class Key, class Type, class Compare>
+template<class Key, class Type, class Compare, class Alloc>
 class MapTraits										// Map Traits
 {
 public:
-	using KeyType 		= Key;
-	using MappedType 	= Type;
-	using KeyCompare 	= Compare;
-	using ValueType 	= Pair<Key, Type>;
+	using KeyType 			= Key;
+	using MappedType 		= Type;
+	using KeyCompare 		= Compare;
+	using ValueType 		= Pair<Key, Type>;
+	using Reference 		= ValueType&;
+	using ConstReference 	= const Reference;
+	using Pointer 			= ValueType*;
+	using ConstPointer 		= const Pointer;
+	using AllocatorType 	= Alloc;
 
 public:
 
@@ -26,11 +31,13 @@ public:
 }; // END Map Traits
 
 
-template<class Key, class Type, class Compare = custom::Less<Key>>
-class Map : public _SearchTree<MapTraits<Key, Type, Compare>>		// Map Template
+template<class Key, class Type,
+class Compare 	= custom::Less<Key>,
+class Alloc		= custom::Allocator<custom::Pair<Key, Type>>>
+class Map : public _SearchTree<MapTraits<Key, Type, Compare, Alloc>>		// Map Template
 {
 private:
-	using Base = _SearchTree<MapTraits<Key, Type, Compare>>;
+	using Base = _SearchTree<MapTraits<Key, Type, Compare, Alloc>>;
 
 public:
 	using KeyType 				= typename Base::KeyType;

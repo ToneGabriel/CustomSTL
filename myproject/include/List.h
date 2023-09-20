@@ -1,5 +1,6 @@
 #pragma once
 #include "xNode.h"
+#include "xMemory.h"
 #include "Utility.h"
 #include "Algorithm.h"
 
@@ -10,7 +11,7 @@ template<class Traits>
 class _HashTable;
 
 template<class Type>
-struct ListData 
+struct _ListData 
 {
 	using ValueType			= Type;									// Type for stored values
 	using Reference			= ValueType&;
@@ -161,7 +162,7 @@ public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using _Data 				= ListData<Type>;							// Members that are modified
+	using _Data 				= _ListData<Type>;							// Members that are modified
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
