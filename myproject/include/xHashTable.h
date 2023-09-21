@@ -1,7 +1,7 @@
 #pragma once
 #include "List.h"
 #include "Vector.h"
-#include "Pair.h"		// For _try_emplace
+#include "Pair.h"		// _try_emplace
 #include "Utility.h"
 #include "Functional.h"	// EqualTo
 
@@ -85,24 +85,6 @@ protected:
 		return *this;
 	}
 
-	bool operator==(const _HashTable& other) const {					// Contains the same elems, but not the same hashtable
-		if (size() != other.size())
-			return false;
-
-		for (const ValueType& val : other)
-		{
-			ConstIterator it = find(Traits::extract_key(val));	// Search for key
-			if (it == end() || Traits::extract_mapval(*it) != Traits::extract_mapval(val))
-				return false;
-		}
-
-		return true;
-	}
-
-	bool operator!=(const _HashTable& other) const {
-		return !(*this == other);
-	}
-
 public:
     // Main functions
 
@@ -112,11 +94,13 @@ public:
 		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
 		Iterator it 			= find(newKey);
 
-		if (it != end()) {		// Destroy newly-created Node if key exists
+		if (it != end())	// Destroy newly-created Node if key exists
+		{
 			delete newNode;
 			return it;
 		}
-		else {
+		else
+		{
 			_rehash_if_overload();
 			_elems._insert_node_before(_elems._data._Head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
@@ -132,7 +116,7 @@ public:
 			return end();
 
 		Node* nodeToErase = (*it);
-		_buckets[index].pop(it);													// Remove reference from array of lists
+		_buckets[index].pop(it);									// Remove reference hashtable
 		return _elems.pop(Iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
 	}
 
@@ -157,6 +141,10 @@ public:
 			return end();
 
 		return ConstIterator(*it, &_elems._data);
+	}
+
+	bool contains(const KeyType& key) const {
+		return find(key) != end();
 	}
 
 	void rehash(const size_t& buckets) {							// rebuild table with at least buckets
@@ -235,13 +223,14 @@ public:
 protected:
 	// Others
 
-	template<class _KeyType, class... Args>							// _KeyType used for "const KeyType&" type
-	Iterator _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
+	template<class _KeyType, class... Args>
+	Pair<Iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
 		Iterator it = find(key);		// Check key and decide to construct or not
 
 		if (it != end())
-			return it;
-		else {
+			return {it, false};
+		else
+		{
 			Node* newNode = new Node(
 							custom::PiecewiseConstruct,
 							custom::forward_as_tuple(custom::forward<_KeyType>(key)),
@@ -252,7 +241,7 @@ protected:
 			_rehash_if_overload();
 			_elems._insert_node_before(_elems._data._Head, newNode);
 			_buckets[bucket(newKey)].emplace_back(newNode);
-			return Iterator(newNode, &_elems._data);
+			return {Iterator(newNode, &_elems._data), true};
 		}
 	}
 
@@ -314,5 +303,27 @@ private:
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
 }; // END _HashTable Template
+
+
+// _HashTable binary operators
+template<class Traits>
+bool operator==(const _HashTable<Traits>& left, const _HashTable<Traits>& right) {	// Contains the same elems, but not the same hashtable
+	if (left.size() != right.size())
+		return false;
+
+	for (const auto& val : right)
+	{
+		auto it = left.find(Traits::extract_key(val));	// Search for key
+		if (it == left.end() || Traits::extract_mapval(*it) != Traits::extract_mapval(val))
+			return false;
+	}
+
+	return true;
+}
+
+template<class Traits>
+bool operator!=(const _HashTable<Traits>& left, const _HashTable<Traits>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END

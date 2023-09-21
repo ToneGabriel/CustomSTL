@@ -616,12 +616,14 @@ private:
 	}
 
 	void _initialize_from_cstring(const char* cstring) {
-		if (cstring == nullptr) {
+		if (cstring == nullptr)
+		{
 			_data._First 	= _alloc.allocate(1);
 			_data._Last 	= _data._First;
 			_data._Final 	= _data._First;
 		}
-		else {
+		else
+		{
 			size_t len 		= strlen(cstring);
 			_data._First 	= _alloc.allocate(len + 1);
 			_data._Last 	= _data._First + len;

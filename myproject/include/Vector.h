@@ -321,7 +321,8 @@ public:
 	constexpr void resize(const size_t& newSize) {								// Change size and Construct/Destruct objects with default value if needed
 		if (newSize < size())
 			_alloc.destroy_range(_data._First + newSize, size() - newSize);
-		else {
+		else
+		{
 			if (newSize > capacity())
 				reserve(newSize);
 
@@ -334,7 +335,8 @@ public:
 	constexpr void resize(const size_t& newSize, const ValueType& copyValue) {	// Change size and Construct/Destruct objects with given reference if needed
 		if (newSize < size())
 			_alloc.destroy_range(_data._First + newSize, size() - newSize);
-		else {
+		else
+		{
 			if (newSize > capacity())
 				reserve(newSize);
 

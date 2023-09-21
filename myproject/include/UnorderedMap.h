@@ -76,12 +76,12 @@ public:
 public:
 	// Operators
 
-	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->Second;
+	MappedType& operator[](const KeyType& key) {				// Access value or create new one with key and assignment
+		return this->_try_emplace(key).First->Second;
 	}
 
-	MappedType& operator[](Key&& key) {
-		return try_emplace(custom::move(key))->Second;
+	MappedType& operator[](KeyType&& key) {
+		return this->_try_emplace(custom::move(key)).First->Second;
 	}
 
 	UnorderedMap& operator=(const UnorderedMap& other) {
@@ -94,27 +94,24 @@ public:
 		return *this;
 	}
 
-	bool operator==(const UnorderedMap& other) const {		// Contains the same elems, but not the same hashtable
-		return Base::operator==(other);
-	}
-
-	bool operator!=(const UnorderedMap& other) const {
-		return Base::operator!=(other);
-	}
-
 public:
 	// Main functions
 
-	template<class _KeyType, class... Args>
-	Iterator try_emplace(_KeyType&& key, Args&&... args) {	// Force construction with known key and given arguments for object
+	template<class... Args>
+	Pair<Iterator, bool> try_emplace(const KeyType& key, Args&&... args) {	// Force construction with known key and given arguments for object
+		return this->_try_emplace(key, custom::forward<Args>(args)...);
+	}
+
+	template<class... Args>
+	Pair<Iterator, bool> try_emplace(KeyType&& key, Args&&... args) {
 		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 
-	const MappedType& at(const Key& key) const {			// Access value at key with check
+	const MappedType& at(const KeyType& key) const {			// Access value at key with check
 		return this->_at(key);
 	}
 
-	MappedType& at(const Key& key) {
+	MappedType& at(const KeyType& key) {
 		return this->_at(key);
 	}
 }; // END UnorderedMap Template

@@ -10,7 +10,7 @@ CUSTOM_BEGIN
 // uninitialized_copy
 template<class InputIt, class NoThrowForwardIt>
 NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first) {
-    using Type = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+    using Type = typename std::iterator_traits<NoThrowForwardIt>::valueType;
 
     NoThrowForwardIt current = d_first;
     
@@ -32,10 +32,18 @@ NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardI
 // END uninitialized_copy
 
 
+// construct_at
+template<class Type, class... Args>
+constexpr Type* construct_at(Type* address, Args&&... args) {
+	return ::new(address) Type(custom::forward<Args>(args)...);
+}
+// END construct_at
+
+
 // destroy, destroy_at, destroy_n
 template<class Type>
 constexpr void destroy_at(Type* p) {
-    if (IsArray_v<Type>)
+    if constexpr (IsArray_v<Type>)
         for (auto &elem : *p)
             destroy_at(&(elem));
     else
@@ -120,6 +128,62 @@ public:
 			destroy(address + i);
 	}
 }; // END Allocator
+
+
+template<class Alloc>
+struct AllocatorTraits						// AllocatorTraits any
+{
+    using AllocatorType 						= Alloc;
+    using ValueType								= typename Alloc::ValueType;
+
+    // using Pointer								= typename _Get_pointer_type<Alloc>::Type;
+    // using ConstPointer							= typename _Get_const_pointer_type<Alloc>::Type;
+    // using VoidPointer 							= typename _Get_void_pointer_type<Alloc>::Type;
+    // using ConstVoidPointer						= typename _Get_const_void_pointer_type<Alloc>::Type;
+
+    // using PropagateOnContainerCopyAssignment	= typename _Get_propagate_on_container_copy<Alloc>::Type;
+    // using PropagateOnContainerMoveAssignment	= typename _Get_propagate_on_container_move<Alloc>::Type;
+    // using PropagateOnContainerSwap				= typename _Get_propagate_on_container_swap<Alloc>::Type;
+    // using IsAlwaysEqual							= typename _Get_is_always_equal<Alloc>::Type;
+
+    // template<class Other>
+    // using RebindAlloc 							= typename _Get_rebind_type<Alloc, Other>::Type;
+
+    // template<class Other>
+    // using RebindTraits 							= AllocatorTraits<RebindAlloc<Other>>;
+};	// END AllocatorTraits any
+
+
+template<class Type>
+struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
+{
+	using AllocatorType 						= Allocator<Type>;
+    using ValueType     						= Type;
+
+    using Pointer 								= ValueType*;
+    using ConstPointer 							= const ValueType*;
+    using VoidPointer 							= void*;
+    using ConstVoidPointer 						= const void*;
+
+    using PropagateOnContainerCopyAssignment 	= FalseType;
+    using PropagateOnContainerMoveAssignment 	= TrueType;
+    using PropagateOnContainerSwap 				= FalseType;
+    using IsAlwaysEqual 						= TrueType;
+
+    template<class Other>
+    using RebindAlloc 							= Allocator<Other>;
+
+    template<class Other>
+    using RebindTraits 							= AllocatorTraits<Allocator<Other>>;
+
+	static constexpr Pointer allocate(AllocatorType& al, const size_t& capacity) {
+		return al.allocate(capacity);
+	}
+
+	static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t& capacity) {
+		al.deallocate(address, capacity);
+	}
+};	// END AllocatorTraits default
 #pragma endregion Allocator
 
 CUSTOM_END

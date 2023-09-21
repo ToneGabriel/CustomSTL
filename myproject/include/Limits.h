@@ -253,12 +253,12 @@ struct NumericLimits
 
     /* The minimum finite value, or for floating types with
 	denormalization, the minimum positive normalized value. */
-    static constexpr Type min() noexcept { 
+    static constexpr Type (min)() noexcept { 
         return Type();
     }
 
     /* The maximum finite value. */
-    static constexpr Type max() noexcept { 
+    static constexpr Type (max)() noexcept { 
         return Type();
     }
 
@@ -348,16 +348,16 @@ struct NumericLimits<bool>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr bool min() noexcept {
+    static constexpr bool (min)() noexcept {
         return false;
     }
 
-    static constexpr bool max() noexcept {
+    static constexpr bool (max)() noexcept {
         return true;
     }
 
     static constexpr bool lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr bool epsilon() noexcept {
@@ -420,16 +420,16 @@ struct NumericLimits<char>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr char min() noexcept {
+    static constexpr char (min)() noexcept {
         return CHAR_MIN;
     }
 
-    static constexpr char max() noexcept {
+    static constexpr char (max)() noexcept {
         return CHAR_MAX;
     }
 
     static constexpr char lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr char epsilon() noexcept {
@@ -492,16 +492,16 @@ struct NumericLimits<signed char>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr signed char min() noexcept {
+    static constexpr signed char (min)() noexcept {
         return SCHAR_MIN;
     }
 
-    static constexpr signed char max() noexcept {
+    static constexpr signed char (max)() noexcept {
         return SCHAR_MAX;
     }
 
     static constexpr signed char lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr signed char epsilon() noexcept {
@@ -564,16 +564,16 @@ struct NumericLimits<unsigned char>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr unsigned char min() noexcept {
+    static constexpr unsigned char (min)() noexcept {
         return 0;
     }
 
-    static constexpr unsigned char max() noexcept {
+    static constexpr unsigned char (max)() noexcept {
         return UCHAR_MAX;
     }
 
     static constexpr unsigned char lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr unsigned char epsilon() noexcept {
@@ -636,16 +636,16 @@ struct NumericLimits<wchar_t>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr wchar_t min() noexcept {
+    static constexpr wchar_t (min)() noexcept {
         return WCHAR_MIN;
     }
 
-    static constexpr wchar_t max() noexcept {
+    static constexpr wchar_t (max)() noexcept {
         return WCHAR_MAX;
     }
 
     static constexpr wchar_t lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr wchar_t epsilon() noexcept {
@@ -675,75 +675,77 @@ struct NumericLimits<wchar_t>
 
 
 // char8_t specialization
-// template<>
-// struct NumericLimits<char8_t>
-// {
-//     static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
-//     static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
+#ifdef __cpp_char8_t
+template<>
+struct NumericLimits<char8_t>
+{
+    static constexpr FloatRoundStyle RoundStyle = RoundTowardZero;
+    static constexpr FloatDenormStyle HasDenorm = DenormAbsent;
 
-//     static constexpr bool HasDenormLoss         = false;
-//     static constexpr bool HasInfinity           = false;
-//     static constexpr bool HasQuietNaN           = false;
-//     static constexpr bool HasSignalingNaN       = false;
+    static constexpr bool HasDenormLoss         = false;
+    static constexpr bool HasInfinity           = false;
+    static constexpr bool HasQuietNaN           = false;
+    static constexpr bool HasSignalingNaN       = false;
 
-//     static constexpr bool IsSpecialized         = true;
-//     static constexpr bool IsSigned              = _CUSTOM_SIGNED(char8_t);
-//     static constexpr bool IsInteger             = true;
-//     static constexpr bool IsExact               = true;
-//     static constexpr bool IsIEC559              = false;
-//     static constexpr bool IsBounded             = true;
-//     static constexpr bool IsModulo              = !IsSigned;
+    static constexpr bool IsSpecialized         = true;
+    static constexpr bool IsSigned              = _CUSTOM_SIGNED(char8_t);
+    static constexpr bool IsInteger             = true;
+    static constexpr bool IsExact               = true;
+    static constexpr bool IsIEC559              = false;
+    static constexpr bool IsBounded             = true;
+    static constexpr bool IsModulo              = !IsSigned;
 
-//     static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
-//     static constexpr bool TinynessBefore        = false;
+    static constexpr bool Traps                 = _CUSTOM_INTEGRAL_TRAPS;
+    static constexpr bool TinynessBefore        = false;
 
-//     static constexpr int Digits                 = _CUSTOM_DIGITS(char8_t);
-//     static constexpr int Digits10               = _CUSTOM_DIGITS10(char8_t);
-//     static constexpr int MaxDigits10            = 0;
-//     static constexpr int Radix                  = 2;
+    static constexpr int Digits                 = _CUSTOM_DIGITS(char8_t);
+    static constexpr int Digits10               = _CUSTOM_DIGITS10(char8_t);
+    static constexpr int MaxDigits10            = 0;
+    static constexpr int Radix                  = 2;
 
-//     static constexpr int MinExponent            = 0;
-//     static constexpr int MinExponent10          = 0;
-//     static constexpr int MaxExponent            = 0;
-//     static constexpr int MaxExponent10          = 0;
+    static constexpr int MinExponent            = 0;
+    static constexpr int MinExponent10          = 0;
+    static constexpr int MaxExponent            = 0;
+    static constexpr int MaxExponent10          = 0;
 
 
-//     static constexpr char8_t min() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t (min)() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t max() noexcept {
-//         return UCHAR_MAX;
-//     }
+    static constexpr char8_t (max)() noexcept {
+        return UCHAR_MAX;
+    }
 
-//     static constexpr char8_t lowest() noexcept {
-//         return min();
-//     }
+    static constexpr char8_t lowest() noexcept {
+        return (min)();
+    }
 
-//     static constexpr char8_t epsilon() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t epsilon() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t round_error() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t round_error() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t infinity() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t infinity() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t quiet_NaN() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t quiet_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t signaling_NaN() noexcept {
-//         return 0;
-//     }
+    static constexpr char8_t signaling_NaN() noexcept {
+        return 0;
+    }
 
-//     static constexpr char8_t denorm_min() noexcept {
-//         return 0;
-//     }
-// };  // END char8_t specialization
+    static constexpr char8_t denorm_min() noexcept {
+        return 0;
+    }
+};  // END char8_t specialization
+#endif  // char8_t defined
 
 
 // char16_t specialization
@@ -780,16 +782,16 @@ struct NumericLimits<char16_t>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr char16_t min() noexcept {
+    static constexpr char16_t (min)() noexcept {
         return 0;
     }
 
-    static constexpr char16_t max() noexcept {
+    static constexpr char16_t (max)() noexcept {
         return USHRT_MAX;
     }
 
     static constexpr char16_t lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr char16_t epsilon() noexcept {
@@ -852,16 +854,16 @@ struct NumericLimits<char32_t>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr char32_t min() noexcept {
+    static constexpr char32_t (min)() noexcept {
         return 0;
     }
 
-    static constexpr char32_t max() noexcept {
+    static constexpr char32_t (max)() noexcept {
         return UINT_MAX;
     }
 
     static constexpr char32_t lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr char32_t epsilon() noexcept {
@@ -924,16 +926,16 @@ struct NumericLimits<short>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr short min() noexcept {
+    static constexpr short (min)() noexcept {
         return SHRT_MIN;
     }
 
-    static constexpr short max() noexcept {
+    static constexpr short (max)() noexcept {
         return SHRT_MAX;
     }
 
     static constexpr short lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr short epsilon() noexcept {
@@ -996,16 +998,16 @@ struct NumericLimits<unsigned short>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr unsigned short min() noexcept {
+    static constexpr unsigned short (min)() noexcept {
         return 0;
     }
 
-    static constexpr unsigned short max() noexcept {
+    static constexpr unsigned short (max)() noexcept {
         return USHRT_MAX;
     }
 
     static constexpr unsigned short lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr unsigned short epsilon() noexcept {
@@ -1068,16 +1070,16 @@ struct NumericLimits<int>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr int min() noexcept {
+    static constexpr int (min)() noexcept {
         return INT_MIN;
     }
 
-    static constexpr int max() noexcept {
+    static constexpr int (max)() noexcept {
         return INT_MAX;
     }
 
     static constexpr int lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr int epsilon() noexcept {
@@ -1140,16 +1142,16 @@ struct NumericLimits<unsigned int>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr unsigned int min() noexcept {
+    static constexpr unsigned int (min)() noexcept {
         return 0;
     }
 
-    static constexpr unsigned int max() noexcept {
+    static constexpr unsigned int (max)() noexcept {
         return UINT_MAX;
     }
 
     static constexpr unsigned int lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr unsigned int epsilon() noexcept {
@@ -1212,16 +1214,16 @@ struct NumericLimits<long>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr long min() noexcept {
+    static constexpr long (min)() noexcept {
         return LONG_MIN;
     }
 
-    static constexpr long max() noexcept {
+    static constexpr long (max)() noexcept {
         return LONG_MAX;
     }
 
     static constexpr long lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr long epsilon() noexcept {
@@ -1284,16 +1286,16 @@ struct NumericLimits<unsigned long>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr unsigned long min() noexcept {
+    static constexpr unsigned long (min)() noexcept {
         return 0;
     }
 
-    static constexpr unsigned long max() noexcept {
+    static constexpr unsigned long (max)() noexcept {
         return ULONG_MAX;
     }
 
     static constexpr unsigned long lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr unsigned long epsilon() noexcept {
@@ -1356,16 +1358,16 @@ struct NumericLimits<long long>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr long long min() noexcept {
+    static constexpr long long (min)() noexcept {
         return LLONG_MIN;
     }
 
-    static constexpr long long max() noexcept {
+    static constexpr long long (max)() noexcept {
         return LLONG_MAX;
     }
 
     static constexpr long long lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr long long epsilon() noexcept {
@@ -1428,16 +1430,16 @@ struct NumericLimits<unsigned long long>
     static constexpr int MaxExponent10          = 0;
 
 
-    static constexpr unsigned long long min() noexcept {
+    static constexpr unsigned long long (min)() noexcept {
         return 0;
     }
 
-    static constexpr unsigned long long max() noexcept {
+    static constexpr unsigned long long (max)() noexcept {
         return ULLONG_MAX;
     }
 
     static constexpr unsigned long long lowest() noexcept {
-        return min();
+        return (min)();
     }
 
     static constexpr unsigned long long epsilon() noexcept {
@@ -1500,16 +1502,16 @@ struct NumericLimits<float>
     static constexpr int MaxExponent10          = FLT_MAX_10_EXP;
 
 
-    static constexpr float min() noexcept {
+    static constexpr float (min)() noexcept {
         return FLT_MIN;
     }
 
-    static constexpr float max() noexcept {
+    static constexpr float (max)() noexcept {
         return FLT_MAX;
     }
 
     static constexpr float lowest() noexcept {
-        return -max();
+        return -(max)();
     }
 
     static constexpr float epsilon() noexcept {
@@ -1572,16 +1574,16 @@ struct NumericLimits<double>
     static constexpr int MaxExponent10          = DBL_MAX_10_EXP;
 
 
-    static constexpr double min() noexcept {
+    static constexpr double (min)() noexcept {
         return DBL_MIN;
     }
 
-    static constexpr double max() noexcept {
+    static constexpr double (max)() noexcept {
         return DBL_MAX;
     }
 
     static constexpr double lowest() noexcept {
-        return -max();
+        return -(max)();
     }
 
     static constexpr double epsilon() noexcept {
@@ -1644,16 +1646,16 @@ struct NumericLimits<long double>
     static constexpr int MaxExponent10          = LDBL_MAX_10_EXP;
 
 
-    static constexpr long double min() noexcept {
+    static constexpr long double (min)() noexcept {
         return LDBL_MIN;
     }
 
-    static constexpr long double max() noexcept {
+    static constexpr long double (max)() noexcept {
         return LDBL_MAX;
     }
 
     static constexpr long double lowest() noexcept {
-        return -max();
+        return -(max)();
     }
 
     static constexpr long double epsilon() noexcept {

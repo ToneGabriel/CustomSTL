@@ -85,14 +85,6 @@ public:
 		Base::operator=(custom::move(other));
 		return *this;
 	}
-
-	bool operator==(const UnorderedSet& other) const {				// Contains the same elems, but not the same hashtable
-		return Base::operator==(other);
-	}
-
-	bool operator!=(const UnorderedSet& other) const {
-		return Base::operator!=(other);
-	}
 }; // END UnorderedSet Template
 
 CUSTOM_END
