@@ -6,14 +6,16 @@
 
 CUSTOM_BEGIN
 
-template<class Type>
+template<class Type, class Alloc>
 struct _VectorData
 {
-	using ValueType			= Type;				// Type for stored values
-	using Reference			= ValueType&;
-	using ConstReference	= const Reference;
-	using Pointer			= ValueType*;
-	using ConstPointer		= const Pointer;
+	using _AllocTraits		= AllocatorTraits<Alloc>;
+
+	using ValueType			= typename _AllocTraits::ValueType;
+	using Reference			= typename _AllocTraits::Reference;
+	using ConstReference	= typename _AllocTraits::ConstReference;
+	using Pointer			= typename _AllocTraits::Pointer;
+	using ConstPointer		= typename _AllocTraits::ConstPointer;
 
 	Pointer _First			= nullptr;			// Actual container array
 	Pointer _Last			= nullptr;			// Pointer to end
@@ -23,8 +25,10 @@ struct _VectorData
 template<class VecData>
 class VectorConstIterator
 {
-public:
+private:
 	using _Data		= VecData;
+
+public:
 	using ValueType = typename _Data::ValueType;
 	using Reference = typename _Data::ConstReference;
 	using Pointer	= typename _Data::ConstPointer;
@@ -124,10 +128,10 @@ template<class VecData>
 class VectorIterator : public VectorConstIterator<VecData>			// Vector Iterator
 {
 private:
-	using Base		= VectorConstIterator<VecData>;
+	using _Base		= VectorConstIterator<VecData>;
+	using _Data		= VecData;
 	
 public:
-	using _Data		= VecData;
 	using ValueType = typename _Data::ValueType;
 	using Reference	= typename _Data::Reference;
 	using Pointer	= typename _Data::Pointer;
@@ -137,21 +141,21 @@ public:
 	constexpr VectorIterator() noexcept = default;
 
 	constexpr explicit VectorIterator(ValueType* ptr, const _Data* data) noexcept
-		:Base(ptr, data) { /*Empty*/ }
+		:_Base(ptr, data) { /*Empty*/ }
 
 	constexpr VectorIterator& operator++() noexcept {
-		Base::operator++();
+		_Base::operator++();
 		return *this;
 	}
 
 	constexpr VectorIterator operator++(int) noexcept {
 		VectorIterator temp = *this;
-		Base::operator++();
+		_Base::operator++();
 		return temp;
 	}
 
 	constexpr VectorIterator& operator+=(const size_t& diff) noexcept {
-		Base::operator+=(diff);
+		_Base::operator+=(diff);
 		return *this;
 	}
 
@@ -162,18 +166,18 @@ public:
 	}
 
 	constexpr VectorIterator& operator--() noexcept {
-		Base::operator--();
+		_Base::operator--();
 		return *this;
 	}
 
 	constexpr VectorIterator operator--(int) noexcept {
 		VectorIterator temp = *this;
-		Base::operator--();
+		_Base::operator--();
 		return temp;
 	}
 
 	constexpr VectorIterator& operator-=(const size_t& diff) noexcept {
-		Base::operator-=(diff);
+		_Base::operator-=(diff);
 		return *this;
 	}
 
@@ -184,11 +188,11 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		return const_cast<Pointer>(Base::operator->());
+		return const_cast<Pointer>(_Base::operator->());
 	}
 
 	constexpr Reference operator*() const noexcept {
-		return const_cast<Reference>(Base::operator*());
+		return const_cast<Reference>(_Base::operator*());
 	}
 }; // END VectorIterator
 
@@ -196,11 +200,14 @@ public:
 template<class Type, class Alloc = custom::Allocator<Type>>
 class Vector			// Vector Template
 {
+private:
+	using _Data					= _VectorData<Type, Alloc>;					// Members that are modified
+	using _AllocTraits			= typename _Data::_AllocTraits;
+
 public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using _Data					= _VectorData<Type>;						// Members that are modified
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
@@ -287,7 +294,7 @@ public:
 		size_t newSize		= size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_alloc.construct(&newArray[i], custom::move(_data._First[i]));
+			_AllocTraits::construct(_alloc, &newArray[i], custom::move(_data._First[i]));
 
 		_clean_up_array();
 		_data._First	= newArray;
@@ -305,7 +312,7 @@ public:
 		_data._First	= _alloc.allocate(newCapacity);
 		_data._Last		= _data._First + newCapacity;
 		_data._Final	= _data._First + newCapacity;
-		_alloc.construct_range(_data._First, newCapacity);
+		_construct_range(_data._First, newCapacity);
 	}
 
 	constexpr void realloc(	const size_t& newCapacity,
@@ -315,18 +322,18 @@ public:
 		_data._First	= _alloc.allocate(newCapacity);
 		_data._Last		= _data._First + newCapacity;
 		_data._Final	= _data._First + newCapacity;
-		_alloc.construct_range(_data._First, newCapacity, copyValue);
+		_construct_range(_data._First, newCapacity, copyValue);
 	}
 	
 	constexpr void resize(const size_t& newSize) {								// Change size and Construct/Destruct objects with default value if needed
 		if (newSize < size())
-			_alloc.destroy_range(_data._First + newSize, size() - newSize);
+			_destroy_range(_data._First + newSize, size() - newSize);
 		else
 		{
 			if (newSize > capacity())
 				reserve(newSize);
 
-			_alloc.construct_range(_data._Last, newSize - size());
+			_construct_range(_data._Last, newSize - size());
 		}
 
 		_data._Last = _data._First + newSize;
@@ -334,13 +341,13 @@ public:
 
 	constexpr void resize(const size_t& newSize, const ValueType& copyValue) {	// Change size and Construct/Destruct objects with given reference if needed
 		if (newSize < size())
-			_alloc.destroy_range(_data._First + newSize, size() - newSize);
+			_destroy_range(_data._First + newSize, size() - newSize);
 		else
 		{
 			if (newSize > capacity())
 				reserve(newSize);
 
-			_alloc.construct_range(_data._Last, newSize - size(), copyValue);
+			_construct_range(_data._Last, newSize - size(), copyValue);
 		}
 
 		_data._Last = _data._First + newSize;
@@ -349,7 +356,7 @@ public:
 	template<class... Args>
 	constexpr void emplace_back(Args&&... args) {								// Construct object using arguments (Args) and add it to the tail
 		_extend_if_full();
-		_alloc.construct(_data._Last++, custom::forward<Args>(args)...);
+		_AllocTraits::construct(_alloc, _data._Last++, custom::forward<Args>(args)...);
 	}
 
 	constexpr void push_back(const ValueType& copyValue) {						// Construct object using reference and add it to the tail
@@ -362,7 +369,7 @@ public:
 
 	constexpr void pop_back() {													// Remove last component
 		if (!empty())
-			_alloc.destroy(--_data._Last);
+			_AllocTraits::destroy(_alloc, --_data._Last);
 	}
 
 	template<class... Args>
@@ -373,8 +380,8 @@ public:
 		for (size_t i = size() - 1; i > index; --i)
 			_data._First[i] = custom::move(_data._First[i - 1]);
 
-		_alloc.destroy(_data._First + index);
-		_alloc.construct(_data._First + index, custom::forward<Args>(args)...);
+		_AllocTraits::destroy(_alloc, _data._First + index);
+		_AllocTraits::construct(_alloc, _data._First + index, custom::forward<Args>(args)...);
 
 		return Iterator(_data._First + index, &_data);
 	}
@@ -409,10 +416,9 @@ public:
 		return static_cast<size_t>(_data._Last - _data._First);
 	}
 
-	// TODO: implement
 	//constexpr size_t max_size() const noexcept {
-	//	return (_STD min)(
-	//		static_cast<size_t>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
+	//	return (std::min)(	static_cast<size_t>((custom::NumericLimits<ptrdiff_t>::max)()),
+	//						_AllocTraits::max_size(_alloc));
 	//}
 
 	constexpr bool empty() const noexcept {										// Check if array is empty
@@ -420,7 +426,7 @@ public:
 	}
 	
 	constexpr void clear() {													// Remove ALL components but keep memory
-		_alloc.destroy_range(_data._First, size());
+		_destroy_range(_data._First, size());
 		_data._Last = _data._First;
 	}
 
@@ -509,7 +515,7 @@ private:
 		size_t newSize	= other.size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_alloc.construct(&_data._First[i], other._data._First[i]);
+			_AllocTraits::construct(_alloc, &_data._First[i], other._data._First[i]);
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
@@ -521,6 +527,21 @@ private:
 		_data._Final 	= custom::exchange(other._data._Final, nullptr);
 	}
 
+	constexpr void _construct_range(ValueType* const address, const size_t& length) {
+		for (size_t i = 0; i < length; ++i)
+			_AllocTraits::construct(_alloc, address + i);
+	}
+
+	constexpr void _construct_range(ValueType* const address, const size_t& length, const ValueType& value) {
+		for (size_t i = 0; i < length; ++i)
+			_AllocTraits::construct(_alloc, address + i, value);
+	}
+
+	constexpr void _destroy_range(ValueType* address, const size_t& length) {
+		for (size_t i = 0; i < length; ++i)
+			_AllocTraits::destroy(_alloc, address + i);
+	}
+
 	constexpr void _extend_if_full() {											// Reserve 50% more capacity when full
 		if (_data._Last == _data._Final)
 			reserve(capacity() + capacity() / 2 + 1);
@@ -529,7 +550,7 @@ private:
 	constexpr void _clean_up_array() {											// Clear and Deallocate array
 		if (_data._First != nullptr)
 		{
-			_alloc.destroy_range(_data._First, size());
+			_destroy_range(_data._First, size());
 			_alloc.deallocate(_data._First, capacity());
 			_data._First	= nullptr;
 			_data._Last		= nullptr;

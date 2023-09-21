@@ -10,40 +10,46 @@ CUSTOM_BEGIN
 template<class Traits>
 class _HashTable;
 
-template<class Type>
-struct _ListData 
+template<class Type, class Alloc>
+struct _ListData
 {
-	using ValueType			= Type;									// Type for stored values
-	using Reference			= ValueType&;
-	using ConstReference	= const Reference;
-	using Pointer			= ValueType*;
-	using ConstPointer		= const Pointer;
+	// deduce data types and forward them
+	using _AllocTraits		= AllocatorTraits<Alloc>;
+	using _Node				= node::_DoubleNode<Type>;
+	using _AllocNode		= typename AllocatorTraits<Alloc>::template RebindAlloc<_Node>;
+	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
+	using _NodePtr			= _AllocNodeTraits::Pointer;
 
-	using Node				= node::_DoubleNode<ValueType>;			// Node type
-	using NodePtr			= Node*;
+	using ValueType			= typename _AllocTraits::ValueType;
+	using Reference			= typename _AllocTraits::Reference;
+	using ConstReference	= typename _AllocTraits::ConstReference;
+	using Pointer			= typename _AllocTraits::Pointer;
+	using ConstPointer		= typename _AllocTraits::ConstPointer;
 
 	size_t _Size			= 0;									// Number of Nodes held
-	NodePtr _Head 			= nullptr;								// Head of list
+	_NodePtr _Head 			= nullptr;								// Head of list
 };
 
 template<class ListData>
 class ListConstIterator
 {
-public:
+private:
 	using _Data			= ListData;
+	using _NodePtr		= typename _Data::_NodePtr;
+
+public:
 	using ValueType		= typename _Data::ValueType;
 	using Reference		= typename _Data::ConstReference;
 	using Pointer		= typename _Data::ConstPointer;
-	using NodePtr		= typename _Data::NodePtr;
 
-	NodePtr _Ptr			= nullptr;
+	_NodePtr _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
 
 public:
 
 	ListConstIterator() noexcept = default;
 
-	explicit ListConstIterator(NodePtr nodePtr, const _Data* data) noexcept
+	explicit ListConstIterator(_NodePtr nodePtr, const _Data* data) noexcept
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
 	ListConstIterator& operator++() noexcept {
@@ -103,50 +109,50 @@ template<class ListData>
 class ListIterator : public ListConstIterator<ListData>		// Linked List Iterator
 {
 private:
-	using Base		= ListConstIterator<ListData>;
+	using _Base		= ListConstIterator<ListData>;
+	using _Data 	= ListData;
+	using _NodePtr	= typename _Data::_NodePtr;
 
 public:
-	using _Data 	= ListData;
 	using ValueType = typename _Data::ValueType;
 	using Reference = typename _Data::Reference;
 	using Pointer 	= typename _Data::Pointer;
-	using NodePtr	= typename _Data::NodePtr;
 
 public:
 
 	ListIterator() noexcept = default;
 
-	explicit ListIterator(NodePtr nodePtr, const _Data* data) noexcept
-		: Base(nodePtr, data) { /*Empty*/ }
+	explicit ListIterator(_NodePtr nodePtr, const _Data* data) noexcept
+		: _Base(nodePtr, data) { /*Empty*/ }
 
 	ListIterator& operator++() noexcept {
-		Base::operator++();
+		_Base::operator++();
 		return *this;
 	}
 
 	ListIterator operator++(int) noexcept {
 		ListIterator temp = *this;
-		Base::operator++();
+		_Base::operator++();
 		return temp;
 	}
 
 	ListIterator& operator--() noexcept {
-		Base::operator--();
+		_Base::operator--();
 		return *this;
 	}
 
 	ListIterator operator--(int) noexcept {
 		ListIterator temp = *this;
-		Base::operator--();
+		_Base::operator--();
 		return temp;
 	}
 
 	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(Base::operator->());
+		return const_cast<Pointer>(_Base::operator->());
 	}
 
 	Reference operator*() const noexcept {
-		return const_cast<Reference>(Base::operator*());
+		return const_cast<Reference>(_Base::operator*());
 	}
 }; // END ListIterator
 
@@ -158,12 +164,18 @@ private:
 	template<class>
 	friend class _HashTable;												// Needed in _HashTable class
 
+	using _Data 				= _ListData<Type, Alloc>;					// Members that are modified
+	using _AllocTraits			= typename _Data::_AllocTraits;
+	using _Node					= typename _Data::_Node;
+	using _AllocNode			= typename _Data::_AllocNode;
+	using _AllocNodeTraits		= typename _Data::_AllocNodeTraits;
+	using _NodePtr				= typename _Data::_NodePtr;
+
 public:
 	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
-	using _Data 				= _ListData<Type>;							// Members that are modified
-	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using ValueType 			= typename _Data::ValueType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;
@@ -176,13 +188,8 @@ public:
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	using Node 					= typename _Data::Node;						// Node in list
-	using NodePtr				= typename _Data::NodePtr;
-	using NodeAllocatorType		= custom::Allocator<Node>;
-
-private:
 	_Data _data;															// Actual container data
-	NodeAllocatorType _alloc;												// Allocator for nodes
+	_AllocNode _alloc;														// Allocator for nodes
 
 public:
 	// Constructors
@@ -247,9 +254,8 @@ public:
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
-		AllocatorType al{};
-		Node* newNode = _alloc.allocate(1);
-		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head, newNode);
 	}
 
@@ -268,9 +274,8 @@ public:
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the head
-		AllocatorType al{};
-		Node* newNode = _alloc.allocate(1);
-		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head->_Next, newNode);
 	}
 
@@ -289,11 +294,9 @@ public:
 
 	template<class... Args>
 	Iterator emplace(ConstIterator iterator, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the iterator position
-		AllocatorType al{};
-		Node* temp		= iterator._Ptr;
-		Node* newNode	= _alloc.allocate(1);
-		al.construct(&(newNode->_Value), custom::forward<Args>(args)...);
-		_insert_node_before(temp, newNode);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_insert_node_before(iterator._Ptr, newNode);
 
 		return Iterator(newNode, &_data);
 	}
@@ -310,7 +313,7 @@ public:
 		if (iterator.is_end())
 			throw std::out_of_range("Cannot pop end iterator...");
 
-		Node* temp 				= iterator._Ptr;
+		_NodePtr temp 			= iterator._Ptr;
 		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
 		_remove_node(temp);
 
@@ -418,7 +421,7 @@ private:
 		_alloc.deallocate(_data._Head, 1);
 	}
 
-	void _insert_node_before(Node* beforeNode, Node* newNode) {	// Insert Node before another
+	void _insert_node_before(_NodePtr beforeNode, _NodePtr newNode) {	// Insert Node before another
 		newNode->_Previous 				= beforeNode->_Previous;
 		newNode->_Next 					= beforeNode;
 
@@ -428,19 +431,19 @@ private:
 		++_data._Size;
 	}
 
-	void _remove_node(Node* junkNode) {							// Remove Node and relink
+	void _remove_node(_NodePtr junkNode) {							// Remove Node and relink
 		AllocatorType al{};
 
 		junkNode->_Previous->_Next = junkNode->_Next;
 		junkNode->_Next->_Previous = junkNode->_Previous;
 		--_data._Size;
 
-		al.destroy(&(junkNode->_Value));
+		_AllocNodeTraits::destroy(_alloc, &(junkNode->_Value));
 		_alloc.deallocate(junkNode, 1);
 	}
 
 	void _copy(const List& other) {								// Generic copy function for list
-		Node* temp = other._data._Head->_Next;
+		_NodePtr temp = other._data._Head->_Next;
 		while (_data._Size < other._data._Size) {
 			push_back(temp->_Value);
 			temp = temp->_Next;
@@ -465,10 +468,10 @@ private:
 			pop_back();
 	}
 
-	Node* _scroll_node(const size_t& index) const {							// Get object in the list at index position by going through all components
+	_NodePtr _scroll_node(const size_t& index) const {							// Get object in the list at index position by going through all components
 		if (index < _data._Size)
 		{
-			Node* temp = _data._Head->_Next;
+			_NodePtr temp = _data._Head->_Next;
 			for (size_t i = 0; i < index; ++i)
 				temp = temp->_Next;
 

@@ -26,7 +26,7 @@ protected:
 	using AllocatorType 		= typename Traits::AllocatorType;
 
 	using IterList				= List<ValueType>;						// List of ValueType used for iterating
-	using Node					= typename IterList::Node;				// Node component from List
+	using Node					= typename IterList::_Node;				// Node component from List
 	using Bucket				= List<Node*>;							// List of Node* (as _Value) from Iteration list
 	using HashArray				= Vector<Bucket>;						// Vector of lists of Node*
 	using BucketIterator		= typename Bucket::Iterator;			// Iterator for Buckets

@@ -1,5 +1,6 @@
 #pragma once
 #include "TypeTraits.h"
+#include "Limits.h"
 
 
 CUSTOM_BEGIN
@@ -34,7 +35,7 @@ NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardI
 
 // construct_at
 template<class Type, class... Args>
-constexpr Type* construct_at(Type* address, Args&&... args) {
+constexpr Type* construct_at(Type* const address, Args&&... args) {
 	return ::new(address) Type(custom::forward<Args>(args)...);
 }
 // END construct_at
@@ -42,12 +43,12 @@ constexpr Type* construct_at(Type* address, Args&&... args) {
 
 // destroy, destroy_at, destroy_n
 template<class Type>
-constexpr void destroy_at(Type* p) {
+constexpr void destroy_at(Type* const address) {
     if constexpr (IsArray_v<Type>)
-        for (auto &elem : *p)
+        for (auto &elem : *address)
             destroy_at(&(elem));
     else
-        p->~Type(); 
+        address->~Type();
 }
 
 template<class ForwardIt>
@@ -160,6 +161,8 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
 	using AllocatorType 						= Allocator<Type>;
     using ValueType     						= Type;
 
+    using Reference                             = ValueType&;
+    using ConstReference                        = const Reference;
     using Pointer 								= ValueType*;
     using ConstPointer 							= const ValueType*;
     using VoidPointer 							= void*;
@@ -183,6 +186,24 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
 	static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t& capacity) {
 		al.deallocate(address, capacity);
 	}
+
+    template<class _Type, class... Args>
+    static constexpr void construct(AllocatorType&, _Type* const address, Args&&... args) {
+        custom::construct_at(address, custom::forward<Args>(args)...);
+    }
+
+    template<class _Type>
+    static constexpr void destroy(AllocatorType&, _Type* const address) {
+        custom::destroy_at(address);
+    }
+
+    static constexpr size_t max_size(const AllocatorType&) noexcept {
+        return static_cast<size_t>(-1) / sizeof(ValueType);
+    }
+
+    static constexpr AllocatorType select_on_container_copy_construction(const AllocatorType& alloc) {
+        return alloc;
+    }
 };	// END AllocatorTraits default
 #pragma endregion Allocator
 
