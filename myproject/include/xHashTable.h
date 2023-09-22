@@ -25,23 +25,26 @@ protected:
 	using ConstPointer 			= typename Traits::ConstPointer;
 	using AllocatorType 		= typename Traits::AllocatorType;
 
-	using IterList				= List<ValueType>;						// List of ValueType used for iterating
-	using Node					= typename IterList::_Node;				// Node component from List
-	using Bucket				= List<Node*>;							// List of Node* (as _Value) from Iteration list
-	using HashArray				= Vector<Bucket>;						// Vector of lists of Node*
-	using BucketIterator		= typename Bucket::Iterator;			// Iterator for Buckets
-	using ConstBucketIterator 	= typename Bucket::ConstIterator;
+	using _IterList				= List<ValueType, AllocatorType>;		// List of ValueType used for iteration
+	using _AllocNode			= typename _IterList::_AllocNode;
+	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
+	using _NodePtr 				= typename _IterList::_NodePtr;
+	using _Bucket				= List<_NodePtr>;						// List of Node* (as _Value) from Iteration list
+	using _HashArray			= Vector<_Bucket>;						// Vector of lists of Node*
+	using _BucketIterator		= typename _Bucket::Iterator;			// Iterator for Buckets
+	using _ConstBucketIterator 	= typename _Bucket::ConstIterator;
 
-	using Iterator				= typename IterList::Iterator;			// Iterator for this container (identical to List iterator)
-	using ConstIterator			= typename IterList::ConstIterator;
+	using Iterator				= typename _IterList::Iterator;			// Iterator for this container (identical to List iterator)
+	using ConstIterator			= typename _IterList::ConstIterator;
 
 protected:
-	Hasher _hash;													// Used for initial(non-compressed) hash value
-	IterList _elems;												// Used to iterate through container
-	HashArray _buckets;												// Used to map elems from IterList
+	Hasher _hash;														// Used for initial(non-compressed) hash value
+	_IterList _elems;													// Used to iterate through container
+	_HashArray _buckets;												// Used to map elems from _IterList
+	_AllocNode _alloc;
 
-	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;				// The maximum load factor admitted before rehashing
-	static constexpr size_t _DEFAULT_BUCKETS	= 8;				// Default number of buckets
+	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;					// The maximum load factor admitted before rehashing
+	static constexpr size_t _DEFAULT_BUCKETS	= 8;					// Default number of buckets
 
 protected:
     // Constructors
@@ -90,7 +93,8 @@ public:
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {
-		Node* newNode 			= new Node(custom::forward<Args>(args)...);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
 		Iterator it 			= find(newKey);
 
@@ -110,12 +114,12 @@ public:
 
 	Iterator erase(const KeyType& key) {
 		size_t index 		= bucket(key);
-		BucketIterator it 	= _find_in_array(key);
+		_BucketIterator it 	= _find_in_array(key);
 
 		if (it == _buckets[index].end())
 			return end();
 
-		Node* nodeToErase = (*it);
+		_NodePtr nodeToErase = (*it);
 		_buckets[index].pop(it);									// Remove reference hashtable
 		return _elems.pop(Iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
 	}
@@ -128,7 +132,7 @@ public:
 	}
 
 	Iterator find(const KeyType& key) {
-		BucketIterator it = _find_in_array(key);
+		_BucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
@@ -136,7 +140,7 @@ public:
 	}
 
 	ConstIterator find(const KeyType& key) const {
-		ConstBucketIterator it = _find_in_array(key);
+		_ConstBucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
@@ -162,7 +166,7 @@ public:
 		_buckets.clear();					// Remove lists with Node* references
 	}
 
-	size_t bucket_count() const {									// Get HashArray size
+	size_t bucket_count() const {									// Get _HashArray size
 		return _buckets.size();
 	}
 
@@ -231,11 +235,14 @@ protected:
 			return {it, false};
 		else
 		{
-			Node* newNode = new Node(
-							custom::PiecewiseConstruct,
-							custom::forward_as_tuple(custom::forward<_KeyType>(key)),
-							custom::forward_as_tuple(custom::forward<Args>(args)...)
-							);
+			_NodePtr newNode = _alloc.allocate(1);
+			_AllocNodeTraits::construct(
+										_alloc,
+										&(newNode->_Value),
+										custom::PiecewiseConstruct,
+										custom::forward_as_tuple(custom::forward<_KeyType>(key)),
+										custom::forward_as_tuple(custom::forward<Args>(args)...)
+										);
 			const KeyType& newKey = Traits::extract_key(newNode->_Value);
 
 			_rehash_if_overload();
@@ -246,7 +253,7 @@ protected:
 	}
 
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
-		ConstBucketIterator it = _find_in_array(key);
+		_ConstBucketIterator it = _find_in_array(key);
 		
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
@@ -255,7 +262,7 @@ protected:
 	}
 
 	MappedType& _at(const KeyType& key) {
-		BucketIterator it = _find_in_array(key);
+		_BucketIterator it = _find_in_array(key);
 
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key...");
@@ -266,9 +273,9 @@ protected:
 private:
 	// Helpers
 
-	BucketIterator _find_in_array(const KeyType& key) {
-		Bucket& currentBucket 	= _buckets[bucket(key)];
-		BucketIterator it 		= currentBucket.begin();
+	_BucketIterator _find_in_array(const KeyType& key) {
+		_Bucket& currentBucket 	= _buckets[bucket(key)];
+		_BucketIterator it 		= currentBucket.begin();
 
 		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 			++it;
@@ -276,9 +283,9 @@ private:
 		return it;
 	}
 
-	ConstBucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
-		const Bucket& currentBucket = _buckets[bucket(key)];
-		ConstBucketIterator it 		= currentBucket.begin();
+	_ConstBucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
+		const _Bucket& currentBucket = _buckets[bucket(key)];
+		_ConstBucketIterator it 		= currentBucket.begin();
 
 		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
 			++it;

@@ -131,6 +131,13 @@ public:
 }; // END Allocator
 
 
+// template<class Alloc, class = void>
+// struct _HasConstructMemberFunction : FalseType {};
+
+// template<class Alloc>
+// struct _HasConstructMemberFunction<Alloc,
+// Void_t<decltype(custom::declval<Alloc>().construct(custom::declval<typename Alloc::ValueType*>()))>> : TrueType {};
+
 template<class Alloc>
 struct AllocatorTraits						// AllocatorTraits any
 {

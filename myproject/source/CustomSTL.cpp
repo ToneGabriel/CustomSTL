@@ -2,6 +2,8 @@
 
 int main()
 {
+	//std::cout << custom::_HasConstructMemberFunction<custom::Allocator<int>>::Value << '\n';
+
 	//test::thread_test();
 	//test::map_test();
 	//test::priority_queue_test();

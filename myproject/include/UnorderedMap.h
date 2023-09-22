@@ -11,12 +11,12 @@ public:
 	using MappedType 		= Type;
 	using Hasher 			= Hash;
 	using KeyEqual 			= Compare;
-	using AllocatorType 	= Alloc;
 	using ValueType 		= Pair<Key, Type>;
 	using Reference 		= ValueType&;
 	using ConstReference 	= const Reference;
 	using Pointer 			= ValueType*;
 	using ConstPointer 		= const Pointer;
+	using AllocatorType 	= Alloc;
 
 public:
 
@@ -39,37 +39,40 @@ class Alloc 	= custom::Allocator<custom::Pair<Key, Type>>>
 class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>	// UnorderedMap Template
 {
 private:
-	using Base = _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>;
+	using _Base = _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>;
 
 public:
-	using KeyType 			= typename Base::KeyType;
-	using MappedType 		= typename Base::MappedType;
-	using Hasher 			= typename Base::Hasher;
-	using KeyEqual 			= typename Base::KeyEqual;
-	using ValueType 		= typename Base::ValueType;
-	using Reference 		= typename Base::Reference;
-	using ConstReference 	= typename Base::ConstReference;
-	using Pointer 			= typename Base::Pointer;
-	using ConstPointer 		= typename Base::ConstPointer;
-	using AllocatorType 	= typename Base::AllocatorType;
+	static_assert(IsSame_v<Pair<Key, Type>, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(IsObject_v<Key>, "Containers require object type!");
 
-	using Iterator			= typename Base::Iterator;
-	using ConstIterator 	= typename Base::ConstIterator;
+	using KeyType 			= typename _Base::KeyType;
+	using MappedType 		= typename _Base::MappedType;
+	using Hasher 			= typename _Base::Hasher;
+	using KeyEqual 			= typename _Base::KeyEqual;
+	using ValueType 		= typename _Base::ValueType;
+	using Reference 		= typename _Base::Reference;
+	using ConstReference 	= typename _Base::ConstReference;
+	using Pointer 			= typename _Base::Pointer;
+	using ConstPointer 		= typename _Base::ConstPointer;
+	using AllocatorType 	= typename _Base::AllocatorType;
+
+	using Iterator			= typename _Base::Iterator;
+	using ConstIterator 	= typename _Base::ConstIterator;
 
 public:
 	// Constructors
 
 	UnorderedMap()
-		:Base() { /*Empty*/ }
+		:_Base() { /*Empty*/ }
 
 	UnorderedMap(const size_t& buckets)
-		:Base(buckets) { /*Empty*/ }
+		:_Base(buckets) { /*Empty*/ }
 
 	UnorderedMap(const UnorderedMap& other)
-		:Base(other) { /*Empty*/ }
+		:_Base(other) { /*Empty*/ }
 
 	UnorderedMap(UnorderedMap&& other) noexcept
-		:Base(custom::move(other)) { /*Empty*/ }
+		:_Base(custom::move(other)) { /*Empty*/ }
 
 	~UnorderedMap() = default;
 
@@ -85,12 +88,12 @@ public:
 	}
 
 	UnorderedMap& operator=(const UnorderedMap& other) {
-		Base::operator=(other);
+		_Base::operator=(other);
 		return *this;
 	}
 
 	UnorderedMap& operator=(UnorderedMap&& other) noexcept {
-		Base::operator=(custom::move(other));
+		_Base::operator=(custom::move(other));
 		return *this;
 	}
 
