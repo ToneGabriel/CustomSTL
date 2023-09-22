@@ -5,6 +5,138 @@
 
 CUSTOM_BEGIN
 
+template<class>
+struct PointerTraits;
+
+#pragma region Helpers
+// replace first parameter in template
+template<class NewFirst, class Ty>
+struct _ReplaceFirstParameter;
+
+template<class NewFirst, template<class, class...> class Ty, class First, class... Rest>
+struct _ReplaceFirstParameter<NewFirst, Ty<First, Rest...>>   // given Ty<First, Rest...>, replace First
+{
+    using Type = Ty<NewFirst, Rest...>;
+};
+
+// get pointer type
+template<class Ty, class = void>
+struct _GetPointerType
+{
+    using Type = typename Ty::ValueType*;
+};
+
+template<class Ty>
+struct _GetPointerType<Ty, Void_t<typename Ty::Pointer>>
+{
+    using Type = typename Ty::Pointer;
+};
+
+// get const pointer type
+template<class Ty, class = void>
+struct _GetConstPointerType
+{
+    using Type = typename PointerTraits<typename _GetPointerType<Ty>::Type>::template Rebind<const typename Ty::ValueType>;
+};
+
+template<class Ty>
+struct _GetConstPointerType<Ty, Void_t<typename Ty::ConstPointer>>
+{
+    using Type = typename Ty::ConstPointer;
+};
+
+// get void pointer type
+template<class Ty, class = void>
+struct _GetVoidPointerType
+{
+    using Type = typename PointerTraits<typename _GetPointerType<Ty>::Type>::template Rebind<void>;
+};
+
+template<class Ty>
+struct _GetVoidPointerType<Ty, Void_t<typename Ty::VoidPointer>>
+{
+    using Type = typename Ty::VoidPointer;
+};
+
+// get const void pointer type
+template<class Ty, class = void>
+struct _GetConstVoidPointerType
+{
+    using Type = typename PointerTraits<typename _GetPointerType<Ty>::Type>::template Rebind<const void>;
+};
+
+template<class Ty>
+struct _GetConstVoidPointerType<Ty, Void_t<typename Ty::ConstVoidPointer>>
+{
+    using Type = typename Ty::ConstVoidPointer;
+};
+
+// get propagate on container copy
+template<class Ty, class = void>
+struct _GetPropagateOnContainerCopy
+{
+    using Type = FalseType;
+};
+
+template<class Ty>
+struct _GetPropagateOnContainerCopy<Ty, Void_t<typename Ty::PropagateOnContainerCopyAssignment>>
+{
+    using Type = typename Ty::PropagateOnContainerCopyAssignment;
+};
+
+// get propagate on container move
+template<class Ty, class = void>
+struct _GetPropagateOnContainerMove
+{
+    using Type = FalseType;
+};
+
+template<class Ty>
+struct _GetPropagateOnContainerMove<Ty, Void_t<typename Ty::PropagateOnContainerMoveAssignment>>
+{
+    using Type = typename Ty::PropagateOnContainerMoveAssignment;
+};
+
+// get propagate on container swap
+template<class Ty, class = void>
+struct _GetPropagateOnContainerSwap {
+    using Type = FalseType;
+};
+
+template<class Ty>
+struct _GetPropagateOnContainerSwap<Ty, Void_t<typename Ty::PropagateOnContainerSwap>>
+{
+    using Type = typename Ty::PropagateOnContainerSwap;
+};
+
+// get is always equal
+template<class Ty, class = void>
+struct _GetIsAlwaysEqual
+{
+    using Type = IsEmpty<Ty>;
+};
+
+template<class Ty>
+struct _GetIsAlwaysEqual<Ty, Void_t<typename Ty::IsAlwaysEqual>>
+{
+    using Type = typename Ty::IsAlwaysEqual;
+};
+
+// get rebind type
+template<class Ty, class Other, class = void>
+struct _GetRebindType
+{
+    using Type = typename _ReplaceFirstParameter<Other, Ty>::Type;
+};
+
+template<class Ty, class Other>
+struct _GetRebindType<Ty, Other, Void_t<typename Ty::template Rebind<Other>>>
+{
+    using Type = typename Ty::template Rebind<Other>;
+};
+#pragma endregion Helpers
+
+
 #pragma region Operations on uninitialized memory
 // TODO: implement
 
@@ -66,6 +198,29 @@ constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
 }
 // END destroy, destroy_at, destroy_n
 #pragma endregion Operations on uninitialized memory
+
+
+#pragma region Pointer
+template<class Type>
+struct PointerTraits
+{
+    // TODO: implement
+};  // END PointerTraits
+
+template<class Type>
+struct PointerTraits<Type*>
+{
+    using Pointer       = Type*;
+    using ElementType   = Type;
+
+    template<class Other>
+    using Rebind        = Other*;
+
+    static constexpr Pointer pointer_to(Type& val) noexcept {
+        return &val;
+    }
+};  // END PointerTraits specialization
+#pragma endregion Pointer
 
 
 #pragma region Allocator
@@ -131,12 +286,37 @@ public:
 }; // END Allocator
 
 
-// template<class Alloc, class = void>
-// struct _HasConstructMemberFunction : FalseType {};
+// check construct/destruct existence
+template<class Alloc, class Ty, class = void>
+struct _HasConstructMemberFunction : FalseType {};
 
-// template<class Alloc>
-// struct _HasConstructMemberFunction<Alloc,
-// Void_t<decltype(custom::declval<Alloc>().construct(custom::declval<typename Alloc::ValueType*>()))>> : TrueType {};
+template<class Alloc, class Ty>
+struct _HasConstructMemberFunction<Alloc, Ty,
+Void_t<decltype(custom::declval<Alloc>().construct(custom::declval<Ty*>()))>> : TrueType {};
+
+template<class Alloc, class Ty, class = void>
+struct _HasDestroyMemberFunction : FalseType {};
+
+template<class Alloc, class Ty>
+struct _HasDestroyMemberFunction<Alloc, Ty,
+Void_t<decltype(custom::declval<Alloc>().destroy(custom::declval<Ty*>()))>> : TrueType {};
+
+// check max_size existence
+template<class Alloc, class = void>
+struct _HasMaxSizeMemberFunction : FalseType {};
+
+template<class Alloc>
+struct _HasMaxSizeMemberFunction<Alloc,
+Void_t<decltype(custom::declval<Alloc>().max_size())>> : TrueType {};
+
+// check select_on_container_copy_construction existence
+template<class Alloc, class = void>
+struct _HasSelectOnContainerCopyConstructionMemberFunction : FalseType {};
+
+template<class Alloc>
+struct _HasSelectOnContainerCopyConstructionMemberFunction<Alloc,
+Void_t<decltype(custom::declval<Alloc>().select_on_container_copy_construction())>> : TrueType {};
+
 
 template<class Alloc>
 struct AllocatorTraits						// AllocatorTraits any
@@ -144,21 +324,61 @@ struct AllocatorTraits						// AllocatorTraits any
     using AllocatorType 						= Alloc;
     using ValueType								= typename Alloc::ValueType;
 
-    // using Pointer								= typename _Get_pointer_type<Alloc>::Type;
-    // using ConstPointer							= typename _Get_const_pointer_type<Alloc>::Type;
-    // using VoidPointer 							= typename _Get_void_pointer_type<Alloc>::Type;
-    // using ConstVoidPointer						= typename _Get_const_void_pointer_type<Alloc>::Type;
+    using Reference                             = ValueType&;
+    using ConstReference                        = const Reference;
+    using Pointer								= typename _GetPointerType<Alloc>::Type;
+    using ConstPointer							= typename _GetConstPointerType<Alloc>::Type;
+    using VoidPointer 							= typename _GetVoidPointerType<Alloc>::Type;
+    using ConstVoidPointer						= typename _GetConstVoidPointerType<Alloc>::Type;
 
-    // using PropagateOnContainerCopyAssignment	= typename _Get_propagate_on_container_copy<Alloc>::Type;
-    // using PropagateOnContainerMoveAssignment	= typename _Get_propagate_on_container_move<Alloc>::Type;
-    // using PropagateOnContainerSwap				= typename _Get_propagate_on_container_swap<Alloc>::Type;
-    // using IsAlwaysEqual							= typename _Get_is_always_equal<Alloc>::Type;
+    using PropagateOnContainerCopyAssignment	= typename _GetPropagateOnContainerCopy<Alloc>::Type;
+    using PropagateOnContainerMoveAssignment	= typename _GetPropagateOnContainerMove<Alloc>::Type;
+    using PropagateOnContainerSwap				= typename _GetPropagateOnContainerSwap<Alloc>::Type;
+    using IsAlwaysEqual							= typename _GetIsAlwaysEqual<Alloc>::Type;
 
-    // template<class Other>
-    // using RebindAlloc 							= typename _Get_rebind_type<Alloc, Other>::Type;
+    template<class Other>
+    using RebindAlloc 							= typename _GetRebindType<Alloc, Other>::Type;  // always uses _ReplaceFirstParameter
 
-    // template<class Other>
-    // using RebindTraits 							= AllocatorTraits<RebindAlloc<Other>>;
+    template<class Other>
+    using RebindTraits 							= AllocatorTraits<RebindAlloc<Other>>;
+
+    static constexpr Pointer allocate(AllocatorType& al, const size_t& capacity) {
+        return al.allocate(capacity);
+    }
+
+    static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t& capacity) {
+        al.deallocate(address, capacity);
+    }
+
+    template<class _Type, class... Args>
+    static constexpr void construct(AllocatorType& al, _Type* const address, Args&&... args) {
+        if constexpr (_HasConstructMemberFunction<AllocatorType, _Type>::Value)
+            al.construct(address, custom::forward<Args>(args)...);
+        else
+            custom::construct_at(address, custom::forward<Args>(args)...);
+    }
+
+    template<class _Type>
+    static constexpr void destroy(AllocatorType& al, _Type* const address) {
+        if constexpr (_HasDestroyMemberFunction<AllocatorType, _Type>::Value)
+            al.destroy(address);
+        else
+            custom::destroy_at(address);
+    }
+
+    static constexpr size_t max_size(const AllocatorType& al) noexcept {
+        if constexpr (_HasMaxSizeMemberFunction<AllocatorType>::Value)
+            return al.max_size();
+
+        return static_cast<size_t>(-1) / sizeof(ValueType);
+    }
+
+    static constexpr AllocatorType select_on_container_copy_construction(const AllocatorType& al) {
+        if constexpr (_HasSelectOnContainerCopyConstructionMemberFunction<AllocatorType>::Value)
+            return al.select_on_container_copy_construction();
+
+        return al;
+    }
 };	// END AllocatorTraits any
 
 
