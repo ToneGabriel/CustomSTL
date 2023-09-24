@@ -12,12 +12,12 @@ CUSTOM_BEGIN
 template<class Type>
 struct DefaultDelete                                        // default deleter for UniquePtr
 {
-    DefaultDelete() = default;
+    constexpr DefaultDelete() noexcept = default;
 
     template<class Type2, EnableIf_t<IsConvertible_v<Type2*, Type*>, bool> = true>
-    DefaultDelete(const DefaultDelete<Type2>&) { /*Empty*/ }
+    constexpr DefaultDelete(const DefaultDelete<Type2>&) noexcept { /*Empty*/ }
 
-    void operator()(Type* ptr) const noexcept
+    constexpr void operator()(Type* ptr) const noexcept
     {
         static_assert(0 < sizeof(Type), "can't delete an incomplete type");
         delete ptr;
@@ -27,13 +27,13 @@ struct DefaultDelete                                        // default deleter f
 template<class Type>
 struct DefaultDelete<Type[]>                                // default deleter for UniquePtr to array of unknown size
 {
-    DefaultDelete() = default;
+    constexpr DefaultDelete() noexcept = default;
 
     template<class Type2, EnableIf_t<IsConvertible_v<Type2(*)[], Type(*)[]>, bool> = true>
-    DefaultDelete(const DefaultDelete<Type2[]>&) { /*Empty*/ }
+    constexpr DefaultDelete(const DefaultDelete<Type2[]>&) noexcept { /*Empty*/ }
 
     template<class Type2, EnableIf_t<IsConvertible_v<Type2(*)[], Type(*)[]>, bool> = true>
-    void operator()(Type2* ptr) const noexcept
+    constexpr void operator()(Type2* ptr) const noexcept
     {
         static_assert(0 < sizeof(Type2), "can't delete an incomplete type");
         delete[] ptr;

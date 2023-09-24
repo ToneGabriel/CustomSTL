@@ -114,21 +114,18 @@
 // Helpers  TODO: check if MIN/MAX are needed
 #define _CUSTOM_SIGNED_B(T,B)       ((T)(-1) < 0)
 #define _CUSTOM_DIGITS_B(T,B)	    (B - _CUSTOM_SIGNED_B (T,B))
-#define _CUSTOM_MAX_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ?  \
-                                    (((((T)1 << (_CUSTOM_DIGITS_B (T,B) - 1)) - 1) << 1) + 1) : ~(T)0)
-#define _CUSTOM_MIN_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
 #define _CUSTOM_DIGITS10_B(T,B)     (_CUSTOM_DIGITS_B (T,B) * 643L / 2136)
+//#define _CUSTOM_MAX_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? (((((T)1 << (_CUSTOM_DIGITS_B (T,B) - 1)) - 1) << 1) + 1) : ~(T)0)
+//#define _CUSTOM_MIN_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
 
 
 // CHAR_BIT Specialization Helpers
 #define _CUSTOM_SIGNED(T)           _CUSTOM_SIGNED_B (T, sizeof(T) * CHAR_BIT)
-#define _CUSTOM_MAX(T)              _CUSTOM_MAX_B (T, sizeof(T) * CHAR_BIT)
-#define _CUSTOM_MIN(T)              _CUSTOM_MIN_B (T, sizeof(T) * CHAR_BIT)
 #define _CUSTOM_DIGITS(T)           _CUSTOM_DIGITS_B (T, sizeof(T) * CHAR_BIT)
 #define _CUSTOM_DIGITS10(T)         _CUSTOM_DIGITS10_B (T, sizeof(T) * CHAR_BIT)
-#define _CUSTOM_MAX_DIGITS10(T)     (2 + (T) * 643L / 2136)
-// The fraction 643/2136 approximates log10(2) to 7 significant digits
-
+#define _CUSTOM_MAX_DIGITS10(T)     (2 + (T) * 643L / 2136) // The fraction 643/2136 approximates log10(2) to 7 significant digits
+//#define _CUSTOM_MAX(T)              _CUSTOM_MAX_B (T, sizeof(T) * CHAR_BIT)
+//#define _CUSTOM_MIN(T)              _CUSTOM_MIN_B (T, sizeof(T) * CHAR_BIT)
 
 CUSTOM_BEGIN
 
@@ -1689,13 +1686,13 @@ CUSTOM_END
 
 #undef _CUSTOM_SIGNED_B
 #undef _CUSTOM_DIGITS_B
-#undef _CUSTOM_MAX_B
-#undef _CUSTOM_MIN_B
 #undef _CUSTOM_DIGITS10_B
+//#undef _CUSTOM_MAX_B
+//#undef _CUSTOM_MIN_B
 
 #undef _CUSTOM_SIGNED
-#undef _CUSTOM_MAX
-#undef _CUSTOM_MIN
 #undef _CUSTOM_DIGITS
 #undef _CUSTOM_DIGITS10
 #undef _CUSTOM_MAX_DIGITS10
+//#undef _CUSTOM_MAX
+//#undef _CUSTOM_MIN

@@ -1,6 +1,7 @@
 #pragma once
 #include "TypeTraits.h"
 #include "Limits.h"
+#include "Pair.h"
 
 
 CUSTOM_BEGIN
@@ -9,6 +10,16 @@ template<class>
 struct PointerTraits;
 
 #pragma region Helpers
+// get first parameter in template
+template<class Ty>
+struct _GetFirstParameter;
+
+template<template<class, class...> class Ty, class First, class... Rest>
+struct _GetFirstParameter<Ty<First, Rest...>>                 // given Ty<First, Rest...>, extract First
+{
+    using Type = First;
+};
+
 // replace first parameter in template
 template<class NewFirst, class Ty>
 struct _ReplaceFirstParameter;
@@ -138,31 +149,234 @@ struct _GetRebindType<Ty, Other, Void_t<typename Ty::template Rebind<Other>>>
 
 
 #pragma region Operations on uninitialized memory
-// TODO: implement
+// TODO: iterator_traits
 
-// uninitialized_copy
+// uninitialized_copy, uninitialized_copy_n
 template<class InputIt, class NoThrowForwardIt>
 NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first) {
-    using Type = typename std::iterator_traits<NoThrowForwardIt>::valueType;
+    //using Type = typename std::iterator_traits<NoThrowForwardIt>::valueType;
+    using ValueType = typename NoThrowForwardIt::ValueType;
 
     NoThrowForwardIt current = d_first;
     
     try
     {
-        for (; first != last; ++first, (void) ++current)
-            ::new (static_cast<void*>(&(*current))) Type(*first);
+        for (; first != last; ++first, (void)++current)
+            ::new(&(*current)) ValueType(*first);
 
         return current;
     }
     catch (...)
     {
         for (; d_first != current; ++d_first)
-            d_first->~Type();
+            d_first->~ValueType();
 
         throw;
     }
 }
-// END uninitialized_copy
+
+template<class InputIt, class Size, class NoThrowForwardIt>
+NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardIt d_first) {
+    //using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+    using ValueType = typename NoThrowForwardIt::ValueType;
+
+    NoThrowForwardIt current = d_first;
+    try
+    {
+        for (; count > 0; ++first, (void)++current, --count)
+            ::new(&(*current)) ValueType(*first);
+    
+        return current;
+    }
+    catch (...)
+    {
+        for (; d_first != current; ++d_first)
+            d_first->~ValueType();
+        throw;
+    }
+}
+// END uninitialized_copy, uninitialized_copy_n
+
+
+// uninitialized_fill, uninitialized_fill_n
+template<class ForwardIt, class Type>
+void uninitialized_fill(ForwardIt first, ForwardIt last, const Type& value) {
+    //using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; current != last; ++current)
+            ::new(&(*current)) ValueType(value);
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+        throw;
+    }
+}
+
+template<class ForwardIt, class Size, class Type>
+ForwardIt uninitialized_fill_n(ForwardIt first, Size count, const Type& value) {
+    //using V = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; count > 0; ++current, (void)--count)
+            ::new(&(*current)) ValueType(value);
+
+        return current;
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+
+        throw;
+    }
+}
+// END uninitialized_fill, uninitialized_fill_n
+
+
+// uninitialized_move, uninitialized_move_n
+template<class InputIt, class NoThrowForwardIt>
+NoThrowForwardIt uninitialized_move(InputIt first, InputIt last, NoThrowForwardIt d_first) {
+    //using Value = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+    using ValueType = typename NoThrowForwardIt::ValueType;
+
+    NoThrowForwardIt current = d_first;
+    try
+    {
+        for (; first != last; ++first, (void)++current)
+            ::new(&(*current)) ValueType(custom::move(*first));
+
+        return current;
+    }
+    catch (...)
+    {
+        for (; d_first != current; ++d_first)
+            d_first->~ValueType();
+
+        throw;
+    }
+}
+
+template<class InputIt, class Size, class NoThrowForwardIt>
+custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size count, NoThrowForwardIt d_first) {
+    //using Value = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+    using ValueType = typename NoThrowForwardIt::ValueType;
+    
+    NoThrowForwardIt current = d_first;
+    try
+    {
+        for (; count > 0; ++first, (void)++current, --count)
+            ::new(&(*current)) ValueType(custom::move(*first));
+    
+        return { first, current };
+    }
+    catch (...)
+    {
+        for (; d_first != current; ++d_first)
+            d_first->~ValueType();
+
+        throw;
+    }
+}
+// END uninitialized_move, uninitialized_move_n
+
+
+// uninitialized_default_construct, uninitialized_default_construct_n
+template<class ForwardIt>
+void uninitialized_default_construct(ForwardIt first, ForwardIt last) {
+    //using Value = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; current != last; ++current)
+            ::new(&(*current)) ValueType;
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+
+        throw;
+    }
+}
+
+template<class ForwardIt, class Size>
+ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n) {
+    //using T = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; n > 0; (void)++current, --n)
+            ::new(&(*current)) ValueType;
+
+        return current;
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+
+        throw;
+    }
+}
+// END uninitialized_default_construct, uninitialized_default_construct_n
+
+
+// uninitialized_value_construct, uninitialized_value_construct_n
+template<class ForwardIt>
+void uninitialized_value_construct(ForwardIt first, ForwardIt last) {
+    //using Value = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; current != last; ++current)
+            ::new(&(*current)) ValueType();
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+
+        throw;
+    }
+}
+
+template<class ForwardIt, class Size>
+ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n) {
+    //using T = typename std::iterator_traits<ForwardIt>::value_type;
+    using ValueType = typename ForwardIt::ValueType;
+
+    ForwardIt current = first;
+    try
+    {
+        for (; n > 0; (void)++current, --n)
+            ::new(&(*current)) ValueType();
+
+        return current;
+    }
+    catch (...)
+    {
+        for (; first != current; ++first)
+            first->~ValueType();
+
+        throw;
+    }
+}
+// END uninitialized_value_construct, uninitialized_value_construct_n
 
 
 // construct_at
@@ -191,7 +405,7 @@ constexpr void destroy(ForwardIt first, ForwardIt last) {
 
 template<class ForwardIt, class Size>
 constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
-    for (; n > 0; (void) ++first, --n)
+    for (; n > 0; (void)++first, --n)
         custom::destroy_at(&(*first));
 
     return first;
@@ -201,11 +415,35 @@ constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
 
 
 #pragma region Pointer
-template<class Type>
-struct PointerTraits
+template<class Type, class Elem>
+struct _PointerTraitsBase
 {
-    // TODO: implement
-};  // END PointerTraits
+    using Pointer       = Type;
+    using ElementType   = Elem;
+
+    template<class Other>
+    using Rebind        = typename _GetRebindType<Type, Other>::Type;   // TODO: check
+
+    static constexpr Pointer pointer_to(ElementType& val)
+    noexcept(noexcept(Type::pointer_to(val))) {
+        return Type::pointer_to(val);
+    }
+};  // END _PointerTraitsBase
+
+template<class, class = void, class = void>
+struct _PointerTraitsElemChoice {};
+
+template<class Ty, class Dummy>
+struct _PointerTraitsElemChoice<Ty, Dummy, Void_t<typename _GetFirstParameter<Ty>::Type>>
+: _PointerTraitsBase<Ty, typename _GetFirstParameter<Ty>::Type> {};
+
+template<class Ty>
+struct _PointerTraitsElemChoice<Ty, Void_t<typename Ty::ElementType>, void>
+: _PointerTraitsBase<Ty, typename Ty::ElementType> {};
+
+template<class Ty>
+struct PointerTraits : _PointerTraitsElemChoice<Ty> {};
+
 
 template<class Type>
 struct PointerTraits<Type*>
