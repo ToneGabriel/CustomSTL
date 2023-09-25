@@ -78,25 +78,25 @@ public:
     // Constructors
 
     template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
-    UniquePtr() { /*Empty*/ }
+    constexpr UniquePtr() noexcept { /*Empty*/ }
 
     template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
-    UniquePtr(std::nullptr_t) { /*Empty*/ }
+    constexpr UniquePtr(std::nullptr_t) noexcept { /*Empty*/ }
 
     template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
-    explicit UniquePtr(Pointer ptr)
+    constexpr explicit UniquePtr(Pointer ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
     template<class Del = Deleter,
     EnableIf_t<IsConstructible_v<Del, const Del&>, bool> = true>
-    UniquePtr(Pointer ptr, const Deleter& del)
+    constexpr UniquePtr(Pointer ptr, const Deleter& del) noexcept
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
     template<class Del = Deleter,
     EnableIf_t<Conjunction_v<
                     Negation<IsReference<Del>>,
                     IsConstructible<Del, Del>>, bool> = true>
-    UniquePtr(Pointer ptr, Deleter&& del)
+    constexpr UniquePtr(Pointer ptr, Deleter&& del) noexcept
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
     template<class Del = Deleter,
@@ -107,7 +107,7 @@ public:
 
     template<class Del = Deleter,
     EnableIf_t<IsMoveConstructible_v<Del>, bool> = true>
-    UniquePtr(UniquePtr&& other) noexcept
+    constexpr UniquePtr(UniquePtr&& other) noexcept
         : _ptr(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
     template<class Ty, class Del,
@@ -116,12 +116,12 @@ public:
                     IsConvertible<typename UniquePtr<Ty, Del>::Pointer, Pointer>,
                     Conditional_t<IsReference_v<Deleter>, IsSame<Del, Deleter>, IsConvertible<Del, Deleter>>>,
     bool> = true>
-    UniquePtr(UniquePtr<Ty, Del>&& other) noexcept
+    constexpr UniquePtr(UniquePtr<Ty, Del>&& other) noexcept
         : _ptr(other.release()), _deleter(custom::forward<Del>(other.get_deleter())) { /*Empty*/ }
 
     UniquePtr(const UniquePtr&) = delete;
 
-    ~UniquePtr() {
+    constexpr ~UniquePtr() noexcept {
         if (_ptr != nullptr)
             _deleter(_ptr);
     }
@@ -129,7 +129,7 @@ public:
 public:
     // Operators
 
-    UniquePtr& operator=(std::nullptr_t) noexcept {
+    constexpr UniquePtr& operator=(std::nullptr_t) noexcept {
         reset();
         return *this;
     }
@@ -140,7 +140,7 @@ public:
                     IsAssignable<Deleter&, Del>,
                     IsConvertible<typename UniquePtr<Ty, Del>::Pointer, Pointer>>,
     bool> = true>
-    UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
+    constexpr UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
         reset(other.release());
         _deleter = custom::forward<Del>(other._deleter);
 
@@ -149,8 +149,9 @@ public:
 
     template<class Del = Deleter,
     EnableIf_t<IsMoveAssignable_v<Del>, bool> = true>
-    UniquePtr& operator=(UniquePtr&& other) noexcept {
-        if (_ptr != other._ptr) {
+    constexpr UniquePtr& operator=(UniquePtr&& other) noexcept {
+        if (_ptr != other._ptr)
+        {
             reset(other.release());
             _deleter = custom::forward<Deleter>(other._deleter);
         }
@@ -158,40 +159,40 @@ public:
         return *this;
     }
 
-    UniquePtr& operator=(const UniquePtr&)  = delete;
+    UniquePtr& operator=(const UniquePtr&) = delete;
 
-    AddLvalueReference_t<Type> operator*() const noexcept {
+    constexpr AddLvalueReference_t<Type> operator*() const noexcept(noexcept(*custom::declval<Pointer>())) {
        return *_ptr;
     }
 
-    Pointer operator->() const noexcept {
+    constexpr Pointer operator->() const noexcept {
         return _ptr;
     }
 
-    explicit operator bool() const noexcept {
+    constexpr explicit operator bool() const noexcept {
         return _ptr != nullptr;
     }
 
 public:
     // Main functions
 
-    Deleter& get_deleter() noexcept {
+    constexpr Deleter& get_deleter() noexcept {
         return _deleter;
     }
 
-    const Deleter& get_deleter() const noexcept {
+    constexpr const Deleter& get_deleter() const noexcept {
         return _deleter;
     }
 
-    Pointer get() const noexcept {
+    constexpr Pointer get() const noexcept {
         return _ptr;
     }
 
-    Pointer release() noexcept {                            // Releases the ownership of the managed object, get() returns nullptr after this
+    constexpr Pointer release() noexcept {                            // Releases the ownership of the managed object, get() returns nullptr after this
         return custom::exchange(_ptr, nullptr);
     }
 
-    void reset(Pointer ptr = nullptr) noexcept {            // Replaces the managed object and deletes old
+    constexpr void reset(Pointer ptr = nullptr) noexcept {            // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_ptr, ptr);
 
         if (old)
@@ -238,18 +239,18 @@ public:
 
     template<class Del = Deleter,
     _UniquePtrEnableDefault_t<Del> = true>
-    UniquePtr() { /*Empty*/ }
+    constexpr UniquePtr() noexcept { /*Empty*/ }
 
     template<class Ty, class Del = Deleter,
     _UniquePtrEnableDefault_t<Del> = true,
     _EnableConstructorReset<Ty> = true>
-    explicit UniquePtr(Ty ptr)
+    constexpr explicit UniquePtr(Ty ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
     template<class Ty, class Del = Deleter, 
     EnableIf_t<IsCopyConstructible_v<Del>, bool> = true,
     _EnableConstructorReset<Ty> = true>
-    UniquePtr(Ty ptr, const Deleter& del)
+    constexpr UniquePtr(Ty ptr, const Deleter& del) noexcept
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
     template<class Ty, class Del = Deleter,
@@ -257,7 +258,7 @@ public:
                     Negation<IsReference<Del>>,
                     IsMoveConstructible<Del>>, bool> = true,
     _EnableConstructorReset<Ty> = true>
-    UniquePtr(Ty ptr, Deleter&& del) noexcept
+    constexpr UniquePtr(Ty ptr, Deleter&& del) noexcept
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
     template<class Ty, class Del = Deleter,
@@ -268,12 +269,12 @@ public:
 
     template<class Del = Deleter,
     EnableIf_t<IsMoveConstructible_v<Del>, bool> = true>
-    UniquePtr(UniquePtr&& other) noexcept
+    constexpr UniquePtr(UniquePtr&& other) noexcept
         : _ptr(other.release()), _deleter(custom::forward<Deleter>(other.get_deleter())) { /*Empty*/ }
 
     UniquePtr(const UniquePtr&) = delete;
 
-    ~UniquePtr() {
+    constexpr ~UniquePtr() noexcept {
         if (_ptr != nullptr)
             _deleter(_ptr);
     }
@@ -281,14 +282,14 @@ public:
 public:
     // Operators
 
-    UniquePtr& operator=(std::nullptr_t) noexcept {
+    constexpr UniquePtr& operator=(std::nullptr_t) noexcept {
         reset();
         return *this;
     }
 
     template<class Ty, class Del,
     _EnableConversion<Ty, Del, IsAssignable<Deleter&, Del>> = true>
-    UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
+    constexpr UniquePtr& operator=(UniquePtr<Ty, Del>&& other) noexcept {
         reset(other.release());
         _deleter = custom::forward<Del>(other._deleter);
 
@@ -297,8 +298,9 @@ public:
 
     template<class Del = Deleter,
     EnableIf_t<IsMoveAssignable_v<Del>, bool> = true>
-    UniquePtr& operator=(UniquePtr&& other) noexcept {
-        if (_ptr != other._ptr) {
+    constexpr UniquePtr& operator=(UniquePtr&& other) noexcept {
+        if (_ptr != other._ptr)
+        {
             reset(other.release());
             _deleter = custom::move(other._deleter);
         }
@@ -308,35 +310,35 @@ public:
 
     UniquePtr& operator=(const UniquePtr&) = delete;
 
-    Type& operator[](size_t index) const noexcept {
+    constexpr Type& operator[](size_t index) const noexcept {
         return _ptr[index];
     }
 
-    explicit operator bool() const noexcept {
+    constexpr explicit operator bool() const noexcept {
         return _ptr != nullptr;
     }
 
 public:
     // Main functions
 
-    Deleter& get_deleter() noexcept {
+    constexpr Deleter& get_deleter() noexcept {
         return _deleter;
     }
 
-    const Deleter& get_deleter() const noexcept {
+    constexpr const Deleter& get_deleter() const noexcept {
         return _deleter;
     }
 
-    Pointer get() const noexcept {
+    constexpr Pointer get() const noexcept {
         return _ptr;
     }
 
-    Pointer release() noexcept {                                           // Releases the ownership of the managed object, get() returns nullptr after this
+    constexpr Pointer release() noexcept {                                           // Releases the ownership of the managed object, get() returns nullptr after this
         return custom::exchange(_ptr, nullptr);
     }
 
-    template<class Ty, _EnableConstructorReset<Ty, FalseType> = true>     // FalseType (don't allow nullptr ???)
-    void reset(Ty ptr) noexcept {                                         // Replaces the managed object and deletes old
+    template<class Ty, _EnableConstructorReset<Ty, FalseType> = true>               // FalseType (don't allow nullptr ???)
+    constexpr void reset(Ty ptr) noexcept {                                         // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_ptr, ptr);
 
         if (old)
@@ -348,18 +350,41 @@ public:
 
 // build UniquePtr
 template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-UniquePtr<Ty> make_unique(Args&&... args) {
+constexpr UniquePtr<Ty> make_unique(Args&&... args) {
     return UniquePtr<Ty>(new Ty(custom::forward<Args>(args)...));
 }
 
 template<class Ty, EnableIf_t<IsArray_v<Ty> && Extent_v<Ty> == 0, bool> = true>
-UniquePtr<Ty> make_unique(const size_t size) {
+constexpr UniquePtr<Ty> make_unique(const size_t size) {
     return UniquePtr<Ty>(new RemoveExtent_t<Ty>[size]());
 }
 
 template<class Ty, class... Args, EnableIf_t<Extent_v<Ty> != 0, bool> = true>
 void make_unique(Args&&...) = delete;
 
+template<class Ty, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+constexpr UniquePtr<Ty> make_unique_for_overwrite() {      // make a UniquePtr with default initialization
+    return UniquePtr<Ty>(new Ty);
+}
+
+template<class Ty, EnableIf_t<IsUnboundedArray_v<Ty>, bool> = true>
+constexpr UniquePtr<Ty> make_unique_for_overwrite(const size_t _Size) {    // make a UniquePtr[] with default initialization
+    return UniquePtr<Ty>(new RemoveExtent_t<Ty>[_Size]);
+}
+
+template<class Ty, class... Unused, EnableIf_t<IsUnboundedArray_v<Ty>, bool> = true>
+constexpr void make_unique_for_overwrite(Unused&&...) = delete;
+
+// UniquePtr binary operators
+template<class Ty1, class Del1, class Ty2, class Del2>
+constexpr bool operator==(const UniquePtr<Ty1, Del1>& left, const UniquePtr<Ty2, Del2>& right) {
+    return left.get() == right.get();
+}
+
+template<class Ty1, class Del1, class Ty2, class Del2>
+constexpr bool operator!=(const UniquePtr<Ty1, Del1>& left, const UniquePtr<Ty2, Del2>& right) {
+    return !(left == right);
+}
 #pragma endregion UniquePtr
 
 

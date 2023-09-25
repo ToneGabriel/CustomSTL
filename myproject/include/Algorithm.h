@@ -219,6 +219,83 @@ constexpr const Type& (max)(const Type& a, const Type& b, Compare comp) {
     return (comp(a, b)) ? a : b;
 }
 // END max
+
+// max_element
+template<class ForwardIt>
+ForwardIt max_element(ForwardIt first, ForwardIt last) {
+    if (first == last)
+        return last;
+ 
+    ForwardIt largest = first;
+    ++first;
+ 
+    for (; first != last; ++first)
+        if (*largest < *first)
+            largest = first;
+ 
+    return largest;
+}
+
+template<class ForwardIt, class Compare>
+ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
+    if (first == last)
+        return last;
+ 
+    ForwardIt largest = first;
+    ++first;
+ 
+    for (; first != last; ++first)
+        if (comp(*largest, *first))
+            largest = first;
+ 
+    return largest;
+}
+// END max_element
+
+// min
+template<class Type>
+constexpr const Type& (min)(const Type& a, const Type& b) {
+    return (a < b) ? a : b;
+}
+
+template<class Type, class Compare>
+constexpr const Type& (min)(const Type& a, const Type& b, Compare comp) {
+    return (comp(a, b)) ? a : b;
+}
+// END min
+
+// min_element
+template<class ForwardIt>
+ForwardIt min_element(ForwardIt first, ForwardIt last) {
+    if (first == last)
+        return last;
+ 
+    ForwardIt smallest = first;
+    ++first;
+ 
+    for (; first != last; ++first)
+        if (*first < *smallest)
+            smallest = first;
+ 
+    return smallest;
+}
+
+template<class ForwardIt, class Compare>
+ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp)
+{
+    if (first == last)
+        return last;
+ 
+    ForwardIt smallest = first;
+    ++first;
+ 
+    for (; first != last; ++first)
+        if (comp(*first, *smallest))
+            smallest = first;
+ 
+    return smallest;
+}
+// END min_element
 #pragma endregion Minimum/maximum operations
 
 
