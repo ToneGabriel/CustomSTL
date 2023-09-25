@@ -578,6 +578,19 @@ struct IsNothrowMoveAssignable : BoolConstant<__is_nothrow_assignable(AddLvalueR
 template<class Ty>
 constexpr bool IsNothrowMoveAssignable_v = IsNothrowMoveAssignable<Ty>::Value;
 
+// is nothrow convertible
+template<class From, class To, bool = IsConvertible_v<From, To>, bool = IsVoid_v<To>>
+constexpr bool IsNothrowConvertible_v = noexcept(_fake_copy_init<To>(custom::declval<From>()));
+
+template<class From, class To, bool IsVoidResult>
+constexpr bool IsNothrowConvertible_v<From, To, false, IsVoidResult> = false;
+
+template<class From, class To>
+constexpr bool IsNothrowConvertible_v<From, To, true, true> = true;
+
+template<class From, class To>
+struct IsNothrowConvertible : BoolConstant<IsNothrowConvertible_v<From, To>> {};
+
 // is destructible
 #if defined _MSC_VER
 template<class Ty>
