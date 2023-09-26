@@ -1,4 +1,5 @@
 #pragma once
+#include "xFunctional.h"
 #include "Utility.h"
 #include "Tuple.h"
 

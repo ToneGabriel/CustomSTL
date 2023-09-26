@@ -2,6 +2,7 @@
 #include "xNode.h"
 #include "xMemory.h"
 #include "Utility.h"
+#include "Iterator.h"
 #include "Algorithm.h"
 
 
@@ -78,7 +79,7 @@ public:
 
 	Pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
-		return &(**this);
+		return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this);
 	}
 
 	Reference operator*() const noexcept {

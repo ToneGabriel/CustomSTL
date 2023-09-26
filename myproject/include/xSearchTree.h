@@ -1,7 +1,8 @@
 #pragma once
-#include "List.h"
+#include "xMemory.h"
 #include "Pair.h"
 #include "Utility.h"
+#include "Iterator.h"
 #include "Functional.h"	// for custom::Less
 
 
@@ -13,31 +14,43 @@ enum class _TreeChild : char
 	Right
 };
 
-template<class Node>
+template<class _NodePtr>
 struct _TreeNodeID 			// Indicator for child placement
 {							
-	Node* _Parent		= nullptr;
-	_TreeChild _Child	= _TreeChild::Left;
+	_NodePtr _Parent 	= nullptr;
+	_TreeChild _Child 	= _TreeChild::Left;
 };
 
 template<class Traits>
 struct _SearchTreeData
 {
-	using ValueType		= typename Traits::ValueType;			// Type for stored values
-	using Node			= node::_TreeNode<ValueType>;			// Node type
-	using Alloc			= Allocator<Node>;						// Allocator type
+	using KeyType           = typename Traits::KeyType;				// Type of Key
+    using MappedType        = typename Traits::MappedType;			// Type of Mapped _Value
+	using KeyCompare 		= typename Traits::KeyCompare;
+	using ValueType			= typename Traits::ValueType;			// Type of values stored in container
+	using Reference 		= typename Traits::Reference;
+	using ConstReference 	= typename Traits::ConstReference;
+	using Pointer 			= typename Traits::Pointer;
+	using ConstPointer 		= typename Traits::ConstPointer;
+	using AllocatorType 	= typename Traits::AllocatorType;
 
-	size_t _Size		= 0;									// Number of Nodes held
-	Node* _Head			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
+	using _AllocTraits		= AllocatorTraits<AllocatorType>;
+	using _Node				= node::_TreeNode<ValueType>;
+	using _AllocNode		= typename AllocatorTraits<AllocatorType>::template RebindAlloc<_Node>;
+	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
+	using _NodePtr			= _AllocNodeTraits::Pointer;
 
-	Node* leftmost(Node* node) const {							// return leftmost node in subtree at node
+	size_t _Size 			= 0;									// Number of Nodes held
+	_NodePtr _Head 			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
+
+	_NodePtr leftmost(_NodePtr node) const {						// return leftmost node in subtree at node
 		while (!node->_Left->_IsNil)
 			node = node->_Left;
 
 		return node;
 	}
 
-	Node* rightmost(Node* node) const {							// return leftmost node in subtree at node
+	_NodePtr rightmost(_NodePtr node) const {						// return leftmost node in subtree at node
 		while (!node->_Right->_IsNil)
 			node = node->_Right;
 
@@ -45,29 +58,31 @@ struct _SearchTreeData
 	}
 };
 
-template<class _SearchTree>
-class _ConstSearchTreeIterator
+template<class _SearchTreeData>
+class _SearchTreeConstIterator
 {
-public:
-	using Data			= typename _SearchTree::Data;
-	using ValueType 	= typename _SearchTree::ValueType;
-	using Node			= typename _SearchTree::Node;
-	using Reference		= const ValueType&;
-	using Pointer		= const Node*;
-
-	Node* _Ptr			= nullptr;
-	const Data* _Data	= nullptr;
+private:
+	using _Data			= _SearchTreeData;
+	using _NodePtr 		= typename _Data::_NodePtr;
 
 public:
-	explicit _ConstSearchTreeIterator(Node* ptr, const Data* data) noexcept
-		:_Ptr(ptr), _Data(data) { /*Empty*/ }
+	using ValueType 	= typename _Data::ValueType;
+	using Reference		= typename _Data::ConstReference;
+	using Pointer		= typename _Data::ConstPointer;
 
-	_ConstSearchTreeIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot increment end iterator...");
+	_NodePtr _Ptr 			= nullptr;
+	const _Data* _RefData	= nullptr;
+
+public:
+	explicit _SearchTreeConstIterator(_NodePtr ptr, const _Data* data) noexcept
+		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
+
+	_SearchTreeConstIterator& operator++() noexcept {
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator...");
 
 		if (_Ptr->_Right->_IsNil)
 		{
-			Node* node = _Ptr->_Parent;
+			_NodePtr node = _Ptr->_Parent;
 			while (!node->_IsNil && _Ptr == node->_Right)
 			{
 				_Ptr = node;
@@ -76,25 +91,25 @@ public:
 			_Ptr = node;
 		}
 		else
-			_Ptr = _Data->leftmost(_Ptr->_Right);
+			_Ptr = _RefData->leftmost(_Ptr->_Right);
 
 		return *this;
 	}
 
-	_ConstSearchTreeIterator operator++(int) noexcept {
-		_ConstSearchTreeIterator temp = *this;
+	_SearchTreeConstIterator operator++(int) noexcept {
+		_SearchTreeConstIterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	_ConstSearchTreeIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr != _Data->_Head->_Left, "Cannot decrement begin iterator...");
+	_SearchTreeConstIterator& operator--() noexcept {
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Left, "Cannot decrement begin iterator...");
 
 		if (_Ptr->_IsNil)
 			_Ptr = _Ptr->_Right;
 		else if (_Ptr->_Left->_IsNil)
 		{
-			Node* node = _Ptr->_Parent;
+			_NodePtr node = _Ptr->_Parent;
 			while (!node->_IsNil && _Ptr == node->_Left)
 			{
 				_Ptr = node;
@@ -105,82 +120,82 @@ public:
 				_Ptr = node;
 		}
 		else
-			_Ptr = _Data->rightmost(_Ptr->_Left);
+			_Ptr = _RefData->rightmost(_Ptr->_Left);
 
 		return *this;
 	}
 
-	_ConstSearchTreeIterator operator--(int) noexcept {
-		_ConstSearchTreeIterator temp = *this;
+	_SearchTreeConstIterator operator--(int) noexcept {
+		_SearchTreeConstIterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
 	Pointer operator->() const noexcept{
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot access end iterator...");
-		return _Ptr;
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
+        return PointerTraits<Pointer>::pointer_to(**this);	// return &(**this);
 	}
 
 	Reference operator*() const noexcept{
-		CUSTOM_ASSERT(_Ptr != _Data->_Head, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const _ConstSearchTreeIterator& other) const noexcept {
+	bool operator==(const _SearchTreeConstIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const _ConstSearchTreeIterator& other) const noexcept {
+	bool operator!=(const _SearchTreeConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
-}; // END _ConstSearchTreeIterator
+}; // END _SearchTreeConstIterator
 
-template<class _SearchTree>
-class _SearchTreeIterator : public _ConstSearchTreeIterator<_SearchTree>			// _SearchTree Iterator
+template<class _SearchTreeData>
+class _SearchTreeIterator : public _SearchTreeConstIterator<_SearchTreeData>			// _SearchTree Iterator
 {
 private:
-	using Base		= _ConstSearchTreeIterator<_SearchTree>;
+	using _Base		= _SearchTreeConstIterator<_SearchTreeData>;
+	using _Data 	= _SearchTreeData;
+	using _NodePtr	= typename _Data::_NodePtr;
 
 public:
-	using Data		= typename _SearchTree::Data;
-	using ValueType = typename _SearchTree::ValueType;
-	using Node		= typename _SearchTree::Node;
-	using Reference	= ValueType&;
-	using Pointer	= Node*;
+	using ValueType = typename _Data::ValueType;
+	using Reference = typename _Data::Reference;
+	using Pointer 	= typename _Data::Pointer;
 
 public:
 
-	explicit _SearchTreeIterator(Node* ptr, const Data* data) noexcept
-		:Base(ptr, data) { /*Empty*/ }
+	explicit _SearchTreeIterator(_NodePtr ptr, const _Data* data) noexcept
+		:_Base(ptr, data) { /*Empty*/ }
 
 	_SearchTreeIterator& operator++() noexcept {
-		Base::operator++();
+		_Base::operator++();
 		return *this;
 	}
 
 	_SearchTreeIterator operator++(int) noexcept {
 		_SearchTreeIterator temp = *this;
-		Base::operator++();
+		_Base::operator++();
 		return temp;
 	}
 
 	_SearchTreeIterator& operator--() noexcept {
-		Base::operator--();
+		_Base::operator--();
 		return *this;
 	}
 
 	_SearchTreeIterator operator--(int) noexcept {
 		_SearchTreeIterator temp = *this;
-		Base::operator--();
+		_Base::operator--();
 		return temp;
 	}
 
 	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(Base::operator->());
+		return const_cast<Pointer>(_Base::operator->());
 	}
 
 	Reference operator*() const noexcept {
-		return const_cast<Reference>(Base::operator*());
+		return const_cast<Reference>(_Base::operator*());
 	}
 }; // END _SearchTreeIterator
 
@@ -188,25 +203,34 @@ public:
 template<class Traits>
 class _SearchTree			// _SearchTree Template implemented as Red-Black Tree
 {
-public:
-    using KeyType       		= typename Traits::KeyType;						// Type of Key
-    using MappedType    		= typename Traits::MappedType;					// Type of Mapped values
-    using ValueType     		= typename Traits::ValueType;					// Type of values stored in container (raw or pair)
-    using KeyCompare    		= typename Traits::KeyCompare;					// Comparison struct
-
-	using Data					= _SearchTreeData<Traits>;
-	using Node 					= typename Data::Node;							// Node component from Tree
-	using Alloc					= typename Data::Alloc;							// Allocator for Node type
+private:
+	using _Data					= _SearchTreeData<Traits>;
+	using _AllocTraits			= typename _Data::_AllocTraits;
+	using _Node					= typename _Data::_Node;
+	using _AllocNode			= typename _Data::_AllocNode;
+	using _AllocNodeTraits		= typename _Data::_AllocNodeTraits;
+	using _NodePtr				= typename _Data::_NodePtr;
 	
-	using Iterator				= _SearchTreeIterator<_SearchTree<Traits>>;		// Iterator type
-	using ConstIterator			= _ConstSearchTreeIterator<_SearchTree<Traits>>;
-	using ReverseIterator 		= custom::ReverseIterator<Iterator>;			// ReverseIterator type
-	using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
+protected:
+    using KeyType       		= typename _Data::KeyType;
+    using MappedType    		= typename _Data::MappedType;
+    using KeyCompare    		= typename _Data::KeyCompare;
+	using ValueType 			= typename _Data::ValueType;
+	using Reference				= typename _Data::Reference;
+	using ConstReference		= typename _Data::ConstReference;
+	using Pointer				= typename _Data::Pointer;
+	using ConstPointer			= typename _Data::ConstPointer;
+	using AllocatorType			= typename _Data::AllocatorType;
+
+	using Iterator				= _SearchTreeIterator<_Data>;
+	using ConstIterator			= _SearchTreeConstIterator<_Data>;
+	using ReverseIterator		= custom::ReverseIterator<Iterator>;
+	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;
 
 protected:
-	Data _data;
-	Alloc _alloc;
-    KeyCompare _less;													// Used for comparison
+	_Data _data;
+	_AllocNode _alloc;
+    KeyCompare _less;			// Used for comparison
 
 protected:
 	// Constructors
@@ -273,7 +297,7 @@ public:
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
-		Node* newNode = _create_common_node(custom::forward<Args>(args)...);
+		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		const KeyType& newKey = Traits::extract_key(newNode->_Value);
 		Iterator it = find(newKey);
 
@@ -291,7 +315,7 @@ public:
 	}
 
 	Iterator erase(const KeyType& key) {
-		Node* nodeToErase 		= _find_in_tree(key);
+		_NodePtr nodeToErase 	= _find_in_tree(key);
 		Iterator nextIterator 	= ++Iterator(nodeToErase, &_data);
 		_destroy(nodeToErase);
 
@@ -313,7 +337,7 @@ public:
 	}
 
 	ConstIterator find (const KeyType& key) const {
-		Node* foundNode = _find_in_tree(key);
+		_NodePtr foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
 			return ConstIterator(foundNode, &_data);
 
@@ -321,7 +345,7 @@ public:
 	}
 
 	Iterator find(const KeyType& key) {
-		Node* foundNode = _find_in_tree(key);
+		_NodePtr foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
 			return Iterator(foundNode, &_data);
 
@@ -397,7 +421,7 @@ protected:
 			return it;
 		else 
 		{
-			Node* newNode = _create_common_node(
+			_NodePtr newNode = _create_common_node(
 				custom::PiecewiseConstruct,
 				custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 				custom::forward_as_tuple(custom::forward<Args>(args)...)
@@ -428,7 +452,7 @@ protected:
 private:
 	// Helpers
 
-	void _print_graph(const size_t& ident, Node* root, const custom::String& rlFlag) const {
+	void _print_graph(const size_t& ident, _NodePtr root, const custom::String& rlFlag) const {
 		custom::String str;
 		str.append(ident, '\t');
 
@@ -442,8 +466,8 @@ private:
 			_print_graph(ident + 1, root->_Right, "RIGHT");
 	}
 	
-	void _rotate_left(Node* subroot) {					// promotes subroot right
-		Node* promotedNode = subroot->_Right;
+	void _rotate_left(_NodePtr subroot) {					// promotes subroot right
+		_NodePtr promotedNode = subroot->_Right;
 		subroot->_Right = promotedNode->_Left;			// subroot adopt left child of promoted
 
 		if (!promotedNode->_Left->_IsNil)
@@ -462,8 +486,8 @@ private:
 		subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 	}
 
-	void _rotate_right(Node* subroot) {					// promotes subroot left
-		Node* promotedNode = subroot->_Left;
+	void _rotate_right(_NodePtr subroot) {					// promotes subroot left
+		_NodePtr promotedNode = subroot->_Left;
 		subroot->_Left = promotedNode->_Right;			// subroot adopt right child of promoted
 
 		if (!promotedNode->_Right->_IsNil)
@@ -482,11 +506,14 @@ private:
 		subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 	}
 
-	Node* _copy_all(Node* subroot) {								// DFS Preorder
+	_NodePtr _copy_all(_NodePtr subroot) {								// DFS Preorder
 		if (subroot->_IsNil)
 			return _data._Head;
 
-		Node* newNode 		= new Node(subroot->_Value);
+		//_NodePtr newNode 	= new Node(subroot->_Value);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), subroot->_Value);
+
 		newNode->_IsNil		= false;
 		newNode->_Color		= subroot->_Color;
 
@@ -501,7 +528,7 @@ private:
 		return newNode;
 	}
 
-	void _destroy_all(Node* subroot) {								// DFS Postorder
+	void _destroy_all(_NodePtr subroot) {								// DFS Postorder
 		if (subroot->_IsNil)
 			return;
 
@@ -511,7 +538,7 @@ private:
 		delete subroot;
 	}
 
-	Node* _in_order_successor(Node* node) const {
+	_NodePtr _in_order_successor(_NodePtr node) const {
 		if (!node->_Right->_IsNil)
 			node = _data.leftmost(node->_Right);
 		else
@@ -520,10 +547,10 @@ private:
 		return node;
 	}
 
-	Node* _find_in_tree(const KeyType& key) const {
-		Node* found = nullptr;
+	_NodePtr _find_in_tree(const KeyType& key) const {
+		_NodePtr found = nullptr;
 
-		for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
+		for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
 		{
 			if (key == Traits::extract_key(iterNode->_Value))
 			{
@@ -539,13 +566,13 @@ private:
 		return found;
 	}
 
-	_TreeNodeID<Node> _find_insertion_slot(Node* newNode) const {	// Find parent for newly created node
-		_TreeNodeID<Node> position;
+	_TreeNodeID<_NodePtr> _find_insertion_slot(_NodePtr newNode) const {	// Find parent for newly created node
+		_TreeNodeID<_NodePtr> position;
 
 		if (_data._Head->_Parent == _data._Head)					// first node
 			position._Parent = _data._Head;
 		else
-			for (Node* iterNode = _data._Head->_Parent; !iterNode->_IsNil;)
+			for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil;)
 			{
 				position._Parent = iterNode;
 				if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
@@ -565,7 +592,7 @@ private:
 		return position;
 	}
 
-	void _insert(Node* newNode, const _TreeNodeID<Node>& position) {
+	void _insert(_NodePtr newNode, const _TreeNodeID<_NodePtr>& position) {
 		++_data._Size;
 
 		// Raw Insert
@@ -576,7 +603,7 @@ private:
 			_data._Head->_Parent	= newNode;
 			_data._Head->_Left		= newNode;
 			_data._Head->_Right		= newNode;
-			newNode->_Color 		= Node::Colors::Black;
+			newNode->_Color 		= _Node::Colors::Black;
 		}
 		else if (position._Child == _TreeChild::Left)				// add to left
 		{
@@ -592,15 +619,15 @@ private:
 		}
 
 		// Fix Insert
-		Node* uncle = nullptr;
-		Node* tempNode = newNode;													// initialize violation with newly inserted node
+		_NodePtr uncle = nullptr;
+		_NodePtr tempNode = newNode;													// initialize violation with newly inserted node
 
-		while (tempNode->_Parent->_Color == Node::Colors::Red)
+		while (tempNode->_Parent->_Color == _Node::Colors::Red)
 		{
 			if (tempNode->_Parent == tempNode->_Parent->_Parent->_Left)
 			{
 				uncle = tempNode->_Parent->_Parent->_Right;
-				if (uncle->_Color == Node::Colors::Black)							// uncle black
+				if (uncle->_Color == _Node::Colors::Black)							// uncle black
 				{
 					if (tempNode == tempNode->_Parent->_Right)						// case 2 = uncle black (triangle)
 					{
@@ -608,22 +635,22 @@ private:
 						_rotate_left(tempNode);
 					}
 
-					tempNode->_Parent->_Color			= Node::Colors::Black;		// case 3 = uncle black (line)
-					tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+					tempNode->_Parent->_Color			= _Node::Colors::Black;		// case 3 = uncle black (line)
+					tempNode->_Parent->_Parent->_Color	= _Node::Colors::Red;
 					_rotate_right(tempNode->_Parent->_Parent);
 				}
 				else																// case 1 = uncle red
 				{
-					tempNode->_Parent->_Color			= Node::Colors::Black;
-					uncle->_Color						= Node::Colors::Black;
-					tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+					tempNode->_Parent->_Color			= _Node::Colors::Black;
+					uncle->_Color						= _Node::Colors::Black;
+					tempNode->_Parent->_Parent->_Color	= _Node::Colors::Red;
 					tempNode							= tempNode->_Parent->_Parent;
 				}
 			}
 			else																	// simetrical situation
 			{
 				uncle = tempNode->_Parent->_Parent->_Left;
-				if (uncle->_Color == Node::Colors::Black)
+				if (uncle->_Color == _Node::Colors::Black)
 				{
 					if (tempNode == tempNode->_Parent->_Left)
 					{
@@ -631,29 +658,29 @@ private:
 						_rotate_right(tempNode);
 					}
 
-					tempNode->_Parent->_Color			= Node::Colors::Black;
-					tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+					tempNode->_Parent->_Color			= _Node::Colors::Black;
+					tempNode->_Parent->_Parent->_Color	= _Node::Colors::Red;
 					_rotate_left(tempNode->_Parent->_Parent);
 				}
 				else
 				{
-					tempNode->_Parent->_Color			= Node::Colors::Black;
-					uncle->_Color						= Node::Colors::Black;
-					tempNode->_Parent->_Parent->_Color	= Node::Colors::Red;
+					tempNode->_Parent->_Color			= _Node::Colors::Black;
+					uncle->_Color						= _Node::Colors::Black;
+					tempNode->_Parent->_Parent->_Color	= _Node::Colors::Red;
 					tempNode							= tempNode->_Parent->_Parent;
 				}
 			}
 		}
 
-		_data._Head->_Parent->_Color = Node::Colors::Black;							// root is black
+		_data._Head->_Parent->_Color = _Node::Colors::Black;							// root is black
 	}
 
-	void _destroy(Node* oldNode) {
+	void _destroy(_NodePtr oldNode) {
 		--_data._Size;
 
-		Node* fixNode; 			// the node to recolor as needed
-        Node* fixNodeParent;
-		Node* tempNode;
+		_NodePtr fixNode; 			// the node to recolor as needed
+        _NodePtr fixNodeParent;
+		_NodePtr tempNode;
 
 		// Switch old with successor until leaf
 		while (!oldNode->is_leaf())
@@ -663,42 +690,42 @@ private:
 		}
 
 		// Rebalance only if old color is black
-		if (oldNode->_Color == Node::Colors::Black)
+		if (oldNode->_Color == _Node::Colors::Black)
 		{
 			fixNode 		= oldNode;
 			fixNodeParent 	= oldNode->_Parent;
 
-			for (; fixNode != _data._Head->_Parent && fixNode->_Color == Node::Colors::Black; fixNodeParent = fixNode->_Parent)
+			for (; fixNode != _data._Head->_Parent && fixNode->_Color == _Node::Colors::Black; fixNodeParent = fixNode->_Parent)
 			{
 				if (fixNode == fixNodeParent->_Left)	// left subtree
 				{
                     tempNode = fixNodeParent->_Right;
-                    if (tempNode->_Color == Node::Colors::Red) 
+                    if (tempNode->_Color == _Node::Colors::Red) 
 					{
-                        tempNode->_Color = Node::Colors::Black;
-                        fixNodeParent->_Color = Node::Colors::Red;
+                        tempNode->_Color = _Node::Colors::Black;
+                        fixNodeParent->_Color = _Node::Colors::Red;
                         _rotate_left(fixNodeParent);
                         tempNode = fixNodeParent->_Right;
                     }
 
-                    if (tempNode->_Left->_Color == Node::Colors::Black && tempNode->_Right->_Color == Node::Colors::Black)
+                    if (tempNode->_Left->_Color == _Node::Colors::Black && tempNode->_Right->_Color == _Node::Colors::Black)
 					{
-                        tempNode->_Color = Node::Colors::Red;
+                        tempNode->_Color = _Node::Colors::Red;
                         fixNode = fixNodeParent;
                     } 
 					else
 					{
-                        if (tempNode->_Right->_Color == Node::Colors::Black)
+                        if (tempNode->_Right->_Color == _Node::Colors::Black)
 						{
-                            tempNode->_Left->_Color = Node::Colors::Black;
-                            tempNode->_Color = Node::Colors::Red;
+                            tempNode->_Left->_Color = _Node::Colors::Black;
+                            tempNode->_Color = _Node::Colors::Red;
                             _rotate_right(tempNode);
                             tempNode = fixNodeParent->_Right;
                         }
 
                         tempNode->_Color 			= fixNodeParent->_Color;
-                        fixNodeParent->_Color 		= Node::Colors::Black;
-                        tempNode->_Right->_Color 	= Node::Colors::Black;
+                        fixNodeParent->_Color 		= _Node::Colors::Black;
+                        tempNode->_Right->_Color 	= _Node::Colors::Black;
                         _rotate_left(fixNodeParent);
                         break;	// rebalanced
                     }
@@ -706,39 +733,39 @@ private:
 				else	// right subtree
 				{
                     tempNode = fixNodeParent->_Left;
-                    if (tempNode->_Color == Node::Colors::Red)
+                    if (tempNode->_Color == _Node::Colors::Red)
 					{
-                        tempNode->_Color = Node::Colors::Black;
-                        fixNodeParent->_Color = Node::Colors::Red;
+                        tempNode->_Color = _Node::Colors::Black;
+                        fixNodeParent->_Color = _Node::Colors::Red;
                         _rotate_right(fixNodeParent);
                         tempNode = fixNodeParent->_Left;
                     }
 
-                    if (tempNode->_Right->_Color == Node::Colors::Black && tempNode->_Left->_Color == Node::Colors::Black)
+                    if (tempNode->_Right->_Color == _Node::Colors::Black && tempNode->_Left->_Color == _Node::Colors::Black)
 					{
-                        tempNode->_Color = Node::Colors::Red;
+                        tempNode->_Color = _Node::Colors::Red;
                         fixNode = fixNodeParent;
                     }
 					else
 					{
-                        if (tempNode->_Left->_Color == Node::Colors::Black)
+                        if (tempNode->_Left->_Color == _Node::Colors::Black)
 						{
-                            tempNode->_Right->_Color = Node::Colors::Black;
-                            tempNode->_Color = Node::Colors::Red;
+                            tempNode->_Right->_Color = _Node::Colors::Black;
+                            tempNode->_Color = _Node::Colors::Red;
                             _rotate_left(tempNode);
                             tempNode = fixNodeParent->_Left;
                         }
 
                         tempNode->_Color 			= fixNodeParent->_Color;
-                        fixNodeParent->_Color 		= Node::Colors::Black;
-                        tempNode->_Left->_Color 	= Node::Colors::Black;
+                        fixNodeParent->_Color 		= _Node::Colors::Black;
+                        tempNode->_Left->_Color 	= _Node::Colors::Black;
                         _rotate_right(fixNodeParent);
                         break;	// rebalanced
                     }
                 }
 			}
 
-            fixNode->_Color = Node::Colors::Black;									// stopping node is black
+            fixNode->_Color = _Node::Colors::Black;									// stopping node is black
 		}
 
 		_free_common_node(oldNode);
@@ -746,7 +773,7 @@ private:
 		_data._Head->_Right 	= _data.rightmost(_data._Head->_Parent);
 	}
 
-	void _transplant(Node* first, Node* second) {
+	void _transplant(_NodePtr first, _NodePtr second) {
 		if (first == second)
 			return;
 
@@ -755,7 +782,7 @@ private:
 		custom::swap(first->_Color, second->_Color);
 	}
 
-	void _swap_parents(Node* first, Node* second) {
+	void _swap_parents(_NodePtr first, _NodePtr second) {
 		// check head first
 		if (first->_Parent != _data._Head)
 			if (first == first->_Parent->_Left)
@@ -777,7 +804,7 @@ private:
 		custom::swap(first->_Parent, second->_Parent);
 	}
 
-	void _swap_children(Node* first, Node* second) {
+	void _swap_children(_NodePtr first, _NodePtr second) {
 		// left child
 		custom::swap(first->_Left, second->_Left);
 
@@ -801,7 +828,7 @@ private:
 		_data._Head->_Left		= _data._Head;
 		_data._Head->_Right		= _data._Head;
 		_data._Head->_IsNil		= true;
-		_data._Head->_Color		= Node::Colors::Black;
+		_data._Head->_Color		= _Node::Colors::Black;
 	}
 
 	void _free_head() {
@@ -812,18 +839,20 @@ private:
 	}
 
 	template<class... Args>
-	Node* _create_common_node(Args&&... args) {
-		Node* newNode 		= new Node(custom::forward<Args>(args)...);
+	_NodePtr _create_common_node(Args&&... args) {
+		//_NodePtr newNode 	= new Node(custom::forward<Args>(args)...);
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		newNode->_Parent	= _data._Head;
 		newNode->_Left		= _data._Head;
 		newNode->_Right		= _data._Head;
 		newNode->_IsNil		= false;
-		newNode->_Color		= Node::Colors::Red;
+		newNode->_Color		= _Node::Colors::Red;
 
 		return newNode;
 	}
 
-	void _free_common_node(Node* oldNode) {
+	void _free_common_node(_NodePtr oldNode) {
 		// detach parent first
 		if (oldNode == _data._Head->_Parent)
 			_data._Head->_Parent = _data._Head;

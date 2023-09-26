@@ -1,5 +1,6 @@
 #pragma once
 #include "Utility.h"
+#include "Iterator.h"
 #include "Algorithm.h"
 
 
@@ -108,7 +109,7 @@ template<class Type, size_t Size>
 class ArrayIterator : public ArrayConstIterator<Type, Size>
 {
 private:
-	using Base		= ArrayConstIterator<Type, Size>;
+	using _Base		= ArrayConstIterator<Type, Size>;
 	
 public:
 	using ValueType = Type;
@@ -120,21 +121,21 @@ public:
 	constexpr ArrayIterator() noexcept = default;
 
 	constexpr explicit ArrayIterator(ValueType* ptr, size_t index) noexcept
-		:Base(ptr, index) { /*Empty*/ }
+		:_Base(ptr, index) { /*Empty*/ }
 
 	constexpr ArrayIterator& operator++() noexcept {
-		Base::operator++();
+		_Base::operator++();
 		return *this;
 	}
 
 	constexpr ArrayIterator operator++(int) noexcept {
 		ArrayIterator temp = *this;
-		Base::operator++();
+		_Base::operator++();
 		return temp;
 	}
 
 	constexpr ArrayIterator& operator+=(const size_t& diff) noexcept {
-		Base::operator+=(diff);
+		_Base::operator+=(diff);
 		return *this;
 	}
 
@@ -145,18 +146,18 @@ public:
 	}
 
 	constexpr ArrayIterator& operator--() noexcept {
-		Base::operator--();
+		_Base::operator--();
 		return *this;
 	}
 
 	constexpr ArrayIterator operator--(int) noexcept {
 		ArrayIterator temp = *this;
-		Base::operator--();
+		_Base::operator--();
 		return temp;
 	}
 
 	constexpr ArrayIterator& operator-=(const size_t& diff) noexcept {
-		Base::operator-=(diff);
+		_Base::operator-=(diff);
 		return *this;
 	}
 
@@ -167,11 +168,11 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		return const_cast<Pointer>(Base::operator->());
+		return const_cast<Pointer>(_Base::operator->());
 	}
 
 	constexpr Reference operator*() const noexcept {
-		return const_cast<Reference>(Base::operator*());
+		return const_cast<Reference>(_Base::operator*());
 	}
 }; // END ArrayIterator
 
@@ -217,14 +218,12 @@ public:
 	// Main functions
 
     constexpr void fill(const ValueType& copyValue) {						// Fill the container with values
-		// TODO: use fill_n(...)
-		for (size_t i = 0; i < Size; ++i)
-			_array[i] = copyValue;
+		custom::fill_n(begin(), Size, copyValue);
 	}
 
-	// TODO: implement
-	// constexpr void swap(Array& _Other) noexcept(_Is_nothrow_swappable<ValueType>::value) {
-    //     _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
+	// constexpr void swap(Array& other) noexcept(IsNothrowSwappable_v<ValueType>) {
+	// 	// TODO: implement
+	// 	//_Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
     // }
 
     constexpr Reference front() noexcept {									// Get the value of the first component

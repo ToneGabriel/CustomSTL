@@ -1,5 +1,6 @@
 #pragma once
 #include "Utility.h"
+#include "xFunctional.h"
 
 
 CUSTOM_BEGIN
