@@ -3,7 +3,6 @@
 #include "xMemory.h"
 #include "Utility.h"
 #include "Iterator.h"
-#include "Algorithm.h"
 
 
 CUSTOM_BEGIN
@@ -433,8 +432,6 @@ private:
 	}
 
 	void _remove_node(_NodePtr junkNode) {							// Remove Node and relink
-		AllocatorType al{};
-
 		junkNode->_Previous->_Next = junkNode->_Next;
 		junkNode->_Next->_Previous = junkNode->_Previous;
 		--_data._Size;
@@ -453,9 +450,7 @@ private:
 
 	void _move(List&& other) noexcept {							// Generic move function for list
 		custom::swap(_data._Head, other._data._Head);
-
-		_data._Size 		= other._data._Size;
-		other._data._Size 	= 0;
+		_data._Size = custom::exchange(other._data._Size, 0);
 	}
 
 	template<class... Args>

@@ -190,9 +190,9 @@ class Array							// Array Template (follows aggregate rules)
 public:
 	using ValueType 			= Type;										// Type for stored values
 	using Reference 			= ValueType&;
-	using ConstReference 		= const Reference;
+	using ConstReference 		= const ValueType&;
 	using Pointer 				= ValueType*;
-	using ConstPointer 			= const Pointer;
+	using ConstPointer 			= const ValueType*;
 
 	using Iterator				= ArrayIterator<ValueType, Size>;			// Iterator type
 	using ConstIterator			= ArrayConstIterator<ValueType, Size>;		// Const Iterator type

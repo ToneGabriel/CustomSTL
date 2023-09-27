@@ -30,6 +30,32 @@ struct _ReplaceFirstParameter<NewFirst, Ty<First, Rest...>>   // given Ty<First,
     using Type = Ty<NewFirst, Rest...>;
 };
 
+// get reference type
+template<class Ty, class = void>
+struct _GetReferenceType
+{
+    using Type = typename Ty::ValueType&;
+};
+
+template<class Ty>
+struct _GetReferenceType<Ty, Void_t<typename Ty::Reference>>
+{
+    using Type = typename Ty::Reference;
+};
+
+// get const reference type
+template<class Ty, class = void>
+struct _GetConstReferenceType
+{
+    using Type = const typename Ty::ValueType&;
+};
+
+template<class Ty>
+struct _GetConstReferenceType<Ty, Void_t<typename Ty::ConstReference>>
+{
+    using Type = typename Ty::ConstReference;
+};
+
 // get pointer type
 template<class Ty, class = void>
 struct _GetPointerType
@@ -425,8 +451,8 @@ struct _PointerTraitsBase
     using Rebind        = typename _GetRebindType<Type, Other>::Type;   // TODO: check
 
     static constexpr Pointer pointer_to(ElementType& val)
-    noexcept(noexcept(Type::pointer_to(val))) {
-        return Type::pointer_to(val);
+    noexcept(noexcept(ElementType::pointer_to(val))) {
+        return ElementType::pointer_to(val);
     }
 };  // END _PointerTraitsBase
 
@@ -454,7 +480,7 @@ struct PointerTraits<Type*>
     template<class Other>
     using Rebind        = Other*;
 
-    static constexpr Pointer pointer_to(Type& val) noexcept {
+    static constexpr Pointer pointer_to(ElementType& val) noexcept {
         return &val;
     }
 };  // END PointerTraits specialization
@@ -561,9 +587,8 @@ struct AllocatorTraits						// AllocatorTraits any
 {
     using AllocatorType 						= Alloc;
     using ValueType								= typename Alloc::ValueType;
-
-    using Reference                             = ValueType&;
-    using ConstReference                        = const Reference;
+    using Reference                             = typename _GetReferenceType<Alloc>::Type;
+    using ConstReference                        = typename _GetConstReferenceType<Alloc>::Type;
     using Pointer								= typename _GetPointerType<Alloc>::Type;
     using ConstPointer							= typename _GetConstPointerType<Alloc>::Type;
     using VoidPointer 							= typename _GetVoidPointerType<Alloc>::Type;
@@ -627,7 +652,7 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
     using ValueType     						= Type;
 
     using Reference                             = ValueType&;
-    using ConstReference                        = const Reference;
+    using ConstReference                        = const ValueType&;
     using Pointer 								= ValueType*;
     using ConstPointer 							= const ValueType*;
     using VoidPointer 							= void*;

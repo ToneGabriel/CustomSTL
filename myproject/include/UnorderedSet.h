@@ -13,9 +13,9 @@ public:
 	using KeyEqual 			= Compare;
 	using ValueType			= MappedType;
 	using Reference 		= ValueType&;
-	using ConstReference 	= const Reference;
+	using ConstReference 	= const ValueType&;
 	using Pointer 			= ValueType*;
-	using ConstPointer 		= const Pointer;
+	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:

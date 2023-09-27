@@ -12,9 +12,9 @@ public:
 	using KeyCompare 		= Compare;
 	using ValueType 		= Pair<Key, Type>;
 	using Reference 		= ValueType&;
-	using ConstReference 	= const Reference;
+	using ConstReference 	= const ValueType&;
 	using Pointer 			= ValueType*;
-	using ConstPointer 		= const Pointer;
+	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:
@@ -37,77 +37,79 @@ class Alloc		= custom::Allocator<custom::Pair<Key, Type>>>
 class Map : public _SearchTree<MapTraits<Key, Type, Compare, Alloc>>		// Map Template
 {
 private:
-	using Base = _SearchTree<MapTraits<Key, Type, Compare, Alloc>>;
+	using _Base = _SearchTree<MapTraits<Key, Type, Compare, Alloc>>;
 
 public:
-	using KeyType 				= typename Base::KeyType;
-	using MappedType 			= typename Base::MappedType;
-	using ValueType 			= typename Base::ValueType;
+	using KeyType 				= typename _Base::KeyType;
+	using MappedType 			= typename _Base::MappedType;
+	using KeyCompare			= typename _Base::KeyCompare;
+	using ValueType 			= typename _Base::ValueType;
+	using Reference 			= typename _Base::Reference;
+	using ConstReference 		= typename _Base::ConstReference;
+	using Pointer 				= typename _Base::Pointer;
+	using ConstPointer 			= typename _Base::ConstPointer;
+	using AllocatorType 		= typename _Base::AllocatorType;
 
-	using Iterator				= typename Base::Iterator;
-	using ConstIterator			= typename Base::ConstIterator;
-	using ReverseIterator		= typename Base::ReverseIterator;
-	using ConstReverseIterator	= typename Base::ConstReverseIterator;
+	using Iterator				= typename _Base::Iterator;
+	using ConstIterator			= typename _Base::ConstIterator;
+	using ReverseIterator		= typename _Base::ReverseIterator;
+	using ConstReverseIterator	= typename _Base::ConstReverseIterator;
 
 public:
 	// Constructors
 
 	Map()
-		:Base() { /*Empty*/ }
+		:_Base() { /*Empty*/ }
 
 	Map(const Map& other)
-		:Base(other) { /*Empty*/ }
+		:_Base(other) { /*Empty*/ }
 
 	Map(Map&& other) noexcept
-		:Base(custom::move(other)) { /*Empty*/ }
+		:_Base(custom::move(other)) { /*Empty*/ }
 
 	~Map() { /*Empty*/ }
 
 public:
 	// Operators
 
-	MappedType& operator[](const Key& key) {				// Access value or create new one with key and assignment (no const)
-		return try_emplace(key)->_Value.Second;
+	MappedType& operator[](const KeyType& key) {				// Access value or create new one with key and assignment (no const)
+		return this->_try_emplace(key).First->Second;
 	}
 
-	MappedType& operator[](Key&& key) {
-		return try_emplace(custom::move(key))->_Value.Second;
+	MappedType& operator[](KeyType&& key) {
+		return this->_try_emplace(custom::move(key)).First->Second;
 	}
 
 	Map& operator=(const Map& other) {
-		Base::operator=(other);
+		_Base::operator=(other);
 		return *this;
 	}
 
 	Map& operator=(Map&& other) noexcept {
-		Base::operator=(custom::move(other));
+		_Base::operator=(custom::move(other));
 		return *this;
-	}
-
-	bool operator==(const Map& other) const {
-		return Base::operator==(other);
-	}
-
-	bool operator!=(const Map& other) const {
-		return Base::operator!=(other);
 	}
 
 public:
 	// Main functions
 
-	template<class _KeyType, class... Args>
-	Iterator try_emplace(_KeyType&& key, Args&&... args) {	// Force construction with known key and given arguments for object
+	template<class... Args>
+	Pair<Iterator, bool> try_emplace(const KeyType& key, Args&&... args) {	// Force construction with known key and given arguments for object
+		return this->_try_emplace(key, custom::forward<Args>(args)...);
+	}
+
+	template<class... Args>
+	Pair<Iterator, bool> try_emplace(KeyType&& key, Args&&... args) {
 		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 
-	const MappedType& at(const Key& key) const {			// Access _Value at key with check
+	const MappedType& at(const KeyType& key) const {			// Access _Value at key with check
 		return this->_at(key);
 	}
 
-	MappedType& at(const Key& key) {
+	MappedType& at(const KeyType& key) {
 		return this->_at(key);
 	}
-
 };  // END Map Template
 
 CUSTOM_END

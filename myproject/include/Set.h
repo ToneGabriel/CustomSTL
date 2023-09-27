@@ -12,9 +12,9 @@ public:
 	using KeyCompare 		= Compare;
 	using ValueType 		= MappedType;
 	using Reference 		= ValueType&;
-	using ConstReference 	= const Reference;
+	using ConstReference 	= const ValueType&;
 	using Pointer 			= ValueType*;
-	using ConstPointer 		= const Pointer;
+	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:
@@ -37,29 +37,35 @@ class Alloc		= custom::Allocator<Key>>
 class Set : public _SearchTree<SetTraits<Key, Compare, Alloc>>		// Set Template
 {
 private:
-	using Base = _SearchTree<SetTraits<Key, Compare, Alloc>>;
+	using _Base = _SearchTree<SetTraits<Key, Compare, Alloc>>;
 
 public:
-	using KeyType				= typename Base::KeyType;
-	using MappedType			= typename Base::MappedType;
-	using ValueType				= typename Base::ValueType;
+	using KeyType 				= typename _Base::KeyType;
+	using MappedType 			= typename _Base::MappedType;
+	using KeyCompare			= typename _Base::KeyCompare;
+	using ValueType 			= typename _Base::ValueType;
+	using Reference 			= typename _Base::Reference;
+	using ConstReference 		= typename _Base::ConstReference;
+	using Pointer 				= typename _Base::Pointer;
+	using ConstPointer 			= typename _Base::ConstPointer;
+	using AllocatorType 		= typename _Base::AllocatorType;
 
-	using Iterator				= typename Base::Iterator;
-	using ConstIterator			= typename Base::ConstIterator;
-	using ReverseIterator		= typename Base::ReverseIterator;
-	using ConstReverseIterator	= typename Base::ConstReverseIterator;
+	using Iterator				= typename _Base::Iterator;
+	using ConstIterator			= typename _Base::ConstIterator;
+	using ReverseIterator		= typename _Base::ReverseIterator;
+	using ConstReverseIterator	= typename _Base::ConstReverseIterator;
 
 public:
     // Constructors
 
 	Set()
-		:Base() { /*Empty*/ }
+		:_Base() { /*Empty*/ }
 
 	Set(const Set& other)
-		: Base(other) { /*Empty*/ }
+		: _Base(other) { /*Empty*/ }
 
 	Set(Set&& other) noexcept
-		: Base(custom::move(other)) { /*Empty*/ }
+		: _Base(custom::move(other)) { /*Empty*/ }
 
 	~Set() { /*Empty*/ }
 
@@ -67,21 +73,13 @@ public:
     // Operators
 
 	Set& operator=(const Set& other) {
-		Base::operator=(other);
+		_Base::operator=(other);
 		return *this;
 	}
 
 	Set& operator=(Set&& other) noexcept {
-		Base::operator=(custom::move(other));
+		_Base::operator=(custom::move(other));
 		return *this;
-	}
-
-	bool operator==(const Set& other) const {
-		return Base::operator==(other);
-	}
-
-	bool operator!=(const Set& other) const {
-		return Base::operator!=(other);
 	}
 }; // END Set Template
 

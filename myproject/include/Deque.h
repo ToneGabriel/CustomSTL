@@ -12,9 +12,9 @@ struct DequeData
 {
 	using ValueType 		= Type;
 	using Reference			= ValueType&;
-	using ConstReference	= const Reference;
+	using ConstReference	= const ValueType&;
 	using Pointer			= ValueType*;
-	using ConstPointer		= const Pointer;
+	using ConstPointer		= const ValueType*;
 
 	using MapPtr 			= ValueType**;
 	//using Alloc				= Allocator<ValueType>;

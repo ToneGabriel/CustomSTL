@@ -50,7 +50,7 @@ struct _SearchTreeData
 		return node;
 	}
 
-	_NodePtr rightmost(_NodePtr node) const {						// return leftmost node in subtree at node
+	_NodePtr rightmost(_NodePtr node) const {						// return rightmost node in subtree at node
 		while (!node->_Right->_IsNil)
 			node = node->_Right;
 
@@ -74,6 +74,9 @@ public:
 	const _Data* _RefData	= nullptr;
 
 public:
+
+	_SearchTreeConstIterator() noexcept = default;
+
 	explicit _SearchTreeConstIterator(_NodePtr ptr, const _Data* data) noexcept
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
@@ -131,12 +134,12 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept{
+	Pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
         return PointerTraits<Pointer>::pointer_to(**this);	// return &(**this);
 	}
 
-	Reference operator*() const noexcept{
+	Reference operator*() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
@@ -164,6 +167,8 @@ public:
 	using Pointer 	= typename _Data::Pointer;
 
 public:
+
+	_SearchTreeIterator() noexcept = default;
 
 	explicit _SearchTreeIterator(_NodePtr ptr, const _Data* data) noexcept
 		:_Base(ptr, data) { /*Empty*/ }
@@ -275,35 +280,18 @@ protected:
 		return *this;
 	}
 
-	bool operator==(const _SearchTree& other) const {				// Contains the same elems, but not the same tree
-		if (size() != other.size())
-			return false;
-
-		auto it1 = begin();
-		auto it2 = other.begin();
-		while (it1 != end())
-			if (*(it1++) != *(it2++))
-				return false;
-
-		return true;
-	}
-
-	bool operator!=(const _SearchTree& other) const {
-		return !(*this == other);
-	}
-
 public:
     // Main functions
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
-		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		const KeyType& newKey = Traits::extract_key(newNode->_Value);
-		Iterator it = find(newKey);
+		_NodePtr newNode 		= _create_common_node(custom::forward<Args>(args)...);
+		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
+		Iterator it 			= find(newKey);
 
 		if (it != end())
 		{
-			delete newNode;
+			_free_common_node_default(newNode);
 			return it;
 		}
 		else
@@ -414,22 +402,21 @@ protected:
 	// Others
 
 	template<class _KeyType, class... Args>
-	Iterator _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
+	Pair<Iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
 		Iterator it = find(key);
 
 		if (it != end())
-			return it;
+			return {it, false};
 		else 
 		{
 			_NodePtr newNode = _create_common_node(
-				custom::PiecewiseConstruct,
-				custom::forward_as_tuple(custom::forward<_KeyType>(key)),
-				custom::forward_as_tuple(custom::forward<Args>(args)...)
-			);
+										custom::PiecewiseConstruct,
+										custom::forward_as_tuple(custom::forward<_KeyType>(key)),
+										custom::forward_as_tuple(custom::forward<Args>(args)...));
 
 			auto insertPosition = _find_insertion_slot(newNode);
 			_insert(newNode, insertPosition);
-			return Iterator(newNode, &_data);
+			return {Iterator(newNode, &_data), true};
 		}
 	}
 
@@ -510,7 +497,6 @@ private:
 		if (subroot->_IsNil)
 			return _data._Head;
 
-		//_NodePtr newNode 	= new Node(subroot->_Value);
 		_NodePtr newNode = _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), subroot->_Value);
 
@@ -535,7 +521,7 @@ private:
 		_destroy_all(subroot->_Left);
 		_destroy_all(subroot->_Right);
 
-		delete subroot;
+		_free_common_node_default(subroot);
 	}
 
 	_NodePtr _in_order_successor(_NodePtr node) const {
@@ -823,6 +809,7 @@ private:
 	}
 
 	void _create_head() {
+		// don't construct value, it's not needed
 		_data._Head 			= _alloc.allocate(1);
 		_data._Head->_Parent	= _data._Head;
 		_data._Head->_Left		= _data._Head;
@@ -832,6 +819,7 @@ private:
 	}
 
 	void _free_head() {
+		// don't destroy value, it's not constructed
 		_data._Head->_Parent	= nullptr;
 		_data._Head->_Left		= nullptr;
 		_data._Head->_Right		= nullptr;
@@ -840,8 +828,7 @@ private:
 
 	template<class... Args>
 	_NodePtr _create_common_node(Args&&... args) {
-		//_NodePtr newNode 	= new Node(custom::forward<Args>(args)...);
-		_NodePtr newNode = _alloc.allocate(1);
+		_NodePtr newNode 	= _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		newNode->_Parent	= _data._Head;
 		newNode->_Left		= _data._Head;
@@ -852,8 +839,16 @@ private:
 		return newNode;
 	}
 
+	void _free_common_node_default(_NodePtr oldNode) {
+		oldNode->_Parent	= nullptr;
+		oldNode->_Left		= nullptr;
+		oldNode->_Right		= nullptr;
+		_AllocNodeTraits::destroy(_alloc, &(oldNode->_Value));
+		_alloc.deallocate(oldNode, 1);
+	}
+
 	void _free_common_node(_NodePtr oldNode) {
-		// detach parent first
+		// detach parent from node
 		if (oldNode == _data._Head->_Parent)
 			_data._Head->_Parent = _data._Head;
 		else if (oldNode == oldNode->_Parent->_Left)
@@ -861,7 +856,7 @@ private:
 		else
 			oldNode->_Parent->_Right = _data._Head;
 
-		delete oldNode;
+		_free_common_node_default(oldNode);
 	}
 
 	void _copy(const _SearchTree& other) {
@@ -874,10 +869,23 @@ private:
 
 	void _move(_SearchTree&& other) {
 		custom::swap(_data._Head, other._data._Head);
-
-		_data._Size 		= other._data._Size;
-		other._data._Size 	= 0;
+		_data._Size = custom::exchange(other._data._Size, 0);
 	}
 }; // END _SearchTree Template
+
+
+// _SearchTree binary operators
+template<class Traits>
+bool operator==(const _SearchTree<Traits>& left, const _SearchTree<Traits>& right) {	// Contains the same elems, same order, but not the same tree
+	if (left.size() != right.size())
+		return false;
+
+	return custom::equal(left.begin(), left.end(), right.begin());
+}
+
+template<class Traits>
+bool operator!=(const _SearchTree<Traits>& left, const _SearchTree<Traits>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END
