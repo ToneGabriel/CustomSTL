@@ -796,7 +796,7 @@ public:
                     _SharedPtrConvertible<Ty, Type>>,
     bool> = true>
     explicit SharedPtr(Ty* ptr) {              // construct SharedPtr object that owns ptr
-        if (IsArray_v<Type>)
+        if constexpr (IsArray_v<Type>)
             _set_pointer_default(ptr, DefaultDelete<Ty[]>{});
         else
         {
@@ -981,7 +981,7 @@ private:
     void _set_ptr_rep_and_enable_shared(Ty* const ptr, _RefCountBase* const refCount) noexcept { // take ownership of ptr
         this->_ptr = ptr;
         this->_rep = refCount;
-        if (Conjunction_v<Negation<IsArray<Type>>, Negation<IsVolatile<Ty>>, _CanEnableShared<Ty>>)
+        if constexpr (Conjunction_v<Negation<IsArray<Type>>, Negation<IsVolatile<Ty>>, _CanEnableShared<Ty>>)
             if (ptr && ptr->_wptr.expired()) 
                 ptr->_wptr = SharedPtr<RemoveCV_t<Ty>>(*this, const_cast<RemoveCV_t<Ty>*>(ptr));
     }
@@ -991,6 +991,13 @@ private:
         this->_Rep = refCount;
     }
 }; // END SharedPtr
+
+
+// build SharedPtr
+template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+constexpr SharedPtr<Ty> make_shared(Args&&... args) {
+    return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
+}
 
 #pragma endregion SharedPtr
 
