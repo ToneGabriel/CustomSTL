@@ -9,8 +9,8 @@ template<class Type, class Container = custom::Vector<Type>>
 class Stack				// Stack Template implemented as Vector wrapper
 {
 public:
-	using ValueType			= Type;									// Type for stored values
 	using ContainerType 	= Container;
+	using ValueType			= typename ContainerType::ValueType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;

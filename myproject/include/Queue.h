@@ -11,8 +11,8 @@ template<class Type, class Container = custom::Deque<Type>>
 class Queue			// Queue template implemented as Deque wrapper
 {
 public:
-	using ValueType 		= Type;									// Type for stored values
 	using ContainerType 	= Container;
+	using ValueType 		= typename ContainerType::ValueType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;
@@ -116,9 +116,9 @@ template<class Type, class Container = custom::Vector<Type>, class Compare = cus
 class PriorityQueue		// Priority Queue Template implemented as array heap
 {
 public:
-	using ValueType 		= Type;									// Type for stored values
 	using ContainerType 	= Container;
 	using ValueCompare 		= Compare;
+	using ValueType 		= typename ContainerType::ValueType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;
@@ -288,14 +288,14 @@ private:
 
 // PriorityQueue binary operators
 template<class _Type, class _Container, class _Compare>
-bool operator==(	const PriorityQueue<_Type, _Container, _Compare>& left,
-							const PriorityQueue<_Type, _Container, _Compare>& right) {
+bool operator==(const PriorityQueue<_Type, _Container, _Compare>& left,
+				const PriorityQueue<_Type, _Container, _Compare>& right) {
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container, class _Compare>
-bool operator!=(	const PriorityQueue<_Type, _Container, _Compare>& left,
-							const PriorityQueue<_Type, _Container, _Compare>& right) {
+bool operator!=(const PriorityQueue<_Type, _Container, _Compare>& left,
+				const PriorityQueue<_Type, _Container, _Compare>& right) {
 	return !(left == right);
 }
 

@@ -515,37 +515,13 @@ public:
 	// Main functions
 
 	Type* allocate(const size_t& capacity) {
-		static_assert(sizeof(Type) > 0, "Type must be complete before calling alloc");
+		static_assert(sizeof(Type) > 0, "Type must be complete before calling allocate");
 		return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
 	}
 
 	void deallocate(Type* address, const size_t& capacity) {
 		CUSTOM_ASSERT(address != nullptr || capacity > 0, "Invalid block deallocation");
 		::operator delete(address, capacity * sizeof(Type));
-	}
-
-	template<class... Args>
-	void construct(Type* address, Args&&... args) {
-		::new(address) Type(custom::forward<Args>(args)...);
-	}
-
-	void construct_range(Type* address, const size_t& length) {							// Default value
-		for (size_t i = 0; i < length; ++i)
-			construct(address + i);
-	}
-
-	void construct_range(Type* address, const size_t& length, const Type& value) {		// Copy value
-		for (size_t i = 0; i < length; ++i)
-			construct(address + i, value);
-	}
-
-	void destroy(Type* address) {
-		address->~Type();
-	}
-
-	void destroy_range(Type* address, const size_t& length) {
-		for (size_t i = 0; i < length; ++i)
-			destroy(address + i);
 	}
 }; // END Allocator
 
@@ -691,8 +667,8 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
         return static_cast<size_t>(-1) / sizeof(ValueType);
     }
 
-    static constexpr AllocatorType select_on_container_copy_construction(const AllocatorType& alloc) {
-        return alloc;
+    static constexpr AllocatorType select_on_container_copy_construction(const AllocatorType& al) {
+        return al;
     }
 };	// END AllocatorTraits default
 #pragma endregion Allocator

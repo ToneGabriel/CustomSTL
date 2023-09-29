@@ -36,7 +36,7 @@ struct _SearchTreeData
 
 	using _AllocTraits		= AllocatorTraits<AllocatorType>;
 	using _Node				= node::_TreeNode<ValueType>;
-	using _AllocNode		= typename AllocatorTraits<AllocatorType>::template RebindAlloc<_Node>;
+	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
 	using _NodePtr			= _AllocNodeTraits::Pointer;
 

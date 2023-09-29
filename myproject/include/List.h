@@ -16,7 +16,7 @@ struct _ListData
 	// deduce data types and forward them
 	using _AllocTraits		= AllocatorTraits<Alloc>;
 	using _Node				= node::_DoubleNode<Type>;
-	using _AllocNode		= typename AllocatorTraits<Alloc>::template RebindAlloc<_Node>;
+	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
 	using _NodePtr			= _AllocNodeTraits::Pointer;
 

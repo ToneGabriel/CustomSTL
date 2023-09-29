@@ -7,19 +7,21 @@
 
 CUSTOM_BEGIN
 
-template<class Type>
-struct DequeData
+template<class Type, class Alloc>
+struct _DequeData
 {
-	using ValueType 		= Type;
-	using Reference			= ValueType&;
-	using ConstReference	= const ValueType&;
-	using Pointer			= ValueType*;
-	using ConstPointer		= const ValueType*;
+	using _AllocTraits		= AllocatorTraits<Alloc>;
+	using _AllocPtr 		= typename _AllocTraits::template RebindAlloc<typename _AllocTraits::Pointer>;
+    using _AllocPtrTraits 	= AllocatorTraits<_AllocPtr>;
+	using _MapPtr 			= _AllocPtrTraits::Pointer;
 
-	using MapPtr 			= ValueType**;
-	//using Alloc				= Allocator<ValueType>;
+	using ValueType			= typename _AllocTraits::ValueType;
+	using Reference			= typename _AllocTraits::Reference;
+	using ConstReference	= typename _AllocTraits::ConstReference;
+	using Pointer			= typename _AllocTraits::Pointer;
+	using ConstPointer		= typename _AllocTraits::ConstPointer;
 
-	MapPtr _Map				= nullptr;
+	_MapPtr _Map 			= nullptr;
 	size_t _MapCapacity 	= 0;
 	size_t _First 			= 0;
 	size_t _Size 			= 0;
@@ -31,25 +33,27 @@ struct DequeData
     }
 };
 
-template<class Deque>
+template<class DequeData>
 class DequeConstIterator
 {
+private:
+	using _Data			= DequeData;
+
 public:
-	using Data			= typename Deque::Data;
-	using ValueType		= typename Deque::ValueType;
-	using Reference		= typename Deque::ConstReference;
-	using Pointer		= typename Deque::ConstPointer;
+	using ValueType		= typename _Data::ValueType;
+	using Reference		= typename _Data::ConstReference;
+	using Pointer		= typename _Data::ConstPointer;
 
 	size_t _Offset		= 0;
-	const Data* _Data	= nullptr;
+	const _Data* _RefData	= nullptr;
 
 public:
 
-    explicit DequeConstIterator(size_t offset, const Data* data) noexcept
-		:_Offset(offset), _Data(data) { /*Empty*/ }
+    explicit DequeConstIterator(size_t offset, const _Data* data) noexcept
+		:_Offset(offset), _RefData(data) { /*Empty*/ }
 
 	DequeConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Offset < _Data->_First + _Data->_Size, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Offset < _RefData->_First + _RefData->_Size, "Cannot increment end iterator...");
 		++_Offset;
 		return *this;
 	}
@@ -61,8 +65,8 @@ public:
 	}
 
 	DequeConstIterator& operator+=(const size_t& diff) noexcept {
-		CUSTOM_ASSERT(	_Offset + diff >= _Data->_First &&
-						_Offset + diff <= _Data->_First + _Data->_Size, 
+		CUSTOM_ASSERT(	_Offset + diff >= _RefData->_First &&
+						_Offset + diff <= _RefData->_First + _RefData->_Size, 
 						"Cannot increment end iterator...");
 		_Offset += diff;
 		return *this;
@@ -75,7 +79,7 @@ public:
 	}
 
 	DequeConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Offset > _Data->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Offset > _RefData->_First, "Cannot decrement begin iterator...");
 		--_Offset;
 		return *this;
 	}
@@ -87,8 +91,8 @@ public:
 	}
 
 	DequeConstIterator& operator-=(const size_t& diff) noexcept {
-		CUSTOM_ASSERT(	_Offset - diff >= _Data->_First &&					// TODO: use data overflow
-						_Offset - diff <= _Data->_First + _Data->_Size,
+		CUSTOM_ASSERT(	_Offset - diff >= _RefData->_First &&					// TODO: use data overflow
+						_Offset - diff <= _RefData->_First + _RefData->_Size,
 						"Cannot decrement begin iterator...");
 		_Offset -= diff;
 		return *this;
@@ -101,23 +105,23 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(	_Offset >= _Data->_First &&
-						_Offset < _Data->_First + _Data->_Size,
+		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
+						_Offset < _RefData->_First + _RefData->_Size,
 						"Cannot access end iterator...");
 
-		size_t block = _Data->get_block(_Offset);
-		size_t offset = _Offset % _Data->BLOCK_SIZE;
-		return &_Data->_Map[block][offset];
+		size_t block = _RefData->get_block(_Offset);
+		size_t offset = _Offset % _RefData->BLOCK_SIZE;
+		return &_RefData->_Map[block][offset];
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(	_Offset >= _Data->_First &&
-						_Offset < _Data->_First + _Data->_Size,
+		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
+						_Offset < _RefData->_First + _RefData->_Size,
 						"Cannot dereference end iterator...");
 
-		size_t block	= _Data->get_block(_Offset);
-		size_t offset	= _Offset % _Data->BLOCK_SIZE;
-		return _Data->_Map[block][offset];
+		size_t block	= _RefData->get_block(_Offset);
+		size_t offset	= _Offset % _RefData->BLOCK_SIZE;
+		return _RefData->_Map[block][offset];
 	}
 
 	bool operator==(const DequeConstIterator& other) const noexcept {
@@ -130,49 +134,45 @@ public:
 
 public:
 
-	size_t get_offset() const noexcept {
-		return _Offset;
-	}
-
 	bool is_begin() const noexcept {
-		return _Offset == _Data->_First;
+		return _Offset == _RefData->_First;
 	}
 
 	bool is_end() const noexcept {
-		return _Offset == _Data->_First + _Data->_Size;
+		return _Offset == _RefData->_First + _RefData->_Size;
 	}
 }; // END DequeConstIterator
 
-template<class Deque>
-class DequeIterator : public DequeConstIterator<Deque>			// Deque Iterator
+template<class DequeData>
+class DequeIterator : public DequeConstIterator<DequeData>			// Deque Iterator
 {
 private:
-	using Base		= DequeConstIterator<Deque>;
+	using _Base		= DequeConstIterator<DequeData>;
+	using _Data		= DequeData;
 
 public:
-	using Data		= typename Deque::Data;
-	using ValueType	= typename Deque::ValueType;
-	using Reference	= typename Deque::Reference;
-	using Pointer	= typename Deque::Pointer;
+	using ValueType	= typename _Data::ValueType;
+	using Reference	= typename _Data::Reference;
+	using Pointer	= typename _Data::Pointer;
 
 public:
 
-	explicit DequeIterator(size_t offset, const Data* data) noexcept
-		:Base(offset, data) { /*Empty*/ }
+	explicit DequeIterator(size_t offset, const _Data* data) noexcept
+		:_Base(offset, data) { /*Empty*/ }
 
 	DequeIterator& operator++() noexcept {
-		Base::operator++();
+		_Base::operator++();
 		return *this;
 	}
 
 	DequeIterator operator++(int) noexcept {
 		DequeIterator temp = *this;
-		Base::operator++();
+		_Base::operator++();
 		return temp;
 	}
 
 	DequeIterator& operator+=(const size_t& diff) noexcept {
-		Base::operator+=(diff);
+		_Base::operator+=(diff);
 		return *this;
 	}
 
@@ -183,18 +183,18 @@ public:
 	}
 
 	DequeIterator& operator--() noexcept {
-		Base::operator--();
+		_Base::operator--();
 		return *this;
 	}
 
 	DequeIterator operator--(int) noexcept {
 		DequeIterator temp = *this;
-		Base::operator--();
+		_Base::operator--();
 		return temp;
 	}
 
 	DequeIterator& operator-=(const size_t& diff) noexcept {
-		Base::operator-=(diff);
+		_Base::operator-=(diff);
 		return *this;
 	}
 
@@ -205,11 +205,11 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(Base::operator->());
+		return const_cast<Pointer>(_Base::operator->());
 	}
 
 	Reference operator*() const noexcept {
-		return const_cast<Reference>(Base::operator*());
+		return const_cast<Reference>(_Base::operator*());
 	}
 }; // END Deque Iterator
 
@@ -217,23 +217,32 @@ public:
 template<class Type, class Alloc = custom::Allocator<Type>>
 class Deque					// Deque Template implemented as map of blocks
 {
+private:
+	using _Data 				= _DequeData<Type, Alloc>;
+	using _AllocTraits			= typename _Data::_AllocTraits;
+	using _AllocPtr 			= typename _Data::_AllocPtr;
+	using _AllocPtrTraits		= typename _Data::_AllocPtrTraits;
+	using _MapPtr				= typename _Data::_MapPtr;
+
 public:
-	using Data					= DequeData<Type>;
-	using ValueType 			= typename Data::ValueType;					// Type for stored values
-	using Reference				= typename Data::Reference;
-	using ConstReference		= typename Data::ConstReference;
-	using Pointer				= typename Data::Pointer;
-	using ConstPointer			= typename Data::ConstPointer;
+	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(IsObject_v<Type>, "Containers require object type!");
+
+	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using Reference				= typename _Data::Reference;
+	using ConstReference		= typename _Data::ConstReference;
+	using Pointer				= typename _Data::Pointer;
+	using ConstPointer			= typename _Data::ConstPointer;
 	using AllocatorType 		= Alloc;									// Allocator for block
 
-	using Iterator				= DequeIterator<Deque<ValueType>>;			// Iterator type
-	using ConstIterator			= DequeConstIterator<Deque<ValueType>>;		// Const Iterator type
+	using Iterator				= DequeIterator<_Data>;						// Iterator type
+	using ConstIterator			= DequeConstIterator<_Data>;				// Const Iterator type
 	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
 
 private:
-	Data _data;
-	Alloc _alloc;
+	_Data _data;
+	AllocatorType _alloc;
 
 	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
@@ -326,7 +335,7 @@ public:
 		if (_data._Map[block] == nullptr)
 			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
 
-		_alloc.construct(_data._Map[block] + backOffset % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
+		_AllocTraits::construct(_alloc, _data._Map[block] + backOffset % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -344,7 +353,7 @@ public:
 			size_t backOffset	= _data._First + _data._Size - 1;
 			size_t block		= _data.get_block(backOffset);
 
-			_alloc.destroy(_data._Map[block] + backOffset % _data.BLOCK_SIZE);
+			_AllocTraits::destroy(_alloc, _data._Map[block] + backOffset % _data.BLOCK_SIZE);
 			if (--_data._Size == 0)
 				_data._First = 0;
 		}
@@ -361,7 +370,7 @@ public:
 		if (_data._Map[block] == nullptr)
 			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
 
-		_alloc.construct(_data._Map[block] + _data._First % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
+		_AllocTraits::construct(_alloc, _data._Map[block] + _data._First % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -378,7 +387,7 @@ public:
 		{
 			size_t block = _data.get_block(_data._First);
 
-			_alloc.destroy(_data._Map[block] + _data._First % _data.BLOCK_SIZE);
+			_AllocTraits::destroy(_alloc, _data._Map[block] + _data._First % _data.BLOCK_SIZE);
 			if (--_data._Size == 0)
 				_data._First = 0;
 			else
@@ -388,7 +397,7 @@ public:
 
 	template<class... Args>
 	Iterator emplace(ConstIterator iterator, Args&&... args) {
-		size_t off = iterator.get_offset() - _data._First;
+		size_t off = iterator._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
@@ -430,7 +439,7 @@ public:
 		if (iterator.is_end())
 			throw std::out_of_range("Array pop iterator outside range...");
 			
-		size_t off = iterator.get_offset() - _data._First;
+		size_t off = iterator._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
@@ -570,8 +579,7 @@ private:
 	void _reserve(const size_t& newMapCapacity) {
 		size_t newSize			= _data._Size;
 		size_t newFirst			= _data._First % _data.BLOCK_SIZE;
-		ValueType** newMap		= new ValueType* [newMapCapacity] {nullptr};
-
+		_MapPtr newMap 			= _create_empty_map(newMapCapacity);
 		size_t firstBlock		= _data.get_block(_data._First);					// block to find first elem
 		size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);	// block to find last elem (always != firstBlock)
 
@@ -621,10 +629,18 @@ private:
 		_data._First 		= custom::exchange(other._data._First, 0);
 	}
 
+	_MapPtr _create_empty_map(const size_t& newMapCapacity) {
+		_MapPtr newMap = _AllocPtr().allocate(newMapCapacity);
+		for(size_t i = 0; i < newMapCapacity; ++i)
+			newMap[i] = nullptr;
+
+		return newMap;
+	}
+
 	void _init_map(const size_t& newMapCapacity) {
 		size_t newCapacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
 
-		_data._Map			= new ValueType* [newCapacity] {nullptr};
+		_data._Map 			= _create_empty_map(newCapacity);
 		_data._MapCapacity	= newCapacity;
 		_data._Size			= 0;
 		_data._First		= 0;
@@ -634,7 +650,7 @@ private:
 		if (_data._Map != nullptr)
 		{
 			clear();
-			delete[] _data._Map;
+			_AllocPtr().deallocate(_data._Map, _data._MapCapacity);
 			_data._Map = nullptr;
 		}
 	}

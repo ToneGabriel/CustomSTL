@@ -93,14 +93,15 @@ public:
 
     template<class... Args>
 	Iterator emplace(Args&&... args) {
-		_NodePtr newNode = _alloc.allocate(1);
+		_NodePtr newNode 		= _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
 		Iterator it 			= find(newKey);
 
 		if (it != end())	// Destroy newly-created Node if key exists
 		{
-			delete newNode;
+			_AllocNodeTraits::destroy(_alloc, &(newNode->_Value));
+			_alloc.deallocate(newNode, 1);
 			return it;
 		}
 		else
