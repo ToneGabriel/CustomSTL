@@ -33,7 +33,7 @@ public:
 
 
 template<class Key, class Type,
-class Hash 		= std::hash<Key>,
+class Hash 		= custom::Hash<Key>,
 class Compare 	= custom::EqualTo<Key>,
 class Alloc 	= custom::Allocator<custom::Pair<Key, Type>>>
 class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>	// UnorderedMap Template

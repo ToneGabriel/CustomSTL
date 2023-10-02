@@ -248,12 +248,25 @@ char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned lon
 template<class Ty>
 struct IsIntegral : BoolConstant<IsIntegral_v<Ty>> {};
 
+// is char
+template<class Ty>
+constexpr bool IsChar_v = _IsAnyOf_v<Ty, char, wchar_t,
+#ifdef __cpp_char8_t
+char8_t,
+#endif
+char16_t, char32_t>;
+
+template<class Ty>
+struct IsChar : BoolConstant<IsChar_v<Ty>> {};
+
+// is floating point
 template<class Ty>
 constexpr bool IsFloatingPoint_v = _IsAnyOf_v<RemoveCV_t<Ty>, float, double, long double>;
 
 template<class Ty>
 struct IsFloatingPoint : BoolConstant<IsFloatingPoint_v<Ty>> {};
 
+// is arithmetic
 template<class Ty>
 constexpr bool IsArithmetic_v = IsIntegral_v<Ty> || IsFloatingPoint_v<Ty>;
 

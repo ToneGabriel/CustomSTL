@@ -3,10 +3,10 @@
 #include "Vector.h"
 #include "Pair.h"		// _try_emplace
 #include "Utility.h"
-#include "Functional.h"	// EqualTo
+#include "Functional.h"	// EqualTo, Hash
 
 #include <cmath>		// std::ceil
-#include <functional>	// std::hash
+
 
 CUSTOM_BEGIN
 

@@ -6,6 +6,8 @@
 
 CUSTOM_BEGIN
 
+#pragma region Unary/Binary Operations
+
 // unary function
 template<class Arg, class Res>
 struct UnaryFunction
@@ -155,6 +157,140 @@ struct LessEqual<void>
     using IsTransparent = int;
 };
 
+#pragma endregion Unary/Binary Operations
+
+
+#pragma region Hash
+
+#ifdef _WIN64
+constexpr size_t _FNVOffsetBasis    = 14695981039346656037ULL;
+constexpr size_t _FNVPrime          = 1099511628211ULL;
+#else
+constexpr size_t _FNVOffsetBasis    = 2166136261U;
+constexpr size_t _FNVPrime          = 16777619U;
+#endif // _WIN64
+
+// accumulate range [first, first + count) into partial FNV-1a hash val
+inline size_t _fnv1a_append_bytes(  size_t val,
+                                    const unsigned char* const first,
+                                    const size_t count) noexcept {
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        val ^= static_cast<size_t>(first[i]);
+        val *= _FNVPrime;
+    }
+
+    return val;
+}
+
+// accumulate range [first, last) into partial FNV-1a hash val
+template<class Ty>
+size_t _fnv1a_append_range( const size_t val,
+                            const Ty* const first,
+                            const Ty* const last) noexcept {
+
+    static_assert(IsTrivial_v<Ty>, "Only trivial types can be directly hashed.");
+
+    const auto firstAsUChar = reinterpret_cast<const unsigned char*>(first);
+    const auto lastAsUChar  = reinterpret_cast<const unsigned char*>(last);
+
+    return _fnv1a_append_bytes(val, firstAsUChar, static_cast<size_t>(lastAsUChar - firstAsUChar));
+}
+
+// accumulate key into partial FNV-1a hash val
+template<class Key>
+size_t _fnv1a_append_value( const size_t val,
+                            const Key& key) noexcept {
+
+    static_assert(IsTrivial_v<Key>, "Only trivial types can be directly hashed.");
+    return _fnv1a_append_bytes(val, &reinterpret_cast<const unsigned char&>(key), sizeof(Key));
+}
+
+// bitwise hashes the representation of a key
+template<class Key>
+size_t _hash_representation(const Key& key) noexcept {
+    return _fnv1a_append_value(_FNVOffsetBasis, key);
+}
+
+// bitwise hashes the representation of an array
+template<class Key>
+size_t _hash_array_representation(  const Key* const first,
+                                    const size_t count) noexcept {
+
+    static_assert(IsTrivial_v<Key>, "Only trivial types can be directly hashed.");
+    return _fnv1a_append_bytes(_FNVOffsetBasis, reinterpret_cast<const unsigned char*>(first), count * sizeof(Key));
+}
+
+template<class Key>
+struct Hash;
+
+template<class Key, bool Enabled>
+struct _BaseHashEnabler  // conditionally enabled Hash base
+{
+    size_t operator()(const Key& key) const
+    noexcept(noexcept(Hash<Key>::compute_hash(key))) {
+        return Hash<Key>::compute_hash(key);
+    }
+};
+
+template<class Key>
+struct _BaseHashEnabler<Key, false>  // conditionally disabled Hash base
+{
+    _BaseHashEnabler()                                      = delete;
+    _BaseHashEnabler(const _BaseHashEnabler&)               = delete;
+    _BaseHashEnabler(_BaseHashEnabler&&)                    = delete;
+    _BaseHashEnabler& operator=(const _BaseHashEnabler&)    = delete;
+    _BaseHashEnabler& operator=(_BaseHashEnabler&&)         = delete;
+};
+
+template<class Key>
+struct Hash : _BaseHashEnabler<Key, (!IsConst_v<Key> &&
+                                     !IsVolatile_v<Key> &&
+                                     (IsEnum_v<Key> || IsIntegral_v<Key> || IsPointer_v<Key>))>
+{
+    static size_t compute_hash(const Key& key) noexcept {
+        return _hash_representation(key);
+    }
+};  // END Hash
+
+
+// Hash specializations
+template<>
+struct Hash<float>
+{
+    size_t operator()(const float key) const noexcept {
+        return _hash_representation(key == 0.0F ? 0.0F : key);  // map -0 to 0
+    }
+};
+
+template<>
+struct Hash<double>
+{
+    size_t operator()(const double key) const noexcept {
+        return _hash_representation(key == 0.0 ? 0.0 : key);    // map -0 to 0
+    }
+};
+
+template<>
+struct Hash<long double>
+{
+    size_t operator()(const long double key) const noexcept {
+        return _hash_representation(key == 0.0L ? 0.0L : key); // map -0 to 0
+    }
+};
+
+template<>
+struct Hash<nullptr_t>
+{
+    size_t operator()(nullptr_t) const noexcept {
+        void* voidPtr{};
+        return _hash_representation(voidPtr);
+    }
+};
+
+#pragma endregion Hash
+
 
 template<class>
 class Callable;
@@ -174,6 +310,8 @@ class Function;
 
 // }; // END Function template
 
+
+#pragma region Bind
 
 // placeholder
 template<int Num>
@@ -344,5 +482,7 @@ template<class Functor, class... Args>
 constexpr Binder<Functor, Args...> bind(Functor&& func, Args&&... args) {
     return Binder<Functor, Args...>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 }
+
+#pragma endregion Bind
 
 CUSTOM_END

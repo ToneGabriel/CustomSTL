@@ -42,27 +42,12 @@ struct Less<BasicString<Type, Alloc, Traits>>
 	}
 };
 
-// template<>
-// struct Hash<String>
-// {
-// 	size_t operator()(const String& string) const {
-// 		return hash<char>()(string[0]) ^ string.size();
-// 	}
-// };
-
-CUSTOM_END
-
-
-STD_BEGIN
-
-// String Helpers
 template<class Type, class Alloc, class Traits>
-struct hash<custom::BasicString<Type, Alloc, Traits>>
+struct Hash<BasicString<Type, Alloc, Traits>> : _BaseHashEnabler<BasicString<Type, Alloc, Traits>, true>
 {
-	size_t operator()(const custom::BasicString<Type, Alloc, Traits>& string) const {
-		return hash<char>()(string[0]) ^ string.size();
+	static size_t compute_hash(const BasicString<Type, Alloc, Traits>& key) noexcept {
+		return _hash_array_representation(key.c_str(), key.size());
 	}
 };
-// END String Helpers
 
-STD_END
+CUSTOM_END

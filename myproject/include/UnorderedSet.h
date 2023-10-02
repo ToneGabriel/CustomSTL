@@ -33,7 +33,7 @@ public:
 
 
 template<class Key,
-class Hash 		= std::hash<Key>,
+class Hash 		= custom::Hash<Key>,
 class Compare 	= custom::EqualTo<Key>,
 class Alloc 	= custom::Allocator<Key>>
 class UnorderedSet : public _HashTable<UsetTraits<Key, Hash, Compare, Alloc>>		// UnorderedSet Template
