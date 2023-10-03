@@ -43,7 +43,7 @@ struct Less<BasicString<Type, Alloc, Traits>>
 };
 
 template<class Type, class Alloc, class Traits>
-struct Hash<BasicString<Type, Alloc, Traits>> : _BaseHashEnabler<BasicString<Type, Alloc, Traits>, true>
+struct Hash<BasicString<Type, Alloc, Traits>> : _BaseHashEnabler<BasicString<Type, Alloc, Traits>, IsChar_v<Type>>
 {
 	static size_t compute_hash(const BasicString<Type, Alloc, Traits>& key) noexcept {
 		return _hash_array_representation(key.c_str(), key.size());

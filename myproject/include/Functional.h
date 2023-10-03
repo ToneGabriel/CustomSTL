@@ -281,9 +281,9 @@ struct Hash<long double>
 };
 
 template<>
-struct Hash<nullptr_t>
+struct Hash<std::nullptr_t>
 {
-    size_t operator()(nullptr_t) const noexcept {
+    size_t operator()(std::nullptr_t) const noexcept {
         void* voidPtr{};
         return _hash_representation(voidPtr);
     }

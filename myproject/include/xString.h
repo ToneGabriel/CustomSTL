@@ -51,14 +51,21 @@ struct _CharTraits
 											size_t count,
 											const CharType& ch) noexcept {	// look for ch in [cstr, cstr + count)
 
-		return static_cast<const CharType*>(::memchr(cstr, ch, count * sizeof(CharType)));
+		for (; 0 < count; --count, ++cstr)
+            if (*cstr == ch)
+                return cstr;
+
+        return nullptr;
 	}
 
 	static constexpr CharType* assign(	CharType* const cstr,
 										size_t count,
 										const CharType ch) noexcept {	// assign count * ch to [cstr, ...)
 
-		return static_cast<CharType*>(::memset(cstr, ch, count * sizeof(CharType)));
+		for (CharType* next = cstr; count > 0; --count, ++next)
+			*next = ch;
+
+        return cstr;
 	}
 
 	static constexpr bool eq(const CharType& left, const CharType& right) noexcept {
@@ -560,9 +567,8 @@ public:
 	}
 
 	constexpr BasicString& append(size_t nchar, ValueType chr) {							// Appends n consecutive copies of character c
-		_insert_char(size(), chr, nchar);
+		_insert_char(size(), nchar, chr);
 		return *this;
-		// TODO: check
 	}
 // end Append
 
@@ -588,21 +594,20 @@ public:
 	}
 
 	constexpr BasicString& insert(size_t pos, size_t nchar, ValueType chr) {
-		_insert_char(pos, chr, nchar);
+		_insert_char(pos, nchar, chr);
 		return *this;
-		// TODO: check
 	}
 
 	constexpr Iterator insert(ConstIterator where, ValueType chr) {
 		size_t pos = where.get_index();
-		_insert_char(pos, chr, 1);
+		_insert_char(pos, 1, chr);
 
 		return Iterator(_data._First + pos, &_data);
 	}
 
 	constexpr Iterator insert(ConstIterator where, size_t nchar, ValueType chr) {
 		size_t pos = where.get_index();
-		_insert_char(pos, chr, nchar);
+		_insert_char(pos, nchar, chr);
 
 		return Iterator(_data._First + pos, &_data);
 	}
@@ -690,16 +695,8 @@ public:
 		size_t currentSize 		= size();
 		size_t currentCapacity 	= capacity();
 
-		std::cout << '\n';
-		for (size_t i = 0; i <= currentCapacity; ++i)
-		{
-			if (_data._First[i] == TraitsType::NULLCHR)
-				std::cout << 'N' << ' ';
-			else
-				std::cout << _data._First[i] << ' ';
-		}
-		std::cout << '\n';
 		std::cout << currentSize << ' ' << currentCapacity << '\n';
+		std::cout << _data._First << '\n';
 	}
 
 public:
@@ -749,11 +746,7 @@ private:
 
 	constexpr void _initialize_from_cstring(ConstPointer cstring) {
 		if (cstring == nullptr)
-		{
-			_data._First	= _alloc.allocate(_DEFAULT_CAPACITY);
-			_data._Last		= _data._First;
-			_data._Final	= _data._First;
-		}
+			_alloc_empty(_DEFAULT_CAPACITY);
 		else
 		{
 			size_t len		= TraitsType::length(cstring);
@@ -761,9 +754,8 @@ private:
 			_data._Last		= _data._First + len;
 			_data._Final	= _data._First + len;
 			TraitsType::copy(_data._First, cstring, len);
+			_data._Last[0] = TraitsType::NULLCHR;
 		}
-
-		_data._Last[0] = TraitsType::NULLCHR;
 	}
 
 	constexpr void _clean_up_string() {
@@ -814,7 +806,7 @@ private:
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
 
-	constexpr void _insert_char(size_t pos, ValueType chr, size_t nchar) {
+	constexpr void _insert_char(size_t pos, size_t nchar, ValueType chr) {
 		if (pos > size())		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
 
@@ -823,7 +815,7 @@ private:
 			reserve(newSize);
 
 		TraitsType::move(_data._First + pos + nchar, _data._First + pos, size() - pos);		// copy last nchar positions to right
-		TraitsType::assign(_data._First + pos, chr, nchar);									// add nchar * chr in between
+		TraitsType::assign(_data._First + pos, nchar, chr);									// add nchar * chr in between
 		_data._Last 	= _data._First + newSize;
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
