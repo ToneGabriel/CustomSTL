@@ -5,26 +5,24 @@
 #include <iostream>     // debugging
 
 
-#define CUSTOM_BEGIN namespace custom {
+#define CUSTOM_BEGIN namespace custom { // gloabal namespace for this project
 #define CUSTOM_END }
 
-#define STD_BEGIN namespace std {
-#define STD_END }
 
-#define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
+CUSTOM_BEGIN
 
 inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
     {
-        std::cerr   << "Assert failed:\t"   << msg      << "\n"
-                    << "Expected:\t"        << exprStr  << "\n"
-                    << "Source:\t\t"        << file     << ", line " << line << "\n";
-        abort();
+        std::cerr   << "Assert failed:\t"   << msg << "\n"
+                    << "Expected:\t"        << exprStr << "\n"
+                    << "Source:\t\t"        << file << ", line " << line << "\n";
+        ::abort();
     }
 }
 
+#define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
-CUSTOM_BEGIN
 
 // integral constant
 template<class Ty, Ty Val>
@@ -233,12 +231,16 @@ constexpr bool IsSame_v<Ty, Ty> = true;
 template<class Ty1, class Ty2>
 struct IsSame : BoolConstant<IsSame_v<Ty1, Ty2>> {};
 
-// is arithmetic
-template<class Ty, class... Types>                  // Helper - true if Ty is in Types
-constexpr bool _IsAnyOf_v = Disjunction_v<IsSame<Ty, Types>...>;
+// is any of
+template<class Ty, class... Types>              // true if Ty is in Types
+constexpr bool IsAnyOf_v = Disjunction_v<IsSame<Ty, Types>...>;
 
 template<class Ty>
-constexpr bool IsIntegral_v = _IsAnyOf_v<RemoveCV_t<Ty>, bool, char, signed char, unsigned char,
+struct IsAnyOf : BoolConstant<IsAnyOf_v<Ty>> {};
+
+// is integral
+template<class Ty>
+constexpr bool IsIntegral_v = IsAnyOf_v<RemoveCV_t<Ty>, bool, char, signed char, unsigned char,
 wchar_t,
 #ifdef __cpp_char8_t
 char8_t,
@@ -250,7 +252,7 @@ struct IsIntegral : BoolConstant<IsIntegral_v<Ty>> {};
 
 // is char
 template<class Ty>
-constexpr bool IsChar_v = _IsAnyOf_v<Ty, char, wchar_t,
+constexpr bool IsChar_v = IsAnyOf_v<Ty, char, wchar_t,
 #ifdef __cpp_char8_t
 char8_t,
 #endif
@@ -261,7 +263,7 @@ struct IsChar : BoolConstant<IsChar_v<Ty>> {};
 
 // is floating point
 template<class Ty>
-constexpr bool IsFloatingPoint_v = _IsAnyOf_v<RemoveCV_t<Ty>, float, double, long double>;
+constexpr bool IsFloatingPoint_v = IsAnyOf_v<RemoveCV_t<Ty>, float, double, long double>;
 
 template<class Ty>
 struct IsFloatingPoint : BoolConstant<IsFloatingPoint_v<Ty>> {};

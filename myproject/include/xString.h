@@ -223,7 +223,7 @@ public:
 
 	constexpr Pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
-		return _Ptr;
+		return PointerTraits<Pointer>::pointer_to(**this);
 	}
 
 	constexpr Reference operator*() const noexcept {
@@ -251,6 +251,11 @@ public:
 
 	constexpr bool is_end() const noexcept {
 		return _Ptr == _RefData->_Last;
+	}
+
+	friend constexpr void _verify_range(const BasicStringConstIterator& first, const BasicStringConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "BasicString iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "BasicString iterator range transposed");
 	}
 }; // END BasicStringConstIterator
 
@@ -445,7 +450,7 @@ public:
 
 		size_t newSize		= size();
 		Pointer newString 	= _alloc.allocate(newCapacity + 1);
-		TraitsType::copy(newString, _data._First, size());
+		(void)TraitsType::copy(newString, _data._First, size());
 		_clean_up_string();
 
 		_data._First 		= newString;
@@ -538,7 +543,7 @@ public:
 			throw std::out_of_range("Invalid length...");
 
 		BasicString sub(len);	// empty string with capacity = len
-		TraitsType::copy(sub._data._First, _data._First + pos, len);
+		(void)TraitsType::copy(sub._data._First, _data._First + pos, len);
 		sub._data._Last		= sub._data._Final;
 		sub._data._Last[0]	= TraitsType::NULLCHR;
 
@@ -753,7 +758,7 @@ private:
 			_data._First	= _alloc.allocate(len + 1);
 			_data._Last		= _data._First + len;
 			_data._Final	= _data._First + len;
-			TraitsType::copy(_data._First, cstring, len);
+			(void)TraitsType::copy(_data._First, cstring, len);
 			_data._Last[0] = TraitsType::NULLCHR;
 		}
 	}
@@ -775,7 +780,7 @@ private:
 
 	constexpr void _copy(const BasicString& other) {								// Generic copy function for string
 		_alloc_empty(other.capacity());
-		TraitsType::copy(_data._First, other._data._First, other.size());
+		(void)TraitsType::copy(_data._First, other._data._First, other.size());
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
@@ -800,8 +805,8 @@ private:
 		if (newSize > capacity())
 			reserve(newSize);
 
-		TraitsType::move(_data._First + pos + sublen, _data._First + pos, size() - pos);	// copy last sublen positions to right
-		TraitsType::move(_data._First + pos, cstring + subpos, sublen);						// add substr from cstring between
+		(void)TraitsType::move(_data._First + pos + sublen, _data._First + pos, size() - pos);	// copy last sublen positions to right
+		(void)TraitsType::move(_data._First + pos, cstring + subpos, sublen);					// add substr from cstring between
 		_data._Last 	= _data._First + newSize;
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
@@ -814,8 +819,8 @@ private:
 		if (newSize > capacity())
 			reserve(newSize);
 
-		TraitsType::move(_data._First + pos + nchar, _data._First + pos, size() - pos);		// copy last nchar positions to right
-		TraitsType::assign(_data._First + pos, nchar, chr);									// add nchar * chr in between
+		(void)TraitsType::move(_data._First + pos + nchar, _data._First + pos, size() - pos);	// copy last nchar positions to right
+		(void)TraitsType::assign(_data._First + pos, nchar, chr);								// add nchar * chr in between
 		_data._Last 	= _data._First + newSize;
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
@@ -826,7 +831,7 @@ private:
 		if (pos + len > size())
 			throw std::out_of_range("Invalid length...");
 
-		TraitsType::move(_data._First + pos, _data._First + pos + len, size() - pos - len);
+		(void)TraitsType::move(_data._First + pos, _data._First + pos + len, size() - pos - len);
 		_data._Last 	= _data._First + size() - len;
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}

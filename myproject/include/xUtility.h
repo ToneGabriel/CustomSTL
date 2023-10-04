@@ -9,12 +9,10 @@ constexpr void _verify_range(const Type* const first, const Type* const last) no
     CUSTOM_ASSERT(first <= last, "Transposed pointer range...");
 }
 
-//template<class Iter, class Sentinel>
-//constexpr void _adl_verify_range(const Iter& first, const Sentinel& last) {
-//    // check that [first, last) forms an iterator range
-//    _verify_range(first, last);
-//    //if (_Range_verifiable_v<Iter, Sentinel>) {
-//    //}
-//}
+template<class Iter1, class Iter2>
+constexpr void _verify_iteration_range(const Iter1& first, const Iter2& last) {
+    // check that [first, last) forms an iterator range
+    _verify_range(first, last);
+}
 
 CUSTOM_END

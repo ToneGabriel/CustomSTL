@@ -24,8 +24,10 @@ constexpr bool none_of(InputIt first, InputIt last, UnaryPredicate pred) {
 
 
 // for_each, for_each_n
-template<class InputIt, class UnaryFunction>    // TODO: check
+template<class InputIt, class UnaryFunction>
 constexpr UnaryFunction for_each(InputIt first, InputIt last, UnaryFunction func) {
+    _verify_iteration_range(first, last);
+
     for (; first != last; ++first)
         func(*first);
  
@@ -34,7 +36,7 @@ constexpr UnaryFunction for_each(InputIt first, InputIt last, UnaryFunction func
 
 template<class InputIt, class Size, class UnaryFunction>
 constexpr InputIt for_each_n(InputIt first, Size n, UnaryFunction func) {
-    for (Size i = 0; i < n; ++first, (void) ++i)
+    for (Size i = 0; i < n; ++first, (void)++i)
         func(*first);
  
     return first;

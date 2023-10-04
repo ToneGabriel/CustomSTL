@@ -103,6 +103,11 @@ public:
 	constexpr bool is_end() const noexcept {
 		return _Index == Size;
 	}
+
+	friend constexpr void _verify_range(const ArrayConstIterator& first, const ArrayConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._Ptr == last._Ptr, "Array iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Index <= last._Index, "Array iterator range transposed");
+	}
 }; // END ArrayConstIterator
 
 template<class Type, size_t Size>

@@ -103,6 +103,11 @@ public:
 	bool is_end() const noexcept {
 		return _Ptr == _RefData->_Head;
 	}
+
+	friend void _verify_range(const ListConstIterator& first, const ListConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "List iterators in range are from different containers");
+		// No possible way to determine order.
+	}
 }; // END ListConstIterator
 
 template<class ListData>

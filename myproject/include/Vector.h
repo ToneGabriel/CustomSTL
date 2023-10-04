@@ -123,6 +123,11 @@ public:
 	constexpr bool is_end() const noexcept {
 		return _Ptr == _RefData->_Last;
 	}
+
+	friend constexpr void _verify_range(const VectorConstIterator& first, const VectorConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "Vector iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "Vector iterator range transposed");
+	}
 }; // END VectorConstIterator
 
 template<class VecData>
