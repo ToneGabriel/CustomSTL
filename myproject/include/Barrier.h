@@ -27,7 +27,7 @@ public:
     Barrier& operator=(const Barrier&) = delete;
 
 public:
-    // Main functions // TODO: implement
+    // Main functions
 
     static constexpr int (max)() noexcept {
         return INT_MAX;

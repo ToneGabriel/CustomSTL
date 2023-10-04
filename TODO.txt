@@ -4,7 +4,5 @@
 
 2. Check ALL components for constexpr, explicit and noexcept specifiers
 3. Learn and implement smart pointers
-4. Learn and implement condition_variable_any
-5. Complete TypeTraits
-6. Refactor Function class
-7. Complete String
+4. Complete TypeTraits
+5. Refactor Function class

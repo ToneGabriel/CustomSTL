@@ -9,8 +9,6 @@ Code build requirements:
 
 Components not fully operational:
 
-- ConditionVariable.h
-- Barrier.h
 - Functional.h
 - Memory.h
 - Algorithm.h

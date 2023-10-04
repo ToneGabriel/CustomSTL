@@ -51,10 +51,12 @@ public:
 
     template<class Clock, class Duration>
     bool try_acquire_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
-        auto seconds        = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
-	    auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - seconds);
+        // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
+        // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
+        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
+	    auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - secondsTime);
         struct timespec ts  =   {
-                                    static_cast<std::time_t>(seconds.time_since_epoch().count()),
+                                    static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
                                 };
         return ((sem_timedwait(&_semaphore, &ts) == 0 ) ? true : false);

@@ -334,14 +334,14 @@ struct IsConvertible : BoolConstant<IsConvertible_v<From, To>> {};
 template<class From, class To>
 struct _IsConvertible           // TODO: check
 {
-    template<class Ty>
-    static auto test_returnable(int) -> decltype(void(static_cast<Ty(*)()>(nullptr)), TrueType{});
+    template<class Ty, class = decltype(static_cast<Ty(*)()>(nullptr))>
+    static auto test_returnable(int) -> TrueType;
 
     template<class>
     static auto test_returnable(...) -> FalseType;
 
-    template<class _From, class _To>
-    static auto test_implicitly_convertible(int) -> decltype(void(custom::declval<void(&)(_To)>()(custom::declval<_From>())), TrueType{});
+    template<class _From, class _To, class = decltype(custom::declval<void(&)(_To)>()(custom::declval<_From>()))>
+    static auto test_implicitly_convertible(int) -> TrueType;
 
     template<class, class>
     static auto test_implicitly_convertible(...) -> FalseType;
@@ -620,10 +620,10 @@ template<class Ty>
 struct _IsDestructibleTest
 {
     template<class _Ty, class = decltype(custom::declval<_Ty&>().~_Ty())>
-    static TrueType test_destructible(int);
+    static auto test_destructible(int) -> TrueType;
 
     template<class>
-    static FalseType test_destructible(...);
+    static auto test_destructible(...) -> FalseType;
 
     using Type = decltype(test_destructible<Ty>(0));
 };
@@ -657,11 +657,11 @@ struct IsNothrowDestructible : BoolConstant<__is_nothrow_destructible(Ty)> {};
 template<class Ty>
 struct _IsNothrowDestructibleTest
 {
-    template<typename _Ty>
-    static BoolConstant<noexcept(custom::declval<_Ty&>().~_Ty())> test_nothrow_destructible(int);
+    template<class _Ty, class Return = BoolConstant<noexcept(custom::declval<_Ty&>().~_Ty())>>
+    static auto test_nothrow_destructible(int) -> Return;
 
     template<class>
-    static FalseType test_nothrow_destructible(...);
+    static auto test_nothrow_destructible(...) -> FalseType;
 
     using Type = decltype(test_nothrow_destructible<Ty>(0));
 };
