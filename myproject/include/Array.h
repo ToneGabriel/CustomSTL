@@ -10,12 +10,13 @@ template<class Type, size_t Size>
 class ArrayConstIterator
 {
 public:
-	using ValueType = Type;
-	using Reference	= const ValueType&;
-	using Pointer	= const ValueType*;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= Type;
+	using Reference			= const ValueType&;
+	using Pointer			= const ValueType*;
 
-	ValueType* _Ptr	= nullptr;
-	size_t _Index	= 0;
+	ValueType* _Ptr			= nullptr;
+	size_t _Index			= 0;
 
 public:
 
@@ -82,6 +83,10 @@ public:
 		return *(_Ptr + _Index);
 	}
 
+    constexpr Reference operator[](const size_t diff) const noexcept {
+        return *(*this + diff);
+    }
+
 	constexpr bool operator==(const ArrayConstIterator& other) const noexcept {
 		return (_Ptr == other._Ptr && _Index == other._Index);
 	}
@@ -114,12 +119,13 @@ template<class Type, size_t Size>
 class ArrayIterator : public ArrayConstIterator<Type, Size>
 {
 private:
-	using _Base		= ArrayConstIterator<Type, Size>;
+	using _Base				= ArrayConstIterator<Type, Size>;
 	
 public:
-	using ValueType = Type;
-	using Reference	= ValueType&;
-	using Pointer	= ValueType*;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= Type;
+	using Reference			= ValueType&;
+	using Pointer			= ValueType*;
 
 public:
 
@@ -179,6 +185,10 @@ public:
 	constexpr Reference operator*() const noexcept {
 		return const_cast<Reference>(_Base::operator*());
 	}
+
+	constexpr Reference operator[](const size_t diff) const noexcept {
+        return const_cast<Reference>(_Base::operator[](diff));
+    }
 }; // END ArrayIterator
 
 

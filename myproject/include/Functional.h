@@ -157,6 +157,138 @@ struct LessEqual<void>
     using IsTransparent = int;
 };
 
+// plus
+template<class Ty = void>
+struct Plus : public BinaryFunction<Ty, Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& left, const Ty& right) const {
+        return left + right;
+    }
+};
+
+template<>
+struct Plus<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) + custom::forward<Ty1>(right)))
+    -> decltype(custom::forward<Ty1>(left) + custom::forward<Ty1>(right)) {
+        return custom::forward<Ty1>(left) + custom::forward<Ty1>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// minus
+template<class Ty = void>
+struct Minus : public BinaryFunction<Ty, Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& left, const Ty& right) const {
+        return left - right;
+    }
+};
+
+template<>
+struct Minus<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) - custom::forward<Ty1>(right)))
+    -> decltype(custom::forward<Ty1>(left) - custom::forward<Ty1>(right)) {
+        return custom::forward<Ty1>(left) - custom::forward<Ty1>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// multiplies
+template<class Ty = void>
+struct Multiplies : public BinaryFunction<Ty, Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& left, const Ty& right) const {
+        return left * right;
+    }
+};
+
+template<>
+struct Multiplies<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) * custom::forward<Ty1>(right)))
+    -> decltype(custom::forward<Ty1>(left) * custom::forward<Ty1>(right)) {
+        return custom::forward<Ty1>(left) * custom::forward<Ty1>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// divides
+template<class Ty = void>
+struct Divides : public BinaryFunction<Ty, Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& left, const Ty& right) const {
+        return left / right;
+    }
+};
+
+template<>
+struct Divides<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) / custom::forward<Ty1>(right)))
+    -> decltype(custom::forward<Ty1>(left) / custom::forward<Ty1>(right)) {
+        return custom::forward<Ty1>(left) / custom::forward<Ty1>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// modulus
+template<class Ty = void>
+struct Modulus : public BinaryFunction<Ty, Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& left, const Ty& right) const {
+        return left % right;
+    }
+};
+
+template<>
+struct Modulus<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& left, Ty2&& right) const
+    noexcept(noexcept(custom::forward<Ty1>(left) % custom::forward<Ty1>(right)))
+    -> decltype(custom::forward<Ty1>(left) % custom::forward<Ty1>(right)) {
+        return custom::forward<Ty1>(left) % custom::forward<Ty1>(right);
+    }
+
+    using IsTransparent = int;
+};
+
+// negate
+template<class Ty = void>
+struct Negate : public UnaryFunction<Ty, Ty>
+{
+    constexpr Ty operator()(const Ty& val) const {
+        return -val;
+    }
+};
+
+template<>
+struct Negate<void>
+{
+    template<class Ty1, class Ty2>
+    constexpr auto operator()(Ty1&& val) const
+    noexcept(noexcept(-custom::forward<Ty1>(val)))
+    -> decltype(-custom::forward<Ty1>(val)) {
+        return -custom::forward<Ty1>(val);
+    }
+
+    using IsTransparent = int;
+};
+
 #pragma endregion Unary/Binary Operations
 
 

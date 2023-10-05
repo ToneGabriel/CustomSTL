@@ -62,13 +62,14 @@ template<class _SearchTreeData>
 class _SearchTreeConstIterator
 {
 private:
-	using _Data			= _SearchTreeData;
-	using _NodePtr 		= typename _Data::_NodePtr;
+	using _Data				= _SearchTreeData;
+	using _NodePtr 			= typename _Data::_NodePtr;
 
 public:
-	using ValueType 	= typename _Data::ValueType;
-	using Reference		= typename _Data::ConstReference;
-	using Pointer		= typename _Data::ConstPointer;
+    using IteratorCategory 	= BidirectionalIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference			= typename _Data::ConstReference;
+	using Pointer			= typename _Data::ConstPointer;
 
 	_NodePtr _Ptr 			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -151,20 +152,26 @@ public:
 	bool operator!=(const _SearchTreeConstIterator& other) const noexcept {
 		return !(*this == other);
 	}
+
+	friend void _verify_range(const _SearchTreeConstIterator& first, const _SearchTreeConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "_SearchTree iterators in range are from different containers");
+		// No possible way to determine order.
+	}
 }; // END _SearchTreeConstIterator
 
 template<class _SearchTreeData>
 class _SearchTreeIterator : public _SearchTreeConstIterator<_SearchTreeData>			// _SearchTree Iterator
 {
 private:
-	using _Base		= _SearchTreeConstIterator<_SearchTreeData>;
-	using _Data 	= _SearchTreeData;
-	using _NodePtr	= typename _Data::_NodePtr;
+	using _Base				= _SearchTreeConstIterator<_SearchTreeData>;
+	using _Data 			= _SearchTreeData;
+	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference = typename _Data::Reference;
-	using Pointer 	= typename _Data::Pointer;
+    using IteratorCategory 	= BidirectionalIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference 		= typename _Data::Reference;
+	using Pointer 			= typename _Data::Pointer;
 
 public:
 

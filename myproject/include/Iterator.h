@@ -4,13 +4,51 @@
 
 CUSTOM_BEGIN
 
-// TODO: implement
+// iterator tags
+struct InputIteratorTag {};
+struct OutputIteratorTag {};
+struct ForwardIteratorTag : InputIteratorTag {};
+struct BidirectionalIteratorTag : ForwardIteratorTag {};
+struct RandomAccessIteratorTag : BidirectionalIteratorTag {};
+
+// normal iterator traits helpers
+template<class Iterator, class = void>
+struct _IteratorTraits {};
+
 template<class Iterator>
-struct IteratorTraits;
+struct _IteratorTraits<Iterator, Void_t<    typename Iterator::IteratorCategory,
+                                            typename Iterator::ValueType,
+                                            /*typename Iterator::DifferenceType,*/
+                                            typename Iterator::Pointer,
+                                            typename Iterator::Reference>>
+{
+    using IteratorCategory = typename Iterator::IteratorCategory;
+    using ValueType        = typename Iterator::ValueType;
+    //using DifferenceType   = typename Iterator::DifferenceType;
+    using Pointer           = typename Iterator::Pointer;
+    using Reference         = typename Iterator::Reference;
+};
 
-template<class T>
-struct IteratorTraits<T*>;
+// pointer iterator traits helpers
+template<class Type, bool = IsObject_v<Type>>
+struct _IteratorTraitsPtr
+{
+    using IteratorCategory = RandomAccessIteratorTag;
+    using ValueType        = RemoveCV_t<Type>;
+    //using DifferenceType   = ptrdiff_t;
+    using Pointer           = Type*;
+    using Reference         = Type&;
+};
 
+template<class Type>
+struct _IteratorTraitsPtr<Type, false> {};
+
+// iterator traits
+template<class Iterator>
+struct IteratorTraits : _IteratorTraits<Iterator> {};
+
+template<class Type>
+struct IteratorTraits<Type*> : _IteratorTraitsPtr<Type> {};
 
 // helpers for ReverseIterator operator->()
 template<class Iterator, class Pointer, bool = IsPointer_v<RemoveCVRef_t<Iterator>>>
@@ -24,11 +62,11 @@ template<class Iterator>
 class ReverseIterator                           // Adaptor for backwards iteration
 {
 public:
-    // TODO: use iterator_traits
-    using IteratorType  = Iterator;
-    using ValueType     = typename Iterator::ValueType;
-    using Reference		= typename Iterator::Reference;
-	using Pointer		= typename Iterator::Pointer;
+    using IteratorType      = Iterator;
+    //using IteratorCategory  = typename IteratorTraits<Iterator>::IteratorCategory;
+    using ValueType         = typename IteratorTraits<Iterator>::ValueType;
+    using Reference		    = typename IteratorTraits<Iterator>::Reference;
+	using Pointer		    = typename IteratorTraits<Iterator>::Pointer;
 
     IteratorType Current;
 

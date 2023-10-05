@@ -27,12 +27,13 @@ template<class VecData>
 class VectorConstIterator
 {
 private:
-	using _Data		= VecData;
+	using _Data				= VecData;
 
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference = typename _Data::ConstReference;
-	using Pointer	= typename _Data::ConstPointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference 		= typename _Data::ConstReference;
+	using Pointer			= typename _Data::ConstPointer;
 
 	ValueType* _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -56,13 +57,13 @@ public:
 		return temp;
 	}
 
-	constexpr VectorConstIterator& operator+=(const size_t& diff) noexcept {
+	constexpr VectorConstIterator& operator+=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr VectorConstIterator operator+(const size_t& diff) const noexcept {
+	constexpr VectorConstIterator operator+(const size_t diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -80,13 +81,13 @@ public:
 		return temp;
 	}
 
-	constexpr VectorConstIterator& operator-=(const size_t& diff) noexcept {
+	constexpr VectorConstIterator& operator-=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr VectorConstIterator operator-(const size_t& diff) const noexcept {
+	constexpr VectorConstIterator operator-(const size_t diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -101,6 +102,10 @@ public:
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator...");
 		return *_Ptr;
 	}
+
+    constexpr Reference operator[](const size_t diff) const noexcept {
+        return *(*this + diff);
+    }
 
 	constexpr bool operator==(const VectorConstIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
@@ -134,13 +139,14 @@ template<class VecData>
 class VectorIterator : public VectorConstIterator<VecData>			// Vector Iterator
 {
 private:
-	using _Base		= VectorConstIterator<VecData>;
-	using _Data		= VecData;
+	using _Base				= VectorConstIterator<VecData>;
+	using _Data				= VecData;
 	
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference	= typename _Data::Reference;
-	using Pointer	= typename _Data::Pointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference			= typename _Data::Reference;
+	using Pointer			= typename _Data::Pointer;
 
 public:
 
@@ -160,12 +166,12 @@ public:
 		return temp;
 	}
 
-	constexpr VectorIterator& operator+=(const size_t& diff) noexcept {
+	constexpr VectorIterator& operator+=(const size_t diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr VectorIterator operator+(const size_t& diff) const noexcept {
+	constexpr VectorIterator operator+(const size_t diff) const noexcept {
 		VectorIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -182,12 +188,12 @@ public:
 		return temp;
 	}
 
-	constexpr VectorIterator& operator-=(const size_t& diff) noexcept {
+	constexpr VectorIterator& operator-=(const size_t diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr VectorIterator operator-(const size_t& diff) const noexcept {
+	constexpr VectorIterator operator-(const size_t diff) const noexcept {
 		VectorIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -200,6 +206,10 @@ public:
 	constexpr Reference operator*() const noexcept {
 		return const_cast<Reference>(_Base::operator*());
 	}
+
+    constexpr Reference operator[](const size_t diff) const noexcept {
+        return const_cast<Reference>(_Base::operator[](diff));
+    }
 }; // END VectorIterator
 
 

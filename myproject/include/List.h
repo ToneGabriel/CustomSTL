@@ -34,13 +34,14 @@ template<class ListData>
 class ListConstIterator
 {
 private:
-	using _Data			= ListData;
-	using _NodePtr		= typename _Data::_NodePtr;
+	using _Data				= ListData;
+	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-	using ValueType		= typename _Data::ValueType;
-	using Reference		= typename _Data::ConstReference;
-	using Pointer		= typename _Data::ConstPointer;
+    using IteratorCategory 	= BidirectionalIteratorTag;
+	using ValueType			= typename _Data::ValueType;
+	using Reference			= typename _Data::ConstReference;
+	using Pointer			= typename _Data::ConstPointer;
 
 	_NodePtr _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -77,8 +78,7 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
-		return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this);
+		return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
 	Reference operator*() const noexcept {
@@ -114,14 +114,15 @@ template<class ListData>
 class ListIterator : public ListConstIterator<ListData>		// Linked List Iterator
 {
 private:
-	using _Base		= ListConstIterator<ListData>;
-	using _Data 	= ListData;
-	using _NodePtr	= typename _Data::_NodePtr;
+	using _Base				= ListConstIterator<ListData>;
+	using _Data 			= ListData;
+	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference = typename _Data::Reference;
-	using Pointer 	= typename _Data::Pointer;
+    using IteratorCategory 	= BidirectionalIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference 		= typename _Data::Reference;
+	using Pointer 			= typename _Data::Pointer;
 
 public:
 

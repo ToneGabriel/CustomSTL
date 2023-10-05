@@ -2,6 +2,7 @@
 #include "TypeTraits.h"
 #include "Limits.h"
 #include "Pair.h"
+#include "Iterator.h"
 
 
 CUSTOM_BEGIN
@@ -175,15 +176,13 @@ struct _GetRebindType<Ty, Other, Void_t<typename Ty::template Rebind<Other>>>
 
 
 #pragma region Operations on uninitialized memory
-// TODO: iterator_traits
-
 // uninitialized_copy, uninitialized_copy_n
 template<class InputIt, class NoThrowForwardIt>
-NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first) {
-    //using Type = typename std::iterator_traits<NoThrowForwardIt>::valueType;
-    using ValueType = typename NoThrowForwardIt::ValueType;
+NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt destFirst) {
+    using ValueType = typename IteratorTraits<NoThrowForwardIt>::ValueType;
 
-    NoThrowForwardIt current = d_first;
+    _verify_iteration_range(first, last);
+    NoThrowForwardIt current = destFirst;
     
     try
     {
@@ -194,19 +193,18 @@ NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardI
     }
     catch (...)
     {
-        for (; d_first != current; ++d_first)
-            d_first->~ValueType();
+        for (; destFirst != current; ++destFirst)
+            destFirst->~ValueType();
 
         throw;
     }
 }
 
 template<class InputIt, class Size, class NoThrowForwardIt>
-NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardIt d_first) {
-    //using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
-    using ValueType = typename NoThrowForwardIt::ValueType;
+NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardIt destFirst) {
+    using ValueType = typename IteratorTraits<NoThrowForwardIt>::ValueType;
 
-    NoThrowForwardIt current = d_first;
+    NoThrowForwardIt current = destFirst;
     try
     {
         for (; count > 0; ++first, (void)++current, --count)
@@ -216,8 +214,8 @@ NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardI
     }
     catch (...)
     {
-        for (; d_first != current; ++d_first)
-            d_first->~ValueType();
+        for (; destFirst != current; ++destFirst)
+            destFirst->~ValueType();
         throw;
     }
 }
@@ -227,10 +225,11 @@ NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardI
 // uninitialized_fill, uninitialized_fill_n
 template<class ForwardIt, class Type>
 void uninitialized_fill(ForwardIt first, ForwardIt last, const Type& value) {
-    //using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
 
+    _verify_iteration_range(first, last);
     ForwardIt current = first;
+
     try
     {
         for (; current != last; ++current)
@@ -246,10 +245,10 @@ void uninitialized_fill(ForwardIt first, ForwardIt last, const Type& value) {
 
 template<class ForwardIt, class Size, class Type>
 ForwardIt uninitialized_fill_n(ForwardIt first, Size count, const Type& value) {
-    //using V = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
 
     ForwardIt current = first;
+
     try
     {
         for (; count > 0; ++current, (void)--count)
@@ -270,11 +269,12 @@ ForwardIt uninitialized_fill_n(ForwardIt first, Size count, const Type& value) {
 
 // uninitialized_move, uninitialized_move_n
 template<class InputIt, class NoThrowForwardIt>
-NoThrowForwardIt uninitialized_move(InputIt first, InputIt last, NoThrowForwardIt d_first) {
-    //using Value = typename std::iterator_traits<NoThrowForwardIt>::value_type;
-    using ValueType = typename NoThrowForwardIt::ValueType;
+NoThrowForwardIt uninitialized_move(InputIt first, InputIt last, NoThrowForwardIt destFirst) {
+    using ValueType = typename IteratorTraits<NoThrowForwardIt>::ValueType;
 
-    NoThrowForwardIt current = d_first;
+    _verify_iteration_range(first, last);
+    NoThrowForwardIt current = destFirst;
+
     try
     {
         for (; first != last; ++first, (void)++current)
@@ -284,19 +284,19 @@ NoThrowForwardIt uninitialized_move(InputIt first, InputIt last, NoThrowForwardI
     }
     catch (...)
     {
-        for (; d_first != current; ++d_first)
-            d_first->~ValueType();
+        for (; destFirst != current; ++destFirst)
+            destFirst->~ValueType();
 
         throw;
     }
 }
 
 template<class InputIt, class Size, class NoThrowForwardIt>
-custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size count, NoThrowForwardIt d_first) {
-    //using Value = typename std::iterator_traits<NoThrowForwardIt>::value_type;
-    using ValueType = typename NoThrowForwardIt::ValueType;
+custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size count, NoThrowForwardIt destFirst) {
+    using ValueType = typename IteratorTraits<NoThrowForwardIt>::ValueType;
     
-    NoThrowForwardIt current = d_first;
+    NoThrowForwardIt current = destFirst;
+
     try
     {
         for (; count > 0; ++first, (void)++current, --count)
@@ -306,8 +306,8 @@ custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size
     }
     catch (...)
     {
-        for (; d_first != current; ++d_first)
-            d_first->~ValueType();
+        for (; destFirst != current; ++destFirst)
+            destFirst->~ValueType();
 
         throw;
     }
@@ -318,10 +318,11 @@ custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size
 // uninitialized_default_construct, uninitialized_default_construct_n
 template<class ForwardIt>
 void uninitialized_default_construct(ForwardIt first, ForwardIt last) {
-    //using Value = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
-
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
+    
+    _verify_iteration_range(first, last);
     ForwardIt current = first;
+
     try
     {
         for (; current != last; ++current)
@@ -338,10 +339,10 @@ void uninitialized_default_construct(ForwardIt first, ForwardIt last) {
 
 template<class ForwardIt, class Size>
 ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n) {
-    //using T = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
 
     ForwardIt current = first;
+    
     try
     {
         for (; n > 0; (void)++current, --n)
@@ -363,10 +364,11 @@ ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n) {
 // uninitialized_value_construct, uninitialized_value_construct_n
 template<class ForwardIt>
 void uninitialized_value_construct(ForwardIt first, ForwardIt last) {
-    //using Value = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
 
+    _verify_iteration_range(first, last);
     ForwardIt current = first;
+
     try
     {
         for (; current != last; ++current)
@@ -383,10 +385,10 @@ void uninitialized_value_construct(ForwardIt first, ForwardIt last) {
 
 template<class ForwardIt, class Size>
 ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n) {
-    //using T = typename std::iterator_traits<ForwardIt>::value_type;
-    using ValueType = typename ForwardIt::ValueType;
+    using ValueType = typename IteratorTraits<ForwardIt>::ValueType;
 
     ForwardIt current = first;
+
     try
     {
         for (; n > 0; (void)++current, --n)
@@ -425,6 +427,8 @@ constexpr void destroy_at(Type* const address) {
 
 template<class ForwardIt>
 constexpr void destroy(ForwardIt first, ForwardIt last) {
+    _verify_iteration_range(first, last);
+
     for (; first != last; ++first)
         custom::destroy_at(&(*first));
 }

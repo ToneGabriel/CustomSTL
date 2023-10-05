@@ -156,12 +156,13 @@ template<class BasicStrData>
 class BasicStringConstIterator
 {
 private:
-	using _Data		= BasicStrData;
+	using _Data				= BasicStrData;
 
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference = typename _Data::ConstReference;
-	using Pointer	= typename _Data::ConstPointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference 		= typename _Data::ConstReference;
+	using Pointer			= typename _Data::ConstPointer;
 
 	ValueType* _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -231,6 +232,10 @@ public:
 		return *_Ptr;
 	}
 
+	constexpr Reference operator[](const size_t diff) const noexcept {
+        return *(*this + diff);
+    }
+
 	constexpr bool operator==(const BasicStringConstIterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
@@ -264,13 +269,14 @@ template<class BasicStrData>
 class BasicStringIterator : public BasicStringConstIterator<BasicStrData>		// BasicString Iterator
 {
 private:
-	using _Base		= BasicStringConstIterator<BasicStrData>;
-	using _Data		= BasicStrData;
+	using _Base				= BasicStringConstIterator<BasicStrData>;
+	using _Data				= BasicStrData;
 	
 public:
-	using ValueType = typename _Data::ValueType;
-	using Reference	= typename _Data::Reference;
-	using Pointer	= typename _Data::Pointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType 		= typename _Data::ValueType;
+	using Reference			= typename _Data::Reference;
+	using Pointer			= typename _Data::Pointer;
 
 public:
 
@@ -330,6 +336,10 @@ public:
 	constexpr Reference operator*() const noexcept {
 		return const_cast<Reference>(_Base::operator*());
 	}
+
+	constexpr Reference operator[](const size_t diff) const noexcept {
+        return const_cast<Reference>(_Base::operator[](diff));
+    }
 }; // END BasicStringIterator
 
 

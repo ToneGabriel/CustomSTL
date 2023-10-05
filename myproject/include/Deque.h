@@ -37,17 +37,20 @@ template<class DequeData>
 class DequeConstIterator
 {
 private:
-	using _Data			= DequeData;
+	using _Data				= DequeData;
 
 public:
-	using ValueType		= typename _Data::ValueType;
-	using Reference		= typename _Data::ConstReference;
-	using Pointer		= typename _Data::ConstPointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType			= typename _Data::ValueType;
+	using Reference			= typename _Data::ConstReference;
+	using Pointer			= typename _Data::ConstPointer;
 
-	size_t _Offset		= 0;
+	size_t _Offset			= 0;
 	const _Data* _RefData	= nullptr;
 
 public:
+
+	DequeConstIterator() noexcept = default;
 
     explicit DequeConstIterator(size_t offset, const _Data* data) noexcept
 		:_Offset(offset), _RefData(data) { /*Empty*/ }
@@ -105,13 +108,7 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
-						_Offset < _RefData->_First + _RefData->_Size,
-						"Cannot access end iterator...");
-
-		size_t block = _RefData->get_block(_Offset);
-		size_t offset = _Offset % _RefData->BLOCK_SIZE;
-		return &_RefData->_Map[block][offset];
+        return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
 	Reference operator*() const noexcept {
@@ -123,6 +120,10 @@ public:
 		size_t offset	= _Offset % _RefData->BLOCK_SIZE;
 		return _RefData->_Map[block][offset];
 	}
+
+	Reference operator[](const size_t diff) const noexcept {
+        return *(*this + diff);
+    }
 
 	bool operator==(const DequeConstIterator& other) const noexcept {
 		return _Offset == other._Offset;
@@ -141,21 +142,29 @@ public:
 	bool is_end() const noexcept {
 		return _Offset == _RefData->_First + _RefData->_Size;
 	}
+
+	friend void _verify_range(const DequeConstIterator& first, const DequeConstIterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "Deque iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Offset <= last._Offset, "Deque iterator range transposed");
+	}
 }; // END DequeConstIterator
 
 template<class DequeData>
 class DequeIterator : public DequeConstIterator<DequeData>			// Deque Iterator
 {
 private:
-	using _Base		= DequeConstIterator<DequeData>;
-	using _Data		= DequeData;
+	using _Base				= DequeConstIterator<DequeData>;
+	using _Data				= DequeData;
 
 public:
-	using ValueType	= typename _Data::ValueType;
-	using Reference	= typename _Data::Reference;
-	using Pointer	= typename _Data::Pointer;
+    using IteratorCategory 	= RandomAccessIteratorTag;
+	using ValueType			= typename _Data::ValueType;
+	using Reference			= typename _Data::Reference;
+	using Pointer			= typename _Data::Pointer;
 
 public:
+
+	DequeIterator() noexcept = default;
 
 	explicit DequeIterator(size_t offset, const _Data* data) noexcept
 		:_Base(offset, data) { /*Empty*/ }
@@ -211,6 +220,10 @@ public:
 	Reference operator*() const noexcept {
 		return const_cast<Reference>(_Base::operator*());
 	}
+
+	Reference operator[](const size_t diff) const noexcept {
+        return const_cast<Reference>(_Base::operator[](diff));
+    }
 }; // END Deque Iterator
 
 
