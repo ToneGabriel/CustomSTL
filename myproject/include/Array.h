@@ -37,13 +37,13 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayConstIterator& operator+=(const size_t& diff) noexcept {
+	constexpr ArrayConstIterator& operator+=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Index + diff <= Size, "Cannot increment end iterator...");
 		_Index += diff;
 		return *this;
 	}
 
-	constexpr ArrayConstIterator operator+(const size_t& diff) const noexcept {
+	constexpr ArrayConstIterator operator+(const size_t diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -61,13 +61,13 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayConstIterator& operator-=(const size_t& diff) noexcept {
+	constexpr ArrayConstIterator& operator-=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Index >= diff, "Cannot decrement begin iterator...");
 		_Index -= diff;
 		return *this;
 	}
 
-	constexpr ArrayConstIterator operator-(const size_t& diff) const noexcept {
+	constexpr ArrayConstIterator operator-(const size_t diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -145,12 +145,12 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayIterator& operator+=(const size_t& diff) noexcept {
+	constexpr ArrayIterator& operator+=(const size_t diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr ArrayIterator operator+(const size_t& diff) const noexcept {
+	constexpr ArrayIterator operator+(const size_t diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -167,12 +167,12 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayIterator& operator-=(const size_t& diff) noexcept {
+	constexpr ArrayIterator& operator-=(const size_t diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr ArrayIterator operator-(const size_t& diff) const noexcept {
+	constexpr ArrayIterator operator-(const size_t diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -219,12 +219,12 @@ public:
 public:
 	// Operators
 
-	constexpr ConstReference operator[](const size_t& index) const noexcept {	// Acces object at index (read only)
+	constexpr ConstReference operator[](const size_t index) const noexcept {	// Acces object at index (read only)
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
 
-	constexpr Reference operator[](const size_t& index) noexcept {				// Acces object at index
+	constexpr Reference operator[](const size_t index) noexcept {				// Acces object at index
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _array[index];
 	}
@@ -273,14 +273,14 @@ public:
 		return Size == 0;
 	}
 
-	constexpr ConstReference at(const size_t& index) const {			// Acces object at index with check (read only)
+	constexpr ConstReference at(const size_t index) const {			// Acces object at index with check (read only)
 		if (index >= Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _array[index];
 	}
 
-	constexpr Reference at(const size_t& index) {						// Acces object at index with check
+	constexpr Reference at(const size_t index) {						// Acces object at index with check
 		if (index >= Size)
 			throw std::out_of_range("Index out of bounds...");
 

@@ -186,13 +186,13 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator+=(const size_t& diff) noexcept {
+	constexpr BasicStringConstIterator& operator+=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator+(const size_t& diff) const noexcept {
+	constexpr BasicStringConstIterator operator+(const size_t diff) const noexcept {
 		BasicStringConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -210,13 +210,13 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator-=(const size_t& diff) noexcept {
+	constexpr BasicStringConstIterator& operator-=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator-(const size_t& diff) const noexcept {
+	constexpr BasicStringConstIterator operator-(const size_t diff) const noexcept {
 		BasicStringConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -296,12 +296,12 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator+=(const size_t& diff) noexcept {
+	constexpr BasicStringIterator& operator+=(const size_t diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator+(const size_t& diff) const noexcept {
+	constexpr BasicStringIterator operator+(const size_t diff) const noexcept {
 		BasicStringIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -318,12 +318,12 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator-=(const size_t& diff) noexcept {
+	constexpr BasicStringIterator& operator-=(const size_t diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator-(const size_t& diff) const noexcept {
+	constexpr BasicStringIterator operator-(const size_t diff) const noexcept {
 		BasicStringIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -387,7 +387,7 @@ public:
 		_initialize_from_cstring(cstring);
 	}
 
-	constexpr BasicString(const size_t& newCapacity) {
+	constexpr BasicString(const size_t newCapacity) {
 		_alloc_empty(newCapacity);
 	}
 
@@ -406,12 +406,12 @@ public:
 public:
 	// Operators
 
-	constexpr ConstReference operator[](const size_t& index) const {
+	constexpr ConstReference operator[](const size_t index) const {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
 
-	constexpr Reference operator[](const size_t& index) {
+	constexpr Reference operator[](const size_t index) {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
@@ -454,7 +454,7 @@ public:
 public:
 	// Main functions
 
-	constexpr void reserve(const size_t& newCapacity) {			// Allocate memory and copy values if needed
+	constexpr void reserve(const size_t newCapacity) {			// Allocate memory and copy values if needed
 		if (newCapacity < size())		// Can also shrink
 			_data._Last = _data._First + newCapacity;
 
@@ -512,14 +512,14 @@ public:
 		return _data._First;
 	}
 
-	constexpr ConstReference at(const size_t& index) const {						// Acces char at index with check (read only)
+	constexpr ConstReference at(const size_t index) const {						// Acces char at index with check (read only)
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
 		return _data._First[index];
 	}
 
-	constexpr Reference at(const size_t& index) {									// Acces char at index with check
+	constexpr Reference at(const size_t index) {									// Acces char at index with check
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
@@ -752,7 +752,7 @@ public:
 private:
 	// Helpers
 
-	constexpr void _alloc_empty(const size_t& capacity) {
+	constexpr void _alloc_empty(const size_t capacity) {
 		_data._First	= _alloc.allocate(capacity + 1);
 		_data._Last		= _data._First;
 		_data._Final	= _data._First + capacity;

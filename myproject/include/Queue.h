@@ -211,7 +211,7 @@ public:
 
 private:
 	// Helpers
-	void _print_graph(const size_t& ident, const size_t& index, const custom::String& rlFlag) const {
+	void _print_graph(const size_t ident, const size_t index, const custom::String& rlFlag) const {
 		custom::String str;
 		str.append(ident, '\t');
 
@@ -261,7 +261,7 @@ private:
 		}
 	}
 
-	size_t _heap_get_max_child(const size_t& index) {
+	size_t _heap_get_max_child(const size_t index) {
 		size_t leftChild	= (index + 1) * 2 - 1;
 		size_t rightChild	= leftChild + 1;
 
@@ -277,7 +277,7 @@ private:
 			return rightChild;
 	}
 
-	size_t _heap_get_parent(const size_t& index) {
+	size_t _heap_get_parent(const size_t index) {
 		if (index > 0)
 			return static_cast<size_t>((index + 1) / 2) - 1;
 

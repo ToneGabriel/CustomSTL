@@ -446,7 +446,7 @@ protected:
 private:
 	// Helpers
 
-	void _print_graph(const size_t& ident, _NodePtr root, const custom::String& rlFlag) const {
+	void _print_graph(const size_t ident, _NodePtr root, const custom::String& rlFlag) const {
 		custom::String str;
 		str.append(ident, '\t');
 

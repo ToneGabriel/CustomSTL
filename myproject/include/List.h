@@ -204,7 +204,7 @@ public:
 		_create_head();
 	}
 
-	List(const size_t& newSize, const ValueType& value) : List() {	// Add multiple copies Constructor
+	List(const size_t newSize, const ValueType& value) : List() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
 	}
 
@@ -247,12 +247,12 @@ public:
 public:
 	// Main functions
 
-	void resize(const size_t& newSize) {						// Resize the list by removing or adding default elements to the tail
+	void resize(const size_t newSize) {						// Resize the list by removing or adding default elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize);
 	}
 
-	void resize(const size_t& newSize,
+	void resize(const size_t newSize,
 				const ValueType& copyValue) {					// Resize the list by removing or adding copy elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
@@ -346,14 +346,14 @@ public:
 		return _data._Head->_Previous->_Value;
 	}
 
-	Reference at(const size_t& index) {
+	Reference at(const size_t index) {
 		if (index >= _data._Size)
 			throw std::out_of_range("Index out of bounds...");
 
 		return _scroll_node(index)->_Value;
 	}
 
-	ConstReference at(const size_t& index) const {
+	ConstReference at(const size_t index) const {
 		if (index >= _data._Size)
 			throw std::out_of_range("Index out of bounds...");
 
@@ -460,17 +460,17 @@ private:
 	}
 
 	template<class... Args>
-	void _create_until_size(const size_t& newSize, Args&&... args) {		// Add elements until current size equals newSize
+	void _create_until_size(const size_t newSize, Args&&... args) {		// Add elements until current size equals newSize
 		while (_data._Size < newSize)
 			emplace_back(custom::forward<Args>(args)...);
 	}
 
-	void _delete_until_size(const size_t& newSize) {						// Remove elements until current size equals newSize
+	void _delete_until_size(const size_t newSize) {						// Remove elements until current size equals newSize
 		while (_data._Size > newSize)
 			pop_back();
 	}
 
-	_NodePtr _scroll_node(const size_t& index) const {							// Get object in the list at index position by going through all components
+	_NodePtr _scroll_node(const size_t index) const {							// Get object in the list at index position by going through all components
 		if (index < _data._Size)
 		{
 			_NodePtr temp = _data._Head->_Next;

@@ -249,7 +249,7 @@ public:
 		reserve(_DEFAULT_CAPACITY);
 	}
 
-	constexpr Vector(	const size_t& newCapacity,
+	constexpr Vector(	const size_t newCapacity,
 						const ValueType& copyValue) {						// Add multiple copies Constructor
 		realloc(newCapacity, copyValue);
 	}
@@ -269,12 +269,12 @@ public:
 public:
 	// Operators
 
-	constexpr ConstReference operator[](const size_t& index) const noexcept {	// Acces object at index (read only)
+	constexpr ConstReference operator[](const size_t index) const noexcept {	// Acces object at index (read only)
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
 
-	constexpr Reference operator[](const size_t& index) noexcept {				// Acces object at index
+	constexpr Reference operator[](const size_t index) noexcept {				// Acces object at index
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
@@ -302,7 +302,7 @@ public:
 public:
 	// Main functions
 
-	constexpr void reserve(const size_t& newCapacity) {							// Allocate memory and move values if needed
+	constexpr void reserve(const size_t newCapacity) {							// Allocate memory and move values if needed
 		if (newCapacity < size())
 			_data._Last = _data._First + newCapacity;
 
@@ -322,7 +322,7 @@ public:
 		reserve(size());
 	}
 
-	constexpr void realloc(const size_t& newCapacity) {							// Allocate memory and populate it with default values (delete old)
+	constexpr void realloc(const size_t newCapacity) {							// Allocate memory and populate it with default values (delete old)
 		_clean_up_array();
 
 		_data._First	= _alloc.allocate(newCapacity);
@@ -331,7 +331,7 @@ public:
 		_construct_range(_data._First, newCapacity);
 	}
 
-	constexpr void realloc(	const size_t& newCapacity,
+	constexpr void realloc(	const size_t newCapacity,
 							const ValueType& copyValue) {						// Allocate memory and populate it with given reference (delete old)
 		_clean_up_array();
 
@@ -341,7 +341,7 @@ public:
 		_construct_range(_data._First, newCapacity, copyValue);
 	}
 	
-	constexpr void resize(const size_t& newSize) {								// Change size and Construct/Destruct objects with default value if needed
+	constexpr void resize(const size_t newSize) {								// Change size and Construct/Destruct objects with default value if needed
 		if (newSize < size())
 			_destroy_range(_data._First + newSize, size() - newSize);
 		else
@@ -355,7 +355,7 @@ public:
 		_data._Last = _data._First + newSize;
 	}
 
-	constexpr void resize(const size_t& newSize, const ValueType& copyValue) {	// Change size and Construct/Destruct objects with given reference if needed
+	constexpr void resize(const size_t newSize, const ValueType& copyValue) {	// Change size and Construct/Destruct objects with given reference if needed
 		if (newSize < size())
 			_destroy_range(_data._First + newSize, size() - newSize);
 		else
@@ -446,14 +446,14 @@ public:
 		_data._Last = _data._First;
 	}
 
-	constexpr ConstReference at(const size_t& index) const {					// Acces object at index with check (read only)
+	constexpr ConstReference at(const size_t index) const {						// Acces object at index with check (read only)
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
 		return _data._First[index];
 	}
 
-	constexpr Reference at(const size_t& index) {								// Acces object at index with check
+	constexpr Reference at(const size_t index) {								// Acces object at index with check
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
@@ -543,17 +543,17 @@ private:
 		_data._Final 	= custom::exchange(other._data._Final, nullptr);
 	}
 
-	constexpr void _construct_range(ValueType* const address, const size_t& length) {
+	constexpr void _construct_range(ValueType* const address, const size_t length) {
 		for (size_t i = 0; i < length; ++i)
 			_AllocTraits::construct(_alloc, address + i);
 	}
 
-	constexpr void _construct_range(ValueType* const address, const size_t& length, const ValueType& value) {
+	constexpr void _construct_range(ValueType* const address, const size_t length, const ValueType& value) {
 		for (size_t i = 0; i < length; ++i)
 			_AllocTraits::construct(_alloc, address + i, value);
 	}
 
-	constexpr void _destroy_range(ValueType* address, const size_t& length) {
+	constexpr void _destroy_range(ValueType* address, const size_t length) {
 		for (size_t i = 0; i < length; ++i)
 			_AllocTraits::destroy(_alloc, address + i);
 	}

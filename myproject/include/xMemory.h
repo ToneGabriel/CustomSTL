@@ -518,12 +518,12 @@ public:
 public:
 	// Main functions
 
-	Type* allocate(const size_t& capacity) {
+	Type* allocate(const size_t capacity) {
 		static_assert(sizeof(Type) > 0, "Type must be complete before calling allocate");
 		return static_cast<Type*>(::operator new(capacity * sizeof(Type)));
 	}
 
-	void deallocate(Type* address, const size_t& capacity) {
+	void deallocate(Type* address, const size_t capacity) {
 		CUSTOM_ASSERT(address != nullptr || capacity > 0, "Invalid block deallocation");
 		::operator delete(address, capacity * sizeof(Type));
 	}
@@ -585,11 +585,11 @@ struct AllocatorTraits						// AllocatorTraits any
     template<class Other>
     using RebindTraits 							= AllocatorTraits<RebindAlloc<Other>>;
 
-    static constexpr Pointer allocate(AllocatorType& al, const size_t& capacity) {
+    static constexpr Pointer allocate(AllocatorType& al, const size_t capacity) {
         return al.allocate(capacity);
     }
 
-    static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t& capacity) {
+    static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t capacity) {
         al.deallocate(address, capacity);
     }
 
@@ -649,11 +649,11 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
     template<class Other>
     using RebindTraits 							= AllocatorTraits<Allocator<Other>>;
 
-	static constexpr Pointer allocate(AllocatorType& al, const size_t& capacity) {
+	static constexpr Pointer allocate(AllocatorType& al, const size_t capacity) {
 		return al.allocate(capacity);
 	}
 
-	static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t& capacity) {
+	static constexpr void deallocate(AllocatorType& al, Pointer address, const size_t capacity) {
 		al.deallocate(address, capacity);
 	}
 

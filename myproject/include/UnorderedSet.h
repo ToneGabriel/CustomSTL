@@ -65,7 +65,7 @@ public:
 	UnorderedSet()
 		:_Base() { /*Empty*/ }
 
-	UnorderedSet(const size_t& buckets)
+	UnorderedSet(const size_t buckets)
 		:_Base(buckets) { /*Empty*/ }
 
 	UnorderedSet(const UnorderedSet& other)

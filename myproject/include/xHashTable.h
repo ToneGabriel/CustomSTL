@@ -53,7 +53,7 @@ protected:
 		rehash(_DEFAULT_BUCKETS);
 	}
 
-	_HashTable(const size_t& buckets) {
+	_HashTable(const size_t buckets) {
 		rehash((buckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : buckets);
 	}
 
@@ -152,13 +152,13 @@ public:
 		return find(key) != end();
 	}
 
-	void rehash(const size_t& buckets) {							// rebuild table with at least buckets
+	void rehash(const size_t buckets) {							// rebuild table with at least buckets
 		size_t newBucketCount = std::max(_min_load_factor_buckets(size()), buckets);	// don't violate bucket_count() >= size() / max_load_factor()
 		if (newBucketCount > bucket_count())
 			_force_rehash(newBucketCount);
 	}
 
-	void reserve(const size_t& size) {								// rehash for at least "size" elements
+	void reserve(const size_t size) {								// rehash for at least "size" elements
 		rehash(_min_load_factor_buckets(size));
 	}
 
@@ -171,7 +171,7 @@ public:
 		return _buckets.size();
 	}
 
-	size_t bucket_size(const size_t& index) const {					// Get the size of the bucket at index
+	size_t bucket_size(const size_t index) const {					// Get the size of the bucket at index
 		return _buckets[index].size();
 	}
 
@@ -294,7 +294,7 @@ private:
 		return it;
 	}
 
-	void _force_rehash(const size_t& buckets) {
+	void _force_rehash(const size_t buckets) {
 		_buckets.clear();
 		_buckets.resize(buckets);
 
@@ -307,7 +307,7 @@ private:
 			_force_rehash(2 * bucket_count());
 	}
 
-	size_t _min_load_factor_buckets(const size_t& size) const {		// returns the minimum number of buckets necessary for the elements in List
+	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in List
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
 }; // END _HashTable Template

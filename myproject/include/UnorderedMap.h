@@ -65,7 +65,7 @@ public:
 	UnorderedMap()
 		:_Base() { /*Empty*/ }
 
-	UnorderedMap(const size_t& buckets)
+	UnorderedMap(const size_t buckets)
 		:_Base(buckets) { /*Empty*/ }
 
 	UnorderedMap(const UnorderedMap& other)

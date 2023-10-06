@@ -305,10 +305,18 @@ constexpr CommonType_t<MType, NType> lcm(MType mval, NType nval) noexcept {
 
 
 // midpoint
-template<class Type, EnableIf_t<IsObject_v<Type>, bool> = true>
-constexpr Type* midpoint(Type* const val1, Type* const val2) noexcept {
+template<class Type>
+constexpr Type midpoint(Type val1, Type val2) noexcept {
     // TODO: implement
-    return nullptr;
+    return 0;
+}
+
+template<class Type, EnableIf_t<IsObject_v<Type>, bool> = true>
+constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept {
+    if (ptr1 > ptr2)
+        return ptr1 - ((ptr1 - ptr2) >> 1); // shift for codegen
+    else
+        return ptr1 + ((ptr2 - ptr1) >> 1); // shift for codegen
 }
 // END midpoint
 

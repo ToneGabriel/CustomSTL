@@ -28,7 +28,7 @@ struct _DequeData
 
 	static constexpr size_t BLOCK_SIZE = 4;
 
-	size_t get_block(const size_t& offset) const noexcept {
+	size_t get_block(const size_t offset) const noexcept {
 		return (offset / BLOCK_SIZE) % _MapCapacity;
     }
 };
@@ -67,7 +67,7 @@ public:
 		return temp;
 	}
 
-	DequeConstIterator& operator+=(const size_t& diff) noexcept {
+	DequeConstIterator& operator+=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(	_Offset + diff >= _RefData->_First &&
 						_Offset + diff <= _RefData->_First + _RefData->_Size, 
 						"Cannot increment end iterator...");
@@ -75,7 +75,7 @@ public:
 		return *this;
 	}
 
-	DequeConstIterator operator+(const size_t& diff) const noexcept {
+	DequeConstIterator operator+(const size_t diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -93,7 +93,7 @@ public:
 		return temp;
 	}
 
-	DequeConstIterator& operator-=(const size_t& diff) noexcept {
+	DequeConstIterator& operator-=(const size_t diff) noexcept {
 		CUSTOM_ASSERT(	_Offset - diff >= _RefData->_First &&					// TODO: use data overflow
 						_Offset - diff <= _RefData->_First + _RefData->_Size,
 						"Cannot decrement begin iterator...");
@@ -101,7 +101,7 @@ public:
 		return *this;
 	}
 
-	DequeConstIterator operator-(const size_t& diff) const noexcept {
+	DequeConstIterator operator-(const size_t diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -180,12 +180,12 @@ public:
 		return temp;
 	}
 
-	DequeIterator& operator+=(const size_t& diff) noexcept {
+	DequeIterator& operator+=(const size_t diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	DequeIterator operator+(const size_t& diff) const noexcept {
+	DequeIterator operator+(const size_t diff) const noexcept {
 		DequeIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -202,12 +202,12 @@ public:
 		return temp;
 	}
 
-	DequeIterator& operator-=(const size_t& diff) noexcept {
+	DequeIterator& operator-=(const size_t diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	DequeIterator operator-(const size_t& diff) const noexcept {
+	DequeIterator operator-(const size_t diff) const noexcept {
 		DequeIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -266,11 +266,11 @@ public:
 		_init_map(_DEFAULT_CAPACITY);
 	}
 
-	Deque(const size_t& newSize) {
+	Deque(const size_t newSize) {
 		resize(newSize);
 	}
 
-	Deque(const size_t& newSize, const ValueType& copyValue) {
+	Deque(const size_t newSize, const ValueType& copyValue) {
 		resize(newSize, copyValue);
 	}
 
@@ -289,12 +289,12 @@ public:
 public:
 	// Operators
 
-	const ValueType& operator[](const size_t& index) const {
+	const ValueType& operator[](const size_t index) const {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return *(begin() + index);
 	}
 
-	ValueType& operator[](const size_t& index) {
+	ValueType& operator[](const size_t index) {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return *(begin() + index);
 	}
@@ -322,7 +322,7 @@ public:
 public:
 	// Main functions
 
-	void resize(const size_t& newSize) {
+	void resize(const size_t newSize) {
 		while (_data._Size < newSize)
 			emplace_back();
 
@@ -330,7 +330,7 @@ public:
             pop_back();
 	}
 
-	void resize(const size_t& newSize, const ValueType& copyValue) {
+	void resize(const size_t newSize, const ValueType& copyValue) {
 		while (_data._Size < newSize)
 			emplace_back(copyValue);
 
@@ -498,14 +498,14 @@ public:
 		return (_data._Size == 0);
 	}
 
-	ConstReference at(const size_t& index) const {
+	ConstReference at(const size_t index) const {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
 		return *(begin() + index);
 	}
 
-	Reference at(const size_t& index) {
+	Reference at(const size_t index) {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
@@ -589,7 +589,7 @@ public:
 private:
 	// Helpers
 
-	void _reserve(const size_t& newMapCapacity) {
+	void _reserve(const size_t newMapCapacity) {
 		size_t newSize			= _data._Size;
 		size_t newFirst			= _data._First % _data.BLOCK_SIZE;
 		_MapPtr newMap 			= _create_empty_map(newMapCapacity);
@@ -642,7 +642,7 @@ private:
 		_data._First 		= custom::exchange(other._data._First, 0);
 	}
 
-	_MapPtr _create_empty_map(const size_t& newMapCapacity) {
+	_MapPtr _create_empty_map(const size_t newMapCapacity) {
 		_MapPtr newMap = _AllocPtr().allocate(newMapCapacity);
 		for(size_t i = 0; i < newMapCapacity; ++i)
 			newMap[i] = nullptr;
@@ -650,7 +650,7 @@ private:
 		return newMap;
 	}
 
-	void _init_map(const size_t& newMapCapacity) {
+	void _init_map(const size_t newMapCapacity) {
 		size_t newCapacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
 
 		_data._Map 			= _create_empty_map(newCapacity);
