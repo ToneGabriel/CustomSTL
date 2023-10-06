@@ -8,17 +8,29 @@ CUSTOM_BEGIN
 // all_of, any_of, none_of
 template<class InputIt, class UnaryPredicate>
 constexpr bool all_of(InputIt first, InputIt last, UnaryPredicate pred) {
-    return false;
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (!pred(*first))
+            return false;
+
+    return true;
 }
 
 template<class InputIt, class UnaryPredicate>
 constexpr bool any_of(InputIt first, InputIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (pred(*first))
+            return true;
+
     return false;
 }
 
 template<class InputIt, class UnaryPredicate>
 constexpr bool none_of(InputIt first, InputIt last, UnaryPredicate pred) {
-    return false;
+    return !any_of(first, last, pred);
 }
 // END all_of, any_of, none_of
 
@@ -102,6 +114,8 @@ constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1,
 // fill, fill_n
 template<class ForwardIt, class Type>
 constexpr void fill(ForwardIt first, ForwardIt last, const Type& value) {
+    _verify_iteration_range(first, last);
+
     for (; first != last; ++first)  // TODO: check
         *first = value;
 }
@@ -223,23 +237,10 @@ constexpr const Type& (max)(const Type& a, const Type& b, Compare comp) {
 // END max
 
 // max_element
-template<class ForwardIt>
-ForwardIt max_element(ForwardIt first, ForwardIt last) {
-    if (first == last)
-        return last;
- 
-    ForwardIt largest = first;
-    ++first;
- 
-    for (; first != last; ++first)
-        if (*largest < *first)
-            largest = first;
- 
-    return largest;
-}
-
 template<class ForwardIt, class Compare>
 ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
+    _verify_iteration_range(first, last);
+    
     if (first == last)
         return last;
  
@@ -251,6 +252,11 @@ ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
             largest = first;
  
     return largest;
+}
+
+template<class ForwardIt>
+ForwardIt max_element(ForwardIt first, ForwardIt last) {
+    return custom::max_element(first, last, Less<>{});
 }
 // END max_element
 
@@ -267,24 +273,10 @@ constexpr const Type& (min)(const Type& a, const Type& b, Compare comp) {
 // END min
 
 // min_element
-template<class ForwardIt>
-ForwardIt min_element(ForwardIt first, ForwardIt last) {
-    if (first == last)
-        return last;
- 
-    ForwardIt smallest = first;
-    ++first;
- 
-    for (; first != last; ++first)
-        if (*first < *smallest)
-            smallest = first;
- 
-    return smallest;
-}
-
 template<class ForwardIt, class Compare>
-ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp)
-{
+ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp) {
+    _verify_iteration_range(first, last);
+
     if (first == last)
         return last;
  
@@ -297,6 +289,11 @@ ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp)
  
     return smallest;
 }
+
+template<class ForwardIt>
+ForwardIt min_element(ForwardIt first, ForwardIt last) {
+    return custom::min_element(first, last, Less<>{});
+}
 // END min_element
 #pragma endregion Minimum/maximum operations
 
@@ -306,10 +303,7 @@ template<class InputIt1, class InputIt2, class BinaryPredicate>
 constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2, BinaryPredicate pred) {
     // compare [first1, last1) to [first2, ...)
 
-    //_Adl_verify_range(first1, last1);
-    //auto _UFirst1 = _Get_unwrapped(first1);
-    //const auto _ULast1 = _Get_unwrapped(last1);
-    //auto _UFirst2 = _Get_unwrapped_n(first2, _Idl_distance<InputIt1>(_UFirst1, _ULast1));
+    _verify_iteration_range(first1, last1);
 
     while (first1 != last1)
     {
@@ -325,8 +319,6 @@ constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2
 
 template<class InputIt1, class InputIt2>
 constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2) {
-    // compare [first1, last1) to [first2, ...)
-
     return custom::equal(first1, last1, first2, EqualTo<>{});
 }
 #pragma endregion Comparison operations
