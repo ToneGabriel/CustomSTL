@@ -424,23 +424,310 @@ struct Hash<std::nullptr_t>
 #pragma endregion Hash
 
 
-template<class>
-class Callable;
+#pragma region Function
 
-// TODO: refactor
-template<class Signature>
+class BadFunctionCall : public std::exception // exception thrown when an empty custom::Function is called
+{
+public:
+    BadFunctionCall() noexcept { /*Empty*/ }
+
+    const char* what() const noexcept override {
+        return "Bad function call...";
+    }
+};  // END BadFunctionCall
+
+
+static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
+static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
+
+template<class Impl>
+static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
+                                    alignof(Impl) > alignof(MaxAlign_t) ||
+                                    !Impl::_NothrowMove::Value;
+
+
+template<class RetType, class... Args>
+class _CallableInterface
+{
+public:
+    _CallableInterface()                                        = default;
+    _CallableInterface(const _CallableInterface&)               = delete;
+    _CallableInterface& operator=(const _CallableInterface&)    = delete;
+    // destructor non-virtual due to _delete_this()
+
+    virtual _CallableInterface* _copy(void*) const              = 0;
+    virtual _CallableInterface* _move(void*) noexcept           = 0;
+    virtual RetType _call(Args&&...)                            = 0;
+    virtual const std::type_info& _target_type() const noexcept = 0;
+    virtual void _delete_this(bool) noexcept                    = 0;
+
+    const void* _target(const std::type_info& info) const noexcept {
+        return _target_type() == info ? _get() : nullptr;
+    }
+
+private:
+    virtual const void* _get() const noexcept                   = 0;
+};  // END _CallableInterface
+
+
+template<class Callable, class RetType, class... Args>
+class _CallableImpl final : public _CallableInterface<RetType, Args...>
+{
+public:
+    using _Base         = _CallableInterface<RetType, Args...>;
+    using _NothrowMove  = IsNothrowMoveConstructible<Callable>;
+
+private:
+    Callable _callable;
+
+public:
+    template<class OtherCallable,
+    EnableIf_t<!IsSame_v<_CallableImpl, Decay_t<OtherCallable>>, bool> = true>
+    explicit _CallableImpl(OtherCallable&& val)
+        : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
+
+private:
+    _Base* _copy(void* address) const override {
+        if constexpr (_IsLarge<_CallableImpl>)
+            return new _CallableImpl>(_callable);
+        else
+            return ::new(address) _CallableImpl(_callable);
+    }
+
+    _Base* _move(void* address) noexcept override {
+        if constexpr (_IsLarge<_CallableImpl>)
+            return nullptr;
+        else
+            return ::new(address) _CallableImpl(custom::move(_callable));
+    }
+
+    RetType _call(Args&&... args) override {
+        if constexpr (IsVoid_v<RetType>)
+            (void)custom::invoke(_callable, custom::forward<Args>(args)...);
+        else
+            return custom::invoke(_callable, custom::forward<Args>(args)...);
+    }
+
+    const std::type_info& _target_type() const noexcept override {
+        return typeid(Callable);
+    }
+
+    const void* _get() const noexcept override {
+        return &_callable;
+    }
+
+    void _delete_this(bool dealloc) noexcept override { // destroy self
+        this->~_CallableImpl();
+
+        if (dealloc)
+            ::operator delete(this, sizeof(_CallableImpl));
+    }
+};  // END _CallableImpl
+
+
+template<class RetType, class... Args>
 class Function;
 
-// template<class RetType, class... ArgTypes>
-// class Function<RetType(ArgTypes...)>        // Wrapper template to function pointer
-// {
-// private:
-//     constexpr size_t StorageSize = std::max(sizeof(Callable<void(*)()>),
-//                                             sizeof(ReferenceWrapper<char>));
+template<class Func>
+constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Func>,
+                                                   IsSpecialization<Func, Function>,
+                                                   IsMemberPointer<Func>>;
 
-//     using Storage_t = custom::AlignedStorage_t<StorageSize>;
+template<class Func>
+bool _test_callable(const Func& obj) noexcept { // determine whether custom::Function must store obj
+    if constexpr (_TestableCallable_v<Func>)
+        return !!obj;   // obj != nullptr;
+    else
+        return true;
+}
 
-// }; // END Function template
+
+template<class RetType, class... Args>
+class Function                                  // wrapper for callable objects
+{
+public:
+    using ResultType    = RetType;
+    using Impl          = _CallableInterface<RetType, Args...>;
+
+private:
+    union _Storage  // storage for small objects
+    {
+        MaxAlign_t _Val;                        // for maximum alignment
+        char Pad[_SpaceSize];                   // to permit aliasing
+        Impl* _Ptrs[_SmallObjectNumPtrs];       // _Ptrs[_SmallObjectNumPtrs - 1] is reserved
+    };
+
+    _Storage _storage;
+
+public:
+    // Constructors
+
+    Function() noexcept {
+        _set_impl(nullptr);
+    }
+
+    Function(std::nullptr_t) noexcept : Function() { /*Empty*/ }
+
+    Function(const Function& other) {
+        _reset_copy(other);
+    }
+
+    Function(Function&& other) noexcept {
+        _reset_move(custom::move(other));
+    }
+
+    template<class Func, EnableIf_t<!IsSame_v<Func, Function>, bool> = true>
+    Function(Func&& val) {
+        _reset(custom::forward<Func>(val));
+    }
+
+    ~Function() noexcept {
+        _clean_up_storage();
+    }
+
+public:
+    // Operators
+
+    Function& operator=(const Function& other) {
+        //Function(other).swap(*this);
+        return *this;
+    }
+
+    Function& operator=(Function&& other) noexcept {
+        if (&_storage != &other._storage)
+        {
+            _clean_up_storage();
+            _reset_move(custom::move(other));
+        }
+
+        return *this;
+    }
+
+    template<class Func, EnableIf_t<!IsSame_v<Func, Function>, bool> = true>
+    Function& operator=(Func&& val) {
+        Function(custom::forward<Func>(val)).swap(*this);
+        return *this;
+    }
+
+    ResultType operator()(Args... args) const {
+        if (_empty())
+            throw custom::BadFunctionCall();
+
+        return _get_impl()->_call(custom::forward<Args>(args)...);
+    }
+
+    explicit operator bool() const noexcept {
+        return !_empty();
+    }
+
+public:
+    // Main functions
+
+    void swap(Function& other) noexcept {
+        _swap(other);
+    }
+
+    const type_info& target_type() const noexcept {
+        return this->_target_type();
+    }
+
+    template<class Func>
+    Func* target() noexcept {
+        return reinterpret_cast<Func*>(const_cast<void*>(this->_target(typeid(Func))));
+    }
+
+    template<class Func>
+    const Func* target() const noexcept {
+        return reinterpret_cast<const Func*>(this->_target(typeid(Func)));
+    }
+
+private:
+    // Helpers
+
+    void _reset_copy(const Function& other) {           // copy other's stored object
+        if (!other._empty())
+            _set_impl(other._get_impl()->_copy(&_storage));  // copy to _storage[0]
+    }
+
+    void _reset_move(Function&& other) noexcept {       // move other's stored object
+        if (!other._empty())
+        {
+            if (other._local()) // move and tidy
+            {
+                _set_impl(other._get_impl()->_move(&_storage));
+                other._clean_up_storage();
+            }
+            else               // steal from other
+            {
+                _set_impl(other._get_impl());
+                other._set_impl(nullptr);
+            }
+        }
+    }
+
+    template<class Func>
+    void _reset(Func&& val) { // store copy of val
+        if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
+            return;                 // already empty
+
+        using OtherImpl = _CallableImpl<Decay_t<Func>, RetType, Args...>;
+
+        if constexpr (_IsLarge<OtherImpl>)  // dynamically allocate val
+            _set_impl(new OtherImpl(custom::forward<Func>(val)));
+        else                                // store val in-situ
+            _set_impl(::new(static_cast<void*>(&_storage)) OtherImpl(custom::forward<Func>(val)));
+    }
+
+    void _swap(Function& other) noexcept {  // swap contents with contents of other
+        if (!_local() && !other._local())   // just swap pointers
+        {
+            auto _Temp = _get_impl();
+            _set_impl(other._get_impl());
+            other._set_impl(_Temp);
+        }
+        else                                // do three-way move
+        {
+            Function _Temp;
+            _Temp._reset_move(custom::move(*this));
+            _reset_move(custom::move(other));
+            other._reset_move(custom::move(_Temp));
+        }
+    }
+
+    Impl* _get_impl() const noexcept {
+        return _storage._Ptrs[_SmallObjectNumPtrs - 1];
+    }
+
+    void _set_impl(Impl* ptr) noexcept {
+        _storage._Ptrs[_SmallObjectNumPtrs - 1] = ptr;
+    }
+
+    bool _empty() const noexcept {
+        return _get_impl() == nullptr;
+    }
+
+    bool _local() const noexcept {                  // test for locally stored copy of object
+        return _get_impl() == static_cast<const void*>(&_storage);
+    }
+
+    void _clean_up_storage() noexcept {            // destroy callable object and maybe delete it
+        if (!_empty())
+        {
+            _get_impl()->_delete_this(!_local());
+            _set_impl(nullptr);
+        }
+    }
+
+    const type_info& _target_type() const noexcept {
+        return _get_impl() ? _get_impl()->_target_type() : typeid(void);
+    }
+
+    const void* _target(const type_info& info) const noexcept {
+        return _get_impl() ? _get_impl()->_target(info) : nullptr;
+    }
+};  // END Function
+
+#pragma endregion Function
 
 
 #pragma region Bind
