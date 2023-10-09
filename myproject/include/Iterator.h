@@ -63,8 +63,9 @@ class ReverseIterator                           // Adaptor for backwards iterati
 {
 public:
     using IteratorType      = Iterator;
-    //using IteratorCategory  = typename IteratorTraits<Iterator>::IteratorCategory;
+    using IteratorCategory  = typename IteratorTraits<Iterator>::IteratorCategory;
     using ValueType         = typename IteratorTraits<Iterator>::ValueType;
+    //using DifferenceType   = typename IteratorTraits<Iterator>::DifferenceType;
     using Reference		    = typename IteratorTraits<Iterator>::Reference;
 	using Pointer		    = typename IteratorTraits<Iterator>::Pointer;
 

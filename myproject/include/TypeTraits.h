@@ -316,9 +316,37 @@ struct IsUnion : BoolConstant<__is_union(Ty)> {};
 template<class Ty>
 constexpr bool IsUnion_v = IsUnion<Ty>::Value;
 
+// is trivial
+template<class Ty>
+struct IsTrivial : BoolConstant<__is_trivially_constructible(Ty) && __is_trivially_copyable(Ty)> {};
+
+template<class Ty>
+constexpr bool IsTrivial_v = IsTrivial<Ty>::Value;
+
+template<class Ty>
+struct IsTriviallyCopyable : BoolConstant<__is_trivially_copyable(Ty)> {};
+
+template<class Ty>
+constexpr bool IsTriviallyCopyable_v = IsTriviallyCopyable<Ty>::Value;
+
+// is standard layout
+template<class Ty>
+struct IsStandardLayout : BoolConstant<__is_standard_layout(Ty)> {};
+
+template<class Ty>
+constexpr bool IsStandardLayout_v = IsStandardLayout<Ty>::Value;
+
+// is POD (Plain Old Data)
+template<class Ty>
+struct IsPOD : BoolConstant<IsStandardLayout_v<Ty> && IsTrivial_v<Ty>> {};
+//BoolConstant<__is_pod(Ty)> {};
+
+template<class Ty>
+constexpr bool IsPOD_v = IsPOD<Ty>::Value;
+
 // is class
 template<class Ty>
-struct IsClass: BoolConstant<__is_class(Ty)> {};
+struct IsClass : BoolConstant<__is_class(Ty)> {};
 
 template<class Ty>
 constexpr bool IsClass_v = IsClass<Ty>::Value;
@@ -481,13 +509,6 @@ struct IsFinal : BoolConstant<__is_final(Ty)> {};
 template<class Ty>
 constexpr bool IsFinal_v = IsFinal<Ty>::Value;
 
-// is standard layout
-template<class Ty>
-struct IsStandardLayout : BoolConstant<__is_standard_layout(Ty)> {};
-
-template<class Ty>
-constexpr bool IsStandardLayout_v = IsStandardLayout<Ty>::Value;
-
 // is constructible
 template<class Ty, class... Args>
 struct IsConstructible : BoolConstant<__is_constructible(Ty, Args...)> {};
@@ -584,19 +605,6 @@ struct IsNothrowMoveAssignable : BoolConstant<__is_nothrow_assignable(AddLvalueR
 
 template<class Ty>
 constexpr bool IsNothrowMoveAssignable_v = IsNothrowMoveAssignable<Ty>::Value;
-
-// is trivial
-template<class Ty>
-struct IsTrivial : BoolConstant<__is_trivially_constructible(Ty) && __is_trivially_copyable(Ty)> {};
-
-template<class Ty>
-constexpr bool IsTrivial_v = IsTrivial<Ty>::Value;
-
-template<class Ty>
-struct IsTriviallyCopyable : BoolConstant<__is_trivially_copyable(Ty)> {};
-
-template<class Ty>
-constexpr bool IsTriviallyCopyable_v = IsTriviallyCopyable<Ty>::Value;
 
 // is nothrow convertible
 template<class From, class To, bool = IsConvertible_v<From, To>, bool = IsVoid_v<To>>

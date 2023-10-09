@@ -489,7 +489,7 @@ public:
 private:
     _Base* _copy(void* address) const override {
         if constexpr (_IsLarge<_CallableImpl>)
-            return new _CallableImpl>(_callable);
+            return new _CallableImpl(_callable);
         else
             return ::new(address) _CallableImpl(_callable);
     }
@@ -525,7 +525,7 @@ private:
 };  // END _CallableImpl
 
 
-template<class RetType, class... Args>
+template<class Signature>
 class Function;
 
 template<class Func>
@@ -543,7 +543,7 @@ bool _test_callable(const Func& obj) noexcept { // determine whether custom::Fun
 
 
 template<class RetType, class... Args>
-class Function                                  // wrapper for callable objects
+class Function<RetType(Args...)>                // wrapper for callable objects
 {
 public:
     using ResultType    = RetType;
@@ -627,7 +627,7 @@ public:
         _swap(other);
     }
 
-    const type_info& target_type() const noexcept {
+    const std::type_info& target_type() const noexcept {
         return this->_target_type();
     }
 
@@ -707,22 +707,22 @@ private:
     }
 
     bool _local() const noexcept {                  // test for locally stored copy of object
-        return _get_impl() == static_cast<const void*>(&_storage);
+        return _get_impl() == static_cast<const void*>(&_storage);  // true ONLY for small obj
     }
 
-    void _clean_up_storage() noexcept {            // destroy callable object and maybe delete it
+    void _clean_up_storage() noexcept {             // destroy callable object and maybe delete it
         if (!_empty())
         {
-            _get_impl()->_delete_this(!_local());
+            _get_impl()->_delete_this(!_local());   // dealloc only if !small
             _set_impl(nullptr);
         }
     }
 
-    const type_info& _target_type() const noexcept {
+    const std::type_info& _target_type() const noexcept {
         return _get_impl() ? _get_impl()->_target_type() : typeid(void);
     }
 
-    const void* _target(const type_info& info) const noexcept {
+    const void* _target(const std::type_info& info) const noexcept {
         return _get_impl() ? _get_impl()->_target(info) : nullptr;
     }
 };  // END Function
