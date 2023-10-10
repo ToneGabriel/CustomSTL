@@ -443,19 +443,19 @@ public:
 static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
 static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
 
-template<class Impl>
+template<class Impl>    // when _CallableImpl wraps an object(big) that has operator()
 static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
                                     alignof(Impl) > alignof(MaxAlign_t) ||
                                     !Impl::_NothrowMove::Value;
 
-template<class Func>
-constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Func>,
-                                                   IsSpecialization<Func, Function>,
-                                                   IsMemberPointer<Func>>;
+template<class Callable>
+constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Callable>,
+                                                   IsSpecialization<Callable, Function>,
+                                                   IsMemberPointer<Callable>>;
 
-template<class Func>
-bool _test_callable(const Func& obj) noexcept { // determine whether custom::Function must store obj
-    if constexpr (_TestableCallable_v<Func>)
+template<class Callable>
+bool _test_callable(const Callable& obj) noexcept { // determine whether custom::Function must store obj
+    if constexpr (_TestableCallable_v<Callable>)
         return !!obj;   // obj != nullptr;
     else
         return true;
@@ -575,9 +575,9 @@ public:
         _reset_move(custom::move(other));
     }
 
-    template<class Func, EnableIf_t<!IsSame_v<Func, Function>, bool> = true>
-    Function(Func&& val) {
-        _reset(custom::forward<Func>(val));
+    template<class Callable, EnableIf_t<!IsSame_v<Callable, Function>, bool> = true>
+    Function(Callable&& val) {
+        _reset(custom::forward<Callable>(val));
     }
 
     ~Function() noexcept {
@@ -607,14 +607,14 @@ public:
         return *this;
     }
 
-    template<class Func, EnableIf_t<!IsSame_v<Func, Function>, bool> = true>
-    Function& operator=(Func&& val) {
-        Function(custom::forward<Func>(val)).swap(*this);
+    template<class Callable, EnableIf_t<!IsSame_v<Callable, Function>, bool> = true>
+    Function& operator=(Callable&& val) {
+        Function(custom::forward<Callable>(val)).swap(*this);
         return *this;
     }
 
-    template<class Func>
-    Function& operator=(ReferenceWrapper<Func> refVal) noexcept {
+    template<class Callable>
+    Function& operator=(ReferenceWrapper<Callable> refVal) noexcept {
         _clean_up_storage();
         _reset(refVal);
         return *this;
@@ -654,14 +654,14 @@ public:
         return _get_impl() ? _get_impl()->_target_type() : typeid(void);
     }
 
-    template<class Func>
-    Func* target() noexcept {
-        return reinterpret_cast<Func*>(const_cast<void*>(_target(typeid(Func))));
+    template<class Callable>
+    Callable* target() noexcept {
+        return reinterpret_cast<Callable*>(const_cast<void*>(_target(typeid(Callable))));
     }
 
-    template<class Func>
-    const Func* target() const noexcept {
-        return reinterpret_cast<const Func*>(_target(typeid(Func)));
+    template<class Callable>
+    const Callable* target() const noexcept {
+        return reinterpret_cast<const Callable*>(_target(typeid(Callable)));
     }
 
 private:
@@ -688,17 +688,17 @@ private:
         }
     }
 
-    template<class Func>
-    void _reset(Func&& val) { // store copy of val
+    template<class Callable>
+    void _reset(Callable&& val) { // store copy of val
         if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
             return;                 // already empty
 
-        using OtherImpl = _CallableImpl<Decay_t<Func>, RetType, Args...>;
+        using OtherImpl = _CallableImpl<Decay_t<Callable>, RetType, Args...>;
 
         if constexpr (_IsLarge<OtherImpl>)  // dynamically allocate val
-            _set_impl(new OtherImpl(custom::forward<Func>(val)));
+            _set_impl(new OtherImpl(custom::forward<Callable>(val)));
         else                                // store val in-situ
-            _set_impl(::new(static_cast<void*>(&_storage)) OtherImpl(custom::forward<Func>(val)));
+            _set_impl(::new(static_cast<void*>(&_storage)) OtherImpl(custom::forward<Callable>(val)));
     }
 
     Impl* _get_impl() const noexcept {
