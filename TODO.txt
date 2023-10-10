@@ -2,7 +2,6 @@
 - algorithm
 - numeric
 
-2. Check ALL components for constexpr, explicit and noexcept specifiers
-3. Learn and implement smart pointers
-4. Complete TypeTraits
-5. Refactor Function class
+2. Learn and implement smart pointers
+3. Complete TypeTraits
+4. Learn Hash

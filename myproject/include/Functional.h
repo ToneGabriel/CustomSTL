@@ -426,6 +426,9 @@ struct Hash<std::nullptr_t>
 
 #pragma region Function
 
+template<class Signature>
+class Function;
+
 class BadFunctionCall : public std::exception // exception thrown when an empty custom::Function is called
 {
 public:
@@ -444,6 +447,19 @@ template<class Impl>
 static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
                                     alignof(Impl) > alignof(MaxAlign_t) ||
                                     !Impl::_NothrowMove::Value;
+
+template<class Func>
+constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Func>,
+                                                   IsSpecialization<Func, Function>,
+                                                   IsMemberPointer<Func>>;
+
+template<class Func>
+bool _test_callable(const Func& obj) noexcept { // determine whether custom::Function must store obj
+    if constexpr (_TestableCallable_v<Func>)
+        return !!obj;   // obj != nullptr;
+    else
+        return true;
+}
 
 
 template<class RetType, class... Args>
@@ -525,23 +541,6 @@ private:
 };  // END _CallableImpl
 
 
-template<class Signature>
-class Function;
-
-template<class Func>
-constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Func>,
-                                                   IsSpecialization<Func, Function>,
-                                                   IsMemberPointer<Func>>;
-
-template<class Func>
-bool _test_callable(const Func& obj) noexcept { // determine whether custom::Function must store obj
-    if constexpr (_TestableCallable_v<Func>)
-        return !!obj;   // obj != nullptr;
-    else
-        return true;
-}
-
-
 template<class RetType, class... Args>
 class Function<RetType(Args...)>                // wrapper for callable objects
 {
@@ -589,12 +588,12 @@ public:
     // Operators
 
     Function& operator=(const Function& other) {
-        //Function(other).swap(*this);
+        Function(other).swap(*this);
         return *this;
     }
 
     Function& operator=(Function&& other) noexcept {
-        if (&_storage != &other._storage)
+        if (this != &other)
         {
             _clean_up_storage();
             _reset_move(custom::move(other));
@@ -624,21 +623,33 @@ public:
     // Main functions
 
     void swap(Function& other) noexcept {
-        _swap(other);
+        if (!_local() && !other._local())   // just swap pointers
+        {
+            auto _Temp = _get_impl();
+            _set_impl(other._get_impl());
+            other._set_impl(_Temp);
+        }
+        else                                // do three-way move
+        {
+            Function _Temp;
+            _Temp._reset_move(custom::move(*this));
+            _reset_move(custom::move(other));
+            other._reset_move(custom::move(_Temp));
+        }
     }
 
     const std::type_info& target_type() const noexcept {
-        return this->_target_type();
+        return _get_impl() ? _get_impl()->_target_type() : typeid(void);
     }
 
     template<class Func>
     Func* target() noexcept {
-        return reinterpret_cast<Func*>(const_cast<void*>(this->_target(typeid(Func))));
+        return reinterpret_cast<Func*>(const_cast<void*>(_target(typeid(Func))));
     }
 
     template<class Func>
     const Func* target() const noexcept {
-        return reinterpret_cast<const Func*>(this->_target(typeid(Func)));
+        return reinterpret_cast<const Func*>(_target(typeid(Func)));
     }
 
 private:
@@ -678,22 +689,6 @@ private:
             _set_impl(::new(static_cast<void*>(&_storage)) OtherImpl(custom::forward<Func>(val)));
     }
 
-    void _swap(Function& other) noexcept {  // swap contents with contents of other
-        if (!_local() && !other._local())   // just swap pointers
-        {
-            auto _Temp = _get_impl();
-            _set_impl(other._get_impl());
-            other._set_impl(_Temp);
-        }
-        else                                // do three-way move
-        {
-            Function _Temp;
-            _Temp._reset_move(custom::move(*this));
-            _reset_move(custom::move(other));
-            other._reset_move(custom::move(_Temp));
-        }
-    }
-
     Impl* _get_impl() const noexcept {
         return _storage._Ptrs[_SmallObjectNumPtrs - 1];
     }
@@ -716,10 +711,6 @@ private:
             _get_impl()->_delete_this(!_local());   // dealloc only if !small
             _set_impl(nullptr);
         }
-    }
-
-    const std::type_info& _target_type() const noexcept {
-        return _get_impl() ? _get_impl()->_target_type() : typeid(void);
     }
 
     const void* _target(const std::type_info& info) const noexcept {

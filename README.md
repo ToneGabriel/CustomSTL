@@ -9,7 +9,6 @@ Code build requirements:
 
 Components not fully operational:
 
-- Functional.h
 - Memory.h
 - Algorithm.h
 - Numeric.h
