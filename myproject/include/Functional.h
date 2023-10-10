@@ -587,6 +587,11 @@ public:
 public:
     // Operators
 
+    Function& operator=(std::nullptr_t) noexcept {
+        _clean_up_storage();
+        return *this;
+    }
+
     Function& operator=(const Function& other) {
         Function(other).swap(*this);
         return *this;
@@ -605,6 +610,13 @@ public:
     template<class Func, EnableIf_t<!IsSame_v<Func, Function>, bool> = true>
     Function& operator=(Func&& val) {
         Function(custom::forward<Func>(val)).swap(*this);
+        return *this;
+    }
+
+    template<class Func>
+    Function& operator=(ReferenceWrapper<Func> refVal) noexcept {
+        _clean_up_storage();
+        _reset(refVal);
         return *this;
     }
 
