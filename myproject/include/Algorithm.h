@@ -70,53 +70,236 @@ constexpr InputIt for_each_n(InputIt first, Size n, UnaryFunction func) {
 
 
 // mismatch
-template<class InputIt1, class InputIt2>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1,
-                                                    InputIt1 last1,
-                                                    InputIt2 first2) {
-    return custom::Pair<InputIt1, InputIt2>();
-}
-
 template<class InputIt1, class InputIt2, class BinaryPredicate>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1,
-                                                    InputIt1 last1,
-                                                    InputIt2 first2,
-                                                    BinaryPredicate pred) {
-    return custom::Pair<InputIt1, InputIt2> ();
+constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                    InputIt2 first2, BinaryPredicate pred) {
+    
+    _verify_iteration_range(first1, last1);
+    for (; first1 != last1 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
+    return {first1, first2};
 }
 
 template<class InputIt1, class InputIt2>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1,
-                                                    InputIt1 last1,
-                                                    InputIt2 first2,
-                                                    InputIt2 last2) {
-    return custom::Pair<InputIt1, InputIt2> ();
+constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+    return custom::mismatch(first1, last1, first2, EqualTo<>{});
 }
 
 template<class InputIt1, class InputIt2, class BinaryPredicate>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1,
-                                                    InputIt1 last1,
-                                                    InputIt2 first2,
-                                                    InputIt2 last2,
+constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                    InputIt2 first2, InputIt2 last2,
                                                     BinaryPredicate pred) {
-    return custom::Pair<InputIt1, InputIt2> ();
+    
+    _verify_iteration_range(first1, last1);
+    _verify_iteration_range(first2, last2);
+    for (; first1 != last1 && first2 != last2 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
+    return {first1, first2};
+}
+
+template<class InputIt1, class InputIt2>
+constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                    InputIt2 first2, InputIt2 last2) {
+
+    return custom::mismatch(first1, last1, first2, last2, EqualTo<>{});
 }
 // END mismatch
 
 
+// search
+template<class ForwardIt1, class ForwardIt2, class BinaryPredicate>
+constexpr ForwardIt1 search(ForwardIt1 first, ForwardIt1 last,
+                            ForwardIt2 seqFirst, ForwardIt2 seqLast,
+                            BinaryPredicate pred) {
 
+    _verify_iteration_range(first, last);
+    
+    for(;; ++first)
+    {
+        ForwardIt1 it = first;
+        for (ForwardIt2 seqIt = seqFirst; /* Empty */ ; ++it, ++seqIt)
+        {
+            if (seqIt == seqLast)
+                return first;
+            if (it == last)
+                return last;
+            if (!pred(*it, *seqIt))
+                break;
+        }
+    }
+}
+
+template<class ForwardIt1, class ForwardIt2>
+constexpr ForwardIt1 search(ForwardIt1 first, ForwardIt1 last,
+                            ForwardIt2 seqFirst, ForwardIt2 seqLast) {
+
+    return custom::search(first, last, seqFirst, seqLast, EqualTo<>{});
+}
+// END search
+
+
+// find, find_if, find_if_not
+template<class InputIt, class Type>
+constexpr InputIt find(InputIt first, InputIt last, const Type& value) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (*first == value)
+            return first;
+ 
+    return last;
+}
+
+template<class InputIt, class UnaryPredicate>
+constexpr InputIt find_if(InputIt first, InputIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (pred(*first))
+            return first;
+ 
+    return last;
+}
+
+template<class InputIt, class UnaryPredicate>
+constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (!pred(*first))
+            return first;
+ 
+    return last;
+}
+// END find, find_if, find_if_not
 #pragma endregion Non-modifying sequence operations
 
 
 #pragma region Modifying sequence operations
-// TODO: implemet
+// copy, copy_if, copy_n, copy_backward
+template<class InputIt, class OutputIt>
+constexpr OutputIt copy(InputIt first, InputIt last, OutputIt destFirst) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first, ++destFirst)
+        *destFirst = *first;
+
+    return destFirst;
+}
+
+template<class InputIt, class OutputIt, class UnaryPredicate>
+constexpr OutputIt copy_if(InputIt first, InputIt last, OutputIt destFirst, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (pred(*first))
+        {
+            *destFirst = *first;
+            ++destFirst;
+        }
+ 
+    return destFirst;
+}
+
+template<class InputIt, class Size, class OutputIt>
+constexpr OutputIt copy_n(InputIt first, Size count, OutputIt destFirst) {
+    if (count > 0)
+    {
+        *destFirst = *first;
+        ++destFirst;
+        for (Size i = 1; i != count; ++i, ++destFirst)
+            *destFirst = *++first;
+    }
+ 
+    return destFirst;
+}
+
+template<class BidirIt1, class BidirIt2>
+constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 destLast) {
+    _verify_iteration_range(first, last);
+
+    while (first != last)
+        *(--destLast) = *(--last);
+
+    return destLast;
+}
+// END copy, copy_if, copy_n, copy_backward
+
+
+// move, move_backwards
+template<class InputIt, class OutputIt>
+constexpr OutputIt move(InputIt first, InputIt last, OutputIt destFirst) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first, ++destFirst)
+        *destFirst = custom::move(*first);
+
+    return destFirst;
+}
+
+template<class BidirIt1, class BidirIt2>
+constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 destLast) {
+    _verify_iteration_range(first, last);
+
+    while (first != last)
+        *(--destLast) = custom::move(*(--last));
+
+    return destLast;
+}
+// END move, move_backwards
+
+
+// transform
+template<class InputIt, class OutputIt, class UnaryOperation >
+constexpr OutputIt transform( InputIt first, InputIt last,
+                              OutputIt destFirst, UnaryOperation uop ) {
+
+    _verify_iteration_range(first, last);
+
+    while (first != last)
+        *destFirst++ = uop(*first++);
+ 
+    return destFirst;
+}
+
+template<class InputIt1, class InputIt2, class OutputIt, class BinaryOperation>
+constexpr OutputIt transform(   InputIt1 first1, InputIt1 last1, 
+                                InputIt2 first2, OutputIt destFirst,
+                                BinaryOperation bop) {
+
+    _verify_iteration_range(first1, last1);
+
+    while (first1 != last1)
+        *destFirst++ = bop(*first1++, *first2++);
+ 
+    return destFirst;
+}
+// END transform
+
+
+// generate, generate_n
+template<class ForwardIt, class Generator>
+constexpr void generate(ForwardIt first, ForwardIt last, Generator gen) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        *first = gen();
+}
+
+template<class OutputIt, class Size, class Generator>
+constexpr OutputIt generate_n(OutputIt first, Size count, Generator gen) {
+    for (Size i = 0; i < count; ++i, ++first)
+        *first = gen();
+ 
+    return first;
+}
+//END generate, generate_n
+
 
 // fill, fill_n
 template<class ForwardIt, class Type>
 constexpr void fill(ForwardIt first, ForwardIt last, const Type& value) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)  // TODO: check
+    for (; first != last; ++first)
         *first = value;
 }
 
@@ -125,7 +308,7 @@ OutputIt fill_n(OutputIt first, Size count, const Type& value) {
     for (Size i = 0; i < count; ++i)
         *first++ = value;
 
-    return first;   // TODO: check
+    return first;
 }
 // END fill, fill_n
 #pragma endregion Modifying sequence operations
@@ -299,28 +482,53 @@ ForwardIt min_element(ForwardIt first, ForwardIt last) {
 
 
 #pragma region Comparison operations
+// equal
 template<class InputIt1, class InputIt2, class BinaryPredicate>
-constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2, BinaryPredicate pred) {
-    // compare [first1, last1) to [first2, ...)
+constexpr bool equal(   InputIt1 first1, InputIt1 last1,
+                        InputIt2 first2, BinaryPredicate pred) {    // compare [first1, last1) to [first2, ...)
 
     _verify_iteration_range(first1, last1);
 
-    while (first1 != last1)
-    {
+    for (; first1 != last1; ++first1, ++first2)
         if (!pred(*first1, *first2))
             return false;
-
-        ++first1;
-        ++first2;
-    }
 
     return true;
 }
 
 template<class InputIt1, class InputIt2>
-constexpr bool equal(const InputIt1 first1, const InputIt1 last1, const InputIt2 first2) {
+constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
     return custom::equal(first1, last1, first2, EqualTo<>{});
 }
+// END equal
+
+
+// lexicographical_compare
+template<class InputIt1, class InputIt2, class Compare>
+constexpr bool lexicographical_compare( InputIt1 first1, InputIt1 last1,
+                                        InputIt2 first2, InputIt2 last2, Compare comp) {
+
+    _verify_iteration_range(first1, last1);
+    _verify_iteration_range(first2, last2);
+
+    for (; (first1 != last1) && (first2 != last2); ++first1, ++first2)
+    {
+        if (comp(*first1, *first2))
+            return true;
+        if (comp(*first2, *first1))
+            return false;
+    }
+ 
+    return (first1 == last1) && (first2 != last2);
+}
+
+template<class InputIt1, class InputIt2>
+constexpr bool lexicographical_compare( InputIt1 first1, InputIt1 last1,
+                                        InputIt2 first2, InputIt2 last2) {
+
+    return custom::lexicographical_compare(first1, last1, first2, last2, Less<>{});
+}
+// END lexicographical_compare
 #pragma endregion Comparison operations
 
 
