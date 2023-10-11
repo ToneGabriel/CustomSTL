@@ -7,12 +7,16 @@
 #define TEST_BEGIN namespace test {
 #define TEST_END }
 
+
 TEST_BEGIN
+
 
 #define TEST_HELP_BEGIN namespace test_help {
 #define TEST_HELP_END }
 
+
 TEST_HELP_BEGIN   // helpers (not intended for external use)
+
 
 class Test      // basic test class
 {
@@ -40,6 +44,7 @@ public:
 
 	int test_function(int x);
 };  // END Test
+
 
 TEST_HELP_END
 
@@ -110,6 +115,7 @@ void print_numeric_limits_functions() {
 	std::cout << std::numeric_limits<Type>::denorm_min()		<< ' ' << custom::NumericLimits<Type>::denorm_min() << '\n';
 }
 
+
 TEST_END
 #pragma endregion Common tests
 
@@ -121,7 +127,9 @@ TEST_END
 
 TEST_BEGIN
 
+
 TEST_HELP_BEGIN		// helpers (not intended for external use)
+
 
 struct Employee
 {
@@ -138,10 +146,13 @@ struct Employee
 void send_mail(Employee &, Employee &);
 void assign_lunch_partner(Employee &e1, Employee &e2);
 
+
 TEST_HELP_END
+
 
 void lock_locks_test();
 void thread_test();
+
 
 TEST_END
 #endif

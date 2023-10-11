@@ -698,7 +698,7 @@ private:
         if constexpr (_IsLarge<OtherImpl>)  // dynamically allocate val
             _set_impl(new OtherImpl(custom::forward<Callable>(val)));
         else                                // store val in-situ
-            _set_impl(::new(static_cast<void*>(&_storage)) OtherImpl(custom::forward<Callable>(val)));
+            _set_impl(::new(&_storage) OtherImpl(custom::forward<Callable>(val)));
     }
 
     Impl* _get_impl() const noexcept {
