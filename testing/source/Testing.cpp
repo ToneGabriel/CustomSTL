@@ -112,6 +112,16 @@ void list_test() {
 		std::cout << *it << '\n';
 }
 
+void forward_list_test() {
+	custom::ForwardList<test_help::Test> flist;
+	flist.emplace_front(1);
+	flist.emplace_front(2);
+	flist.emplace_front(3);
+
+	for (auto& val : flist)
+		std::cout << val << '\n';
+}
+
 void unordered_map_test() {
 	custom::UnorderedMap<int, custom::String> map;
 

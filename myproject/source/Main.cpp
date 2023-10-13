@@ -11,6 +11,7 @@ int main()
 	//test::unordered_map_test();
 	//test::unordered_set_test();
 	//test::list_test();
+	//test::forward_list_test();
 	//test::string_test();
 	//test::array_test();
 	//test::deque_test();

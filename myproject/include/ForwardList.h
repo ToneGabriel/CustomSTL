@@ -4,7 +4,7 @@
 #include "Utility.h"
 #include "Iterator.h"
 
-#define FWD_LIST_NOT_IMPLEMENTED
+//#define FWD_LIST_NOT_IMPLEMENTED
 
 #ifndef FWD_LIST_NOT_IMPLEMENTED
 
@@ -93,7 +93,7 @@ public:
 	}
 
 	friend void _verify_range(const ForwardListConstIterator& first, const ForwardListConstIterator& last) noexcept {
-		CUSTOM_ASSERT(first._RefData == last._RefData, "List iterators in range are from different containers");
+		CUSTOM_ASSERT(first._RefData == last._RefData, "ForwardList iterators in range are from different containers");
 		// No possible way to determine order.
 	}
 }; // END ForwardListConstIterator
@@ -172,7 +172,9 @@ private:
 public:
 	// Constructors
 
-	ForwardList() = default;												// _Head = nullptr; _Size = 0;
+	ForwardList() {
+		_create_head();
+	}
 
 	ForwardList(const size_t newSize, const ValueType& value) : ForwardList() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
@@ -229,23 +231,46 @@ public:
 	}
 
 	template<class... Args>
-	void emplace_front(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
+	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the tail
 		_NodePtr newNode = _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
-		_insert_node_before(_data._Head, newNode);
+		_insert_node_after(_data._Head, newNode);
 	}
 
 	void push_front(const ValueType& copyValue) {				// Construct object using reference and add it to the tail
 		emplace_front(copyValue);
 	}
 
-	void push_front(ValueType&& moveValue) {						// Construct object using temporary and add it to the tail
+	void push_front(ValueType&& moveValue) {					// Construct object using temporary and add it to the tail
 		emplace_front(custom::move(moveValue));
 	}
 
 	void pop_front() {											// Remove last component
 		if (_data._Size > 0)
-			_remove_node(_data._Head->_Previous);
+			_remove_node_after(_data._Head);
+	}
+
+	template<class... Args>
+	Iterator emplace_after(ConstIterator iterator, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the iterator position
+		if (iterator.is_end())
+			throw std::out_of_range("Cannot emplace after end iterator...");
+
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_insert_node_after(iterator._Ptr, newNode);
+
+		return Iterator(newNode, &_data);
+	}
+
+	Iterator pop_after(ConstIterator iterator) {						// Remove component after iterator position
+		if (iterator.is_end())
+			throw std::out_of_range("Cannot pop after end iterator...");
+
+		_NodePtr temp 			= iterator._Ptr;
+		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
+		_remove_node(temp);
+
+		return prevIterator;
 	}
 
 	Reference front() noexcept {								// Get the value of the first component
@@ -278,19 +303,19 @@ public:
 	// Iterator specific functions
 
 	Iterator begin() noexcept {
-		return Iterator(_data._Head, &_data);
+		return Iterator(_data._Head->_Next, &_data);
 	}
 
 	ConstIterator begin() const noexcept {
-		return ConstIterator(_data._Head, &_data);
+		return ConstIterator(_data._Head->_Next, &_data);
 	}
 
 	Iterator end() noexcept {
-		return Iterator(nullptr, &_data);
+		return Iterator(_data._Head, &_data);
 	}
 
 	ConstIterator end() const noexcept {
-		return ConstIterator(nullptr, &_data);
+		return ConstIterator(_data._Head, &_data);
 	}
 
 private:
@@ -306,26 +331,22 @@ private:
 		_alloc.deallocate(_data._Head, 1);
 	}
 
-		void _insert_node_before(_NodePtr beforeNode, _NodePtr newNode) {	// Insert Node before another
-		newNode->_Previous 				= beforeNode->_Previous;
-		newNode->_Next 					= beforeNode;
-
-		beforeNode->_Previous->_Next 	= newNode;
-		beforeNode->_Previous 			= newNode;
-
+	void _insert_node_after(_NodePtr afterNode, _NodePtr newNode) {
+		newNode->_Next = afterNode->_Next;
+		afterNode->_Next = newNode;
 		++_data._Size;
 	}
 
-	void _remove_node(_NodePtr junkNode) {							// Remove Node and relink
-		junkNode->_Previous->_Next = junkNode->_Next;
-		junkNode->_Next->_Previous = junkNode->_Previous;
+	void _remove_node_after(_NodePtr afterNode) {
+		_NodePtr junkNode = afterNode->_Next;
+		afterNode->_Next = junkNode->_Next;
 		--_data._Size;
 
 		_AllocNodeTraits::destroy(_alloc, &(junkNode->_Value));
 		_alloc.deallocate(junkNode, 1);
 	}
 
-	void _copy(const List& other) {								// Generic copy function for list
+	void _copy(const ForwardList& other) {								// Generic copy function for list
 		_NodePtr temp = other._data._Head->_Next;
 		while (_data._Size < other._data._Size) {
 			push_front(temp->_Value);
@@ -333,7 +354,7 @@ private:
 		}
 	}
 
-	void _move(List&& other) noexcept {							// Generic move function for list
+	void _move(ForwardList&& other) noexcept {							// Generic move function for list
 		custom::swap(_data._Head, other._data._Head);
 		_data._Size = custom::exchange(other._data._Size, 0);
 	}
@@ -349,6 +370,21 @@ private:
 			pop_front();
 	}
 };	// END ForwardList
+
+
+// ForwardList binary operators
+template<class _Type, class _Alloc>
+bool operator==(const ForwardList<_Type, class _Alloc>& left, const ForwardList<_Type, class _Alloc>& right) {
+    if (left.size() != right.size())
+		return false;
+
+	return custom::equal(left.begin(), left.end(), right.begin());
+}
+
+template<class _Type, class _Alloc>
+bool operator!=(const ForwardList<_Type, class _Alloc>& left, const ForwardList<_Type, class _Alloc>& right) {
+	return !(left == right);
+}
 
 CUSTOM_END
 

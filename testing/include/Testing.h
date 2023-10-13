@@ -52,6 +52,7 @@ void print_sequence_test();
 void piecewise_pair_test();
 void tuple_test();
 void list_test();
+void forward_list_test();
 void unordered_map_test();
 void unordered_set_test();
 void map_test();
