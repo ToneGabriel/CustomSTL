@@ -4,4 +4,4 @@
 
 2. Learn and implement smart pointers
 3. Complete TypeTraits
-4. Learn Hash
+4. Add DifferenceType to Map/UnorderedMap/Set/UnorderedSet/BasicString ...

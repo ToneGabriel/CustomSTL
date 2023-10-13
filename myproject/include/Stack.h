@@ -11,6 +11,7 @@ class Stack				// Stack Template implemented as Vector wrapper
 public:
 	using ContainerType 	= Container;
 	using ValueType			= typename ContainerType::ValueType;
+	using DifferenceType 	= typename ContainerType::DifferenceType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;

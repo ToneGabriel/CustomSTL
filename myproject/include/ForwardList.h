@@ -21,6 +21,7 @@ struct _ForwardListData
 	using _NodePtr			= _AllocNodeTraits::Pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
+	using DifferenceType 	= typename _AllocTraits::DifferenceType;
 	using Reference			= typename _AllocTraits::Reference;
 	using ConstReference	= typename _AllocTraits::ConstReference;
 	using Pointer			= typename _AllocTraits::Pointer;
@@ -40,6 +41,7 @@ private:
 public:
     using IteratorCategory 	= ForwardIteratorTag;
 	using ValueType			= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::ConstReference;
 	using Pointer			= typename _Data::ConstPointer;
 
@@ -109,6 +111,7 @@ private:
 public:
     using IteratorCategory 	= ForwardIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference 		= typename _Data::Reference;
 	using Pointer 			= typename _Data::Pointer;
 
@@ -156,6 +159,7 @@ public:
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
 	using ValueType 			= typename _Data::ValueType;
+	using DifferenceType 		= typename _Data::DifferenceType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;
@@ -287,9 +291,10 @@ public:
 		return _data._Size;
 	}
 
-	// size_t max_size() const noexcept {
-	// TODO: implement
-	// }
+	size_type max_size() const noexcept {
+        return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+								_AllocNodeTraits::max_size(_alloc));
+    }
 
 	bool empty() const noexcept {
 		return _data._Size == 0;
@@ -374,7 +379,7 @@ private:
 
 // ForwardList binary operators
 template<class _Type, class _Alloc>
-bool operator==(const ForwardList<_Type, class _Alloc>& left, const ForwardList<_Type, class _Alloc>& right) {
+bool operator==(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type, _Alloc>& right) {
     if (left.size() != right.size())
 		return false;
 
@@ -382,7 +387,7 @@ bool operator==(const ForwardList<_Type, class _Alloc>& left, const ForwardList<
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const ForwardList<_Type, class _Alloc>& left, const ForwardList<_Type, class _Alloc>& right) {
+bool operator!=(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type, _Alloc>& right) {
 	return !(left == right);
 }
 

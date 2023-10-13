@@ -16,6 +16,7 @@ struct _DequeData
 	using _MapPtr 			= _AllocPtrTraits::Pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
+	using DifferenceType 	= typename _AllocTraits::DifferenceType;
 	using Reference			= typename _AllocTraits::Reference;
 	using ConstReference	= typename _AllocTraits::ConstReference;
 	using Pointer			= typename _AllocTraits::Pointer;
@@ -42,6 +43,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType			= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::ConstReference;
 	using Pointer			= typename _Data::ConstPointer;
 
@@ -67,15 +69,15 @@ public:
 		return temp;
 	}
 
-	DequeConstIterator& operator+=(const size_t diff) noexcept {
-		CUSTOM_ASSERT(	_Offset + diff >= _RefData->_First &&
-						_Offset + diff <= _RefData->_First + _RefData->_Size, 
+	DequeConstIterator& operator+=(const DifferenceType diff) noexcept {
+		CUSTOM_ASSERT(	_Offset + static_cast<size_t>(diff) >= _RefData->_First &&
+						_Offset + static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size, 
 						"Cannot increment end iterator...");
-		_Offset += diff;
+		_Offset += static_cast<size_t>(diff);
 		return *this;
 	}
 
-	DequeConstIterator operator+(const size_t diff) const noexcept {
+	DequeConstIterator operator+(const DifferenceType diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -93,15 +95,15 @@ public:
 		return temp;
 	}
 
-	DequeConstIterator& operator-=(const size_t diff) noexcept {
-		CUSTOM_ASSERT(	_Offset - diff >= _RefData->_First &&					// TODO: use data overflow
-						_Offset - diff <= _RefData->_First + _RefData->_Size,
+	DequeConstIterator& operator-=(const DifferenceType diff) noexcept {
+		CUSTOM_ASSERT(	_Offset - static_cast<size_t>(diff) >= _RefData->_First &&
+						_Offset - static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size,
 						"Cannot decrement begin iterator...");
-		_Offset -= diff;
+		_Offset -= static_cast<size_t>(diff);
 		return *this;
 	}
 
-	DequeConstIterator operator-(const size_t diff) const noexcept {
+	DequeConstIterator operator-(const DifferenceType diff) const noexcept {
 		DequeConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -121,7 +123,7 @@ public:
 		return _RefData->_Map[block][offset];
 	}
 
-	Reference operator[](const size_t diff) const noexcept {
+	Reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -159,6 +161,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType			= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::Reference;
 	using Pointer			= typename _Data::Pointer;
 
@@ -180,12 +183,12 @@ public:
 		return temp;
 	}
 
-	DequeIterator& operator+=(const size_t diff) noexcept {
+	DequeIterator& operator+=(const DifferenceType diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	DequeIterator operator+(const size_t diff) const noexcept {
+	DequeIterator operator+(const DifferenceType diff) const noexcept {
 		DequeIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -202,12 +205,12 @@ public:
 		return temp;
 	}
 
-	DequeIterator& operator-=(const size_t diff) noexcept {
+	DequeIterator& operator-=(const DifferenceType diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	DequeIterator operator-(const size_t diff) const noexcept {
+	DequeIterator operator-(const DifferenceType diff) const noexcept {
 		DequeIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -221,7 +224,7 @@ public:
 		return const_cast<Reference>(_Base::operator*());
 	}
 
-	Reference operator[](const size_t diff) const noexcept {
+	Reference operator[](const DifferenceType diff) const noexcept {
         return const_cast<Reference>(_Base::operator[](diff));
     }
 }; // END Deque Iterator
@@ -242,6 +245,7 @@ public:
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using DifferenceType 		= typename _Data::DifferenceType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;
@@ -291,12 +295,12 @@ public:
 
 	const ValueType& operator[](const size_t index) const {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
-		return *(begin() + index);
+		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	ValueType& operator[](const size_t index) {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
-		return *(begin() + index);
+		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	Deque& operator=(const Deque& other) {
@@ -416,7 +420,7 @@ public:
 		{
 			emplace_front(custom::forward<Args>(args)...);
 			
-			Iterator current 	= begin() + off;
+			Iterator current 	= begin() + static_cast<DifferenceType>(off);
 			ValueType val 		= custom::move(*begin());
 
 			for (Iterator it = begin(); it != current; ++it)
@@ -428,7 +432,7 @@ public:
 		{
 			emplace_back(custom::forward<Args>(args)...);
 
-			Iterator current 	= begin() + off;
+			Iterator current 	= begin() + static_cast<DifferenceType>(off);
 			ValueType val 		= custom::move(*--end());
 
 			for (Iterator it = --end(); it != current; --it)
@@ -437,7 +441,7 @@ public:
 			*current = val;
 		}
 		
-		return begin() + off;
+		return begin() + static_cast<DifferenceType>(off);
 	}
 
 	Iterator push(ConstIterator iterator, const ValueType& copyValue) {
@@ -456,7 +460,7 @@ public:
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
-			Iterator current 	= begin() + off;
+			Iterator current 	= begin() + static_cast<DifferenceType>(off);
 			Iterator first 		= begin();
 
 			for (Iterator it = current; it != first; --it)
@@ -466,7 +470,7 @@ public:
 		}
 		else							// closer to back
 		{
-			Iterator current 	= begin() + off;
+			Iterator current 	= begin() + static_cast<DifferenceType>(off);
 			Iterator last 		= --end();
 
 			for (Iterator it = current; it != last; ++it)
@@ -475,7 +479,7 @@ public:
 			pop_back();
 		}
 
-		return begin() + off;
+		return begin() + static_cast<DifferenceType>(off);
 	}
 
 	void clear() {
@@ -494,6 +498,11 @@ public:
 		return _data._Size;
 	}
 
+    size_t max_size() const noexcept {
+        return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+								_AllocTraits::max_size(_alloc));
+    }
+
 	bool empty() const noexcept {
 		return (_data._Size == 0);
 	}
@@ -502,14 +511,14 @@ public:
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
-		return *(begin() + index);
+		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	Reference at(const size_t index) {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds...");
 
-		return *(begin() + index);
+		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	ConstReference front() const noexcept {

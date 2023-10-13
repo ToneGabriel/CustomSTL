@@ -70,6 +70,32 @@ struct _GetPointerType<Ty, Void_t<typename Ty::Pointer>>
     using Type = typename Ty::Pointer;
 };
 
+// get ptr difference type
+template<class Ty, class = void>
+struct _GetPtrDifferenceType
+{
+    using Type = ptrdiff_t;
+};
+
+template<class Ty>
+struct _GetPtrDifferenceType<Ty, Void_t<typename Ty::DifferenceType>>
+{
+    using Type = typename Ty::DifferenceType;
+};
+
+// get difference type
+template<class Ty, class = void>
+struct _GetDifferenceType
+{
+    using Type = typename PointerTraits<typename _GetPointerType<Ty>::Type>::DifferenceType;
+};
+
+template<class Ty>
+struct _GetDifferenceType<Ty, Void_t<typename Ty::DifferenceType>>
+{
+    using Type = typename Ty::DifferenceType;
+};
+
 // get const pointer type
 template<class Ty, class = void>
 struct _GetConstPointerType
@@ -448,11 +474,12 @@ constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
 template<class Type, class Elem>
 struct _PointerTraitsBase
 {
-    using Pointer       = Type;
-    using ElementType   = Elem;
+    using Pointer           = Type;
+    using ElementType       = Elem;
+    using DifferenceType    = typename _GetPtrDifferenceType<Type>::Type;
 
     template<class Other>
-    using Rebind        = typename _GetRebindType<Type, Other>::Type;   // TODO: check
+    using Rebind            = typename _GetRebindType<Type, Other>::Type;   // TODO: check
 
     static constexpr Pointer pointer_to(ElementType& val)
     noexcept(noexcept(ElementType::pointer_to(val))) {
@@ -478,8 +505,9 @@ struct PointerTraits : _PointerTraitsElemChoice<Ty> {};
 template<class Type>
 struct PointerTraits<Type*>
 {
-    using Pointer       = Type*;
-    using ElementType   = Type;
+    using Pointer           = Type*;
+    using ElementType       = Type;
+    using DifferenceType    = ptrdiff_t;
 
     template<class Other>
     using Rebind        = Other*;
@@ -501,7 +529,8 @@ public:
 	static_assert(!IsReference_v<Type>, "The C++ Standard forbids allocators for reference elements ");
 
 public:
-	using ValueType = Type;
+	using ValueType     = Type;
+    using DiffereceType = ptrdiff_t;
 
 public:
 	// Constructors & Operators
@@ -567,6 +596,7 @@ struct AllocatorTraits						// AllocatorTraits any
 {
     using AllocatorType 						= Alloc;
     using ValueType								= typename Alloc::ValueType;
+    using DifferenceType                        = typename _GetDifferenceType<Alloc>::Type;
     using Reference                             = typename _GetReferenceType<Alloc>::Type;
     using ConstReference                        = typename _GetConstReferenceType<Alloc>::Type;
     using Pointer								= typename _GetPointerType<Alloc>::Type;
@@ -630,6 +660,7 @@ struct AllocatorTraits<Allocator<Type>>		// AllocatorTraits default
 {
 	using AllocatorType 						= Allocator<Type>;
     using ValueType     						= Type;
+    using DifferenceType                        = ptrdiff_t;
 
     using Reference                             = ValueType&;
     using ConstReference                        = const ValueType&;

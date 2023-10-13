@@ -12,6 +12,7 @@ class ArrayConstIterator
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= Type;
+	using DifferenceType 	= ptrdiff_t;
 	using Reference			= const ValueType&;
 	using Pointer			= const ValueType*;
 
@@ -37,13 +38,13 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayConstIterator& operator+=(const size_t diff) noexcept {
-		CUSTOM_ASSERT(_Index + diff <= Size, "Cannot increment end iterator...");
-		_Index += diff;
+	constexpr ArrayConstIterator& operator+=(const DifferenceType diff) noexcept {
+		CUSTOM_ASSERT(_Index + static_cast<size_t>(diff) <= Size, "Cannot increment end iterator...");
+		_Index += static_cast<size_t>(diff);
 		return *this;
 	}
 
-	constexpr ArrayConstIterator operator+(const size_t diff) const noexcept {
+	constexpr ArrayConstIterator operator+(const DifferenceType diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -61,13 +62,13 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayConstIterator& operator-=(const size_t diff) noexcept {
-		CUSTOM_ASSERT(_Index >= diff, "Cannot decrement begin iterator...");
-		_Index -= diff;
+	constexpr ArrayConstIterator& operator-=(const DifferenceType diff) noexcept {
+		CUSTOM_ASSERT(_Index >= static_cast<size_t>(diff), "Cannot decrement begin iterator...");
+		_Index -= static_cast<size_t>(diff);
 		return *this;
 	}
 
-	constexpr ArrayConstIterator operator-(const size_t diff) const noexcept {
+	constexpr ArrayConstIterator operator-(const DifferenceType diff) const noexcept {
 		ArrayConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -83,7 +84,7 @@ public:
 		return *(_Ptr + _Index);
 	}
 
-    constexpr Reference operator[](const size_t diff) const noexcept {
+    constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -124,6 +125,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= Type;
+	using DifferenceType 	= ptrdiff_t;
 	using Reference			= ValueType&;
 	using Pointer			= ValueType*;
 
@@ -145,12 +147,12 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayIterator& operator+=(const size_t diff) noexcept {
+	constexpr ArrayIterator& operator+=(const DifferenceType diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr ArrayIterator operator+(const size_t diff) const noexcept {
+	constexpr ArrayIterator operator+(const DifferenceType diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -167,12 +169,12 @@ public:
 		return temp;
 	}
 
-	constexpr ArrayIterator& operator-=(const size_t diff) noexcept {
+	constexpr ArrayIterator& operator-=(const DifferenceType diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr ArrayIterator operator-(const size_t diff) const noexcept {
+	constexpr ArrayIterator operator-(const DifferenceType diff) const noexcept {
 		ArrayIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -186,7 +188,7 @@ public:
 		return const_cast<Reference>(_Base::operator*());
 	}
 
-	constexpr Reference operator[](const size_t diff) const noexcept {
+	constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return const_cast<Reference>(_Base::operator[](diff));
     }
 }; // END ArrayIterator
@@ -204,6 +206,7 @@ class Array							// Array Template (follows aggregate rules)
 
 public:
 	using ValueType 			= Type;										// Type for stored values
+	using DifferenceType 		= ptrdiff_t;
 	using Reference 			= ValueType&;
 	using ConstReference 		= const ValueType&;
 	using Pointer 				= ValueType*;

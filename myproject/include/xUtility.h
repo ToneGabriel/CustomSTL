@@ -6,6 +6,8 @@ CUSTOM_BEGIN
 
 template<class Type>
 constexpr void _verify_range(const Type* const first, const Type* const last) noexcept {
+    // ALL containers have this function implemented as friend in their iterators
+    // This is a specialization for raw pointers
     CUSTOM_ASSERT(first <= last, "Transposed pointer range...");
 }
 

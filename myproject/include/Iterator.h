@@ -18,15 +18,15 @@ struct _IteratorTraits {};
 template<class Iterator>
 struct _IteratorTraits<Iterator, Void_t<    typename Iterator::IteratorCategory,
                                             typename Iterator::ValueType,
-                                            /*typename Iterator::DifferenceType,*/
+                                            typename Iterator::DifferenceType,
                                             typename Iterator::Pointer,
                                             typename Iterator::Reference>>
 {
     using IteratorCategory = typename Iterator::IteratorCategory;
     using ValueType        = typename Iterator::ValueType;
-    //using DifferenceType   = typename Iterator::DifferenceType;
-    using Pointer           = typename Iterator::Pointer;
-    using Reference         = typename Iterator::Reference;
+    using DifferenceType   = typename Iterator::DifferenceType;
+    using Pointer          = typename Iterator::Pointer;
+    using Reference        = typename Iterator::Reference;
 };
 
 // pointer iterator traits helpers
@@ -35,9 +35,9 @@ struct _IteratorTraitsPtr
 {
     using IteratorCategory = RandomAccessIteratorTag;
     using ValueType        = RemoveCV_t<Type>;
-    //using DifferenceType   = ptrdiff_t;
-    using Pointer           = Type*;
-    using Reference         = Type&;
+    using DifferenceType   = ptrdiff_t;
+    using Pointer          = Type*;
+    using Reference        = Type&;
 };
 
 template<class Type>
@@ -65,7 +65,7 @@ public:
     using IteratorType      = Iterator;
     using IteratorCategory  = typename IteratorTraits<Iterator>::IteratorCategory;
     using ValueType         = typename IteratorTraits<Iterator>::ValueType;
-    //using DifferenceType   = typename IteratorTraits<Iterator>::DifferenceType;
+    using DifferenceType    = typename IteratorTraits<Iterator>::DifferenceType;
     using Reference		    = typename IteratorTraits<Iterator>::Reference;
 	using Pointer		    = typename IteratorTraits<Iterator>::Pointer;
 

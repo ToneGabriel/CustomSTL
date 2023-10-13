@@ -13,6 +13,7 @@ class Queue			// Queue template implemented as Deque wrapper
 public:
 	using ContainerType 	= Container;
 	using ValueType 		= typename ContainerType::ValueType;
+	using DifferenceType 	= typename ContainerType::DifferenceType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;
@@ -119,6 +120,7 @@ public:
 	using ContainerType 	= Container;
 	using ValueCompare 		= Compare;
 	using ValueType 		= typename ContainerType::ValueType;
+	using DifferenceType 	= typename ContainerType::DifferenceType;
 	using Reference			= typename ContainerType::Reference;
 	using ConstReference	= typename ContainerType::ConstReference;
 	using Pointer			= typename ContainerType::Pointer;

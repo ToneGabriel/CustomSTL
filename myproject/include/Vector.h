@@ -13,6 +13,7 @@ struct _VectorData
 	using _AllocTraits		= AllocatorTraits<Alloc>;
 
 	using ValueType			= typename _AllocTraits::ValueType;
+	using DifferenceType 	= typename _AllocTraits::DifferenceType;
 	using Reference			= typename _AllocTraits::Reference;
 	using ConstReference	= typename _AllocTraits::ConstReference;
 	using Pointer			= typename _AllocTraits::Pointer;
@@ -32,6 +33,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference 		= typename _Data::ConstReference;
 	using Pointer			= typename _Data::ConstPointer;
 
@@ -57,13 +59,13 @@ public:
 		return temp;
 	}
 
-	constexpr VectorConstIterator& operator+=(const size_t diff) noexcept {
+	constexpr VectorConstIterator& operator+=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr VectorConstIterator operator+(const size_t diff) const noexcept {
+	constexpr VectorConstIterator operator+(const DifferenceType diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -81,13 +83,13 @@ public:
 		return temp;
 	}
 
-	constexpr VectorConstIterator& operator-=(const size_t diff) noexcept {
+	constexpr VectorConstIterator& operator-=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr VectorConstIterator operator-(const size_t diff) const noexcept {
+	constexpr VectorConstIterator operator-(const DifferenceType diff) const noexcept {
 		VectorConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -103,7 +105,7 @@ public:
 		return *_Ptr;
 	}
 
-    constexpr Reference operator[](const size_t diff) const noexcept {
+    constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -145,6 +147,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType 	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::Reference;
 	using Pointer			= typename _Data::Pointer;
 
@@ -166,12 +169,12 @@ public:
 		return temp;
 	}
 
-	constexpr VectorIterator& operator+=(const size_t diff) noexcept {
+	constexpr VectorIterator& operator+=(const DifferenceType diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr VectorIterator operator+(const size_t diff) const noexcept {
+	constexpr VectorIterator operator+(const DifferenceType diff) const noexcept {
 		VectorIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -188,12 +191,12 @@ public:
 		return temp;
 	}
 
-	constexpr VectorIterator& operator-=(const size_t diff) noexcept {
+	constexpr VectorIterator& operator-=(const DifferenceType diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr VectorIterator operator-(const size_t diff) const noexcept {
+	constexpr VectorIterator operator-(const DifferenceType diff) const noexcept {
 		VectorIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -207,7 +210,7 @@ public:
 		return const_cast<Reference>(_Base::operator*());
 	}
 
-    constexpr Reference operator[](const size_t diff) const noexcept {
+    constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return const_cast<Reference>(_Base::operator[](diff));
     }
 }; // END VectorIterator
@@ -225,6 +228,7 @@ public:
 	static_assert(IsObject_v<Type>, "Containers require object type!");
 
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using DifferenceType 		= typename _Data::DifferenceType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;
@@ -432,10 +436,10 @@ public:
 		return static_cast<size_t>(_data._Last - _data._First);
 	}
 
-	//constexpr size_t max_size() const noexcept {
-	//	return (std::min)(	static_cast<size_t>((custom::NumericLimits<ptrdiff_t>::max)()),
-	//						_AllocTraits::max_size(_alloc));
-	//}
+	constexpr size_t max_size() const noexcept {
+		return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+								_AllocTraits::max_size(_alloc));
+	}
 
 	constexpr bool empty() const noexcept {										// Check if array is empty
 		return (_data._First == _data._Last);
