@@ -8,7 +8,7 @@ int main()
 	//test::queue_test();
 	//test::stack_test();
 	//test::vector_test();
-	test::unordered_map_test();
+	//test::unordered_map_test();
 	//test::unordered_set_test();
 	//test::list_test();
 	//test::forward_list_test();

@@ -158,15 +158,3 @@ void thread_test();
 TEST_END
 #endif
 #pragma endregion Thread tests
-
-
-
-//STD_BEGIN
-//template<>
-//struct less<test::test_help::Test>
-//{
-//	bool operator()(const test::test_help::Test& left, const test::test_help::Test& right) const {
-//		return left.value < right.value;
-//	}
-//};
-//STD_END

@@ -498,7 +498,7 @@ private:
 
 public:
     template<class OtherCallable,
-    EnableIf_t<!IsSame_v<_CallableImpl, Decay_t<OtherCallable>>, bool> = true>
+    EnableIf_t<!IsSame_v<Decay_t<OtherCallable>, _CallableImpl>, bool> = true>
     explicit _CallableImpl(OtherCallable&& val)
         : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
 
@@ -575,7 +575,7 @@ public:
         _reset_move(custom::move(other));
     }
 
-    template<class Callable, EnableIf_t<!IsSame_v<Callable, Function>, bool> = true>
+    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
     Function(Callable&& val) {
         _reset(custom::forward<Callable>(val));
     }
@@ -607,7 +607,7 @@ public:
         return *this;
     }
 
-    template<class Callable, EnableIf_t<!IsSame_v<Callable, Function>, bool> = true>
+    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
     Function& operator=(Callable&& val) {
         Function(custom::forward<Callable>(val)).swap(*this);
         return *this;

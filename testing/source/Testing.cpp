@@ -301,9 +301,9 @@ void array_test() {
 }
 
 void function_test() {
-	// custom::Function<void()> fct(unordered_map_test);
-	// custom::Function<void()> fct1(fct);
-	// fct1();
+	custom::Function<void()> fct(unordered_map_test);
+	custom::Function<void()> fct1(fct);
+	fct1();
 }
 
 void invoke_test() {
