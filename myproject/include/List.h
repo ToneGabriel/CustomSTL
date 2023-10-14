@@ -368,7 +368,7 @@ public:
 		return _data._Size;
 	}
 
-	size_type max_size() const noexcept {
+	size_t max_size() const noexcept {
         return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
 								_AllocNodeTraits::max_size(_alloc));
     }

@@ -28,17 +28,20 @@ struct _SearchTreeData
     using MappedType        = typename Traits::MappedType;			// Type of Mapped _Value
 	using KeyCompare 		= typename Traits::KeyCompare;
 	using ValueType			= typename Traits::ValueType;			// Type of values stored in container
-	using Reference 		= typename Traits::Reference;
-	using ConstReference 	= typename Traits::ConstReference;
-	using Pointer 			= typename Traits::Pointer;
-	using ConstPointer 		= typename Traits::ConstPointer;
 	using AllocatorType 	= typename Traits::AllocatorType;
-
+	
 	using _AllocTraits		= AllocatorTraits<AllocatorType>;
 	using _Node				= node::_TreeNode<ValueType>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
 	using _NodePtr			= _AllocNodeTraits::Pointer;
+
+	using DifferenceType	= typename _AllocTraits::DifferenceType;
+	using Reference 		= typename _AllocTraits::Reference;
+	using ConstReference 	= typename _AllocTraits::ConstReference;
+	using Pointer 			= typename _AllocTraits::Pointer;
+	using ConstPointer 		= typename _AllocTraits::ConstPointer;
+
 
 	size_t _Size 			= 0;									// Number of Nodes held
 	_NodePtr _Head 			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
@@ -68,6 +71,7 @@ private:
 public:
     using IteratorCategory 	= BidirectionalIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::ConstReference;
 	using Pointer			= typename _Data::ConstPointer;
 
@@ -170,6 +174,7 @@ private:
 public:
     using IteratorCategory 	= BidirectionalIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType	= typename _Data::DifferenceType;
 	using Reference 		= typename _Data::Reference;
 	using Pointer 			= typename _Data::Pointer;
 
@@ -228,6 +233,7 @@ protected:
     using MappedType    		= typename _Data::MappedType;
     using KeyCompare    		= typename _Data::KeyCompare;
 	using ValueType 			= typename _Data::ValueType;
+	using DifferenceType		= typename _Data::DifferenceType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;
@@ -347,11 +353,16 @@ public:
 		return end();
 	}
 
-	size_t size() const {
+	size_t size() const noexcept {
 		return _data._Size;
 	}
 
-	bool empty() const {
+	size_t max_size() const noexcept {
+		return (custom::min)(static_cast<size_t>((	NumericLimits<DifferenceType>::max)()),
+													_AllocNodeTraits::max_size(_alloc));
+	}
+
+	bool empty() const noexcept {
 		return _data._Size == 0;
 	}
 

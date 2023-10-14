@@ -1,7 +1,7 @@
 #pragma once
 #include "List.h"
 #include "Vector.h"
-#include "Pair.h"		// _try_emplace
+#include "Pair.h"
 #include "Utility.h"
 #include "Functional.h"	// EqualTo, Hash
 
@@ -14,18 +14,7 @@ template<class Traits>
 class _HashTable				// _HashTable Template implemented as vector of lists
 {
 protected:
-    using KeyType           	= typename Traits::KeyType;				// Type of Key
-    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
-    using Hasher            	= typename Traits::Hasher;				// Hash struct
-	using KeyEqual 				= typename Traits::KeyEqual;
-	using ValueType				= typename Traits::ValueType;			// Type of values stored in container
-	using Reference 			= typename Traits::Reference;
-	using ConstReference 		= typename Traits::ConstReference;
-	using Pointer 				= typename Traits::Pointer;
-	using ConstPointer 			= typename Traits::ConstPointer;
-	using AllocatorType 		= typename Traits::AllocatorType;
-
-	using _IterList				= List<ValueType, AllocatorType>;		// List of ValueType used for iteration
+	using _IterList				= List<typename Traits::ValueType, typename Traits::AllocatorType>;		// List of ValueType used for iteration
 	using _AllocNode			= typename _IterList::_AllocNode;
 	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
 	using _NodePtr 				= typename _IterList::_NodePtr;
@@ -33,6 +22,19 @@ protected:
 	using _HashArray			= Vector<_Bucket>;						// Vector of lists of Node*
 	using _BucketIterator		= typename _Bucket::Iterator;			// Iterator for Buckets
 	using _ConstBucketIterator 	= typename _Bucket::ConstIterator;
+
+    using KeyType           	= typename Traits::KeyType;				// Type of Key
+    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
+    using Hasher            	= typename Traits::Hasher;				// Hash struct
+	using KeyEqual 				= typename Traits::KeyEqual;
+	
+	using ValueType				= typename _IterList::ValueType;		// Type of values stored in container
+	using DifferenceType		= typename _IterList::DifferenceType;
+	using Reference 			= typename _IterList::Reference;
+	using ConstReference 		= typename _IterList::ConstReference;
+	using Pointer 				= typename _IterList::Pointer;
+	using ConstPointer 			= typename _IterList::ConstPointer;
+	using AllocatorType 		= typename _IterList::AllocatorType;
 
 	using Iterator				= typename _IterList::Iterator;			// Iterator for this container (identical to List iterator)
 	using ConstIterator			= typename _IterList::ConstIterator;
@@ -181,6 +183,10 @@ public:
 
 	size_t size() const {
 		return _elems.size();
+	}
+
+	size_t max_size() const noexcept {
+		return _elems.max_size();
 	}
 
 	bool empty() const {

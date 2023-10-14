@@ -140,6 +140,7 @@ struct _BasicStringData
 	using _AllocTraits		= AllocatorTraits<Alloc>;
 
 	using ValueType			= typename _AllocTraits::ValueType;
+	using DifferenceType	= typename _AllocTraits::DifferenceType;
 	using Reference			= typename _AllocTraits::Reference;
 	using ConstReference	= typename _AllocTraits::ConstReference;
 	using Pointer			= typename _AllocTraits::Pointer;
@@ -161,6 +162,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType	= typename _Data::DifferenceType;
 	using Reference 		= typename _Data::ConstReference;
 	using Pointer			= typename _Data::ConstPointer;
 
@@ -186,13 +188,13 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator+=(const size_t diff) noexcept {
+	constexpr BasicStringConstIterator& operator+=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator+(const size_t diff) const noexcept {
+	constexpr BasicStringConstIterator operator+(const DifferenceType diff) const noexcept {
 		BasicStringConstIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -210,13 +212,13 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator-=(const size_t diff) noexcept {
+	constexpr BasicStringConstIterator& operator-=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator-(const size_t diff) const noexcept {
+	constexpr BasicStringConstIterator operator-(const DifferenceType diff) const noexcept {
 		BasicStringConstIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -232,7 +234,7 @@ public:
 		return *_Ptr;
 	}
 
-	constexpr Reference operator[](const size_t diff) const noexcept {
+	constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -275,6 +277,7 @@ private:
 public:
     using IteratorCategory 	= RandomAccessIteratorTag;
 	using ValueType 		= typename _Data::ValueType;
+	using DifferenceType	= typename _Data::DifferenceType;
 	using Reference			= typename _Data::Reference;
 	using Pointer			= typename _Data::Pointer;
 
@@ -296,12 +299,12 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator+=(const size_t diff) noexcept {
+	constexpr BasicStringIterator& operator+=(const DifferenceType diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator+(const size_t diff) const noexcept {
+	constexpr BasicStringIterator operator+(const DifferenceType diff) const noexcept {
 		BasicStringIterator temp = *this;
 		temp += diff;
 		return temp;
@@ -318,12 +321,12 @@ public:
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator-=(const size_t diff) noexcept {
+	constexpr BasicStringIterator& operator-=(const DifferenceType diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator-(const size_t diff) const noexcept {
+	constexpr BasicStringIterator operator-(const DifferenceType diff) const noexcept {
 		BasicStringIterator temp = *this;
 		temp -= diff;
 		return temp;
@@ -337,7 +340,7 @@ public:
 		return const_cast<Reference>(_Base::operator*());
 	}
 
-	constexpr Reference operator[](const size_t diff) const noexcept {
+	constexpr Reference operator[](const DifferenceType diff) const noexcept {
         return const_cast<Reference>(_Base::operator[](diff));
     }
 }; // END BasicStringIterator
@@ -357,6 +360,7 @@ public:
 
 	using TraitsType			= Traits;
 	using ValueType				= typename _Data::ValueType;
+	using DifferenceType		= typename _Data::DifferenceType;
 	using Reference				= typename _Data::Reference;
 	using ConstReference		= typename _Data::ConstReference;
 	using Pointer				= typename _Data::Pointer;

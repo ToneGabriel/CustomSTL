@@ -12,10 +12,6 @@ public:
 	using Hasher 			= Hash;
 	using KeyEqual 			= Compare;
 	using ValueType			= MappedType;
-	using Reference 		= ValueType&;
-	using ConstReference 	= const ValueType&;
-	using Pointer 			= ValueType*;
-	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:

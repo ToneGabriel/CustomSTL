@@ -46,8 +46,8 @@ public:
 		return *this;
 	}
 
-	template<class Ty, class _Container>
-	friend bool operator==(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right);
+	template<class _Type, class _Container>
+	friend bool operator==(const Stack<_Type, _Container>& left, const Stack<_Type, _Container>& right);
 
 public:
 	// Main Functions
@@ -92,13 +92,13 @@ public:
 
 
 // Stack binary operators
-template<class Ty, class _Container>
-bool operator==(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right) {
+template<class _Type, class _Container>
+bool operator==(const Stack<_Type, _Container>& left, const Stack<_Type, _Container>& right) {
 	return left._baseContainer == right._baseContainer;
 }
 
-template<class Ty, class _Container>
-bool operator!=(const Stack<Ty, _Container>& left, const Stack<Ty, _Container>& right) {
+template<class _Type, class _Container>
+bool operator!=(const Stack<_Type, _Container>& left, const Stack<_Type, _Container>& right) {
 	return !(left == right);
 }
 

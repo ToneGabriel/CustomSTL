@@ -12,11 +12,6 @@ public:
 	using Hasher 			= Hash;
 	using KeyEqual 			= Compare;
 	using ValueType 		= Pair<Key, Type>;
-	using DifferenceType 	= ptrdiff_t;
-	using Reference 		= ValueType&;
-	using ConstReference 	= const ValueType&;
-	using Pointer 			= ValueType*;
-	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:

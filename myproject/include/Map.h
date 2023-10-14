@@ -11,10 +11,6 @@ public:
 	using MappedType 		= Type;
 	using KeyCompare 		= Compare;
 	using ValueType 		= Pair<Key, Type>;
-	using Reference 		= ValueType&;
-	using ConstReference 	= const ValueType&;
-	using Pointer 			= ValueType*;
-	using ConstPointer 		= const ValueType*;
 	using AllocatorType 	= Alloc;
 
 public:
