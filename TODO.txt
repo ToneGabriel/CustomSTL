@@ -1,7 +1,4 @@
 1. Check and implement
 - algorithm
 - numeric
-
 2. Learn and implement smart pointers
-3. Complete TypeTraits
-4. Add DifferenceType to Map/UnorderedMap/Set/UnorderedSet/BasicString ...

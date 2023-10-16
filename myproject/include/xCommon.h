@@ -24,6 +24,21 @@ inline void __Assert(bool expr, const char* msg, const char* exprStr, const char
 #define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
 
+// select
+template<bool>
+struct Select                                   // Select between aliases that extract either their first or second parameter
+{
+    template<class Ty1, class>
+    using Apply = Ty1;
+};
+
+template<>
+struct Select<false>
+{
+    template<class, class Ty2>
+    using Apply = Ty2;
+};
+
 // integral constant
 template<class Ty, Ty Val>
 struct IntegralConstant
@@ -144,6 +159,7 @@ struct RemoveCV                                     // remove top-level const an
 
     template<template<class> class Fn>
     using Apply = Fn<Ty>;                           // apply cv-qualifiers from the class template argument to Fn<Ty>
+                                                    // used to reapply cv-qualifiers after removing them for another purpose
 };
 
 template<class Ty>

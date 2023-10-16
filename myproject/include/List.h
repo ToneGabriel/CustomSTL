@@ -264,8 +264,7 @@ public:
 
 	template<class... Args>
 	void emplace_back(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
-		_NodePtr newNode = _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head, newNode);
 	}
 
@@ -284,8 +283,7 @@ public:
 
 	template<class... Args>
 	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the head
-		_NodePtr newNode = _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_before(_data._Head->_Next, newNode);
 	}
 
@@ -304,8 +302,7 @@ public:
 
 	template<class... Args>
 	Iterator emplace(ConstIterator iterator, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the iterator position
-		_NodePtr newNode = _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_before(iterator._Ptr, newNode);
 
 		return Iterator(newNode, &_data);
@@ -429,6 +426,14 @@ private:
 		_data._Head->_Next 		= nullptr;
 		_data._Head->_Previous 	= nullptr;
 		_alloc.deallocate(_data._Head, 1);
+	}
+
+	template<class... Args>
+	_NodePtr _create_common_node(Args&&... args) {
+		// don't increase size here
+		_NodePtr newNode = _alloc.allocate(1);
+		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		return newNode;
 	}
 
 	void _insert_node_before(_NodePtr beforeNode, _NodePtr newNode) {	// Insert Node before another

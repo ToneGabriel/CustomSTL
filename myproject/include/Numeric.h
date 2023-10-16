@@ -1,6 +1,7 @@
 #pragma once
 #include "Utility.h"
 #include "Iterator.h"
+#include "Limits.h"
 
 
 CUSTOM_BEGIN
@@ -286,20 +287,86 @@ constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last, OutputI
 // END transform_inclusive_scan
 
 
-// gcd
-template<class MType, class NType>
-constexpr CommonType_t<MType, NType> gcd(MType mval, NType nval) noexcept {
-    // TODO: implement
-    return 0;
+template<class Integral>
+constexpr auto abs_unsigned(const Integral val) noexcept {
+    // computes absolute value of val (converting to an unsigned integer type if necessary to avoid overflow
+    // representing the negation of the minimum value)
+    static_assert(IsIntegral_v<Integral>);
+
+    if constexpr (IsSigned_v<Integral>)
+    {
+        using _Unsigned = MakeUnsigned_t<Integral>;
+
+        // note static_cast to _Unsigned such that Integral == short returns unsigned short rather than int
+        if (val < 0)
+            return static_cast<_Unsigned>(_Unsigned{0} - static_cast<_Unsigned>(val));
+
+        return static_cast<_Unsigned>(val);
+    }
+    else
+        return val;
+}
+
+
+// greatest common divizor
+template<class First, class Second>
+constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
+    static_assert(IsNonboolIntegral<First> && IsNonboolIntegral<Second>, "GCD requires nonbool integral types");
+
+    using _Common           = CommonType_t<First, Second>;
+    using _CommonUnsigned   = MakeUnsigned_t<_Common>;
+
+    _CommonUnsigned valAbs1 = abs_unsigned(val1);
+    _CommonUnsigned valAbs2 = abs_unsigned(val2);
+
+    if (valAbs1 == 0)
+        return static_cast<_Common>(valAbs2);
+
+    if (valAbs2 == 0)
+        return static_cast<_Common>(valAbs1);
+
+    auto valTrailingZeros1      = static_cast<unsigned long>(count_right_zero(valAbs1));
+    auto valTrailingZeros2      = static_cast<unsigned long>(count_right_zero(valAbs2));
+    auto commonFactorsOf2       = (custom::min)(valTrailingZeros1, valTrailingZeros2);
+
+    valAbs1 >>= valTrailingZeros1;
+    valAbs2 >>= valTrailingZeros2;
+
+    for (;;)
+    {
+        if (valAbs1 > valAbs2)  // swap
+        {
+            _CommonUnsigned temp    = valAbs1;
+            valAbs1                 = valAbs2;
+            valAbs2                 = temp;
+        }
+
+        valAbs2 -= valAbs1;
+
+        if (valAbs2 == 0U)
+            return static_cast<_Common>(valAbs1 << commonFactorsOf2);
+
+        valAbs2 >>= static_cast<unsigned long>(count_right_zero(valAbs2));
+    }
 }
 // END gcd
 
 
-// lcm
-template<class MType, class NType>
-constexpr CommonType_t<MType, NType> lcm(MType mval, NType nval) noexcept {
-    // TODO: implement
-    return 0;
+//least common multiple
+template <class First, class Second>
+constexpr CommonType_t<First, Second> lcm(const First val1, const Second val2) noexcept {
+    static_assert(IsNonboolIntegral<First> && IsNonboolIntegral<Second>, "LCM requires nonbool integral types");
+    
+    using _Common           = CommonType_t<First, Second>;
+    using _CommonUnsigned   = MakeUnsigned_t<_Common>;
+
+    _CommonUnsigned valAbs1 = abs_unsigned(val1);
+    _CommonUnsigned valAbs2 = abs_unsigned(val2);
+    
+    if (valAbs1 == 0 || valAbs2 == 0)
+        return 0;
+
+    return static_cast<_Common>((valAbs1 / custom::gcd(valAbs1, valAbs2)) * valAbs2);
 }
 // END lcm
 
@@ -307,12 +374,45 @@ constexpr CommonType_t<MType, NType> lcm(MType mval, NType nval) noexcept {
 // midpoint
 template<class Type>
 constexpr Type midpoint(Type val1, Type val2) noexcept {
-    // TODO: implement
+    if constexpr (IsIntegral_v<Type>)
+    {
+        using _Unsigned         = MakeUnsigned_t<Type>;
+
+        const auto valUnsigned1 = static_cast<_Unsigned>(val1);
+        const auto valUnsigned2 = static_cast<_Unsigned>(val2);
+
+        if (val1 > val2)
+            return static_cast<Type>(val1 - static_cast<Type>(static_cast<_Unsigned>(valUnsigned1 - valUnsigned2) >> 1));
+        else
+            return static_cast<Type>(val1 + static_cast<Type>(static_cast<_Unsigned>(valUnsigned2 - valUnsigned1) >> 1));
+    }
+    else // IsFloating_v
+    {
+        constexpr Type lowLimit     = (NumericLimits<Type>::min)() * 2;
+        constexpr Type highLimit    = (NumericLimits<Type>::max)() / 2;
+
+        const Type valAbs1 = val1 < 0 ? -val1 : val1;
+        const Type valAbs2 = val2 < 0 ? -val2 : val2;
+
+        if (valAbs1 <= highLimit && valAbs2 <= highLimit)
+            return (val1 + val2) / 2;   // always correctly rounded
+
+        if (valAbs1 < lowLimit)         // not safe to halve val1
+            return val1 + val2 / 2;
+
+        if (valAbs2 < lowLimit)         // not safe to halve val2
+            return val1 / 2 + val2;
+
+        return val1 / 2 + val2 / 2;     // otherwise correctly rounded
+    }
+
     return 0;
 }
 
 template<class Type, EnableIf_t<IsObject_v<Type>, bool> = true>
 constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept {
+    static_assert(sizeof(Type) != 0, "type must be complete");
+
     if (ptr1 > ptr2)
         return ptr1 - ((ptr1 - ptr2) >> 1); // shift for codegen
     else

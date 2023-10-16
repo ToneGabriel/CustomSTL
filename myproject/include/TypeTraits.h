@@ -743,20 +743,125 @@ struct IsUnsigned : BoolConstant<_SignChoice<Ty>::Unsigned> {};
 template<class Ty>
 constexpr bool IsUnsigned_v = IsUnsigned<Ty>::Value;
 
-// select
-template<bool>
-struct Select                                   // Select between aliases that extract either their first or second parameter
+// is nonbool integral
+template<class Ty>
+constexpr bool IsNonboolIntegral = IsIntegral_v<Ty> && !IsSame_v<RemoveCV_t<Ty>, bool>;
+
+// make signed
+template<size_t>
+struct _MakeSignedChoice; // Choose MakeSigned strategy by type size
+
+template<>
+struct _MakeSignedChoice<1>
 {
-    template<class Ty1, class>
-    using Apply = Ty1;
+    template<class>
+    using Apply = signed char;
 };
 
 template<>
-struct Select<false>
+struct _MakeSignedChoice<2>
 {
-    template<class, class Ty2>
-    using Apply = Ty2;
+    template<class>
+    using Apply = short;
 };
+
+template<>
+struct _MakeSignedChoice<4>
+{
+    // assumes LLP64
+
+    // template<class Ty>
+    // using Apply = typename Select<  IsSame_v<Ty, long> ||
+    //                                 IsSame_v<Ty, unsigned long>>
+    //                                 ::template Apply<long, int>;
+
+    template<class Ty>
+    using Apply = Conditional_t<IsSame_v<Ty, long> || IsSame_v<Ty, unsigned long>,
+                                long,
+                                int>;
+};
+
+template<>
+struct _MakeSignedChoice<8>
+{
+    template<class>
+    using Apply = long long;
+};
+
+template<class Ty>
+using _MakeSigned = typename _MakeSignedChoice<sizeof(Ty)>::template Apply<Ty>;   // signed partner to cv-unqualified Ty
+
+template<class Ty>
+struct MakeSigned      // signed partner to Ty
+{
+    static_assert(IsNonboolIntegral<Ty> || IsEnum_v<Ty>,
+                    "MakeSigned<T> requires that T shall be a (possibly cv-qualified) "
+                    "integral type or enumeration but not a bool type.");
+
+    // removes CV from Ty, makes choice of signment, reapplies CV
+    using Type = typename RemoveCV<Ty>::template Apply<_MakeSigned>;
+};
+
+template<class Ty>
+using MakeSigned_t = typename MakeSigned<Ty>::Type;
+
+// make unsigned
+template<size_t>
+struct _MakeUnsignedChoice; // Choose MakeUnsigned strategy by type size
+
+template<>
+struct _MakeUnsignedChoice<1>
+{
+    template<class>
+    using Apply = unsigned char;
+};
+
+template<>
+struct _MakeUnsignedChoice<2>
+{
+    template<class>
+    using Apply = unsigned short;
+};
+
+template<>
+struct _MakeUnsignedChoice<4>
+{
+    // assumes LLP64
+
+    // template<class Ty>
+    // using Apply = typename Select<  IsSame_v<Ty, long> ||
+    //                                 IsSame_v<Ty, unsigned long>>
+    //                                 ::template Apply<unsigned long, unsigned int>;
+
+    template<class Ty>
+    using Apply = Conditional_t<IsSame_v<Ty, long> || IsSame_v<Ty, unsigned long>,
+                                unsigned long,
+                                unsigned int>;
+};
+
+template<>
+struct _MakeUnsignedChoice<8>
+{
+    template<class>
+    using Apply = unsigned long long;
+};
+
+template<class Ty>
+using _MakeUnsigned = typename _MakeUnsignedChoice<sizeof(Ty)>::template Apply<Ty>;    // unsigned partner to cv-unqualified Ty
+
+template<class Ty>
+struct MakeUnsigned    // unsigned partner to Ty
+{
+    static_assert(IsNonboolIntegral<Ty> || IsEnum_v<Ty>,
+                    "MakeUnsigned<Ty> requires that Ty shall be a (possibly cv-qualified) "
+                    "integral type or enumeration but not a bool type.");
+
+    // removes CV from Ty, makes choice of unsignment, reapplies CV
+    using Type = typename RemoveCV<Ty>::template Apply<_MakeUnsigned>;
+};
+
+template<class Ty>
+using MakeUnsigned_t = typename MakeUnsigned<Ty>::Type;
 
 // decay - Performs the type conversions equivalent to the ones performed when passing function arguments by value
 template<class Ty>
