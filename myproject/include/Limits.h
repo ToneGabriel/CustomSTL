@@ -111,21 +111,18 @@
 #endif
 
 
-// Helpers  TODO: check if MIN/MAX are needed
+// Helpers
 #define _CUSTOM_SIGNED_B(T,B)       ((T)(-1) < 0)
 #define _CUSTOM_DIGITS_B(T,B)	    (B - _CUSTOM_SIGNED_B (T,B))
 #define _CUSTOM_DIGITS10_B(T,B)     (_CUSTOM_DIGITS_B (T,B) * 643L / 2136)
-//#define _CUSTOM_MAX_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? (((((T)1 << (_CUSTOM_DIGITS_B (T,B) - 1)) - 1) << 1) + 1) : ~(T)0)
-//#define _CUSTOM_MIN_B(T,B)          (_CUSTOM_SIGNED_B (T,B) ? -_CUSTOM_MAX_B (T,B) - 1 : (T)0)
 
 
 // CHAR_BIT Specialization Helpers
 #define _CUSTOM_SIGNED(T)           _CUSTOM_SIGNED_B (T, sizeof(T) * CHAR_BIT)
 #define _CUSTOM_DIGITS(T)           _CUSTOM_DIGITS_B (T, sizeof(T) * CHAR_BIT)
 #define _CUSTOM_DIGITS10(T)         _CUSTOM_DIGITS10_B (T, sizeof(T) * CHAR_BIT)
-#define _CUSTOM_MAX_DIGITS10(T)     (2 + (T) * 643L / 2136) // The fraction 643/2136 approximates log10(2) to 7 significant digits
-//#define _CUSTOM_MAX(T)              _CUSTOM_MAX_B (T, sizeof(T) * CHAR_BIT)
-//#define _CUSTOM_MIN(T)              _CUSTOM_MIN_B (T, sizeof(T) * CHAR_BIT)
+#define _CUSTOM_MAX_DIGITS10(T)     (2 + (T) * 643L / 2136)
+// The fraction 643/2136 approximates log10(2) to 7 significant digits
 
 CUSTOM_BEGIN
 
@@ -1680,54 +1677,14 @@ struct NumericLimits<long double>
     }
 };  // END long double specialization
 
-
-// Implementation of countl_zero without using specialized CPU instructions.
-// Used at compile time and when said instructions are not supported.
-// see "Hacker's Delight" section 5-3
-template<class Ty>
-constexpr int count_left_zero(Ty val) noexcept {
-    Ty yy = 0;
-
-    unsigned int nn = NumericLimits<Ty>::Digits;
-    unsigned int cc = NumericLimits<Ty>::Digits / 2;
-
-    do
-    {
-        yy = static_cast<Ty>(val >> cc);
-        
-        if (yy != 0)
-        {
-            nn -= cc;
-            val = yy;
-        }
-
-        cc >>= 1;
-    } while (cc != 0);
-
-    return static_cast<int>(nn) - static_cast<int>(val);
-}
-
-// Implementation of countr_zero without using specialized CPU instructions.
-// Used at compile time and when said instructions are not supported.
-// see "Hacker's Delight" section 5-4
-template<class Ty>
-constexpr int count_right_zero(const Ty val) noexcept {
-    constexpr int digits = NumericLimits<Ty>::Digits;
-    return digits - count_left_zero(static_cast<Ty>(static_cast<Ty>(~val) & static_cast<Ty>(val - 1)));
-}
-
 CUSTOM_END
 
 
 #undef _CUSTOM_SIGNED_B
 #undef _CUSTOM_DIGITS_B
 #undef _CUSTOM_DIGITS10_B
-//#undef _CUSTOM_MAX_B
-//#undef _CUSTOM_MIN_B
 
 #undef _CUSTOM_SIGNED
 #undef _CUSTOM_DIGITS
 #undef _CUSTOM_DIGITS10
 #undef _CUSTOM_MAX_DIGITS10
-//#undef _CUSTOM_MAX
-//#undef _CUSTOM_MIN

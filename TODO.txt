@@ -1,4 +1,2 @@
-1. Check and implement
-- algorithm
-- numeric
+1. Learn and implement algorithm
 2. Learn and implement smart pointers

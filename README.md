@@ -11,4 +11,3 @@ Components not fully operational:
 
 - Memory.h
 - Algorithm.h
-- Numeric.h

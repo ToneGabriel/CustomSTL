@@ -1,7 +1,7 @@
 #pragma once
 #include "Utility.h"
 #include "Iterator.h"
-#include "Limits.h"
+#include "Bit.h"
 
 
 CUSTOM_BEGIN
@@ -11,11 +11,8 @@ template<class ForwardIt, class Type>
 constexpr void iota(ForwardIt first, ForwardIt last, Type value) {
     _verify_iteration_range(first, last);
 
-    while (first != last)
-    {
-        *first++ = value;
-        ++value;
-    }
+    for (; first != last; ++first, ++value)
+        *first = value;
 }
 // END iota
 
@@ -25,11 +22,8 @@ template<class InputIt, class Type, class BinaryOperation>
 constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperation op) {
     _verify_iteration_range(first, last);
 
-    while (first != last)
-    {
+    for (; first != last; ++first)
         init = op(custom::move(init), *first);
-        ++first;
-    }
  
     return init;
 }
@@ -49,12 +43,8 @@ constexpr Type inner_product(   InputIt1 first1, InputIt1 last1,
 
     _verify_iteration_range(first1, last1);
 
-    while (first1 != last1)
-    {
+    for (; first1 != last1; ++first1, ++first2)
         init = op1(custom::move(init), op2(*first1, *first2));
-        ++first1;
-        ++first2;
-    }
 
     return init;
 }
@@ -134,11 +124,8 @@ template<class InputIt, class Type, class BinaryOperation>
 constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op) {
     _verify_iteration_range(first, last);
 
-    while (first != last)
-    {
+    for (; first != last; ++first)
         init = op(custom::move(init), *first);
-        ++first;
-    }
 
     return init;
 }
@@ -168,9 +155,9 @@ constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
         for(;;)
         {
             Type temp(op(init, *first));
-            *destFirst = init;
-            ++destFirst;
+            *destFirst++ = init;
             ++first;
+
             if (first == last)
                 break;
 
@@ -200,8 +187,7 @@ constexpr OutputIt inclusive_scan( InputIt first, InputIt last, OutputIt destFir
     for (; first != last; ++first)
     {
         init = op(custom::move(init), *first);
-        *destFirst = init;
-        ++destFirst;
+        *destFirst++ = init;
     }
 
     return destFirst;
@@ -218,11 +204,12 @@ constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
         using ValueType = typename IteratorTraits<InputIt>::ValueType;
 
         ValueType init = *first;
+
         for (;;)
         {
-            *destFirst = init;
-            ++destFirst;
+            *destFirst++ = init;
             ++first;
+
             if (first == last)
                 break;
 
@@ -241,10 +228,34 @@ constexpr OutputIt inclusive_scan(InputIt first, InputIt last, OutputIt destFirs
 
 
 // transform_reduce
+template<class InputIt1, class InputIt2, class Type, class BinaryOperation1, class BinaryOperation2>
+constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1,
+                                InputIt2 first2, Type init,
+                                BinaryOperation1 bop1, BinaryOperation2 bop2) {
+
+    _verify_iteration_range(first1, last1);
+
+    for (; first1 != last1; ++first1, ++first2)
+        init = bop1(custom::move(init), bop2(*first1, *first2));
+
+    return init;
+}
+
 template<class InputIt1, class InputIt2, class Type>
 constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init) {
-    // TODO: implement
-    return Type();
+    return custom::transform_reduce(first1, last1, first2, custom::move(init), Plus<>{}, Multiplies<>{});
+}
+
+template<class InputIt1, class Type, class BinaryOperation, class UnaryOperation>
+constexpr Type transform_reduce(InputIt1 first, InputIt1 last,
+                                Type init, BinaryOperation bop, UnaryOperation uop) {
+    
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        init = bop(custom::move(init), uop(*first));
+
+    return init;
 }
 // END transform_reduce
 
@@ -262,9 +273,9 @@ constexpr OutputIt transform_exclusive_scan(InputIt first, InputIt last,
         for(;;)
         {
             Type temp(bop(init, uop(*first)));
-            *destFirst = init;
-            ++destFirst;
+            *destFirst++ = init;
             ++first;
+
             if (first == last)
                 break;
 
@@ -278,11 +289,44 @@ constexpr OutputIt transform_exclusive_scan(InputIt first, InputIt last,
 
 
 // transform_inclusive_scan
-template<class InputIt, class OutputIt, class BinaryOperation, class UnaryOperation>
+template<class InputIt, class OutputIt, class BinaryOperation, class UnaryOperation, class Type>
 constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last, OutputIt destFirst,
-                                            BinaryOperation bop, UnaryOperation uop) {
-    // TODO: implement
-    return OutputIt();
+                                            BinaryOperation bop, UnaryOperation uop, Type init) {
+
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+    {
+        init = bop(custom::move(init), uop(*first));
+        *destFirst++ = init;
+    }
+
+    return destFirst;
+}
+
+template<class InputIt, class OutputIt, class BinaryOperation, class UnaryOperation>
+constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last,
+                                            OutputIt destFirst, BinaryOperation bop, UnaryOperation uop) {
+
+    _verify_iteration_range(first, last);
+
+    if (first != last)
+    {
+        auto init = uop(*first);
+
+        for (;;)
+        {
+            *destFirst++ = init;
+            ++first;
+
+            if (first == last)
+                break;
+
+            init = bop(custom::move(init), uop(*first));
+        }
+    }
+
+    return destFirst;
 }
 // END transform_inclusive_scan
 
@@ -325,8 +369,8 @@ constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
     if (valAbs2 == 0)
         return static_cast<_Common>(valAbs1);
 
-    auto valTrailingZeros1      = static_cast<unsigned long>(count_right_zero(valAbs1));
-    auto valTrailingZeros2      = static_cast<unsigned long>(count_right_zero(valAbs2));
+    auto valTrailingZeros1      = static_cast<unsigned long>(countr_zero(valAbs1));
+    auto valTrailingZeros2      = static_cast<unsigned long>(countr_zero(valAbs2));
     auto commonFactorsOf2       = (custom::min)(valTrailingZeros1, valTrailingZeros2);
 
     valAbs1 >>= valTrailingZeros1;
@@ -343,10 +387,10 @@ constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
 
         valAbs2 -= valAbs1;
 
-        if (valAbs2 == 0U)
+        if (valAbs2 == 0)
             return static_cast<_Common>(valAbs1 << commonFactorsOf2);
 
-        valAbs2 >>= static_cast<unsigned long>(count_right_zero(valAbs2));
+        valAbs2 >>= static_cast<unsigned long>(countr_zero(valAbs2));
     }
 }
 // END gcd
@@ -414,9 +458,9 @@ constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept {
     static_assert(sizeof(Type) != 0, "type must be complete");
 
     if (ptr1 > ptr2)
-        return ptr1 - ((ptr1 - ptr2) >> 1); // shift for codegen
+        return ptr1 - ((ptr1 - ptr2) >> 1);
     else
-        return ptr1 + ((ptr2 - ptr1) >> 1); // shift for codegen
+        return ptr1 + ((ptr2 - ptr1) >> 1);
 }
 // END midpoint
 
