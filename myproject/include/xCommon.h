@@ -24,6 +24,11 @@ inline void __Assert(bool expr, const char* msg, const char* exprStr, const char
 #define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
 
+// is constant evaluated
+constexpr inline bool is_constant_evaluated() noexcept {
+    return __builtin_is_constant_evaluated();
+}
+
 // select
 template<bool>
 struct Select                                   // Select between aliases that extract either their first or second parameter
@@ -265,6 +270,13 @@ char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned lon
 
 template<class Ty>
 struct IsIntegral : BoolConstant<IsIntegral_v<Ty>> {};
+
+// is unsigned integer
+template<class Ty>
+constexpr bool IsUnsignedInteger_v = IsAnyOf_v<RemoveCV_t<Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
+template<class Ty>
+struct IsUnsignedInteger : BoolConstant<IsUnsignedInteger_v<Ty>> {};
 
 // is char
 template<class Ty>
