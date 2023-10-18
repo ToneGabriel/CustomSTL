@@ -23,11 +23,25 @@ constexpr Ty&& forward(RemoveReference_t<Ty>&& val) noexcept {
 }
 
 template<class Ty,
-EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool> = true>
+EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool>>
 constexpr void swap(Ty& first, Ty& second) noexcept {
     Ty temp = custom::move(first);
     first   = custom::move(second);
     second  = custom::move(temp);
+}
+
+template<class Ty, size_t Size,
+EnableIf_t<IsSwappable<Ty>::Value, bool> = true>
+constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(IsNothrowSwappable<Ty>::Value) {
+    if (&left != &right)
+    {
+        Ty* first1 = left;
+        Ty* last1  = first1 + Size;
+        Ty* first2 = right;
+
+        for (; first1 != last1; ++first1, ++first2)
+            custom::swap(*first1, *first2);
+    }
 }
 
 template<class Ty, class Other = Ty,

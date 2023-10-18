@@ -311,14 +311,14 @@ public:
     // Constructors & Operators
 
     explicit ScopedLock(Mutexes&... mtxes): _ownedMutexes(mtxes...) { // construct and lock
-        custom::lock(mtxes...);    // TODO: check
+        custom::lock(mtxes...);
     }
 
     explicit ScopedLock(AdoptLock_t, Mutexes&... mtxes)
         : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
 
     ~ScopedLock() {
-        custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);     // TODO: check
+        custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);
     }
 
     ScopedLock(const ScopedLock&)            = delete;

@@ -236,13 +236,13 @@ public:
 	// Main functions
 
     constexpr void fill(const ValueType& copyValue) {						// Fill the container with values
-		custom::fill_n(begin(), Size, copyValue);
+		(void)custom::fill_n(begin(), Size, copyValue);
 	}
 
-	// constexpr void swap(Array& other) noexcept(IsNothrowSwappable_v<ValueType>) {
-	// 	// TODO: implement
-	// 	//_Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
-    // }
+	constexpr void swap(Array& other) {
+		custom::swap(_array, other._array);
+		//(void)custom::swap_ranges(_array, _array + Size, other._array);
+    }
 
     constexpr Reference front() noexcept {									// Get the value of the first component
 		CUSTOM_ASSERT(Size > 0, "Container is empty...");

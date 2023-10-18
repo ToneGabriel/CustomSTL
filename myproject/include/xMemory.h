@@ -479,7 +479,7 @@ struct _PointerTraitsBase
     using DifferenceType    = typename _GetPtrDifferenceType<Type>::Type;
 
     template<class Other>
-    using Rebind            = typename _GetRebindType<Type, Other>::Type;   // TODO: check
+    using Rebind            = typename _GetRebindType<Type, Other>::Type;
 
     static constexpr Pointer pointer_to(ElementType& val)
     noexcept(noexcept(ElementType::pointer_to(val))) {

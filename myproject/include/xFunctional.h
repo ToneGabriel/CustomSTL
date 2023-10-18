@@ -119,18 +119,20 @@ template<class Ty, class Base, class = void>
 struct _RefwrapHasConstructorFrom : FalseType {};
 
 template<class Ty, class Base>
-struct _RefwrapHasConstructorFrom<Ty, Base, Void_t<decltype(_RefwrapConstructorFunc<Ty>(custom::declval<Base>()))>>
-: TrueType {}; // _RefwrapConstructorFunc is qualified: avoid ADL, handle incomplete types
+struct _RefwrapHasConstructorFrom<Ty, Base,
+Void_t<decltype(_RefwrapConstructorFunc<Ty>(custom::declval<Base>()))>> : TrueType {};
 
 template<class Ty>
 class ReferenceWrapper      // ReferenceWrapper Template
 {
 public:
-    static_assert(IsObject_v<Ty> || IsFunction_v<Ty>, "ReferenceWrapper<Ty> requires Ty to be an object type or a function type.");
+    static_assert(IsObject_v<Ty> || IsFunction_v<Ty>,
+                    "ReferenceWrapper<Ty> requires Ty to be an object type or a function type.");
+    
     using Type = Ty;
 
 private:
-    Type* _ptr;
+    Type* _ptr = nullptr;
 
 public:
     // Constructors & Operators
@@ -138,25 +140,27 @@ public:
     template<class Base,
     EnableIf_t<Conjunction_v<
                     Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
-                    _RefwrapHasConstructorFrom<Ty, Base>>, bool> = true>
-    ReferenceWrapper(Base&& val) noexcept {
-        _ptr = &static_cast<Base&&>(val);       // TODO: check
+                    _RefwrapHasConstructorFrom<Type, Base>>, bool> = true>
+    constexpr ReferenceWrapper(Base&& val)
+    noexcept(noexcept(_RefwrapConstructorFunc<Type>(custom::declval<Base>()))) {
+        _ptr = &static_cast<Base&&>(val);
     }
 
     template<class... Args>
-    auto operator()(Args&&... args) const
+    constexpr auto operator()(Args&&... args) const
+    noexcept(noexcept(custom::invoke(*_ptr, static_cast<Args&&>(args)...)))
     -> decltype(custom::invoke(*_ptr, static_cast<Args&&>(args)...)) {
         return custom::invoke(*_ptr, static_cast<Args&&>(args)...);
     }
 
-    operator Type& () const noexcept {
+    constexpr operator Type& () const noexcept {
         return *_ptr;
     }
 
 public:
     // Main functions
 
-    Type& get() const noexcept {
+    constexpr Type& get() const noexcept {
         return *_ptr;
     }
 }; // END ReferenceWrapper

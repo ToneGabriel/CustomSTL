@@ -360,7 +360,7 @@ template<class From, class To>
 struct IsConvertible : BoolConstant<IsConvertible_v<From, To>> {};
 #elif defined __GNUG__
 template<class From, class To>
-struct _IsConvertible           // TODO: check
+struct _IsConvertible
 {
     template<class Ty, class = decltype(static_cast<Ty(*)()>(nullptr))>
     static auto test_returnable(int) -> TrueType;
@@ -694,6 +694,63 @@ struct IsNothrowDestructible : _IsNothrowDestructible<Ty>::Type {};
 
 template<class Ty>
 constexpr bool IsNothrowDestructible_v = IsNothrowDestructible<Ty>::Value;
+
+// is swappable helpers
+template<class Ty>
+struct IsSwappable;
+
+template<class Ty>
+struct IsNothrowSwappable;
+
+template<class Ty,
+EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool> = true>
+constexpr void swap(Ty&, Ty&) noexcept;
+
+template<class Ty, size_t Size,
+EnableIf_t<IsSwappable<Ty>::Value, bool> = true>
+constexpr void swap(Ty(&)[Size], Ty(&)[Size]) noexcept(IsNothrowSwappable<Ty>::Value);
+
+template<class Ty1, class Ty2, class = void>
+struct _IsSwappableWith : FalseType {};
+
+template<class Ty1, class Ty2>
+struct _IsSwappableWith<Ty1, Ty2,
+Void_t< decltype(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())),
+        decltype(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))>> : TrueType {};
+
+template<class Ty1, class Ty2>
+struct _IsNothrowSwappableWith
+: BoolConstant< noexcept(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())) &&
+                noexcept(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))> {};
+
+// is swappable with
+template<class Ty1, class Ty2>
+struct IsSwappableWith : _IsSwappableWith<Ty1, Ty2>::Type {};
+
+template<class Ty1, class Ty2>
+constexpr bool IsSwappableWith_v = IsSwappableWith<Ty1, Ty2>::Value;
+
+// is nothrow swappable with
+template<class Ty1, class Ty2>
+struct IsNothrowSwappableWith
+: BoolConstant<Conjunction_v<_IsSwappableWith<Ty1, Ty2>, _IsNothrowSwappableWith<Ty1, Ty2>>> {};
+
+template<class Ty1, class Ty2>
+constexpr bool IsNothrowSwappableWith_v = IsNothrowSwappableWith<Ty1, Ty2>::Value;
+
+// is swappable
+template<class Ty>
+struct IsSwappable : _IsSwappableWith<AddLvalueReference_t<Ty>, AddLvalueReference_t<Ty>>::Type {};
+
+template<class Ty>
+constexpr bool IsSwappable_v = IsSwappable<Ty>::Value;
+
+// is nothrow swappable
+template<class Ty>
+struct IsNothrowSwappable : _IsNothrowSwappableWith<AddLvalueReference_t<Ty>, AddLvalueReference_t<Ty>>::Type {};
+
+template<class Ty>
+constexpr bool IsNothrowSwappable_v = IsNothrowSwappable<Ty>::Value;
 
 // is base of
 template<class Base, class Derived>

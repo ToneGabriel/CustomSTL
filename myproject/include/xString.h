@@ -839,7 +839,7 @@ private:
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
 
-	constexpr void _remove_from_cstring(size_t pos, size_t len) {	// TODO: check
+	constexpr void _remove_from_cstring(size_t pos, size_t len) {
 		if (pos > size())		// pos = start pos
 			throw std::out_of_range("Invalid starting position...");
 		if (pos + len > size())

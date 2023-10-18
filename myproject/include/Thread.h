@@ -157,7 +157,7 @@ private:
 }; // END Thread
 
 
-namespace this_thread   // TODO: check
+namespace this_thread
 {
     Thread::ID get_id() noexcept;
 
