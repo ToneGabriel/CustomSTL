@@ -1,8 +1,9 @@
 #include "../../testing/include/Testing.h"
+#include "../../testing/include/TestingBoost.h"
 
 int main()
 {
-	//test::thread_test();
+	// ========= Common Tests =========
 	//test::map_test();
 	//test::priority_queue_test();
 	//test::queue_test();
@@ -22,7 +23,10 @@ int main()
 	//test::print_numeric_limits_statics<long double>();
 	//test::print_numeric_limits_functions<long double>();
 	//test::chrono_test();
-	//test::lock_locks_test();
+
+	// ========= Boost Tests =========
+	//test_boost::thread_test();
+	test_boost::lock_locks_test();
 
 	return 0;
 }
