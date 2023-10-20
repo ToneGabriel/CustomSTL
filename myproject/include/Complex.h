@@ -8,10 +8,10 @@
 CUSTOM_BEGIN
 
 // complex traits implementation
-template<class Type>
-class _ComplexTraits
+template<class Type, EnableIf_t<IsFloatingPoint_v<Type>, bool> = true>
+struct _ComplexTraitsBase
 {
-public:
+    using FloatType = Type;
 
     static constexpr Type _epsilon() {
         return NumericLimits<Type>::epsilon();
@@ -28,56 +28,50 @@ public:
     static constexpr Type _inf() {
         return NumericLimits<Type>::infinity();
     }
-};  // END _ComplexTraits common
+};  // END _ComplexTraitsBase
 
-class _ComplexTraitsFloat : public _ComplexTraits<float>
+struct _ComplexTraitsFloat : _ComplexTraitsBase<float>
 {
-public:
-
 };  // END _ComplexTraitsFloat
 
-class _ComplexTraitsDouble : public _ComplexTraits<double>
+struct _ComplexTraitsDouble : _ComplexTraitsBase<double>
 {
-public:
-
 };  // END _ComplexTraitsDouble
 
-class _ComplexTraitsLongDouble : public _ComplexTraits<long double>
+struct _ComplexTraitsLongDouble : _ComplexTraitsBase<long double>
 {
-public:
-
 };  // END _ComplexTraitsLongDouble
 
 
 // complex traits specialization
 template<class Type>
-class ComplexTraits : _ComplexTraits<Type> {};
+struct ComplexTraits : _ComplexTraitsBase<Type> {};  // cannot use other than specializations below
 
 template<>
-class ComplexTraits<float> : _ComplexTraitsFloat {};
+struct ComplexTraits<float> : _ComplexTraitsFloat {};
 
 template<>
-class ComplexTraits<double> : _ComplexTraitsDouble {};
+struct ComplexTraits<double> : _ComplexTraitsDouble {};
 
 template<>
-class ComplexTraits<long double> : _ComplexTraitsLongDouble {};
+struct ComplexTraits<long double> : _ComplexTraitsLongDouble {};
 
 
-template<class Type>
+template<class Type, EnableIf_t<IsFloatingPoint_v<Type>, bool> = true>
 class Complex
 {
 public:
     using TraitsType    = ComplexTraits<Type>;
     using ValueType     = Type;
 
-    ValueType _rep[2];
 private:
-
-    enum RepParts
+    enum RepParts : int
     {
         Real = 0,
         Imag = 1
     };
+
+    ValueType _rep[2];
 
 public:
     // Constructors
@@ -86,8 +80,20 @@ public:
                         const ValueType& imagVal = ValueType())
         : _rep{realVal, imagVal} { /*Empty*/ }
 
+    template<class _Type>
+    constexpr Complex(const Complex<_Type>& other)
+        : _rep{ static_cast<ValueType>(other._rep[Real]),
+                static_cast<ValueType>(other._rep[Imag]) } { /*Empty*/ }
+
 public:
     // Operators
+
+    template<class _Type>
+    constexpr Complex& operator=(const Complex<_Type>& other) {
+        _rep[Real] = static_cast<ValueType>(other._rep[Real]);
+        _rep[Imag] = static_cast<ValueType>(other._rep[Imag]);
+        return *this;
+    }
 
 public:
     // Main functions
@@ -98,6 +104,46 @@ public:
 
     constexpr void imag(const ValueType& val) { // set imaginary component
         _rep[Imag] = val;
+    }
+
+    constexpr ValueType real() const { // return real component
+        return _rep[Real];
+    }
+
+    constexpr ValueType imag() const { // return imaginary component
+        return _rep[Imag];
+    }
+
+private:
+    // Helpers
+
+    template<class _Type>
+    constexpr void _add(const Complex<_Type>& other) {
+        _rep[Real] += static_cast<ValueType>(other._rep[Real]);
+        _rep[Imag] += static_cast<ValueType>(other._rep[Imag]);
+    }
+
+    template<class _Type>
+    constexpr void _sub(const Complex<_Type>& other) {
+        _rep[Real] -= static_cast<ValueType>(other._rep[Real]);
+        _rep[Imag] -= static_cast<ValueType>(other._rep[Imag]);
+    }
+
+    template<class _Type>
+    constexpr void _mul(const Complex<_Type>& other) {
+        ValueType otherReal = static_cast<ValueType>(other._rep[Real]);
+        ValueType otherImag = static_cast<ValueType>(other._rep[Imag]);
+
+        ValueType temp      = _rep[Real] * otherReal - _rep[Imag] * otherImag;
+        _rep[Imag]          = _rep[Real] * otherImag + _rep[Imag] * otherReal;
+        _rep[Real]          = temp;
+    }
+
+    template<class _Type>
+    constexpr void _div(const Complex<_Type>& other) {
+        ValueType otherReal = static_cast<ValueType>(other._rep[Real]);
+        ValueType otherImag = static_cast<ValueType>(other._rep[Imag]);
+        // TODO: implement
     }
 
 };  // END Complex common

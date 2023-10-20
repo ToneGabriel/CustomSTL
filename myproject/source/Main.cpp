@@ -23,6 +23,7 @@ int main()
 	//test::print_numeric_limits_statics<long double>();
 	//test::print_numeric_limits_functions<long double>();
 	//test::chrono_test();
+	//test::complex_test();
 
 	// ========= Boost Tests =========
 	//test_boost::thread_test();

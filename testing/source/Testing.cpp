@@ -326,4 +326,9 @@ void chrono_test() {
 	std::cout << _nanoseconds.count() << '\n';
 }
 
+void complex_test() {
+	custom::Complex<float> cf(3.5, 8.0);
+	std::cout << cf.real() << '\n' << cf.imag() << '\n';
+}
+
 TEST_END

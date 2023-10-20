@@ -703,7 +703,7 @@ template<class Ty>
 struct IsNothrowSwappable;
 
 template<class Ty,
-EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty> , bool> = true>
+EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty>, bool> = true>
 constexpr void swap(Ty&, Ty&) noexcept;
 
 template<class Ty, size_t Size,

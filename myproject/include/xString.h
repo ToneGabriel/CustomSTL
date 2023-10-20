@@ -98,7 +98,7 @@ struct _CharTraits
 };
 
 template<class Type>
-struct _WCharTraits : public _CharTraits<Type, unsigned short>	// for char16_t, wchar_t
+struct _WCharTraits : _CharTraits<Type, unsigned short>	// for char16_t, wchar_t
 {
 private:
 	using _Base = _CharTraits<Type, unsigned short>;
