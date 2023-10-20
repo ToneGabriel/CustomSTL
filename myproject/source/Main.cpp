@@ -26,7 +26,7 @@ int main()
 
 	// ========= Boost Tests =========
 	//test_boost::thread_test();
-	test_boost::lock_locks_test();
+	//test_boost::lock_locks_test();
 
 	return 0;
 }

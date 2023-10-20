@@ -5,9 +5,9 @@
 
 TEST_BOOST_BEGIN
 
-std::string _Employee::output() const
+custom::String _Employee::output() const
 {
-    std::string ret = "Employee " + _ID + " has lunch partners: ";
+    custom::String ret = "Employee " + _ID + " has lunch partners: ";
 
     for(const auto& partner : _LunchPartners)
         ret += partner + " ";

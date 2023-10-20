@@ -11,6 +11,10 @@
 
 CUSTOM_BEGIN
 
+#define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
+#define USE_OPTIMAL_IMPLEMENTATION    // some implementations are easier to understand, but have lower performance
+
+// custom assert function
 inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
     {
@@ -20,9 +24,6 @@ inline void __Assert(bool expr, const char* msg, const char* exprStr, const char
         ::abort();
     }
 }
-
-#define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
-
 
 // is constant evaluated
 constexpr inline bool is_constant_evaluated() noexcept {

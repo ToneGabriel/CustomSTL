@@ -885,4 +885,28 @@ constexpr bool operator!=(	const BasicString<Type, Alloc, Traits>& left,
 	return !(left == right);
 }
 
+template<class Type, class Alloc, class Traits>
+constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
+														const BasicString<Type, Alloc, Traits>& right) {
+
+	// create empty string with capacity equal to sum of sizes and append left then right string
+	return BasicString<Type, Alloc, Traits>(left.size() + right.size()).append(left).append(right);
+}
+
+template<class Type, class Alloc, class Traits>
+constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
+														const Type* right) {
+
+	return BasicString<Type, Alloc, Traits>(left.size() + Traits::length(right)).append(left).append(right);
+}
+
+template<class Type, class Alloc, class Traits>
+constexpr BasicString<Type, Alloc, Traits> operator+(	const Type* left,
+														const BasicString<Type, Alloc, Traits>& right) {
+
+	return BasicString<Type, Alloc, Traits>(Traits::length(left) + right.size()).append(left).append(right);
+}
+
+// TODO: complete operator+
+
 CUSTOM_END

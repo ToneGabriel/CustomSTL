@@ -439,15 +439,6 @@ public:
     }
 };  // END BadFunctionCall
 
-
-static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
-static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
-
-template<class Impl>    // when _CallableImpl wraps an object(big) that has operator()
-static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
-                                    alignof(Impl) > alignof(MaxAlign_t) ||
-                                    !Impl::_NothrowMove::Value;
-
 template<class Callable>
 constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Callable>,
                                                    IsSpecialization<Callable, Function>,
@@ -460,6 +451,17 @@ bool _test_callable(const Callable& obj) noexcept { // determine whether custom:
     else
         return true;
 }
+
+
+#ifdef USE_OPTIMAL_IMPLEMENTATION   // store callable object impl in stack or heap depending on size
+
+static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
+static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
+
+template<class Impl>    // when _CallableImpl wraps an object(big) that has operator()
+static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
+                                    alignof(Impl) > alignof(MaxAlign_t) ||
+                                    !Impl::_NothrowMove::Value;
 
 
 template<class RetType, class... Args>
@@ -730,6 +732,10 @@ private:
     }
 };  // END Function
 
+#else   // USE_OPTIMAL_IMPLEMENTATION - store callable object impl in heap regardless of size
+#error Not implemented
+// TODO: implement without union
+#endif  // USE_OPTIMAL_IMPLEMENTATION
 #pragma endregion Function
 
 
