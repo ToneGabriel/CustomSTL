@@ -11,3 +11,5 @@ Components not fully operational:
 
 - Memory.h
 - Algorithm.h
+- Complex.h
+- Bitset.h

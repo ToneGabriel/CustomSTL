@@ -21,3 +21,4 @@
 #include "../../myproject/include/Algorithm.h"
 #include "../../myproject/include/Numeric.h"
 #include "../../myproject/include/Complex.h"
+#include "../../myproject/include/Bitset.h"

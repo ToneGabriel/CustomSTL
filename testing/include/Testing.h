@@ -56,6 +56,7 @@ void invoke_test();
 void memory_test();
 void chrono_test();
 void complex_test();
+void bitset_test();
 
 template<typename T, T... ints>
 void print_sequence(custom::IntegerSequence<T, ints...> int_seq)

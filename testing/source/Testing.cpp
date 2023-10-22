@@ -328,7 +328,18 @@ void chrono_test() {
 
 void complex_test() {
 	custom::Complex<float> cf(3.5, 8.0);
+	custom::Complex<double> cd;
+	custom::Complex<double> cd1;
+
+	cd == cd1;
+	cf /= cd;
+
 	std::cout << cf.real() << '\n' << cf.imag() << '\n';
+	std::cout << cd.real() << '\n' << cd.imag() << '\n';
+}
+
+void bitset_test() {
+	// TODO: add test
 }
 
 TEST_END
