@@ -3,6 +3,7 @@
 #include "xMemory.h"
 #include "Utility.h"
 #include "Iterator.h"
+#include "Functional.h"
 
 
 CUSTOM_BEGIN
@@ -301,26 +302,26 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(ConstIterator iterator, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the iterator position
+	Iterator emplace(ConstIterator where, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the where position
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		_insert_node_before(iterator._Ptr, newNode);
+		_insert_node_before(where._Ptr, newNode);
 
 		return Iterator(newNode, &_data);
 	}
 
-	Iterator push(ConstIterator iterator, const ValueType& copyValue) {		// Construct object using reference and add it BEFORE the iterator position
-		return emplace(iterator, copyValue);
+	Iterator push(ConstIterator where, const ValueType& copyValue) {		// Construct object using reference and add it BEFORE the where position
+		return emplace(where, copyValue);
 	}
 
-	Iterator push(ConstIterator iterator, ValueType&& moveValue) {			// Construct object using temporary and add it BEFORE the iterator position
-		return emplace(iterator, custom::move(moveValue));
+	Iterator push(ConstIterator where, ValueType&& moveValue) {			// Construct object using temporary and add it BEFORE the where position
+		return emplace(where, custom::move(moveValue));
 	}
 
-	Iterator pop(ConstIterator iterator) {									// Remove component at iterator position
-		if (iterator.is_end())
+	Iterator pop(ConstIterator where) {									// Remove component at where position
+		if (where.is_end())
 			throw std::out_of_range("Cannot pop end iterator...");
 
-		_NodePtr temp 			= iterator._Ptr;
+		_NodePtr temp 			= where._Ptr;
 		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
 		_remove_node(temp);
 
@@ -376,6 +377,98 @@ public:
 
 	void clear() {
 		_delete_until_size(0);
+	}
+
+public:
+	// Main Operations
+
+	void reverse() noexcept {
+		if (_data._Size > 1)
+		{
+			_NodePtr current = _data._Head;
+
+			do
+			{
+				custom::swap(current->_Next, current->_Previous);
+				current = current->_Next;
+			} while (current != _data._Head);
+		}
+	}
+
+	template<class UnaryPredicate>
+	size_t remove_if(UnaryPredicate pred) {
+		size_t oldSize 		= _data._Size;
+		_NodePtr current 	= _data._Head->_Next;
+		_NodePtr next 		= nullptr;
+
+		while (current != _data._Head)
+		{
+			next = current->_Next;
+
+			if (pred(current->_Value))
+				_remove_node(current);
+
+			current = next;
+		}
+
+		return oldSize - _data._Size;
+	}
+
+	size_t remove(const Type& val) {
+		return remove_if([&](const Type& other) -> bool { return other == val; });
+	}
+
+	template<class BinaryPredicate>
+	size_t unique(BinaryPredicate pred) {
+		size_t oldSize 		= _data._Size;
+		_NodePtr current 	= _data._Head->_Next;
+		_NodePtr next 		= current->_Next;
+
+		while (next != _data._Head)
+		{
+			if (pred(current->_Value, next->_Value))
+				_remove_node(next);
+			else
+				current = next;
+
+			next = current->_Next;
+		}
+
+		return oldSize - _data._Size;
+	}
+
+	size_t unique() {
+		return unique(EqualTo<>{});
+	}
+
+	template<class Compare>
+	void merge(List& other, Compare comp) {
+		// TODO: implement
+	}
+
+	void merge(List& other) {
+		merge(other, Less<>{});
+	}
+
+	template<class Compare>
+	void sort(Compare comp) {
+		// TODO: implement
+	}
+
+	void sort() {
+		sort(Less<>{});
+	}
+
+	void splice(ConstIterator where, List& other) {
+		// TODO: implement
+	}
+
+	void splice(ConstIterator where, List& other, ConstIterator otherPos) {
+		// TODO: implement
+	}
+
+	void splice(ConstIterator where, List& other, ConstIterator otherFirst, ConstIterator otherLast) {
+		// TODO: implement
 	}
 
 public:

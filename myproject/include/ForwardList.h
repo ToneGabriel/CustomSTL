@@ -3,10 +3,8 @@
 #include "xMemory.h"
 #include "Utility.h"
 #include "Iterator.h"
+#include "Functional.h"
 
-//#define FWD_LIST_NOT_IMPLEMENTED
-
-#ifndef FWD_LIST_NOT_IMPLEMENTED
 
 CUSTOM_BEGIN
 
@@ -94,6 +92,10 @@ public:
 		return _Ptr == _RefData->_Head;
 	}
 
+	bool is_last_valid() const noexcept {
+		return _Ptr->_Next == _RefData->_Head;
+	}
+
 	friend void _verify_range(const ForwardListConstIterator& first, const ForwardListConstIterator& last) noexcept {
 		CUSTOM_ASSERT(first._RefData == last._RefData, "ForwardList iterators in range are from different containers");
 		// No possible way to determine order.
@@ -166,8 +168,8 @@ public:
 	using ConstPointer			= typename _Data::ConstPointer;
 	using AllocatorType			= Alloc;
 
-	using Iterator				= ListIterator<_Data>;						// Iterator type
-	using ConstIterator			= ListConstIterator<_Data>;					// Const Iterator type
+	using Iterator				= ForwardListIterator<_Data>;				// Iterator type
+	using ConstIterator			= ForwardListConstIterator<_Data>;			// Const Iterator type
 
 private:
 	_Data _data;															// Actual container data
@@ -254,25 +256,25 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace_after(ConstIterator iterator, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the iterator position
-		if (iterator.is_end())
+	Iterator emplace_after(ConstIterator where, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the where position
+		if (where.is_end())
 			throw std::out_of_range("Cannot emplace after end iterator...");
 
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		_insert_node_after(iterator._Ptr, newNode);
+		_insert_node_after(where._Ptr, newNode);
 
 		return Iterator(newNode, &_data);
 	}
 
-	Iterator pop_after(ConstIterator iterator) {						// Remove component after iterator position
-		if (iterator.is_end())
+	Iterator pop_after(ConstIterator where) {						// Remove component after where position
+		if (where.is_end() || where.is_last_valid())
 			throw std::out_of_range("Cannot pop after end iterator...");
 
-		_NodePtr temp 			= iterator._Ptr;
-		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
-		_remove_node(temp);
+		_NodePtr temp 			= where._Ptr;
+		Iterator nextIterator 	= Iterator(temp->_Next, &_data);
+		_remove_node_after(temp);
 
-		return prevIterator;
+		return nextIterator;
 	}
 
 	Reference front() noexcept {								// Get the value of the first component
@@ -300,6 +302,95 @@ public:
 
 	void clear() {
 		_delete_until_size(0);
+	}
+
+public:
+	// Main Operations
+
+	void reverse() noexcept {
+		if (_data._Size > 1)
+		{
+			_NodePtr current 	= _data._Head->_Next;
+			_NodePtr prev 		= _data._Head;
+			_NodePtr next 		= nullptr;
+			size_t iter 		= _data._Size + 1;	// number of iterations
+
+			while (iter != 0)
+			{
+				next 			= current->_Next;
+				current->_Next 	= prev;
+				prev 			= current;
+				current 		= next;
+
+				--iter;
+			}
+		}
+	}
+
+	template<class UnaryPredicate>
+	size_t remove_if(UnaryPredicate pred) {
+		size_t oldSize 		= _data._Size;
+		_NodePtr current 	= _data._Head->_Next;
+		_NodePtr prev 		= _data._Head;
+		_NodePtr next 		= nullptr;
+
+		while (current != _data._Head)
+		{
+			next = current->_Next;
+
+			if (pred(current->_Value))
+				_remove_node_after(prev);	// remove current
+			else
+				prev = prev->_Next;
+
+			current = next;
+		}
+
+		return oldSize - _data._Size;
+	}
+
+	size_t remove(const Type& val) {
+		return remove_if([&](const Type& other) -> bool { return other == val; });
+	}
+
+	template<class BinaryPredicate>
+	size_t unique(BinaryPredicate pred) {
+		// TODO: implement
+		return 0;
+	}
+
+	size_t unique() {
+		return unique(EqualTo<>{});
+	}
+
+	template<class Compare>
+	void merge(ForwardList& other, Compare comp) {
+		// TODO: implement
+	}
+
+	void merge(ForwardList& other) {
+		merge(other, Less<>{});
+	}
+
+	template<class Compare>
+	void sort(Compare comp) {
+		// TODO: implement
+	}
+
+	void sort() {
+		sort(Less<>{});
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other) {
+		// TODO: implement
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherPos) {
+		// TODO: implement
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst, ConstIterator otherLast) {
+		// TODO: implement
 	}
 
 public:
@@ -398,5 +489,3 @@ bool operator!=(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type,
 }
 
 CUSTOM_END
-
-#endif	// not implemented
