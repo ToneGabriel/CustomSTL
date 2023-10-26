@@ -54,7 +54,7 @@ public:
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
 	ForwardListConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot increment end iterator...");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
@@ -70,7 +70,7 @@ public:
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot dereference end iterator...");
 		return _Ptr->_Value;
 	}
 
@@ -89,11 +89,11 @@ public:
 	}
 
 	bool is_end() const noexcept {
-		return _Ptr == _RefData->_Head;
+		return _Ptr == nullptr;
 	}
 
 	bool is_last_valid() const noexcept {
-		return _Ptr->_Next == _RefData->_Head;
+		return _Ptr->_Next == nullptr;
 	}
 
 	friend void _verify_range(const ForwardListConstIterator& first, const ForwardListConstIterator& last) noexcept {
@@ -311,21 +311,20 @@ public:
 		if (_data._Size > 1)
 		{
 			_NodePtr current 	= _data._Head->_Next;
-			_NodePtr prev 		= _data._Head;
+			_NodePtr prev 		= nullptr;
 			_NodePtr next 		= nullptr;
-			size_t iter 		= _data._Size + 1;	// number of iterations
-
-			while (iter != 0)
+	
+			while (current != nullptr)
 			{
 				next 			= current->_Next;
 				current->_Next 	= prev;
 				prev 			= current;
 				current 		= next;
-
-				--iter;
 			}
+
+			_data._Head->_Next 	= prev;
 		}
-	}
+    }
 
 	template<class UnaryPredicate>
 	size_t remove_if(UnaryPredicate pred) {
@@ -334,7 +333,7 @@ public:
 		_NodePtr prev 		= _data._Head;
 		_NodePtr next 		= nullptr;
 
-		while (current != _data._Head)
+		while (current != nullptr)
 		{
 			next = current->_Next;
 
@@ -396,6 +395,14 @@ public:
 public:
 	// Iterator specific functions
 
+	Iterator before_begin() noexcept {
+        return Iterator(_data._Head, &_data);
+    }
+
+    ConstIterator before_begin() const noexcept {
+        return ConstIterator(_data._Head, &_data);
+    }
+
 	Iterator begin() noexcept {
 		return Iterator(_data._Head->_Next, &_data);
 	}
@@ -405,11 +412,11 @@ public:
 	}
 
 	Iterator end() noexcept {
-		return Iterator(_data._Head, &_data);
+		return Iterator(nullptr, &_data);
 	}
 
 	ConstIterator end() const noexcept {
-		return ConstIterator(_data._Head, &_data);
+		return ConstIterator(nullptr, &_data);
 	}
 
 private:
@@ -417,11 +424,10 @@ private:
 
 	void _create_head() {
 		_data._Head 			= _alloc.allocate(1);
-		_data._Head->_Next 		= _data._Head;
+		_data._Head->_Next 		= nullptr;
 	}
 
 	void _free_head() {
-		_data._Head->_Next 		= nullptr;
 		_alloc.deallocate(_data._Head, 1);
 	}
 
@@ -434,14 +440,14 @@ private:
 	}
 
 	void _insert_node_after(_NodePtr afterNode, _NodePtr newNode) {
-		newNode->_Next = afterNode->_Next;
-		afterNode->_Next = newNode;
+		newNode->_Next 		= afterNode->_Next;
+		afterNode->_Next 	= newNode;
 		++_data._Size;
 	}
 
 	void _remove_node_after(_NodePtr afterNode) {
-		_NodePtr junkNode = afterNode->_Next;
-		afterNode->_Next = junkNode->_Next;
+		_NodePtr junkNode 	= afterNode->_Next;
+		afterNode->_Next 	= junkNode->_Next;
 		--_data._Size;
 
 		_AllocNodeTraits::destroy(_alloc, &(junkNode->_Value));
@@ -450,7 +456,8 @@ private:
 
 	void _copy(const ForwardList& other) {								// Generic copy function for list
 		_NodePtr temp = other._data._Head->_Next;
-		while (_data._Size < other._data._Size) {
+		while (_data._Size < other._data._Size)
+		{
 			push_front(temp->_Value);
 			temp = temp->_Next;
 		}
