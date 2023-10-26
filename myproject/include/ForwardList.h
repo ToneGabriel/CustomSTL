@@ -16,7 +16,7 @@ struct _ForwardListData
 	using _Node				= node::_ForwardNode<Type>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
-	using _NodePtr			= _AllocNodeTraits::Pointer;
+	using _NodePtr			= typename _AllocNodeTraits::Pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;

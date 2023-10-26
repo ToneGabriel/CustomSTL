@@ -15,7 +15,7 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	using ValueType = Type;
 
 	ValueType _Value;
-	_ForwardNode* _Next;
+	_ForwardNode* _Next = nullptr;
 
 	_ForwardNode()									= default;
 	_ForwardNode(const _ForwardNode&)				= delete;
@@ -43,8 +43,8 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 	using ValueType = Type;
 
 	ValueType _Value;
-	_DoubleNode* _Previous;
-	_DoubleNode* _Next;
+	_DoubleNode* _Previous 	= nullptr;
+	_DoubleNode* _Next 		= nullptr;
 
 	_DoubleNode()								= default;
 	_DoubleNode(const _DoubleNode&)				= delete;
@@ -72,18 +72,18 @@ struct _TreeNode			// Used in _SearchTree
 {
 	using ValueType = Type;
 	
-	ValueType _Value;
-	_TreeNode* _Parent;
-	_TreeNode* _Left;
-	_TreeNode* _Right;
-	char _Color;			// Used for balancing
-	bool _IsNil;			// True for Head only
-
 	enum Colors : char
 	{
 		Red,
 		Black
 	};
+
+	ValueType _Value;
+	_TreeNode* _Parent 	= nullptr;
+	_TreeNode* _Left 	= nullptr;
+	_TreeNode* _Right 	= nullptr;
+	bool _IsNil 		= false;			// True for Head only
+	char _Color 		= Colors::Red;		// Used for balancing
 
 	_TreeNode()								= default;
 	_TreeNode(const _TreeNode&)				= delete;

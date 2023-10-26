@@ -13,7 +13,7 @@ struct _DequeData
 	using _AllocTraits		= AllocatorTraits<Alloc>;
 	using _AllocPtr 		= typename _AllocTraits::template RebindAlloc<typename _AllocTraits::Pointer>;
     using _AllocPtrTraits 	= AllocatorTraits<_AllocPtr>;
-	using _MapPtr 			= _AllocPtrTraits::Pointer;
+	using _MapPtr 			= typename _AllocPtrTraits::Pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;

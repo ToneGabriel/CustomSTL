@@ -2,4 +2,5 @@
 2. Learn and implement smart pointers
 3. Learn and implement complex
 4. Learn and implement bitset
+5. Learn and implement lists sort/merge/unique etc.
 5. Fix TODOs

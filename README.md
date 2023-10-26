@@ -13,3 +13,4 @@ Components not fully operational:
 - Algorithm.h
 - Complex.h
 - Bitset.h
+- List.h / ForwardList.h operations
