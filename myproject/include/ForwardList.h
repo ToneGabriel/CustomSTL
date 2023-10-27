@@ -354,12 +354,39 @@ public:
 
 	template<class BinaryPredicate>
 	size_t unique(BinaryPredicate pred) {
-		// TODO: implement
-		return 0;
+		size_t oldSize 		= _data._Size;
+		_NodePtr current 	= _data._Head->_Next;
+		_NodePtr next 		= current->_Next;
+
+		while (next != nullptr)
+		{
+			if (pred(current->_Value, next->_Value))
+				_remove_node_after(current);
+			else
+				current = next;
+
+			next = current->_Next;
+		}
+
+		return oldSize - _data._Size;
 	}
 
 	size_t unique() {
 		return unique(EqualTo<>{});
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst, ConstIterator otherLast) {
+		// TODO: implement
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst) {
+		// TODO: check
+		splice(where, other, otherFirst, other.end());
+	}
+
+	void splice_after(ConstIterator where, ForwardList& other) {
+		// TODO: check
+		splice(where, other, other.begin(), other.end());
 	}
 
 	template<class Compare>
@@ -378,18 +405,6 @@ public:
 
 	void sort() {
 		sort(Less<>{});
-	}
-
-	void splice_after(ConstIterator where, ForwardList& other) {
-		// TODO: implement
-	}
-
-	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherPos) {
-		// TODO: implement
-	}
-
-	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst, ConstIterator otherLast) {
-		// TODO: implement
 	}
 
 public:

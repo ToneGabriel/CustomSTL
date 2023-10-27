@@ -441,9 +441,56 @@ public:
 		return unique(EqualTo<>{});
 	}
 
+	void splice(ConstIterator where, List& other, ConstIterator otherFirst, ConstIterator otherLast) {
+		// splice [otherFirst, otherLast) BEFORE where
+
+		if (where._RefData->_Head == otherFirst._RefData->_Head ||
+			otherFirst._RefData->_Head != otherLast._RefData->_Head)
+			throw std::domain_error("List provided by otherFirst and otherLast must be the same, but different from the one provided by where");
+
+		size_t count = _distance(otherFirst, otherLast);
+
+		if (max_size() - _data._Size < count)
+			throw std::out_of_range("List too long");
+
+		if (_data._Head != other._data._Head && count != 0)		// worth splicing
+		{
+			// do sizes
+			_data._Size 		+= count;
+			other._data._Size 	-= count;
+
+			// to node ptrs from iterators
+			_NodePtr thisFirst 	= where._Ptr->_Previous;		// here otherFirst should link to (BEFORE where)
+			_NodePtr thisLast 	= thisFirst->_Next;				// here otherLast - 1 should link to
+
+			_NodePtr oFirst 	= otherFirst._Ptr;				// otherFirst node ptr
+			_NodePtr oLast 		= otherLast._Ptr->_Previous;	// otherLast - 1 node ptr
+			
+			// take nodes from other list and link them to this one
+			_splice(thisFirst, thisLast, oFirst, oLast);
+		}
+	}
+
+	void splice(ConstIterator where, List& other, ConstIterator otherFirst) {
+		// splice [otherFirst, ...) BEFORE where
+		splice(where, other, otherFirst, other.end());
+	}
+
+	void splice(ConstIterator where, List& other) {
+		// spice ALL other list BEFORE where
+		splice(where, other, other.begin(), other.end());
+	}
+
 	template<class Compare>
 	void merge(List& other, Compare comp) {
-		// TODO: implement
+		// both lists should be sorted
+		if (_data._Head != other._data._Head && other._data._Size > 0)
+		{
+			_NodePtr midNode = other._data._Head->_Next;
+
+			splice(end(), other);				// add ALL other elems to the end of this list
+			_merge_two_internal(midNode, comp);	// merge the two sorted lists (now spliced in this) using midNode as delimiter
+		}
 	}
 
 	void merge(List& other) {
@@ -457,18 +504,6 @@ public:
 
 	void sort() {
 		sort(Less<>{});
-	}
-
-	void splice(ConstIterator where, List& other) {
-		// TODO: implement
-	}
-
-	void splice(ConstIterator where, List& other, ConstIterator otherPos) {
-		// TODO: implement
-	}
-
-	void splice(ConstIterator where, List& other, ConstIterator otherFirst, ConstIterator otherLast) {
-		// TODO: implement
 	}
 
 public:
@@ -570,6 +605,36 @@ private:
 	void _delete_until_size(const size_t newSize) {						// Remove elements until current size equals newSize
 		while (_data._Size > newSize)
 			pop_back();
+	}
+
+	size_t _distance(ConstIterator first, ConstIterator last) {
+		size_t count = 0;
+		for (_NodePtr temp = first._Ptr; temp != last._Ptr; temp = temp->_Next, ++count) { /*do nothing*/ }
+		return count;
+	}
+
+	void _splice(_NodePtr thisFirst, _NodePtr thisLast, _NodePtr otherFirst, _NodePtr otherLast) {
+			// open this list and link to other ends
+			thisFirst->_Next 				= otherFirst;
+			thisLast->_Previous 			= otherLast;
+
+			// close other list
+			otherFirst->_Previous->_Next 	= otherLast->_Next;
+			otherLast->_Next->_Previous 	= otherFirst->_Previous;
+
+			// link other ends to this list
+			otherFirst->_Previous 			= thisFirst;
+			otherLast->_Next 				= thisLast;
+	}
+
+	template<class Compare>
+	void _merge_two_internal(_NodePtr mid, Compare comp) {
+        // merge the sorted ranges [first, mid) and [mid, last)
+
+		_NodePtr first 	= _data._Head->_Next;
+		_NodePtr last 	= _data._Head;
+
+		// TODO: implement
 	}
 
 	_NodePtr _scroll_node(const size_t index) const {							// Get object in the list at index position by going through all components
