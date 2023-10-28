@@ -461,13 +461,11 @@ public:
 
 			// to node ptrs from iterators
 			_NodePtr thisFirst 	= where._Ptr->_Previous;		// here otherFirst should link to (BEFORE where)
-			_NodePtr thisLast 	= thisFirst->_Next;				// here otherLast - 1 should link to
-
 			_NodePtr oFirst 	= otherFirst._Ptr;				// otherFirst node ptr
 			_NodePtr oLast 		= otherLast._Ptr->_Previous;	// otherLast - 1 node ptr
 			
 			// take nodes from other list and link them to this one
-			_splice(thisFirst, thisLast, oFirst, oLast);
+			_splice(thisFirst, oFirst, oLast);
 		}
 	}
 
@@ -488,8 +486,11 @@ public:
 		{
 			_NodePtr midNode = other._data._Head->_Next;
 
-			splice(end(), other);				// add ALL other elems to the end of this list
-			_merge_two_internal(midNode, comp);	// merge the two sorted lists (now spliced in this) using midNode as delimiter
+			// add ALL other elems to the end of this list
+			splice(end(), other);
+
+			// merge the two sorted lists (now spliced in this) using midNode as delimiter
+			_merge_internal(_data._Head->_Next, midNode, _data._Head, comp);
 		}
 	}
 
@@ -499,7 +500,7 @@ public:
 
 	template<class Compare>
 	void sort(Compare comp) {
-		// TODO: implement
+		(void)_sort(_data._Head->_Next, _data._Size, comp);
 	}
 
 	void sort() {
@@ -613,28 +614,76 @@ private:
 		return count;
 	}
 
-	void _splice(_NodePtr thisFirst, _NodePtr thisLast, _NodePtr otherFirst, _NodePtr otherLast) {
-			// open this list and link to other ends
-			thisFirst->_Next 				= otherFirst;
-			thisLast->_Previous 			= otherLast;
+	void _splice(_NodePtr thisFirst, _NodePtr otherFirst, _NodePtr otherLast) {
+		// thisFirst, thisLast, otherFirst, otherLast are the EXACT ends of the lists
 
-			// close other list
-			otherFirst->_Previous->_Next 	= otherLast->_Next;
-			otherLast->_Next->_Previous 	= otherFirst->_Previous;
+		// here otherLast should link to
+		_NodePtr thisLast				= thisFirst->_Next;
 
-			// link other ends to this list
-			otherFirst->_Previous 			= thisFirst;
-			otherLast->_Next 				= thisLast;
+		// open this list and link to other ends
+		thisFirst->_Next 				= otherFirst;
+		thisLast->_Previous 			= otherLast;
+
+		// close other list
+		otherFirst->_Previous->_Next 	= otherLast->_Next;
+		otherLast->_Next->_Previous 	= otherFirst->_Previous;
+
+		// link other ends to this list
+		otherFirst->_Previous 			= thisFirst;
+		otherLast->_Next 				= thisLast;
 	}
 
 	template<class Compare>
-	void _merge_two_internal(_NodePtr mid, Compare comp) {
+	void _merge_internal(_NodePtr first, _NodePtr mid, _NodePtr last, Compare comp) {
         // merge the sorted ranges [first, mid) and [mid, last)
 
-		_NodePtr first 	= _data._Head->_Next;
-		_NodePtr last 	= _data._Head;
+		_NodePtr runStart = nullptr;
 
-		// TODO: implement
+		for (;;)
+		{
+			runStart = mid;
+
+			// mid becomes first element >= first, starting from runStart
+			while (mid != last && comp(mid->_Value, first->_Value))
+				mid = mid->_Next;
+
+			// [runStart, mid) goes before first
+			if (runStart != mid)
+				_splice(first->_Previous, runStart, mid->_Previous);
+
+			// check end of list
+			if (mid == last)
+				return;
+
+			// increase first so that next range [runStart, mid) goes before it
+			do
+			{
+				first = first->_Next;
+				if (first == mid)
+					return;
+			} while (!comp(mid->_Value, first->_Value));
+		}
+	}
+
+	template<class Compare>
+	_NodePtr _sort(_NodePtr first, size_t size, Compare comp) {
+		// order [first, first + size), return first + size
+
+		switch (size)
+		{
+			case 0:
+				return first;
+			case 1:
+				return first->_Next;
+			default:
+				break;
+		}
+
+		_NodePtr mid	= _sort(first, size / 2, comp);			// TODO: check first here
+		_NodePtr last	= _sort(mid, size - size / 2, comp);
+		_merge_internal(_data._Head->_Next, mid, last, comp);
+
+		return last;
 	}
 
 	_NodePtr _scroll_node(const size_t index) const {							// Get object in the list at index position by going through all components

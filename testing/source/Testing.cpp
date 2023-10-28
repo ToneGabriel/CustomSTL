@@ -50,6 +50,11 @@ std::ostream& operator<<(std::ostream& os, const Test& test) {
 	return os;
 }
 
+bool operator<(const Test& test1, const Test& test2) {
+	return test1.value < test2.value;
+}
+
+
 int Test::test_function(int x) {
 	return x;
 }
@@ -95,15 +100,26 @@ void list_test() {
 	custom::List<Test> list;
 	custom::List<Test> list1;
 
+	list.emplace_back(15);
+	list.emplace_back(8);
 	list.emplace_back(1);
-	list.emplace_back(2);
-	list.emplace_back(3);
-	list.emplace_front(4);
+	list.emplace_back(6);
+	list.emplace_back(5);
+	list.emplace_back(8);
+	list.sort();
 
-	list1 = custom::move(list);
-	list = custom::move(list1);
+	list1.emplace_back(15);
+	list1.emplace_back(4);
+	list1.emplace_back(10);
+	list1.emplace_back(7);
+	list1.sort();
+
+	list.merge(list1);
 
 	for (auto it = list.begin(); it != list.end(); ++it)
+		std::cout << *it << '\n';
+
+	for (auto it = list1.begin(); it != list1.end(); ++it)
 		std::cout << *it << '\n';
 }
 

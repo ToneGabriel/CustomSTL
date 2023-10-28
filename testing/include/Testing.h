@@ -27,7 +27,8 @@ public:
 	bool operator==(const Test& other) const;
 	bool operator!=(const Test& other) const;
 
-	friend std::ostream& operator<<(std::ostream& os, const Test& test);
+	friend std::ostream& operator<<(std::ostream&, const Test&);
+	friend bool operator<(const Test&, const Test&);
 
 public:
     // Main functions
