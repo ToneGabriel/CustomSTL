@@ -343,15 +343,25 @@ void chrono_test() {
 }
 
 void complex_test() {
-	custom::Complex<float> cf(3.5, 8.0);
-	custom::Complex<double> cd;
-	custom::Complex<double> cd1;
-
-	cd == cd1;
-	cf /= cd;
-
+	std::complex<float> cf(3.5, 8.0);
 	std::cout << cf.real() << '\n' << cf.imag() << '\n';
-	std::cout << cd.real() << '\n' << cd.imag() << '\n';
+	std::cout << "abs= " << std::abs(cf) << '\n';
+	std::cout << "norm= " << std::norm(cf) << '\n';
+	std::cout << "conj= " << std::conj(cf) << '\n';
+	std::cout << "proj= " << std::proj(cf) << '\n';
+	std::cout << "polar= " << std::polar(-2.5, 4.3) << '\n';
+	std::cout << "exp= " << std::exp(cf) << '\n';
+
+	std::cout << "======================\n";
+
+	custom::Complex<float> cf1(3.5, 8.0);
+	std::cout << cf1.real() << '\n' << cf1.imag() << '\n';
+	std::cout << "abs= " << custom::abs(cf1) << '\n';
+	std::cout << "norm= " << custom::norm(cf1) << '\n';
+	std::cout << "conj= " << custom::conj(cf1) << '\n';
+	std::cout << "proj= " << custom::proj(cf1) << '\n';
+	std::cout << "polar= " << custom::polar(-2.5, 4.3) << '\n';
+	std::cout << "exp= " << custom::exp(cf1) << '\n';
 }
 
 void bitset_test() {

@@ -532,6 +532,13 @@ constexpr Complex<Type> operator-(const Complex<Type>& right) {
 
 // Complex binary operators
 
+// ostream
+template<class Type>
+std::ostream& operator<<(std::ostream& os, const Complex<Type>& complex) {
+	os << '(' << complex.real() << ',' << complex.imag() << ')';
+	return os;
+}
+
 // add
 template<class Type>
 constexpr Complex<Type> operator+(const Complex<Type>& left, const Complex<Type>& right) {
@@ -651,7 +658,6 @@ constexpr bool operator!=(const Type& val, const Complex<Type>& right) {
     return !(val == right);
 }
 
-
 // Other Complex operations
 
 template<class Type>
@@ -677,11 +683,73 @@ constexpr Complex<Type> conj(const Complex<Type>& val) { // return complex conju
 template<class Type>
 Complex<Type> proj(const Complex<Type>& val) { // return complex projection
     if (ComplexTraits<Type>::is_inf(val.real()) || ComplexTraits<Type>::is_inf(val.imag()))
-    {
-        const Type newImag = ComplexTraits<Type>::copysign(Type{0}, val.imag());
-        return Complex<Type>(ComplexTraits<Type>::inf_v(), newImag);
-    }
+        return Complex<Type>(   ComplexTraits<Type>::inf_v(),
+                                ComplexTraits<Type>::copysign(Type{0}, val.imag()));
 
     return val;
+}
+
+template<class Type>    // helper for polar
+Complex<Type> _polar_positive_nan_inf_zero_rho(const Type& rho, const Type& theta) { // rho is +NaN/+Inf/+0
+    if (ComplexTraits<Type>::is_nan(theta) || ComplexTraits<Type>::is_inf(theta))
+        if (ComplexTraits<Type>::is_inf(rho))
+            return Complex<Type>(rho, ComplexTraits<Type>::sin(theta)); // (Inf, NaN/Inf)
+        else
+            return Complex<Type>(rho, ComplexTraits<Type>::copysign(rho, theta)); // (NaN/0, NaN/Inf)
+    else if (theta == Type{0})
+        return Complex<Type>(rho, theta); // (NaN/Inf/0, 0)
+    else // theta is finite non-zero
+        return Complex<Type>(   rho * ComplexTraits<Type>::cos(theta),
+                                rho * ComplexTraits<Type>::sin(theta)); // (NaN/Inf/0, finite non-zero)
+}
+
+template<class Type>
+Complex<Type> polar(const Type& rho, const Type& theta = Type{0}) {
+    if (ComplexTraits<Type>::signbit(rho))
+        return -_polar_positive_nan_inf_zero_rho(-rho, theta);
+
+    return _polar_positive_nan_inf_zero_rho(rho, theta);
+}
+
+template<class Type>
+Complex<Type> exp(const Complex<Type>& val) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> log(const Complex<Type>& val) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> log10(const Complex<Type>& val) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> sqrt(const Complex<Type>& val) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> pow(const Complex<Type>& base, const Type& ex) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> pow(const Type& base, const Complex<Type>& ex) {
+    return Complex<Type>();
+    // TODO: implement
+}
+
+template<class Type>
+Complex<Type> pow(const Complex<Type>& base, const Complex<Type>& ex) {
+    return Complex<Type>();
+    // TODO: implement
 }
 CUSTOM_END
