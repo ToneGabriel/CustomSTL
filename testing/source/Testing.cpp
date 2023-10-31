@@ -344,24 +344,66 @@ void chrono_test() {
 
 void complex_test() {
 	std::complex<float> cf(3.5, 8.0);
-	std::cout << cf.real() << '\n' << cf.imag() << '\n';
-	std::cout << "abs= " << std::abs(cf) << '\n';
-	std::cout << "norm= " << std::norm(cf) << '\n';
-	std::cout << "conj= " << std::conj(cf) << '\n';
-	std::cout << "proj= " << std::proj(cf) << '\n';
-	std::cout << "polar= " << std::polar(-2.5, 4.3) << '\n';
-	std::cout << "exp= " << std::exp(cf) << '\n';
+
+	std::cout << "number= " << cf.real() << '\n' << cf.imag() << '\n';
+	std::cout << "abs= " 	<< std::abs(cf) << '\n';
+	std::cout << "norm= " 	<< std::norm(cf) << '\n';
+	std::cout << "conj= " 	<< std::conj(cf) << '\n';
+	std::cout << "proj= " 	<< std::proj(cf) << '\n';
+	std::cout << "polar= " 	<< std::polar(-2.5, 4.3) << '\n';
+
+	std::cout << "exp= " 	<< std::exp(cf) << '\n';
+	std::cout << "log= " 	<< std::log(cf) << '\n';
+	std::cout << "log10= " 	<< std::log10(cf) << '\n';
+	std::cout << "sqrt= " 	<< std::sqrt(cf) << '\n';
+	std::cout << "pow 2= " 	<< std::pow(cf, 2.0f) << '\n';
+
+	std::cout << "sin= " 	<< std::sin(cf) << '\n';
+	std::cout << "asin= " 	<< std::asin(cf) << '\n';
+	std::cout << "sinh= " 	<< std::sinh(cf) << '\n';
+	std::cout << "asinh= " 	<< std::asinh(cf) << '\n';
+
+	std::cout << "cos= " 	<< std::cos(cf) << '\n';
+	std::cout << "acos= " 	<< std::acos(cf) << '\n';
+	std::cout << "cosh= " 	<< std::cosh(cf) << '\n';
+	std::cout << "acosh= " 	<< std::acosh(cf) << '\n';
+
+	std::cout << "tan= " 	<< std::tan(cf) << '\n';
+	std::cout << "atan= " 	<< std::atan(cf) << '\n';
+	std::cout << "tanh= " 	<< std::tanh(cf) << '\n';
+	std::cout << "atanh= " 	<< std::atanh(cf) << '\n';
 
 	std::cout << "======================\n";
 
 	custom::Complex<float> cf1(3.5, 8.0);
-	std::cout << cf1.real() << '\n' << cf1.imag() << '\n';
-	std::cout << "abs= " << custom::abs(cf1) << '\n';
-	std::cout << "norm= " << custom::norm(cf1) << '\n';
-	std::cout << "conj= " << custom::conj(cf1) << '\n';
-	std::cout << "proj= " << custom::proj(cf1) << '\n';
-	std::cout << "polar= " << custom::polar(-2.5, 4.3) << '\n';
-	std::cout << "exp= " << custom::exp(cf1) << '\n';
+
+	std::cout << "number= " << cf1.real() << '\n' << cf1.imag() << '\n';
+	std::cout << "abs= " 	<< custom::abs(cf1) << '\n';
+	std::cout << "norm= " 	<< custom::norm(cf1) << '\n';
+	std::cout << "conj= " 	<< custom::conj(cf1) << '\n';
+	std::cout << "proj= " 	<< custom::proj(cf1) << '\n';
+	std::cout << "polar= " 	<< custom::polar(-2.5, 4.3) << '\n';
+
+	//std::cout << "exp= " 	<< custom::exp(cf1) << '\n';
+	//std::cout << "log= " 	<< custom::log(cf1) << '\n';
+	//std::cout << "log10= " 	<< custom::log10(cf1) << '\n';
+	//std::cout << "sqrt= " 	<< custom::sqrt(cf1) << '\n';
+	//std::cout << "pow 2= " 	<< custom::pow(cf1, 2.0f) << '\n';
+
+	std::cout << "sin= " 	<< custom::sin(cf1) << '\n';
+	//std::cout << "asin= " 	<< custom::asin(cf1) << '\n';
+	std::cout << "sinh= " 	<< custom::sinh(cf1) << '\n';
+	//std::cout << "asinh= " 	<< custom::asinh(cf1) << '\n';
+
+	std::cout << "cos= " 	<< custom::cos(cf1) << '\n';
+	//std::cout << "acos= " 	<< custom::acos(cf1) << '\n';
+	std::cout << "cosh= " 	<< custom::cosh(cf1) << '\n';
+	//std::cout << "acosh= " 	<< custom::acosh(cf1) << '\n';
+
+	//std::cout << "tan= " 	<< custom::tan(cf1) << '\n';
+	//std::cout << "atan= " 	<< custom::atan(cf1) << '\n';
+	//std::cout << "tanh= " 	<< custom::tanh(cf1) << '\n';
+	//std::cout << "atanh= " 	<< custom::atanh(cf1) << '\n';
 }
 
 void bitset_test() {

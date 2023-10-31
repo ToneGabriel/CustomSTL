@@ -7,6 +7,12 @@
 
 CUSTOM_BEGIN
 
+// TODO: check if needed
+// #define PI_LONG         3.1415926535897932384626433832795029L
+// #define PI_BY_2_LONG    1.5707963267948966192313216916397514L
+// #define LOG10_E_LONG    0.4342944819032518276511289189166051L
+// #define SQRT_2_LONG     1.4142135623730950488016887242096981L
+
 // complex traits implementation
 template<class Type>
 struct _ComplexTraitsBase
@@ -752,4 +758,62 @@ Complex<Type> pow(const Complex<Type>& base, const Complex<Type>& ex) {
     return Complex<Type>();
     // TODO: implement
 }
+
+template<class Type>
+Complex<Type> sin(const Complex<Type>& val) {
+    return Complex<Type>(   ComplexTraits<Type>::cosh(val.imag()) * ComplexTraits<Type>::sin(val.real()),
+                            ComplexTraits<Type>::sinh(val.imag()) * ComplexTraits<Type>::cos(val.real()));
+}
+
+template<class Type>
+Complex<Type> asinh(const Complex<Type>& val);  // TODO: implement
+
+template<class Type>
+Complex<Type> asin(const Complex<Type>& val) {
+    Complex<Type> asinhTemp = custom::asinh(Complex<Type>(-val.imag(), val.real()));
+    return Complex<Type>(asinhTemp.imag(), -asinhTemp.real());
+}
+
+template<class Type>
+Complex<Type> sinh(const Complex<Type>& val) {
+    return Complex<Type>(   ComplexTraits<Type>::sinh(val.real()) * ComplexTraits<Type>::cos(val.imag()),
+                            ComplexTraits<Type>::cosh(val.real()) * ComplexTraits<Type>::sin(val.imag()));
+}
+
+template<class Type>
+Complex<Type> cos(const Complex<Type>& val) {
+    return Complex<Type>(   ComplexTraits<Type>::cosh(val.imag()) * ComplexTraits<Type>::cos(val.real()),
+                            -ComplexTraits<Type>::sinh(val.imag()) * ComplexTraits<Type>::sin(val.real()));
+}
+
+template<class Type>
+Complex<Type> acos(const Complex<Type>& val);  // TODO: implement
+
+template<class Type>
+Complex<Type> cosh(const Complex<Type>& val) {
+    return Complex<Type>(   ComplexTraits<Type>::cosh(val.real()) * ComplexTraits<Type>::cos(val.imag()),
+                            ComplexTraits<Type>::sinh(val.real()) * ComplexTraits<Type>::sin(val.imag()));
+}
+
+template<class Type>
+Complex<Type> acosh(const Complex<Type>& val);  // TODO: implement
+
+template<class Type>
+Complex<Type> tan(const Complex<Type>& val) {
+    Complex<Type> tanhTemp = tanh(Complex<Type>(-val.imag(), val.real()));
+    return Complex<Type>(tanhTemp.imag(), -tanhTemp.real());
+}
+
+template<class Type>
+Complex<Type> atanh(const Complex<Type>& val);  // TODO: implement
+
+template<class Type>
+Complex<Type> atan(const Complex<Type>& val) {
+    Complex<Type> atanhTemp = custom::atanh(Complex<Type>(-val.imag(), val.real()));
+    return Complex<Type>(atanhTemp.imag(), -atanhTemp.real());
+}
+
+template<class Type>
+Complex<Type> tanh(const Complex<Type>& val);   // TODO: implement
+
 CUSTOM_END
