@@ -45,8 +45,7 @@ inline std::wistream& operator>>(std::wistream& is, WString& wstring) {
 	return is;
 }
 
-// TODO (optional): implement custom::basic_ios and replace above (won't ever happen)
-// This works only for custom::String
+// (optional): implement custom::basic_ios and replace above (won't ever happen)
 // template<class Type, class Alloc, class Traits>
 // inline std::ostream& operator<<(std::ostream& os, const BasicString<Type, Alloc, Traits>& string) {
 // }

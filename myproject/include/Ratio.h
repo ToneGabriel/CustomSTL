@@ -32,11 +32,11 @@ constexpr intmax_t _gcd(intmax_t first, intmax_t second) noexcept {  // computes
     return first;
 }
 
-inline void _safe_add_integer_arithmetic_overflow_error() noexcept {}   // TODO: what is this?
+inline void _safe_add_integer_arithmetic_overflow_error() noexcept {}
 
 constexpr intmax_t _safe_add(const intmax_t first, const intmax_t second) noexcept {
     if (_sign(first) == _sign(second) && _abs(first) > INTMAX_MAX - _abs(second))
-        _safe_add_integer_arithmetic_overflow_error();
+        _safe_add_integer_arithmetic_overflow_error();  // call to non-constexpr function (terminates)
 
     return first + second;
 }

@@ -679,7 +679,7 @@ private:
 				break;
 		}
 
-		_NodePtr mid	= _sort(first, size / 2, comp);			// TODO: check first here
+		_NodePtr mid	= _sort(first, size / 2, comp);
 		_NodePtr last	= _sort(mid, size - size / 2, comp);
 		_merge_internal(_data._Head->_Next, mid, last, comp);
 
