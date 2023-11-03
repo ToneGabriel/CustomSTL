@@ -907,6 +907,18 @@ constexpr BasicString<Type, Alloc, Traits> operator+(	const Type* left,
 	return BasicString<Type, Alloc, Traits>(Traits::length(left) + right.size()).append(left).append(right);
 }
 
-// TODO: complete operator+
+template<class Type, class Alloc, class Traits>
+constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
+														const Type right) {
+
+	return BasicString<Type, Alloc, Traits>(left.size() + 1).append(left).append(1, right);
+}
+
+template<class Type, class Alloc, class Traits>
+constexpr BasicString<Type, Alloc, Traits> operator+(	const Type left,
+														const BasicString<Type, Alloc, Traits>& right) {
+
+	return BasicString<Type, Alloc, Traits>(1 + right.size()).append(1, left).append(right);
+}
 
 CUSTOM_END

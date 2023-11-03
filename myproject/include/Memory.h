@@ -71,7 +71,7 @@ public:
     using Pointer       = typename _GetDeleterPointerType<Type, RemoveReference_t<Deleter>>::Type;
 
 private:
-    Pointer _ptr;
+    Pointer _ptr        = nullptr;
     Deleter _deleter;
 
 public:

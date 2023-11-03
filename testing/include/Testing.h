@@ -26,6 +26,7 @@ public:
 	Test& operator=(Test&& other) noexcept;
 	bool operator==(const Test& other) const;
 	bool operator!=(const Test& other) const;
+	void operator()() const;
 
 	friend std::ostream& operator<<(std::ostream&, const Test&);
 	friend bool operator<(const Test&, const Test&);

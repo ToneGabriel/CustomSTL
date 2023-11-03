@@ -5,8 +5,6 @@
 
 CUSTOM_BEGIN
 
-// TODO: implement
-
 enum class Endian
 {
 #if defined _MSC_VER
@@ -120,14 +118,59 @@ constexpr int bit_width(const Ty val) noexcept {
 
 
 template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
-constexpr Ty rotr(const Ty val, const int rotatio) noexcept; // not implemented
+constexpr Ty rotl(const Ty val, const int rotation) noexcept;
 
 
 template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
-constexpr Ty rotl(const Ty val, const int rotatio) noexcept; // not implemented
+constexpr Ty rotr(const Ty val, const int rotation) noexcept {
+    constexpr int digits    = NumericLimits<Ty>::Digits;
+    const auto remainder    = rotation % digits;
+
+    if (remainder == 0)
+        return val;
+    else if (remainder > 0)
+        return static_cast<Ty>(static_cast<Ty>(val >> remainder) | static_cast<Ty>(val << (digits - remainder)));
+    else
+        return custom::rotl(val, -remainder);
+}
+
+
+template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool>>
+constexpr Ty rotl(const Ty val, const int rotation) noexcept {
+    constexpr int digits    = NumericLimits<Ty>::Digits;
+    const auto remainder    = rotation % digits;
+
+    if (remainder == 0)
+        return val;
+    else if (remainder > 0)
+        return static_cast<Ty>(static_cast<Ty>(val << remainder) | static_cast<Ty>(val >> (digits - remainder)));
+    else
+        return custom::rotr(val, -remainder);
+}
 
 
 template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
-constexpr int popcount(const Ty val) noexcept; // not implemented
+constexpr int popcount(const Ty val) noexcept {
+#ifdef __GNUG__
+    constexpr int digits = NumericLimits<Ty>::Digits;
+
+    if constexpr (digits <= NumericLimits<unsigned>::Digits)
+        return __builtin_popcount(val);
+    else if constexpr (digits <= NumericLimits<unsigned long>::Digits)
+        return __builtin_popcountl(val);
+    else // (digits <= NumericLimits<unsigned long long>::Digits)
+        return __builtin_popcountll(val);
+#else // __GNUG__
+    int count = 0;
+
+    while (val)
+    {
+        count += val & 1;
+        val >>= 1;
+    }
+
+    return count;
+#endif // __GNUG__
+}
 
 CUSTOM_END

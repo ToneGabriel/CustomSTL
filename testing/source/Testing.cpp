@@ -45,6 +45,10 @@ bool Test::operator!=(const Test& other) const {
 	return !(*this == other);
 }
 
+void Test::operator()() const {
+	std::cout << "Value= " << value << '\n';
+}
+
 std::ostream& operator<<(std::ostream& os, const Test& test) {
 	os << "Test val = " << test.value;
 	return os;
@@ -312,8 +316,9 @@ void array_test() {
 }
 
 void function_test() {
-	custom::Function<void()> fct(unordered_map_test);
-	custom::Function<void()> fct1(fct);
+	custom::Function<void()> fct1(unordered_map_test);
+	custom::Function<void()> fct2(Test{});
+	fct1.swap(fct2);
 	fct1();
 }
 

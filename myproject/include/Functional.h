@@ -2,6 +2,7 @@
 #include "xFunctional.h"
 #include "Utility.h"
 #include "Tuple.h"
+#include "Memory.h"
 
 
 CUSTOM_BEGIN
@@ -733,8 +734,175 @@ private:
 };  // END Function
 
 #else   // USE_OPTIMAL_IMPLEMENTATION - store callable object impl in heap regardless of size
-#error Not implemented
-// TODO: implement without union
+
+template<class RetType, class... Args>
+class _CallableInterface
+{
+public:
+    _CallableInterface()                                        = default;
+    _CallableInterface(const _CallableInterface&)               = delete;
+    _CallableInterface& operator=(const _CallableInterface&)    = delete;
+
+    virtual ~_CallableInterface() {}
+    virtual _CallableInterface* _copy() const                   = 0;
+    virtual RetType _call(Args&&...)                            = 0;
+    virtual const std::type_info& _target_type() const noexcept = 0;
+
+    const void* _target(const std::type_info& info) const noexcept {
+        return _target_type() == info ? _get() : nullptr;
+    }
+
+private:
+    virtual const void* _get() const noexcept                   = 0;
+};  // END _CallableInterface
+
+
+template<class Callable, class RetType, class... Args>
+class _CallableImpl final : public _CallableInterface<RetType, Args...>
+{
+private:
+    using _Base = _CallableInterface<RetType, Args...>;
+
+    Callable _callable;
+
+public:
+
+    template<class OtherCallable,
+    EnableIf_t<!IsSame_v<Decay_t<OtherCallable>, _CallableImpl>, bool> = true>
+    explicit _CallableImpl(OtherCallable&& val)
+        : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
+
+private:
+
+    _Base* _copy() const override {
+        return new _CallableImpl(_callable);
+    }
+
+    RetType _call(Args&&... args) override {
+        if constexpr (IsVoid_v<RetType>)
+            (void)custom::invoke(_callable, custom::forward<Args>(args)...);
+        else
+            return custom::invoke(_callable, custom::forward<Args>(args)...);
+    }
+
+    const std::type_info& _target_type() const noexcept override {
+        return typeid(Callable);
+    }
+
+    const void* _get() const noexcept override {
+        return &_callable;
+    }
+};  // END _CallableImpl
+
+
+template<class RetType, class... Args>
+class Function<RetType(Args...)>                // wrapper for callable objects
+{
+public:
+    using ResultType    = RetType;
+    using Impl          = _CallableInterface<RetType, Args...>;
+
+private:
+    UniquePtr<Impl> _storage;
+
+public:
+    // Constructors
+
+    Function() noexcept { /*Empty*/}
+
+    Function(std::nullptr_t) noexcept { /*Empty*/ }
+
+    Function(const Function& other) : _storage(other._storage->_copy()) { /*Empty*/ }
+
+    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    Function(Callable&& val) : _storage(nullptr) {
+        _reset(custom::forward<Callable>(val));
+    }
+
+    Function(Function&& other) noexcept = default;
+    ~Function() noexcept                = default;
+
+public:
+    // Operators
+
+    Function& operator=(std::nullptr_t) noexcept {
+        _storage.reset();
+        return *this;
+    }
+
+    Function& operator=(const Function& other) {
+        if (_storage != other._storage)
+            _storage.reset(other._storage->_copy());
+
+        return *this;
+    }
+
+    Function& operator=(Function&& other) noexcept = default;
+
+    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    Function& operator=(Callable&& val) {
+        _reset(custom::forward<Callable>(val));
+        return *this;
+    }
+
+    template<class Callable>
+    Function& operator=(ReferenceWrapper<Callable> refVal) noexcept {
+        _reset(refVal);
+        return *this;
+    }
+
+    ResultType operator()(Args... args) const {
+        if (!_storage)
+            throw custom::BadFunctionCall();
+
+        return _storage->_call(custom::forward<Args>(args)...);
+    }
+
+    explicit operator bool() const noexcept {
+        return static_cast<bool>(_storage);
+    }
+
+public:
+    // Main functions
+
+    void swap(Function& other) noexcept {
+        Impl* temp = _storage.release();
+        _storage.reset(other._storage.release());
+        other._storage.reset(temp);
+    }
+
+    const std::type_info& target_type() const noexcept {
+        return static_cast<bool>(_storage) ? _storage->_target_type() : typeid(void);
+    }
+
+    template<class Callable>
+    Callable* target() noexcept {
+        return reinterpret_cast<Callable*>(const_cast<void*>(_target(typeid(Callable))));
+    }
+
+    template<class Callable>
+    const Callable* target() const noexcept {
+        return reinterpret_cast<const Callable*>(_target(typeid(Callable)));
+    }
+
+private:
+    // Helpers
+
+    template<class Callable>
+    void _reset(Callable&& val) { // store copy of val
+        if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
+            return;                 // already empty
+
+        using OtherImpl = _CallableImpl<Decay_t<Callable>, RetType, Args...>;
+
+        _storage.reset(new OtherImpl(custom::forward<Callable>(val)));
+    }
+
+    const void* _target(const std::type_info& info) const noexcept {
+        return static_cast<bool>(_storage) ?  _storage->_target(info) : nullptr;
+    }
+};  // END Function
+
 #endif  // USE_OPTIMAL_IMPLEMENTATION
 #pragma endregion Function
 
