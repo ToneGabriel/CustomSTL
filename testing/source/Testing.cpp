@@ -412,7 +412,15 @@ void complex_test() {
 }
 
 void bitset_test() {
-	// TODO: add test
+	std::bitset<10> bs1;
+	bs1.set(1);
+	bs1.set(3);
+	std::cout << bs1 << '\n' << bs1.count() << '\n';
+
+	custom::Bitset<10> bs2;
+	bs2.set(1);
+	bs2.set(3);
+	std::cout << bs2 << '\n' << bs2.count() << '\n';
 }
 
 TEST_END
