@@ -260,10 +260,10 @@ public:
             if constexpr (bitsLarge)
                 for (size_t block = 1; block <= _BLOCKS; ++block)
                     if (_array[block] != 0)
-                        std::overflow_error("Overflow!");   // fail if any high-order blocks are nonzero
+                        throw std::overflow_error("Overflow!");   // fail if any high-order blocks are nonzero
 
             if (_array[0] > ULONG_MAX)
-                std::overflow_error("Overflow!");
+                throw std::overflow_error("Overflow!");
 
             return static_cast<unsigned long>(_array[0]);
         }
@@ -280,7 +280,7 @@ public:
             if constexpr (bitsLarge)
                 for (size_t block = 1; block <= _BLOCKS; ++block)
                     if (_array[block] != 0)
-                        std::overflow_error("Overflow!");   // fail if any high-order blocks are nonzero
+                        throw std::overflow_error("Overflow!");   // fail if any high-order blocks are nonzero
 
             return _array[0];
         }

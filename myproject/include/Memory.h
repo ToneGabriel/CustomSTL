@@ -228,7 +228,7 @@ public:
                                                 IsSame<UpPointer, UpValueType*>,
                                                 IsConvertible<UpValueType(*)[], ElementType(*)[]>,
                                                 More>,  // More is used for additional enable traits
-                                bool>;  // TODO: check
+                                bool>;
 
 private:
     Pointer _ptr;
@@ -487,7 +487,7 @@ struct _TemporaryOwnerDel
 };  // END _TemporaryOwnerDel
 
 
-class /*__declspec(novtable)*/ _RefCountBase     // Helper base class for ref counting // TODO: why __declspec(novtable) ???
+class USE_NOVTABLE_ATTR _RefCountBase     // Helper base class for ref counting
 {
 private:
     std::atomic<long> _uses;

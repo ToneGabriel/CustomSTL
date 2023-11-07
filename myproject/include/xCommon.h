@@ -14,6 +14,21 @@ CUSTOM_BEGIN
 #define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 #define USE_OPTIMAL_IMPLEMENTATION    // some implementations are easier to understand, but have lower performance
 
+#ifdef _MSC_VER
+// This is a Microsoft Specific. This is a __declspec extended attribute.
+// This form of __declspec can be applied to any class declaration,
+// but should only be applied to pure interface classes, that is,
+// classes that will never be instantiated on their own.
+// The __declspec stops the compiler from generating code to initialize the vfptr in the constructor(s)
+// and destructor of the class. In many cases, this removes the only references to the vtable
+// that are associated with the class and, thus, the linker will remove it.
+// Using this form of __declspec can result in a significant reduction in code size.
+#define USE_NOVTABLE_ATTR __declspec(novtable)
+#else
+#define USE_NOVTABLE_ATTR    // Not defined
+#endif
+
+
 // custom assert function
 inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
