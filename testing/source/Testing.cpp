@@ -412,14 +412,12 @@ void complex_test() {
 }
 
 void bitset_test() {
-	std::bitset<10> bs1;
-	bs1.set(1);
-	bs1.set(3);
+	std::string str1 = "aBaaBBaB";
+    std::bitset<8> bs1(str1, 0, str1.size(), 'a', 'B');
 	std::cout << bs1 << '\n' << bs1.count() << '\n';
 
-	custom::Bitset<10> bs2;
-	bs2.set(1);
-	bs2.set(3);
+	custom::String str2 = "aBaaBBaB";
+	custom::Bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
 	std::cout << bs2 << '\n' << bs2.count() << '\n';
 }
 

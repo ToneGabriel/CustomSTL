@@ -9,8 +9,7 @@ Code build requirements:
 
 Components not fully operational:
 
-- Memory.h
+- Memory.h (Shared/Weak)
 - Algorithm.h
 - Complex.h
-- Bitset.h
-- List.h / ForwardList.h operations
+- List.h / ForwardList.h operations (sort/merge/unique etc.)
