@@ -7,9 +7,9 @@ CUSTOM_BEGIN
 // iterator tags
 struct InputIteratorTag {};
 struct OutputIteratorTag {};
-struct ForwardIteratorTag : InputIteratorTag {};
+struct ForwardIteratorTag       : InputIteratorTag {};
 struct BidirectionalIteratorTag : ForwardIteratorTag {};
-struct RandomAccessIteratorTag : BidirectionalIteratorTag {};
+struct RandomAccessIteratorTag  : BidirectionalIteratorTag {};
 
 // normal iterator traits helpers
 template<class Iterator, class = void>
@@ -150,5 +150,88 @@ noexcept(noexcept(_fake_copy_init<bool>(left.const_ref_base() != right.const_ref
     return left.const_ref_base() != right.const_ref_base();
 }
 
+
+// is iterator
+template<class Iter, class = void>
+constexpr bool IsIterator_v = false;
+
+template<class Iter>
+constexpr bool IsIterator_v<Iter, Void_t<typename IteratorTraits<Iter>::IteratorCategory>> = true;
+
+template<class Iter>
+struct IsIterator : BoolConstant<IsIterator_v<Iter>> {};
+
+// is input iterator
+template<class Iter>
+constexpr bool IsInputIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, InputIteratorTag>;
+
+// is output iterator
+template<class Iter>
+constexpr bool IsOutputIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, OutputIteratorTag>;
+
+// is forward iterator
+template<class Iter>
+constexpr bool IsForwardIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, ForwardIteratorTag>;
+
+// is bidirectional iterator
+template<class Iter>
+constexpr bool IsBidirectionalIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, BidirectionalIteratorTag>;
+
+// is random access iterator
+template<class Iter>
+constexpr bool IsRandomAccessIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, RandomAccessIteratorTag>;
+
+
+// iterator functions
+template<class InputIt>
+constexpr typename IteratorTraits<InputIt>::DifferenceType distance(InputIt first, InputIt last) {
+    _verify_iteration_range(first, last);
+    
+    if constexpr (IsRandomAccessIterator_v<InputIt>)
+        return last - first; // assume the iterator will do debug checking
+    else
+    {
+        typename IteratorTraits<InputIt>::DifferenceType dist = 0;
+
+        for (; first != last; ++first)
+            ++dist;
+
+        return dist;
+    }
+}
+
+template<class InputIt, class Offset>
+constexpr void advance(InputIt& first, Offset off) {
+    if constexpr (IsRandomAccessIterator_v<InputIt>)
+        first += off;
+    else
+    {
+        if constexpr (IsSigned_v<off> && !IsBidirectionalIterator_v<InputIt>)
+            CUSTOM_ASSERT(off >= 0, "Negative advance of non-bidirectional iterator!");
+
+        for (; off > 0; --off)  // happens for both input and bidirectional iterator
+            ++first;
+
+        if constexpr (IsSigned_v<off> && IsBidirectionalIterator_v<InputIt>)
+            for (; off < 0; ++off)
+                --first;
+    }
+}
+
+template<class InputIt>
+constexpr InputIt next(InputIt first, typename custom::IteratorTraits<InputIt>::DifferenceType off = 1) {
+    static_assert(IsInputIterator_v<InputIt>, "next requires input iterator!");
+
+    custom::advance(first, off);
+    return first;
+}
+
+template<class InputIt>
+constexpr InputIt prev(InputIt first, typename custom::IteratorTraits<InputIt>::DifferenceType off = 1) {
+    static_assert(IsBidirectionalIterator_v<InputIt>, "prev requires bidirectional iterator!");
+
+    custom::advance(first, -off);
+    return first;
+}
 
 CUSTOM_END

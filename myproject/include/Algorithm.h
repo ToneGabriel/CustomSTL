@@ -1,5 +1,7 @@
 #pragma once
 #include "Functional.h"
+#include "Iterator.h"
+#include "Pair.h"
 
 
 CUSTOM_BEGIN
@@ -313,23 +315,106 @@ OutputIt fill_n(OutputIt first, Size count, const Type& value) {
 // END fill, fill_n
 
 
-// swap_ranges
+// iter_swap, swap_ranges
+template<class ForwardIt1, class ForwardIt2>
+constexpr void iter_swap(ForwardIt1 it1, ForwardIt2 it2) {
+    custom::swap(*it1, *it2);
+}
+
 template<class ForwardIt1, class ForwardIt2>
 constexpr ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2)
 {
     _verify_iteration_range(first1, last1);
     
     for (; first1 != last1; ++first1, ++first2)
-        custom::swap(*first1, *first2);
+        custom::iter_swap(first1, first2);
 
     return first2;
 }
-// END swap_ranges
+// END iter_swap, swap_ranges
 #pragma endregion Modifying sequence operations
 
 
 #pragma region Partitioning operations
 // TODO: implement
+// partition, partition_point, is_partitioned, partition_copy
+template<class ForwardIt, class UnaryPredicate>
+constexpr ForwardIt partition(ForwardIt first, ForwardIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    first = custom::find_if_not(first, last, pred);
+
+    if (first == last)
+        return first;
+
+    for (ForwardIt it = custom::next(first); it != last; ++it)
+        if (pred(*it))
+        {
+            custom::iter_swap(it, first);
+            ++first;
+        }
+
+    return first;
+}
+
+template<class ForwardIt, class UnaryPredicate>
+constexpr ForwardIt partition_point(ForwardIt first, ForwardIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (auto length = custom::distance(first, last); 0 < length; )
+    {
+        auto half           = length / 2;
+        ForwardIt middle    = custom::next(first, half);
+
+        if (pred(*middle))
+        {
+            first   = custom::next(middle);
+            length  -= (half + 1);
+        }
+        else
+            length = half;
+    }
+ 
+    return first;
+}
+
+template<class InputIt, class UnaryPredicate>
+constexpr bool is_partitioned(InputIt first, InputIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (!pred(*first))
+            break;
+
+    for (; first != last; ++first)
+        if (pred(*first))
+            return false;
+
+    return true;
+}
+
+template<class InputIt, class OutputIt1, class OutputIt2, class UnaryPredicate>
+custom::Pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
+                                                    OutputIt1 destFirstTrue, OutputIt2 destFirstFalse,
+                                                    UnaryPredicate pred) {
+
+    _verify_iteration_range(first, last);
+
+    for (; first != last; ++first)
+        if (pred(*first))
+        {
+            *destFirstTrue = *first;
+            ++destFirstTrue;
+        }
+        else
+        {
+            *destFirstFalse = *first;
+            ++destFirstFalse;
+        }
+ 
+    return {destFirstTrue, destFirstFalse};
+}
+// END partition, partition_point, is_partitioned, partition_copy
 #pragma endregion Partitioning operations
 
 
