@@ -30,10 +30,10 @@ public:
 template<class Key,
 class Compare 	= custom::Less<Key>,
 class Alloc		= custom::Allocator<Key>>
-class Set : public _SearchTree<SetTraits<Key, Compare, Alloc>>		// Set Template
+class Set : public detail::_SearchTree<SetTraits<Key, Compare, Alloc>>		// Set Template
 {
 private:
-	using _Base = _SearchTree<SetTraits<Key, Compare, Alloc>>;
+	using _Base = detail::_SearchTree<SetTraits<Key, Compare, Alloc>>;
 
 public:
 	using KeyType 				= typename _Base::KeyType;

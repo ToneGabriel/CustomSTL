@@ -487,7 +487,7 @@ struct _TemporaryOwnerDel
 };  // END _TemporaryOwnerDel
 
 
-class USE_NOVTABLE_ATTR _RefCountBase     // Helper base class for ref counting
+class CUSTOM_NOVTABLE_ATTR _RefCountBase     // Helper base class for ref counting
 {
 private:
     std::atomic<long> _uses;

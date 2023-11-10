@@ -5,7 +5,8 @@
 
 CUSTOM_BEGIN
 
-// lock
+CUSTOM_DETAIL_BEGIN     // lock impl
+
 template<size_t... Indices, class... Locks>
 void _lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
     // use this to mimic a loop aver Indices
@@ -86,16 +87,19 @@ int _lock_attempt(const int hardLock, Locks&... locks) {
     return failed;
 }
 
+CUSTOM_DETAIL_END   // lock impl
+
+
 template<class... Locks>
 void lock(Locks&... locks) {    // lock multiple locks, without deadlock
     int hardLock = 0;
     while (hardLock != -1)
-        hardLock = _lock_attempt(hardLock, locks...);
+        hardLock = detail::_lock_attempt(hardLock, locks...);
 }
 
 template<class... Locks>
 int try_lock(Locks&... locks) { // try to lock multiple locks
-    return _try_lock_range(0, sizeof...(Locks), locks...);
+    return detail::_try_lock_range(0, sizeof...(Locks), locks...);
 }
 
 
@@ -134,6 +138,7 @@ public:
     LockGuard(const LockGuard&)             = delete;
     LockGuard& operator=(const LockGuard&)  = delete;
 }; // END LockGuard
+
 
 template<class Mtx>
 struct UnlockGuard      // automatic lock
@@ -324,6 +329,7 @@ public:
     ScopedLock(const ScopedLock&)            = delete;
     ScopedLock& operator=(const ScopedLock&) = delete;
 }; // END ScopedLock multiple
+
 
 template<class Mtx>
 class ScopedLock<Mtx>

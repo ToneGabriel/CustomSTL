@@ -32,10 +32,10 @@ template<class Key, class Type,
 class Hash 		= custom::Hash<Key>,
 class Compare 	= custom::EqualTo<Key>,
 class Alloc 	= custom::Allocator<custom::Pair<Key, Type>>>
-class UnorderedMap : public _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>	// UnorderedMap Template
+class UnorderedMap : public detail::_HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>	// UnorderedMap Template
 {
 private:
-	using _Base = _HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>;
+	using _Base = detail::_HashTable<UmapTraits<Key, Type, Hash, Compare, Alloc>>;
 
 public:
 	static_assert(IsSame_v<Pair<Key, Type>, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");

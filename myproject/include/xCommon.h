@@ -11,8 +11,12 @@
 
 CUSTOM_BEGIN
 
+#define CUSTOM_DETAIL_BEGIN namespace detail {  // used to hide detailed implementations
+#define CUSTOM_DETAIL_END }
+
 #define CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
-#define USE_OPTIMAL_IMPLEMENTATION    // some implementations are easier to understand, but have lower performance
+
+#define CUSTOM_OPTIMAL_IMPLEMENTATION    // some implementations are easier to understand, but have lower performance
 
 #ifdef _MSC_VER
 // This is a Microsoft Specific. This is a __declspec extended attribute.
@@ -23,9 +27,9 @@ CUSTOM_BEGIN
 // and destructor of the class. In many cases, this removes the only references to the vtable
 // that are associated with the class and, thus, the linker will remove it.
 // Using this form of __declspec can result in a significant reduction in code size.
-#define USE_NOVTABLE_ATTR __declspec(novtable)
+#define CUSTOM_NOVTABLE_ATTR __declspec(novtable)
 #else
-#define USE_NOVTABLE_ATTR    // Not defined
+#define CUSTOM_NOVTABLE_ATTR    // Defined only for _MSC_VER
 #endif
 
 
@@ -65,7 +69,7 @@ template<class Ty, Ty Val>
 struct IntegralConstant
 {
     using ValueType = Ty;
-    using Type = IntegralConstant;
+    using Type      = IntegralConstant;
 
     static constexpr ValueType Value = Val;
 

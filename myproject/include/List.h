@@ -8,15 +8,20 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN	// used to declare _HashTable for friend req in List
+
 template<class Traits>
 class _HashTable;
+
+CUSTOM_DETAIL_END
+
 
 template<class Type, class Alloc>
 struct _ListData
 {
 	// deduce data types and forward them
 	using _AllocTraits		= AllocatorTraits<Alloc>;
-	using _Node				= node::_DoubleNode<Type>;
+	using _Node				= detail::_DoubleNode<Type>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::Pointer;
@@ -172,7 +177,7 @@ class List				// Doubly Linked List
 {
 private:
 	template<class>
-	friend class _HashTable;												// Needed in _HashTable class
+	friend class detail::_HashTable;												// Needed in _HashTable class
 
 	using _Data 				= _ListData<Type, Alloc>;					// Members that are modified
 	using _AllocTraits			= typename _Data::_AllocTraits;

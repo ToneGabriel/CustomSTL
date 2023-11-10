@@ -346,6 +346,8 @@ constexpr bool operator!=(const Array<Ty, Size>& left, const Array<Ty, Size>& ri
 }
 
 
+CUSTOM_DETAIL_BEGIN
+
 template<class First, class... Rest>
 struct _AssertSame													// Assert all types to be the same
 {
@@ -354,11 +356,6 @@ struct _AssertSame													// Assert all types to be the same
 	using Type = First;												// Get type
 };
 
-template<class First, class... Rest>
-Array(First, Rest...) -> Array<typename _AssertSame<First, Rest...>::Type, 1 + sizeof...(Rest)>;
-
-
-// to array
 template<class Ty, size_t Size, size_t... Idx>
 constexpr Array<RemoveCV_t<Ty>, Size> _to_array_copy_impl(Ty (&builtInArray)[Size], IndexSequence<Idx...>) {
 	return { builtInArray[Idx]... };
@@ -369,12 +366,19 @@ constexpr Array<RemoveCV_t<Ty>, Size> _to_array_move_impl(Ty (&&builtInArray)[Si
 	return { custom::move(builtInArray[Idx])... };
 }
 
+CUSTOM_DETAIL_END
+
+
+template<class First, class... Rest>
+Array(First, Rest...) -> Array<typename detail::_AssertSame<First, Rest...>::Type, 1 + sizeof...(Rest)>;
+
+// to array
 template<class Ty, size_t Size>
 constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty (&builtInArray)[Size]) {
 	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
 	static_assert(IsCopyConstructible_v<Ty>, "to_array requires copy constructible elements...");
 
-	return _to_array_copy_impl(builtInArray, MakeIndexSequence<Size>{});
+	return detail::_to_array_copy_impl(builtInArray, MakeIndexSequence<Size>{});
 }
 
 template<class Ty, size_t Size>
@@ -382,7 +386,7 @@ constexpr Array<RemoveCV_t<Ty>, Size> to_array(Ty (&&builtInArray)[Size]) {
 	static_assert(!IsArray_v<Ty>, "to_array does not accept multidimensional arrays...");
 	static_assert(IsMoveConstructible_v<Ty>, "to_array requires move constructible elements...");
 
-	return _to_array_move_impl(custom::move(builtInArray), MakeIndexSequence<Size>{});
+	return detail::_to_array_move_impl(custom::move(builtInArray), MakeIndexSequence<Size>{});
 }
 
 CUSTOM_END

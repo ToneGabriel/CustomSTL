@@ -8,6 +8,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 enum class _TreeChild : char
 {
 	Left,
@@ -31,7 +33,7 @@ struct _SearchTreeData
 	using AllocatorType 	= typename Traits::AllocatorType;
 	
 	using _AllocTraits		= AllocatorTraits<AllocatorType>;
-	using _Node				= node::_TreeNode<ValueType>;
+	using _Node				= detail::_TreeNode<ValueType>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
 	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::Pointer;
@@ -905,5 +907,7 @@ template<class Traits>
 bool operator!=(const _SearchTree<Traits>& left, const _SearchTree<Traits>& right) {
 	return !(left == right);
 }
+
+CUSTOM_DETAIL_END
 
 CUSTOM_END

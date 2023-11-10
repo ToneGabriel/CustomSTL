@@ -30,10 +30,10 @@ public:
 template<class Key, class Type,
 class Compare 	= custom::Less<Key>,
 class Alloc		= custom::Allocator<custom::Pair<Key, Type>>>
-class Map : public _SearchTree<MapTraits<Key, Type, Compare, Alloc>>		// Map Template
+class Map : public detail::_SearchTree<MapTraits<Key, Type, Compare, Alloc>>		// Map Template
 {
 private:
-	using _Base = _SearchTree<MapTraits<Key, Type, Compare, Alloc>>;
+	using _Base = detail::_SearchTree<MapTraits<Key, Type, Compare, Alloc>>;
 
 public:
 	using KeyType 				= typename _Base::KeyType;

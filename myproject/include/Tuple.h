@@ -324,32 +324,13 @@ template<class Tag, class _Tuple, size_t... Indices, EnableIf_t<IsSame_v<Tag, Tu
 Tuple<This, Rest...>::Tuple(Tag, _Tuple&& other, IndexSequence<Indices...>)
 	: Tuple(TupleArgs_t{}, custom::get<Indices>(custom::forward<_Tuple>(other))...) { /*Empty*/ }	// Uses (H1)
 
-// forward as tuple
-template<class... Types>
-Tuple<Types&&...> forward_as_tuple(Types&&... args) {									// Forward arguments in a tuple
-	return Tuple<Types&&...>(custom::forward<Types>(args)...);
-}
+
+CUSTOM_DETAIL_BEGIN		// apply, make_from_tuple, tuple_cat helpers
 
 // apply
 template<class Callable, class _Tuple, size_t... Indices>
 decltype(auto) _apply_impl(Callable&& func, _Tuple&& tuple, IndexSequence<Indices...>) noexcept {
     return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<_Tuple>(tuple))...);
-}
-
-template<class Callable, class _Tuple>
-decltype(auto) apply(Callable&& func, _Tuple&& tuple) noexcept {						// Invoke Callable obj with args as Tuple
-    return _apply_impl(custom::forward<Callable>(func), custom::forward<_Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{});
-}
-
-// make tuple / tie
-template<class... Args>
-Tuple<UnRefWrap_t<Args>...> make_tuple(Args&&... args) {								// Create Tuple with args
-	return Tuple<UnRefWrap_t<Args>...>(custom::forward<Args>(args)...);
-}
-
-template<class... Args>
-Tuple<Args&...> tie(Args&... args) noexcept {											// Create Tuple with references of args
-	return Tuple<Args&...>(args...);
 }
 
 // make from tuple
@@ -359,17 +340,46 @@ Type _make_from_tuple_impl(_Tuple&& tuple, IndexSequence<Indices...>) {
 	return Type(custom::get<Indices>(custom::forward<_Tuple>(tuple))...);
 }
 
-template<class Type, class _Tuple>
-Type make_from_tuple(_Tuple&& tuple) {													// construct Type from the elements of _Tuple
-	return _make_from_tuple_impl<Type>(custom::forward<_Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{});
-}
-
 // tuple cat
 template<class RetType, size_t... Kx, size_t... Ix, class _Tuple>
 RetType _tuple_cat_impl(IndexSequence<Kx...>, IndexSequence<Ix...>, _Tuple tuple) {		// tuple as copy
 	return RetType(custom::get<Kx>(custom::get<Ix>(custom::move(tuple)))...);
 }
 
+CUSTOM_DETAIL_END	// apply, make_from_tuple, tuple_cat helpers
+
+
+// forward as tuple
+template<class... Types>
+Tuple<Types&&...> forward_as_tuple(Types&&... args) {									// Forward arguments in a tuple
+	return Tuple<Types&&...>(custom::forward<Types>(args)...);
+}
+
+// apply
+template<class Callable, class _Tuple>
+decltype(auto) apply(Callable&& func, _Tuple&& tuple) noexcept {						// Invoke Callable obj with args as Tuple
+    return detail::_apply_impl(custom::forward<Callable>(func), custom::forward<_Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{});
+}
+
+// make tuple / tie
+template<class... Args>
+Tuple<UnRefWrap_t<Args>...> make_tuple(Args&&... args) {								// Create Tuple with args
+	return Tuple<UnRefWrap_t<Args>...>(custom::forward<Args>(args)...);
+}
+
+// tie
+template<class... Args>
+Tuple<Args&...> tie(Args&... args) noexcept {											// Create Tuple with references of args
+	return Tuple<Args&...>(args...);
+}
+
+// make_from)tuple
+template<class Type, class _Tuple>
+Type make_from_tuple(_Tuple&& tuple) {													// construct Type from the elements of _Tuple
+	return detail::_make_from_tuple_impl<Type>(custom::forward<_Tuple>(tuple), MakeIndexSequence<TupleSize_v<RemoveReference_t<_Tuple>>>{});
+}
+
+// tuple_cat
 template<class... Tuples>																// concatenate tuples
 typename TupleCat<Tuple<Tuples&&...>, IndexSequence<>, IndexSequence<>, 0,
 					MakeIndexSequence<TupleSize_v<RemoveCVRef_t<Tuples>>>...>::RetType tuple_cat(Tuples&&... tuples) {
@@ -380,7 +390,7 @@ typename TupleCat<Tuple<Tuples&&...>, IndexSequence<>, IndexSequence<>, 0,
 	using KxSeq		= typename Cat::KxSeq;
 	using IxSeq		= typename Cat::IxSeq;
 
-	return _tuple_cat_impl<RetType>(KxSeq{}, IxSeq{}, custom::forward_as_tuple(custom::forward<Tuples>(tuples)...));
+	return detail::_tuple_cat_impl<RetType>(KxSeq{}, IxSeq{}, custom::forward_as_tuple(custom::forward<Tuples>(tuples)...));
 }
 
 CUSTOM_END

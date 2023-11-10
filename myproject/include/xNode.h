@@ -4,10 +4,7 @@
 
 CUSTOM_BEGIN
 
-#define CUSTOM_NODE_BEGIN namespace node {
-#define CUSTOM_NODE_END }
-
-CUSTOM_NODE_BEGIN
+CUSTOM_DETAIL_BEGIN
 
 template<class Type>
 struct _ForwardNode			// Struct that holds data and references to next struct
@@ -31,9 +28,7 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	_ForwardNode(Args&&... args)
 		:_Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
-	~_ForwardNode() {
-		_Next = nullptr;
-	}
+	~_ForwardNode() = default;
 }; // END _ForwardNode
 
 
@@ -60,10 +55,7 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 	_DoubleNode(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
-	~_DoubleNode() {
-		_Previous	= nullptr;
-		_Next		= nullptr;
-	}
+	~_DoubleNode() = default;
 }; // END _DoubleNode
 
 
@@ -99,17 +91,13 @@ struct _TreeNode			// Used in _SearchTree
 	_TreeNode(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
-	~_TreeNode() {
-		_Parent	= nullptr;
-		_Left	= nullptr;
-		_Right	= nullptr;
-	}
+	~_TreeNode()  = default;
 
 	bool is_leaf() const {
 		return (_Left->_IsNil && _Right->_IsNil);
 	}
 }; // END Tree Node
 
-CUSTOM_NODE_END
+CUSTOM_DETAIL_END
 
 CUSTOM_END

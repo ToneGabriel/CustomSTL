@@ -6,7 +6,8 @@
 
 CUSTOM_BEGIN
 
-// helpers
+CUSTOM_DETAIL_BEGIN     // helpers
+
 constexpr intmax_t _abs(const intmax_t val) noexcept {
     return val < 0 ? -val : val;
 }
@@ -75,6 +76,9 @@ constexpr _BigUint128 _big_multiply(const uint64_t left, const uint64_t right) n
     return { leftHigh * rightHigh + midUpper + carry, (aux << 32) + lower32 };
 }
 
+CUSTOM_DETAIL_END     // helpers
+
+
 // ratio
 template<intmax_t Numerator, intmax_t Denominator = 1>
 struct Ratio    // holds the Ratio of Numerator to Denominator
@@ -83,8 +87,8 @@ struct Ratio    // holds the Ratio of Numerator to Denominator
     static_assert(-INTMAX_MAX <= Numerator, "numerator too negative");
     static_assert(-INTMAX_MAX <= Denominator, "denominator too negative");
 
-    static constexpr intmax_t Num = _sign(Numerator) * _sign(Denominator) * _abs(Numerator) / _gcd(Numerator, Denominator);
-    static constexpr intmax_t Den = _abs(Denominator) / _gcd(Numerator, Denominator);
+    static constexpr intmax_t Num = detail::_sign(Numerator) * detail::_sign(Denominator) * detail::_abs(Numerator) / detail::_gcd(Numerator, Denominator);
+    static constexpr intmax_t Den = detail::_abs(Denominator) / detail::_gcd(Numerator, Denominator);
 
     using Type = Ratio<Num, Den>;
 };
@@ -98,7 +102,7 @@ constexpr bool IsRatio_v<Ratio<Rat1, Rat2>> = true;
 
 // safe multiply
 template<intmax_t First, intmax_t Second, bool Sfinae = false,
-bool Good = _abs(First) <= INTMAX_MAX / (Second == 0 ? 1 : _abs(Second))>
+bool Good = detail::_abs(First) <= INTMAX_MAX / (Second == 0 ? 1 : detail::_abs(Second))>
 struct _SafeMultiply : IntegralConstant<intmax_t, First * Second> {}; // computes First * Second without overflow
 
 template<intmax_t First, intmax_t Second, bool Sfinae>
@@ -114,7 +118,7 @@ struct _RatioAdd
     static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioAdd<R1, R2> requires R1 and R2 to be ratios.");
 
 private:
-    static constexpr intmax_t _gcd1 = _gcd(Rat1::Den, Rat2::Den);
+    static constexpr intmax_t _gcd1 = detail::_gcd(Rat1::Den, Rat2::Den);
 
 public:
     using Type = typename Ratio<_safe_add(  _SafeMultiply<Rat1::Num, Rat2::Den / _gcd1>::Value,
@@ -144,8 +148,8 @@ struct _RatioMultiply  // multiply two ratios
     static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioMultiply<R1, R2> requires R1 and R2 to be ratios.");
 
 private:
-    static constexpr intmax_t _gcd1 = _gcd(Rat1::Num, Rat2::Den);
-    static constexpr intmax_t _gcd2 = _gcd(Rat2::Num, Rat1::Den);
+    static constexpr intmax_t _gcd1 = detail::_gcd(Rat1::Num, Rat2::Den);
+    static constexpr intmax_t _gcd2 = detail::_gcd(Rat2::Num, Rat1::Den);
 
 public:
     using Num = _SafeMultiply<  Rat1::Num / _gcd1,
@@ -212,12 +216,12 @@ constexpr bool _ratio_less( const int64_t num1, const int64_t den1,
                             const int64_t num2, const int64_t den2) noexcept {
                                 
     if (num1 >= 0 && num2 >= 0)
-        return  _big_multiply(static_cast<uint64_t>(num1), static_cast<uint64_t>(den2)) <
-                _big_multiply(static_cast<uint64_t>(num2), static_cast<uint64_t>(den1));
+        return  detail::_big_multiply(static_cast<uint64_t>(num1), static_cast<uint64_t>(den2)) <
+                detail::_big_multiply(static_cast<uint64_t>(num2), static_cast<uint64_t>(den1));
 
     if (num1 < 0 && num2 < 0)
-        return  _big_multiply(static_cast<uint64_t>(-num2), static_cast<uint64_t>(den1)) <
-                _big_multiply(static_cast<uint64_t>(-num1), static_cast<uint64_t>(den2));
+        return  detail::_big_multiply(static_cast<uint64_t>(-num2), static_cast<uint64_t>(den1)) <
+                detail::_big_multiply(static_cast<uint64_t>(-num1), static_cast<uint64_t>(den2));
 
     return num1 < num2;
 }

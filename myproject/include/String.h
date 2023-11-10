@@ -71,7 +71,7 @@ struct Hash<BasicString<Type, Alloc, Traits>>
 : _BaseHashEnabler<BasicString<Type, Alloc, Traits>, IsChar_v<Type>>	// used by UnorderedMap, UnorderedSet
 {
 	static size_t compute_hash(const BasicString<Type, Alloc, Traits>& key) noexcept {
-		return _hash_array_representation(key.c_str(), key.size());
+		return detail::_hash_array_representation(key.c_str(), key.size());
 	}
 };
 

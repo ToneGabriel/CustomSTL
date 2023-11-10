@@ -10,6 +10,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Traits>
 class _HashTable				// _HashTable Template implemented as vector of lists
 {
@@ -339,5 +341,7 @@ template<class Traits>
 bool operator!=(const _HashTable<Traits>& left, const _HashTable<Traits>& right) {
 	return !(left == right);
 }
+
+CUSTOM_DETAIL_END
 
 CUSTOM_END
