@@ -1,5 +1,6 @@
 #pragma once
-#include "Deque.h"
+// #include "Deque.h"	// can be used as Container in Queue/PriorityQueue
+#include "List.h"
 #include "Vector.h"
 #include "Utility.h"
 #include "Functional.h"	// for custom::Less
@@ -7,9 +8,14 @@
 
 CUSTOM_BEGIN
 
-template<class Type, class Container = custom::Deque<Type>>
-class Queue			// Queue template implemented as Deque wrapper
+template<class Type, class Container = custom::List<Type>>
+class Queue			// Queue template implemented as SequenceContainer wrapper
 {
+// The Container must satisfy the requirements of SequenceContainer.
+// Additionally, it must provide the following functions with the usual semantics:
+// back(), front(), push_back() (... or emplace_back()), pop_front()
+// custom::Deque and custom::List satisfy these requirements
+
 public:
 	using ContainerType 	= Container;
 	using ValueType 		= typename ContainerType::ValueType;
@@ -116,6 +122,12 @@ bool operator!=(const Queue<_Type, _Container>& left, const Queue<_Type, _Contai
 template<class Type, class Container = custom::Vector<Type>, class Compare = custom::Less<Type>>
 class PriorityQueue		// Priority Queue Template implemented as array heap
 {
+// The Container must satisfy the requirements of SequenceContainer,
+// and its iterators must satisfy the requirements of LegacyRandomAccessIterator.
+// Additionally, it must provide the following functions with the usual semantics:
+// front(), push_back() (... or emplace_back()), pop_back()
+// custom::Vector and custom::Deque satisfy these requirements
+
 public:
 	using ContainerType 	= Container;
 	using ValueCompare 		= Compare;
@@ -158,7 +170,7 @@ public:
 
 	template<class _Type, class _Container, class _Compare>
 	friend bool operator==(	const PriorityQueue<_Type, _Container, _Compare>& left,
-										const PriorityQueue<_Type, _Container, _Compare>& right);
+							const PriorityQueue<_Type, _Container, _Compare>& right);
 
 public:
 	// Main Functions

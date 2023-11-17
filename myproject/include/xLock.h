@@ -10,15 +10,15 @@ CUSTOM_DETAIL_BEGIN     // lock impl
 template<size_t... Indices, class... Locks>
 void _lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
     // use this to mimic a loop aver Indices
-    int ignored[] = {((static_cast<int>(Indices) == target ? (void) locks.lock() : void()), 0)...};
-    (void) ignored;
+    int ignored[] = {((static_cast<int>(Indices) == target ? (void)locks.lock() : void()), 0)...};
+    (void)ignored; // suppress warning on unused variable
 }
 
 template<size_t... Indices, class... Locks>
 bool _try_lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // try to lock locks[target]
     bool result;
-    int ignored[] = {((static_cast<int>(Indices) == target ? (void) (result = locks.try_lock()) : void()), 0)...};
-    (void) ignored;
+    int ignored[] = {((static_cast<int>(Indices) == target ? (void)(result = locks.try_lock()) : void()), 0)...};
+    (void)ignored;
     return result;
 }
 
@@ -26,8 +26,8 @@ template<size_t... Indices, class... Locks>
 void _unlock_locks(const int first, const int last, IndexSequence<Indices...>, Locks&... locks) noexcept {
     // terminates
     // unlock locks in locks[first, last)
-    int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void) locks.unlock() : void()), 0)...};
-    (void) ignored;
+    int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void()), 0)...};
+    (void)ignored;
 }
 
 template<class... Locks>
@@ -227,10 +227,8 @@ public:
             if (_owns)
                 _ownedMutex->unlock();  // can throw
 
-            _ownedMutex         = other._ownedMutex;
-            _owns               = other._owns;
-            other._ownedMutex   = nullptr;
-            other._owns         = false;
+            _ownedMutex = custom::exchange(other._ownedMutex, nullptr);
+            _owns       = custom::exchange(other._owns, false);
         }
 
         return *this;
@@ -323,7 +321,14 @@ public:
         : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
 
     ~ScopedLock() {
-        custom::apply([](Mutexes&... mtxes) { (..., (void) mtxes.unlock()); }, _ownedMutexes);
+        auto reverseUnlock = [](Mutexes&... mtxes) {
+            // (args, ...) left folding   = first -> last
+            // (..., args) right folding  = last -> first
+
+            (..., (void)mtxes.unlock());
+        };
+
+        custom::apply(reverseUnlock, _ownedMutexes);
     }
 
     ScopedLock(const ScopedLock&)            = delete;

@@ -25,9 +25,9 @@ constexpr intmax_t _gcd(intmax_t first, intmax_t second) noexcept {  // computes
 
     while (second != 0)
     {
-        auto aux    = first;
-        first       = second;
-        second      = aux % second;
+        intmax_t aux    = first;
+        first           = second;
+        second          = aux % second;
     }
 
     return first;
@@ -118,12 +118,12 @@ struct _RatioAdd
     static_assert(IsRatio_v<Rat1> && IsRatio_v<Rat2>, "RatioAdd<R1, R2> requires R1 and R2 to be ratios.");
 
 private:
-    static constexpr intmax_t _gcd1 = detail::_gcd(Rat1::Den, Rat2::Den);
+    static constexpr intmax_t _gcd = detail::_gcd(Rat1::Den, Rat2::Den);
 
 public:
-    using Type = typename Ratio<_safe_add(  _SafeMultiply<Rat1::Num, Rat2::Den / _gcd1>::Value,
-                                            _SafeMultiply<Rat2::Num, Rat1::Den / _gcd1>::Value),
-                                _SafeMultiply<Rat1::Den, Rat2::Den / _gcd1>::Value>::Type;
+    using Type = typename Ratio<detail::_safe_add(  _SafeMultiply<Rat1::Num, Rat2::Den / _gcd>::Value,
+                                                    _SafeMultiply<Rat2::Num, Rat1::Den / _gcd>::Value),
+                                _SafeMultiply<Rat1::Den, Rat2::Den / _gcd>::Value>::Type;
 };
 
 template<class Rat1, class Rat2>
