@@ -334,17 +334,29 @@ void memory_test() {
 void chrono_test() {
 	using namespace std::chrono;
 	using namespace custom::chrono;
-	using namespace std::chrono_literals;
+	//using namespace std::chrono_literals;
 
-	microseconds ms(100000);
-	time_point<system_clock, microseconds> absoluteTime(ms);
+	microseconds ms1(100000);
+	time_point<system_clock, microseconds> absoluteTime1(ms1);
 
-	auto _seconds        = time_point_cast<seconds>(absoluteTime);
-	auto _nanoseconds    = duration_cast<nanoseconds>(absoluteTime - _seconds);
+	auto _seconds1 		= time_point_cast<seconds>(absoluteTime1);
+	auto _nanoseconds1 	= duration_cast<nanoseconds>(absoluteTime1 - _seconds1);
 
-	std::cout << absoluteTime.time_since_epoch().count() << '\n';
-	std::cout << _seconds.time_since_epoch().count() << '\n';
-	std::cout << _nanoseconds.count() << '\n';
+	std::cout << absoluteTime1.time_since_epoch().count() << '\n';
+	std::cout << _seconds1.time_since_epoch().count() << '\n';
+	std::cout << _nanoseconds1.count() << '\n';
+
+	// ================================================================
+
+	Microseconds ms2(100000);
+	TimePoint<SystemClock, Microseconds> absoluteTime2(ms2);
+
+	auto _seconds2 		= time_point_cast<Seconds>(absoluteTime2);
+	auto _nanoseconds2 	= duration_cast<Nanoseconds>(absoluteTime2 - _seconds2);
+
+	std::cout << absoluteTime2.time_since_epoch().count() << '\n';
+	std::cout << _seconds2.time_since_epoch().count() << '\n';
+	std::cout << _nanoseconds2.count() << '\n';
 }
 
 void complex_test() {

@@ -1,68 +1,12 @@
 #pragma once
-#include "TypeTraits.h"
-#include "Limits.h"
-#include "Ratio.h"
-
-#include <ctime>        // std::time_t
-
-#if defined _WIN32
-#include <windows.h>    // for Clock::now()
-
-#define UNIX_EPOCH 116444736000000000LL
-
-inline long long _get_system_time_precise() noexcept {
-    FILETIME fileTime;
-    ULARGE_INTEGER theTime;
-    
-    GetSystemTimePreciseAsFileTime(&fileTime);
-    theTime.LowPart     = fileTime.dwLowDateTime;
-    theTime.HighPart    = fileTime.dwHighDateTime;
-
-    return theTime.QuadPart;
-}
-
-inline long long _query_performance_counter() noexcept {
-    LARGE_INTEGER itCount{};
-    QueryPerformanceCounter(&itCount);
-    return itCount.QuadPart;
-}
-
-inline long long _query_performance_frequency() noexcept {
-    LARGE_INTEGER itFreq{};
-    QueryPerformanceFrequency(&itFreq);
-    return itFreq.QuadPart;
-}
-#elif defined __linux__
-#include <sys/time.h>
-#endif      // _WIN32 and __linux__
+#include "xChrono.h"
 
 
 CUSTOM_BEGIN
 
-#define CUSTOM_CHRONO_BEGIN namespace chrono {
-#define CUSTOM_CHRONO_END }
-
 CUSTOM_CHRONO_BEGIN
 
 #pragma region Duration
-// duration values
-template<class Rep>
-struct DurationValues  // gets arithmetic properties of a type
-{
-    static constexpr Rep zero() noexcept {      // get zero value
-        return Rep(0);
-    }
-
-    static constexpr Rep (min)() noexcept {     // get smallest value
-        return NumericLimits<Rep>::lowest();
-    }
-
-    static constexpr Rep (max)() noexcept {     // get largest value
-        return (NumericLimits<Rep>::max)();
-    }
-};
-
-
 // Duration
 template<class RepType, class PeriodRatio = Ratio<1>>
 class Duration;
@@ -580,20 +524,24 @@ noexcept(IsArithmetic_v<typename Duration::Rep> && IsArithmetic_v<typename ToDur
 
 #pragma region Clock
 // system clock
-struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
+struct SystemClock     // wraps GetSystemTimePreciseAsFileTime
 {
+#if defined _MSC_VER
+    using Period    = custom::Ratio<1, 10'000'000>; // 100 nanoseconds
+#elif defined __GNUG__
+    using Period    = custom::Nano;                 // clock_gettime uses nanoseconds
+#endif
     using Rep       = long long;
-    using Period    = custom::Nano;
-    using Duration  = custom::chrono::Nanoseconds;
+    using Duration  = custom::chrono::Duration<Rep, Period>;
     using TimePoint = custom::chrono::TimePoint<SystemClock>;
 
     static constexpr bool IsSteady = false;
 
+
     static TimePoint now() noexcept { // get current time
-#if defined _WIN32
-        long long sysTime = _get_system_time_precise();
-        return TimePoint(Duration(sysTime - UNIX_EPOCH));
-#elif defined __linux__
+#if defined _MSC_VER
+        return TimePoint(Duration(detail::_get_system_time_precise() - UNIX_EPOCH));
+#elif defined __GNUG__
         timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
         return TimePoint(Duration(Seconds(ts.tv_sec) + Nanoseconds(ts.tv_nsec)));
@@ -604,7 +552,6 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
         return duration_cast<Seconds>(time.time_since_epoch()).count();
     }
 
-    // TODO: check
     static TimePoint from_time_t(std::time_t time) noexcept { // convert from std::time_t
         return TimePoint(Seconds(time));
     }
@@ -614,17 +561,18 @@ struct SystemClock     // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFi
 // steady clock
 struct SteadyClock     // wraps QueryPerformanceCounter
 {
-    using Rep       = long long;
     using Period    = custom::Nano;
-    using Duration  = custom::chrono::Nanoseconds;
+    using Rep       = long long;
+    using Duration  = custom::chrono::Duration<Rep, Period>;
     using TimePoint = custom::chrono::TimePoint<SteadyClock>;
 
     static constexpr bool IsSteady = true;
 
+
     static TimePoint now() noexcept {
-#if defined _WIN32
-        const long long freq    = _query_performance_frequency(); // doesn't change after system boot
-        const long long count   = _query_performance_counter();
+#if defined _MSC_VER
+        const long long freq    = detail::_query_performance_frequency(); // doesn't change after system boot
+        const long long count   = detail::_query_performance_counter();
 
         static_assert(Period::Num == 1, "This assumes Period::Num == 1.");
 
@@ -651,7 +599,7 @@ struct SteadyClock     // wraps QueryPerformanceCounter
             const long long part    = (count % freq) * Period::Den / freq;
             return TimePoint(Duration(whole + part));
         }
-#elif defined __linux__
+#elif defined __GNUG__
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         return TimePoint(Duration(Seconds(ts.tv_sec) + Nanoseconds(ts.tv_nsec)));
@@ -660,27 +608,16 @@ struct SteadyClock     // wraps QueryPerformanceCounter
 };  // END SteadyClock
 
 
+#if defined _MSC_VER
+using HighResolutionClock = SteadyClock;
+#elif defined __GNUG__
 using HighResolutionClock = SystemClock;
+#endif
 
 template<class _Duration>
 using SysTime       = TimePoint<SystemClock, _Duration>;
 using SysSeconds    = SysTime<Seconds>;
 using SysDays       = SysTime<Days>;
-
-// is clock
-template<class Clock, class = void>
-constexpr bool IsClock_v = false;
-
-template<class Clock>
-constexpr bool IsClock_v<Clock, Void_t< typename Clock::Rep,
-                                        typename Clock::Period,
-                                        typename Clock::Duration,
-                                        typename Clock::TimePoint,
-                                        decltype(Clock::IsSteady),
-                                        decltype(Clock::now())>> = true;
-
-template<class Clock>
-struct IsClock : BoolConstant<IsClock_v<Clock>> {};
 #pragma endregion Clock
 
 CUSTOM_CHRONO_END

@@ -7,12 +7,8 @@
 #include "Chrono.h"
 
 #include <pthread.h>
+#include <sys/sysinfo.h>    // for hardware_concurrency()
 
-#if defined _WIN32
-#include <windows.h>    // for hardware_concurrency()
-#elif defined __linux__
-#include <sys/sysinfo.h>
-#endif      // _WIN32 and __linux__
 
 CUSTOM_BEGIN
 
@@ -23,8 +19,8 @@ public:
     using NativeHandleType  = pthread_t;
 
 private:
-    using Invoker       = void*(*)(void*);
-    pthread_t _thread   = 0;
+    using Invoker           = void*(*)(void*);
+    pthread_t _thread       = 0;
 
 private:
     // Core functions
@@ -138,21 +134,14 @@ public:
     }
 
     static unsigned int hardware_concurrency() noexcept {
-#if defined _WIN32
-        SYSTEM_INFO sysinfo;
-        GetSystemInfo(&sysinfo);
-        return sysinfo.dwNumberOfProcessors;
-#elif defined __linux__
         return get_nprocs();
-#endif  // _WIN32 and __linux__
     }
 
 private:
     // Helpers
 
     void _move(Thread&& other) {
-        _thread         = other._thread;
-        other._thread   = 0;
+        _thread = custom::exchange(other._thread, 0);
     }
 }; // END Thread
 
