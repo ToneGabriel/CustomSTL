@@ -26,9 +26,11 @@ struct _Employee
 
 void _send_mail(_Employee &, _Employee &);
 void _assign_lunch_partner(_Employee &e1, _Employee &e2);
+void _semaphore_test_task(int id, custom::CountingSemaphore<>& sem);
 
 void lock_locks_test();
 void thread_test();
+void semaphore_test();
 
 TEST_BOOST_END
 

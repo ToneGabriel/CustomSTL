@@ -368,7 +368,7 @@ public:
     template<class _Duration, EnableIf_t<IsConvertible_v<_Duration, Duration>, bool> = true>
     constexpr TimePoint(const TimePoint<Clock, _Duration>& other)
     noexcept(IsArithmetic_v<Rep> && IsArithmetic_v<typename _Duration::Rep>)
-        : _dur(other._dur) { /*Empty*/ }
+        : _dur(other.time_since_epoch()) { /*Empty*/ }
 
 public:
     // Operators

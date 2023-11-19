@@ -51,6 +51,7 @@ public:
 
     template<class Clock, class Duration>
     bool try_acquire_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+        // WARNING - use only SystemClock (due to sem_timedwait)
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
@@ -59,15 +60,15 @@ public:
                                     static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
                                 };
+
         return ((sem_timedwait(&_semaphore, &ts) == 0 ) ? true : false);
-        // TODO: check return of timedwait
     }
 
     template<class Rep, class Period>
     bool try_acquire_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
-        return try_acquire_until(   custom::chrono::SteadyClock::now() + 
-                                    custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
-    }   // TODO: check
+        return try_acquire_until(   custom::chrono::SystemClock::now() + 
+                                    custom::chrono::ceil<typename custom::chrono::SystemClock::Duration>(relativeTime));
+    }
 }; // END CountingSemaphore
 
 using BinarySemaphore = CountingSemaphore<1>;

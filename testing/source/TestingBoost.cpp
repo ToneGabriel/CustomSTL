@@ -58,6 +58,24 @@ void _assign_lunch_partner(_Employee &e1, _Employee &e2)
     _send_mail(e2, e1);
 }
 
+void _semaphore_test_task(int id, custom::CountingSemaphore<>& sem) {
+    // custom::chrono::SystemClock::now() + custom::chrono::Milliseconds(2000);
+    // custom::chrono::Milliseconds(2000);
+
+    if (sem.try_acquire_for(custom::chrono::Milliseconds(2000)))
+    {
+        // If the semaphore is acquired within the timeout
+        std::cout << "Task " << id << " acquired the semaphore." << std::endl;
+        custom::this_thread::sleep_for(custom::chrono::Milliseconds(5000)); // Simulating work
+        sem.release(); // Release the semaphore after work is done
+        std::cout << "Task " << id << " released the semaphore." << std::endl;
+    }
+    else
+    {
+        // If unable to acquire the semaphore within the timeout
+        std::cout << "Task " << id << " couldn't acquire the semaphore within the timeout." << std::endl;
+    }
+}
 
 // actual thread test functions
 void lock_locks_test() {
@@ -81,6 +99,21 @@ void thread_test() {
 	std::cout << custom::this_thread::get_id();
 	// custom::Thread t(deque_test);
 	// t.join();
+}
+
+void semaphore_test() {
+	const int numTasks = 3;
+    custom::CountingSemaphore<> semaphore(2); // Initialize semaphore with a count of 2
+
+    custom::Thread tasks[numTasks];
+    
+    // Start multiple tasks that attempt to acquire the semaphore
+    for (int i = 0; i < numTasks; ++i)
+        tasks[i] = custom::Thread(_semaphore_test_task, i + 1, custom::ref(semaphore));
+
+    // Join all threads to the main thread
+    for (int i = 0; i < numTasks; ++i)
+        tasks[i].join();
 }
 
 TEST_BOOST_END
