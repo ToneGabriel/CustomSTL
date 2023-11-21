@@ -92,16 +92,16 @@ void _timed_mutex_test_task(int id, custom::TimedMutex& mtx) {
         std::cout << "Thread " << id << " couldn't acquire the timed mutex within 3 seconds." << std::endl;
 }
 
-void _recursive_timed_mutex_test_task(int id, int depth, std::recursive_timed_mutex& rmtx) {
+void _recursive_timed_mutex_test_task(int id, int depth, custom::RecursiveTimedMutex& rmtx) {
     if (depth <= 0)
         return;
 
     // Try to acquire the recursive timed mutex for 3 seconds
-    if (rmtx.try_lock_for(std::chrono::seconds(3)))
+    if (rmtx.try_lock_for(custom::chrono::Seconds(3)))
     {
         std::cout << "Thread " << id << " acquired the recursive timed mutex." << std::endl;
         // Simulating some work
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        custom::this_thread::sleep_for(custom::chrono::Seconds(1));
         // Call the function recursively with a decreased depth
         _recursive_timed_mutex_test_task(id, depth - 1, rmtx);
         // Release the mutex
@@ -110,6 +110,34 @@ void _recursive_timed_mutex_test_task(int id, int depth, std::recursive_timed_mu
     }
     else
         std::cout << "Thread " << id << " couldn't acquire the recursive timed mutex within 3 seconds." << std::endl;
+}
+
+void _cva_producer(custom::ConditionVariableAny& cva, custom::Mutex& mtx, bool& dataReady) {
+    std::cout << "Producer is working..." << std::endl;
+    custom::this_thread::sleep_for(custom::chrono::Seconds(2)); // Simulating some work
+    
+    {
+        custom::LockGuard<custom::Mutex> lock(mtx);
+        dataReady = true;
+    }
+
+    std::cout << "Producer: Data is ready!" << std::endl;
+    cva.notify_one(); // Notify the consumer that data is ready
+}
+
+void _cva_consumer(custom::ConditionVariableAny& cva, custom::Mutex& mtx, bool& dataReady) {
+    std::cout << "Consumer is waiting..." << std::endl;
+    custom::UniqueLock<custom::Mutex> lock(mtx);
+
+#if 1   // switch 0/1 for different example
+    cva.wait(lock, [&dataReady] { return dataReady; });
+    std::cout << "Consumer: Data can be used!" << std::endl;    // Process the data
+#else   // TODO: fix SharedPtr to use this example
+    if (cva.wait_for(lock, custom::chrono::Seconds(3), [&dataReady] { return dataReady; })) // Data is available within 3 seconds
+        std::cout << "Consumer: Data can be used!" << std::endl;
+    else    // Timeout occurred
+        std::cout << "Consumer: Timeout! Data is not ready within 3 seconds." << std::endl;
+#endif  // 0/1
 }
 
 // actual thread test functions
@@ -161,12 +189,24 @@ void timed_mutex_test() {
 }
 
 void recursive_timed_mutex_test() {
-    std::recursive_timed_mutex rmtx;
-    std::thread t1(_recursive_timed_mutex_test_task, 1, 3, std::ref(rmtx));
-    std::thread t2(_recursive_timed_mutex_test_task, 2, 2, std::ref(rmtx));
+	custom::RecursiveTimedMutex rmtx;
+    custom::Thread t1(_recursive_timed_mutex_test_task, 1, 3, custom::ref(rmtx));
+    custom::Thread t2(_recursive_timed_mutex_test_task, 2, 2, custom::ref(rmtx));
 
     t1.join();
     t2.join();
+}
+
+void condition_variable_any_test() {
+    custom::ConditionVariableAny cva;
+    custom::Mutex mtx;
+    bool dataReady = false;
+
+    custom::Thread producerThread(_cva_producer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
+    custom::Thread consumerThread(_cva_consumer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
+
+    producerThread.join();
+    consumerThread.join();
 }
 
 TEST_BOOST_END

@@ -101,7 +101,7 @@ public:
 }; // END ConditionVariable
 
 
-class ConditionVariableAny  // TODO: check
+class ConditionVariableAny
 {
 private:
     SharedPtr<Mutex> _mutexPtr;
@@ -193,7 +193,7 @@ struct UINTIsZero   // used as predicate in TimedMutex/RecursiveTimedMutex::try_
     }
 };
 
-class TimedMutex    // TODO: check ALL
+class TimedMutex
 {
 public:
     using NativeHandleType = typename Mutex::NativeHandleType;
@@ -268,7 +268,7 @@ public:
 }; // END TimedMutex
 
 
-class RecursiveTimedMutex   // TODO: check ALL
+class RecursiveTimedMutex
 {
 public:
     using NativeHandleType = typename Mutex::NativeHandleType;
