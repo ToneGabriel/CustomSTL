@@ -77,6 +77,41 @@ void _semaphore_test_task(int id, custom::CountingSemaphore<>& sem) {
     }
 }
 
+void _timed_mutex_test_task(int id, custom::TimedMutex& mtx) {
+    // Try to acquire the timed mutex for 3 seconds
+    if (mtx.try_lock_for(custom::chrono::Seconds(3)))
+    {
+        std::cout << "Thread " << id << " acquired the timed mutex." << std::endl;
+        // Simulating some work
+        custom::this_thread::sleep_for(custom::chrono::Seconds(2));
+        // Release the mutex
+        mtx.unlock();
+        std::cout << "Thread " << id << " released the timed mutex." << std::endl;
+    }
+    else
+        std::cout << "Thread " << id << " couldn't acquire the timed mutex within 3 seconds." << std::endl;
+}
+
+void _recursive_timed_mutex_test_task(int id, int depth, std::recursive_timed_mutex& rmtx) {
+    if (depth <= 0)
+        return;
+
+    // Try to acquire the recursive timed mutex for 3 seconds
+    if (rmtx.try_lock_for(std::chrono::seconds(3)))
+    {
+        std::cout << "Thread " << id << " acquired the recursive timed mutex." << std::endl;
+        // Simulating some work
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // Call the function recursively with a decreased depth
+        _recursive_timed_mutex_test_task(id, depth - 1, rmtx);
+        // Release the mutex
+        rmtx.unlock();
+        std::cout << "Thread " << id << " released the recursive timed mutex." << std::endl;
+    }
+    else
+        std::cout << "Thread " << id << " couldn't acquire the recursive timed mutex within 3 seconds." << std::endl;
+}
+
 // actual thread test functions
 void lock_locks_test() {
     _Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
@@ -114,6 +149,24 @@ void semaphore_test() {
     // Join all threads to the main thread
     for (int i = 0; i < numTasks; ++i)
         tasks[i].join();
+}
+
+void timed_mutex_test() {
+    custom::TimedMutex mtx;
+    custom::Thread t1(_timed_mutex_test_task, 1, custom::ref(mtx));
+    custom::Thread t2(_timed_mutex_test_task, 2, custom::ref(mtx));
+
+    t1.join();
+    t2.join();
+}
+
+void recursive_timed_mutex_test() {
+    std::recursive_timed_mutex rmtx;
+    std::thread t1(_recursive_timed_mutex_test_task, 1, 3, std::ref(rmtx));
+    std::thread t2(_recursive_timed_mutex_test_task, 2, 2, std::ref(rmtx));
+
+    t1.join();
+    t2.join();
 }
 
 TEST_BOOST_END

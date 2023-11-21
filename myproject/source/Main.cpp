@@ -30,6 +30,8 @@ int main()
 	//test_boost::thread_test();
 	//test_boost::lock_locks_test();
 	//test_boost::semaphore_test();
+	//test_boost::timed_mutex_test();
+	//void recursive_timed_mutex_test();
 
 	return 0;
 }

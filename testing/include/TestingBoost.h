@@ -27,10 +27,14 @@ struct _Employee
 void _send_mail(_Employee &, _Employee &);
 void _assign_lunch_partner(_Employee &e1, _Employee &e2);
 void _semaphore_test_task(int id, custom::CountingSemaphore<>& sem);
+void _timed_mutex_test_task(int id, custom::TimedMutex& mtx);
+void _recursive_timed_mutex_test_task(int id, int depth, std::recursive_timed_mutex& rmtx);
 
 void lock_locks_test();
 void thread_test();
 void semaphore_test();
+void timed_mutex_test();
+void recursive_timed_mutex_test();
 
 TEST_BOOST_END
 
