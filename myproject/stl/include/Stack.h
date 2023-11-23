@@ -8,6 +8,11 @@ CUSTOM_BEGIN
 template<class Type, class Container = custom::Vector<Type>>
 class Stack				// Stack Template implemented as Vector wrapper
 {
+// The container must satisfy the requirements of SequenceContainer.
+// Additionally, it must provide the following functions with the usual semantics:
+// back(), push_back() (... or emplace_back()), pop_back()
+// custom::Vector, custom::Deque and custom::List satisfy these requirements
+
 public:
 	using ContainerType 	= Container;
 	using ValueType			= typename ContainerType::ValueType;
