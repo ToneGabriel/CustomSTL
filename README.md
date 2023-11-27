@@ -1,11 +1,11 @@
 # CustomSTL
 
-Actual code is found in "myproject/stl/include" folder.
+Personal approach inspired from MSVC STL. Actual code is found in "myproject/stl/include" folder.
 
-Code build requirements:
+Compilation requirements:
 
 - C++20 version
-- GCC (Linux or Windows) OR MSVC (Windows, but no thread support)
+- GCC (Linux or Windows) or MSVC (!no thread support!)
 
 Components not fully operational:
 

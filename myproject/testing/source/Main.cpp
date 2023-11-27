@@ -1,5 +1,5 @@
-#include "../../testing/include/Testing.h"
-#include "../../testing/include/TestingBoost.h"
+#include "../include/Testing.h"
+#include "../include/TestingBoost.h"
 
 
 int main()
