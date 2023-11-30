@@ -74,10 +74,3 @@ x64/
 # Git Command Helpers
 *.sh
 *.bat
-
-# CMake
-CMakeLists.txt
-
-# Others
-Token
-Main

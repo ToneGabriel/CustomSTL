@@ -1,6 +1,6 @@
 # CustomSTL
 
-Personal approach inspired from MSVC STL. Actual code is found in "myproject/stl/include" folder.
+Personal approach inspired from MSVC STL. Actual code is found in "code/stl" folder.
 
 Compilation requirements:
 
