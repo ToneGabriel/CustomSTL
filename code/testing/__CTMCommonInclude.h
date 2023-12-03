@@ -3,6 +3,7 @@
 #include "cPair.h"
 #include "cTuple.h"
 #include "cString.h"
+#include "cStringView.h"
 #include "cArray.h"
 #include "cVector.h"
 #include "cDeque.h"

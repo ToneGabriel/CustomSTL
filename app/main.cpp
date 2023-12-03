@@ -16,6 +16,7 @@ int main()
 	//test::list_test();
 	//test::forward_list_test();
 	//test::string_test();
+	//test::string_view_test();
 	//test::array_test();
 	//test::deque_test();
 	//test::function_test();

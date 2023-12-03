@@ -13,3 +13,4 @@ Components not fully operational:
 - Algorithm.h
 - Complex.h
 - ForwardList.h operations (splice/sort/merge)
+- BasicStringView

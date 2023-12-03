@@ -52,6 +52,7 @@ void priority_queue_test();
 void stack_test();
 void vector_test();
 void string_test();
+void string_view_test();
 void array_test();
 void function_test();
 void invoke_test();

@@ -920,4 +920,38 @@ constexpr BasicString<Type, Alloc, Traits> operator+(	const Type left,
 	return BasicString<Type, Alloc, Traits>(1 + right.size()).append(1, left).append(right);
 }
 
+
+template<class Type, class Traits = custom::CharTraits<Type>>
+class BasicStringView		// wrapper for any kind of contiguous character buffer
+{
+// TODO: implement
+public:
+    static_assert(IsSame_v<Type, typename Traits::CharType>,
+        			"The program is ill-formed if Traits::CharType is not the same type as Type.");
+
+    static_assert(!IsArray_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
+					"The character type of BasicStringView must be a non-array trivial standard-layout type.");
+
+	using TraitsType 			= Traits;
+    using ValueType 			= Type;
+    using DifferenceType 		= ptrdiff_t;
+    using Reference 			= Type&;
+    using ConstReference 		= const Type&;
+    using Pointer 				= Type*;
+    using ConstPointer 			= const Type*;
+    
+    // using Iterator 				= const_iterator;
+	// using ConstIterator 		= _String_view_iterator<_Traits>;
+    // using ReverseIterator 		= custom::ReverseIterator<Iterator>;
+    // using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
+
+    static constexpr size_t npos = static_cast<size_t>(-1);
+
+private:
+    Pointer _cstring 	= nullptr;
+    size_t _size 		= 0;
+    size_t _offset 		= 0;
+};
+
+
 CUSTOM_END
