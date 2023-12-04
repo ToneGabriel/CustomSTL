@@ -1,136 +1,11 @@
 #pragma once
+#include "xCharTraits.h"
 #include "xMemory.h"
-#include "cUtility.h"
 #include "cIterator.h"
 #include "cAlgorithm.h"
-#include <cstring>
-#include <cwchar>
 
 
 CUSTOM_BEGIN
-
-// char traits implementation
-
-template<class Type, class Integer>
-struct _CharTraits
-{
-	using CharType	= Type;
-	using IntType	= Integer;
-
-	static constexpr CharType NULLCHR = CharType();
-
-	static constexpr CharType* copy(CharType* const first1,
-									const CharType* const first2,
-									const size_t count) noexcept {
-
-		return static_cast<CharType*>(::memcpy(first1, first2, count * sizeof(CharType)));	// return first
-	}
-
-	static constexpr CharType* move(CharType* const first1,
-									const CharType* const first2,
-									const size_t count) noexcept {	// copy with overlap check
-
-		return static_cast<CharType*>(::memmove(first1, first2, count * sizeof(CharType)));	// return first
-	}
-
-	static constexpr int compare(	const CharType* first1,
-									const CharType* first2,
-									size_t count) noexcept {
-
-		return ::memcmp(first1, first2, count * sizeof(CharType));
-	}
-
-	static constexpr size_t length(const CharType* cstr) noexcept {
-		size_t count = 0;
-		for (; *cstr != NULLCHR; ++count, ++cstr) { /*do nothing*/ }
-		return count;
-	}
-
-	static constexpr const CharType* find(	const CharType* cstr,
-											size_t count,
-											const CharType& ch) noexcept {	// look for ch in [cstr, cstr + count)
-
-		for (; 0 < count; --count, ++cstr)
-            if (*cstr == ch)
-                return cstr;
-
-        return nullptr;
-	}
-
-	static constexpr CharType* assign(	CharType* const cstr,
-										size_t count,
-										const CharType ch) noexcept {	// assign count * ch to [cstr, ...)
-
-		for (CharType* next = cstr; count > 0; --count, ++next)
-			*next = ch;
-
-        return cstr;
-	}
-
-	static constexpr bool eq(const CharType& left, const CharType& right) noexcept {
-		return left == right;
-	}
-
-	static constexpr bool lt(const CharType& left, const CharType& right) noexcept {
-		return left < right;
-	}
-
-	static constexpr CharType to_char_type(const IntType& val) noexcept {
-		return static_cast<CharType>(val);
-	}
-
-	static constexpr IntType to_int_type(const CharType& ch) noexcept {
-		return static_cast<IntType>(ch);
-	}
-
-	static constexpr bool eq_int_type(const IntType& left, const IntType& right) noexcept {
-		return left == right;
-	}
-
-	static constexpr IntType not_eof(const IntType& val) noexcept {
-		return val != eof() ? val : !eof();
-	}
-
-	static constexpr IntType eof() noexcept {
-		return static_cast<IntType>(EOF);
-	}
-};
-
-template<class Type>
-struct _WCharTraits : _CharTraits<Type, unsigned short>	// for char16_t, wchar_t
-{
-private:
-	using _Base = _CharTraits<Type, unsigned short>;
-
-public:
-	using CharType	= typename _Base::CharType;
-	using IntType	= typename _Base::IntType;
-
-	static constexpr IntType eof() noexcept {
-		return static_cast<IntType>(WEOF);
-	}
-};
-
-// char traits specialization
-template<class Type>
-struct CharTraits : _CharTraits<Type, long> {};
-
-template<>
-struct CharTraits<char> : _CharTraits<char, int> {};
-
-template<>
-struct CharTraits<wchar_t> : _WCharTraits<wchar_t> {};
-
-template<>
-struct CharTraits<char16_t> : _WCharTraits<char16_t> {};
-
-template<>
-struct CharTraits<char32_t> : _CharTraits<char32_t, unsigned int> {};
-
-#ifdef __cpp_char8_t
-template<>
-struct CharTraits<char8_t> : _CharTraits<char8_t, unsigned int> {};
-#endif
 
 
 template<class Type, class Alloc>
@@ -149,7 +24,7 @@ struct _BasicStringData
 	Pointer _First			= nullptr;			// Actual container array
 	Pointer _Last			= nullptr;			// Pointer to end
 	Pointer _Final			= nullptr;			// Pointer to capacity end
-};
+};	// END _BasicStringData
 
 
 template<class BasicStrData>
@@ -409,12 +284,12 @@ public:
 public:
 	// Operators
 
-	constexpr ConstReference operator[](const size_t index) const {
+	constexpr ConstReference operator[](const size_t index) const noexcept{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
 
-	constexpr Reference operator[](const size_t index) {
+	constexpr Reference operator[](const size_t index) noexcept {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
 		return _data._First[index];
 	}
@@ -488,6 +363,11 @@ public:
 
 	constexpr size_t size() const noexcept {
 		return static_cast<size_t>(_data._Last - _data._First);
+	}
+
+	constexpr size_t max_size() const noexcept {
+		return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+								_AllocTraits::max_size(_alloc));
 	}
 
 	constexpr size_t capacity() const noexcept {
@@ -919,39 +799,6 @@ constexpr BasicString<Type, Alloc, Traits> operator+(	const Type left,
 
 	return BasicString<Type, Alloc, Traits>(1 + right.size()).append(1, left).append(right);
 }
-
-
-template<class Type, class Traits = custom::CharTraits<Type>>
-class BasicStringView		// wrapper for any kind of contiguous character buffer
-{
-// TODO: implement
-public:
-    static_assert(IsSame_v<Type, typename Traits::CharType>,
-        			"The program is ill-formed if Traits::CharType is not the same type as Type.");
-
-    static_assert(!IsArray_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
-					"The character type of BasicStringView must be a non-array trivial standard-layout type.");
-
-	using TraitsType 			= Traits;
-    using ValueType 			= Type;
-    using DifferenceType 		= ptrdiff_t;
-    using Reference 			= Type&;
-    using ConstReference 		= const Type&;
-    using Pointer 				= Type*;
-    using ConstPointer 			= const Type*;
-    
-    // using Iterator 				= const_iterator;
-	// using ConstIterator 		= _String_view_iterator<_Traits>;
-    // using ReverseIterator 		= custom::ReverseIterator<Iterator>;
-    // using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
-
-    static constexpr size_t npos = static_cast<size_t>(-1);
-
-private:
-    Pointer _cstring 	= nullptr;
-    size_t _size 		= 0;
-    size_t _offset 		= 0;
-};
 
 
 CUSTOM_END
