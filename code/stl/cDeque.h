@@ -58,7 +58,7 @@ public:
 		:_Offset(offset), _RefData(data) { /*Empty*/ }
 
 	DequeConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Offset < _RefData->_First + _RefData->_Size, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Offset < _RefData->_First + _RefData->_Size, "Cannot increment end iterator.");
 		++_Offset;
 		return *this;
 	}
@@ -72,7 +72,7 @@ public:
 	DequeConstIterator& operator+=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(	_Offset + static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset + static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size, 
-						"Cannot increment end iterator...");
+						"Cannot increment end iterator.");
 		_Offset += static_cast<size_t>(diff);
 		return *this;
 	}
@@ -84,7 +84,7 @@ public:
 	}
 
 	DequeConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Offset > _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Offset > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Offset;
 		return *this;
 	}
@@ -98,7 +98,7 @@ public:
 	DequeConstIterator& operator-=(const DifferenceType diff) noexcept {
 		CUSTOM_ASSERT(	_Offset - static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset - static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size,
-						"Cannot decrement begin iterator...");
+						"Cannot decrement begin iterator.");
 		_Offset -= static_cast<size_t>(diff);
 		return *this;
 	}
@@ -116,7 +116,7 @@ public:
 	Reference operator*() const noexcept {
 		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
 						_Offset < _RefData->_First + _RefData->_Size,
-						"Cannot dereference end iterator...");
+						"Cannot dereference end iterator.");
 
 		size_t block	= _RefData->get_block(_Offset);
 		size_t offset	= _Offset % _RefData->BLOCK_SIZE;
@@ -294,12 +294,12 @@ public:
 	// Operators
 
 	const ValueType& operator[](const size_t index) const {
-		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
+		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	ValueType& operator[](const size_t index) {
-		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
+		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
@@ -454,7 +454,7 @@ public:
 
 	Iterator pop(ConstIterator iterator) {
 		if (iterator.is_end())
-			throw std::out_of_range("Array pop iterator outside range...");
+			throw std::out_of_range("Array pop iterator outside range.");
 			
 		size_t off = iterator._Offset - _data._First;
 
@@ -509,35 +509,35 @@ public:
 
 	ConstReference at(const size_t index) const {
 		if (index >= size())
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	Reference at(const size_t index) {
 		if (index >= size())
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
 	ConstReference front() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
 	Reference front() noexcept {										// Get the value of the first component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
 	ConstReference back() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
 
 	Reference back() noexcept {                                                      	// Get the value of the last component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
 

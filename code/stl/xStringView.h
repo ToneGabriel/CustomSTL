@@ -49,7 +49,7 @@ public:
 		: _Ptr(ptr), _RefData(data) { /*Empty*/ }
 
 	constexpr BasicStringViewIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator.");
 		++_Ptr;
 		return *this;
 	}
@@ -61,7 +61,7 @@ public:
 	}
 
 	constexpr BasicStringViewIterator& operator+=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator.");
 		_Ptr += diff;
 		return *this;
 	}
@@ -73,7 +73,7 @@ public:
 	}
 
 	constexpr BasicStringViewIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Ptr;
 		return *this;
 	}
@@ -85,7 +85,7 @@ public:
 	}
 
 	constexpr BasicStringViewIterator& operator-=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator.");
 		_Ptr -= diff;
 		return *this;
 	}
@@ -97,12 +97,12 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return _Ptr;
 	}
 
 	constexpr Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return *_Ptr;
 	}
 
@@ -182,7 +182,7 @@ public:
     constexpr BasicStringView& operator=(const BasicStringView&) noexcept = default;
 	
     constexpr ConstReference operator[](const size_t index) const noexcept {
-		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
+		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
@@ -208,18 +208,18 @@ public:
 
 	constexpr ConstReference at(const size_t index) const {						// Acces char at index with check (read only)
 		if (index >= size())
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
 	constexpr ConstReference front() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
 	constexpr ConstReference back() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 

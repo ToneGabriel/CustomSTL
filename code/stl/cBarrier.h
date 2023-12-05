@@ -15,7 +15,7 @@ public:
     // Constructors & Operators
 
     explicit Barrier(int expected) noexcept {
-        CUSTOM_ASSERT(expected >= 0, "Invalid expected value...");
+        CUSTOM_ASSERT(expected >= 0, "Invalid expected value.");
         pthread_barrier_init(&_barrier, nullptr, expected);
     }
 

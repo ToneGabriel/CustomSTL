@@ -63,7 +63,7 @@ public:
         else
         {
             _thread = 0;
-            throw std::runtime_error("Thread creation failed...");
+            throw std::runtime_error("Thread creation failed.");
         }
     }
 
@@ -110,23 +110,23 @@ public:
 
     void join() {
         if (!joinable())
-            throw std::runtime_error("Thread not joinable...");
+            throw std::runtime_error("Thread not joinable.");
 
         if (_thread == pthread_self())
-            throw std::runtime_error("Resource deadlock would occur...");
+            throw std::runtime_error("Resource deadlock would occur.");
 
         if (pthread_join(_thread, nullptr) != 0)
-            throw std::runtime_error("Thread join failed...");
+            throw std::runtime_error("Thread join failed.");
 
         _thread = 0;
     }
 
     void detach() {
         if (!joinable())
-            throw std::runtime_error("Thread not joinable...");
+            throw std::runtime_error("Thread not joinable.");
 
         if (pthread_detach(_thread) != 0)
-            throw std::runtime_error("Thread detach failed...");
+            throw std::runtime_error("Thread detach failed.");
 
         _thread = 0;
     }

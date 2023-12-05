@@ -10,7 +10,7 @@ CUSTOM_BEGIN
 
 CUSTOM_DETAIL_BEGIN
 
-enum class _TreeChild : char
+enum class _TreeChild
 {
 	Left,
 	Right
@@ -88,7 +88,7 @@ public:
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
 	_SearchTreeConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator.");
 
 		if (_Ptr->_Right->_IsNil)
 		{
@@ -113,7 +113,7 @@ public:
 	}
 
 	_SearchTreeConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Left, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Left, "Cannot decrement begin iterator.");
 
 		if (_Ptr->_IsNil)
 			_Ptr = _Ptr->_Right;
@@ -142,12 +142,12 @@ public:
 	}
 
 	Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator.");
         return PointerTraits<Pointer>::pointer_to(**this);	// return &(**this);
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
 
@@ -327,14 +327,14 @@ public:
 
 	Iterator erase(ConstIterator iterator) {
 		if (iterator == end())
-			throw std::out_of_range("Map erase iterator outside range...");
+			throw std::out_of_range("Map erase iterator outside range.");
 
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
 
 	Iterator erase(Iterator iterator) {
 		if (iterator == end())
-			throw std::out_of_range("Map erase iterator outside range...");
+			throw std::out_of_range("Map erase iterator outside range.");
 
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
@@ -443,7 +443,7 @@ protected:
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
 		ConstIterator it = find(key);
 		if (it == end())
-			throw std::out_of_range("Invalid key...");
+			throw std::out_of_range("Invalid key.");
 
 		return Traits::extract_mapval(*it);
 	}
@@ -451,7 +451,7 @@ protected:
 	MappedType& _at(const KeyType& key) {
 		Iterator it = find(key);
 		if (it == end())
-			throw std::out_of_range("Invalid key...");
+			throw std::out_of_range("Invalid key.");
 
 		return const_cast<MappedType&>(Traits::extract_mapval(*it));
 	}

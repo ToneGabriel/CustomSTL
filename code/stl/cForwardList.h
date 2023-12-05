@@ -54,7 +54,7 @@ public:
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
 	ForwardListConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot increment end iterator.");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
@@ -70,7 +70,7 @@ public:
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
 
@@ -258,7 +258,7 @@ public:
 	template<class... Args>
 	Iterator emplace_after(ConstIterator where, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the where position
 		if (where.is_end())
-			throw std::out_of_range("Cannot emplace after end iterator...");
+			throw std::out_of_range("Cannot emplace after end iterator.");
 
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_after(where._Ptr, newNode);
@@ -268,7 +268,7 @@ public:
 
 	Iterator pop_after(ConstIterator where) {						// Remove component after where position
 		if (where.is_end() || where.is_last_valid())
-			throw std::out_of_range("Cannot pop after end iterator...");
+			throw std::out_of_range("Cannot pop after end iterator.");
 
 		_NodePtr temp 			= where._Ptr;
 		Iterator nextIterator 	= Iterator(temp->_Next, &_data);
@@ -278,12 +278,12 @@ public:
 	}
 
 	Reference front() noexcept {								// Get the value of the first component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
 	ConstReference front() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 

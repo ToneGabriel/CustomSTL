@@ -856,7 +856,7 @@ public:
     template<class Ty, EnableIf_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
     explicit SharedPtr(const WeakPtr<Ty>& other) {                      // construct SharedPtr object that owns resource *other
         if (!this->_construct_from_weak(other))
-            throw std::runtime_error("Bad weak ptr...");
+            throw std::runtime_error("Bad weak ptr.");
     }
 
     template<class Ty, class Del,

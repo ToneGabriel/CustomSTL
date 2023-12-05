@@ -299,7 +299,7 @@ public:
             if (_locked < UINT_MAX)
                 ++_locked;
             else
-                throw std::runtime_error("Resource busy...");
+                throw std::runtime_error("Resource is busy.");
         else
         {
             while (_locked != 0)

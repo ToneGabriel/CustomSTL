@@ -10,14 +10,14 @@ template<int LeastMaxValue = INT_MAX>
 class CountingSemaphore                 // Semaphore adaptor for sem_t
 {
 private:
-    static_assert((LeastMaxValue >= 0 && LeastMaxValue <= INT_MAX), "Invalid semaphore count...");
+    static_assert((LeastMaxValue >= 0 && LeastMaxValue <= INT_MAX), "Invalid semaphore count.");
     sem_t _semaphore;
 
 public:
     // Constructors & Operators
 
     explicit CountingSemaphore(int desired) noexcept {
-        CUSTOM_ASSERT(desired >= 0 && desired <= LeastMaxValue, "Invalid desired value...");
+        CUSTOM_ASSERT(desired >= 0 && desired <= LeastMaxValue, "Invalid desired value.");
         sem_init(&_semaphore, 0, desired);
     }
 

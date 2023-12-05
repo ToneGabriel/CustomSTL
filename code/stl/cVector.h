@@ -48,7 +48,7 @@ public:
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
 	constexpr VectorConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator.");
 		++_Ptr;
 		return *this;
 	}
@@ -60,7 +60,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator+=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator.");
 		_Ptr += diff;
 		return *this;
 	}
@@ -72,7 +72,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Ptr;
 		return *this;
 	}
@@ -84,7 +84,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator-=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator.");
 		_Ptr -= diff;
 		return *this;
 	}
@@ -96,12 +96,12 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return _Ptr;
 	}
 
 	constexpr Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator.");
 		return *_Ptr;
 	}
 
@@ -274,12 +274,12 @@ public:
 	// Operators
 
 	constexpr ConstReference operator[](const size_t index) const noexcept {	// Acces object at index (read only)
-		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
+		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
 	constexpr Reference operator[](const size_t index) noexcept {				// Acces object at index
-		CUSTOM_ASSERT(index < size(), "Index out of bounds...");
+		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
@@ -416,7 +416,7 @@ public:
 
 	constexpr Iterator pop(ConstIterator iterator) {									// Remove component at iterator position
 		if (iterator.is_end())
-			throw std::out_of_range("Array pop iterator outside range...");
+			throw std::out_of_range("Vector pop iterator outside range.");
 
 		size_t index = iterator.get_index();
 		size_t beforeLast = size() - 1;
@@ -452,35 +452,35 @@ public:
 
 	constexpr ConstReference at(const size_t index) const {						// Acces object at index with check (read only)
 		if (index >= size())
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
 	constexpr Reference at(const size_t index) {								// Acces object at index with check
 		if (index >= size())
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
 	constexpr ConstReference front() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
 	constexpr Reference front() noexcept {										// Get the value of the first component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
 	constexpr ConstReference back() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 
 	constexpr Reference back() noexcept {										// Get the value of the last component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 

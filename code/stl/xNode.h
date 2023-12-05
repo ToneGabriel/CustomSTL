@@ -15,6 +15,7 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	_ForwardNode* _Next = nullptr;
 
 	_ForwardNode()									= default;
+	~_ForwardNode() 								= default;
 	_ForwardNode(const _ForwardNode&)				= delete;
 	_ForwardNode& operator=(const _ForwardNode&)	= delete;
 
@@ -27,8 +28,6 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	template<class... Args>
 	_ForwardNode(Args&&... args)
 		:_Value(custom::forward<Args>(args)...) { /*Empty*/ }
-
-	~_ForwardNode() = default;
 }; // END _ForwardNode
 
 
@@ -42,6 +41,7 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 	_DoubleNode* _Next 		= nullptr;
 
 	_DoubleNode()								= default;
+	~_DoubleNode() 								= default;
 	_DoubleNode(const _DoubleNode&)				= delete;
 	_DoubleNode& operator=(const _DoubleNode&)	= delete;
 
@@ -54,8 +54,6 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 	template<class... Args>
 	_DoubleNode(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
-
-	~_DoubleNode() = default;
 }; // END _DoubleNode
 
 
@@ -64,7 +62,7 @@ struct _TreeNode			// Used in _SearchTree
 {
 	using ValueType = Type;
 	
-	enum Colors : char
+	enum class Colors
 	{
 		Red,
 		Black
@@ -75,9 +73,10 @@ struct _TreeNode			// Used in _SearchTree
 	_TreeNode* _Left 	= nullptr;
 	_TreeNode* _Right 	= nullptr;
 	bool _IsNil 		= false;			// True for Head only
-	char _Color 		= Colors::Red;		// Used for balancing
+	Colors _Color 		= Colors::Red;		// Used for balancing
 
 	_TreeNode()								= default;
+	~_TreeNode() 							= default;
 	_TreeNode(const _TreeNode&)				= delete;
 	_TreeNode& operator=(const _TreeNode&)	= delete;
 
@@ -90,8 +89,6 @@ struct _TreeNode			// Used in _SearchTree
 	template<class... Args>
 	_TreeNode(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
-
-	~_TreeNode()  = default;
 
 	bool is_leaf() const {
 		return (_Left->_IsNil && _Right->_IsNil);

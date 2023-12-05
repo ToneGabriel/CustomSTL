@@ -304,7 +304,7 @@ public:
     BadFunctionCall() noexcept { /*Empty*/ }
 
     const char* what() const noexcept override {
-        return "Bad function call...";
+        return "Bad function call.";
     }
 };  // END BadFunctionCall
 

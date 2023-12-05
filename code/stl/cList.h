@@ -62,7 +62,7 @@ public:
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
 	ListConstIterator& operator++() noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator.");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
@@ -74,7 +74,7 @@ public:
 	}
 
 	ListConstIterator& operator--() noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Next, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Next, "Cannot decrement begin iterator.");
 		_Ptr = _Ptr->_Previous;
 		return *this;
 	}
@@ -90,7 +90,7 @@ public:
 	}
 
 	Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator...");
+		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
 
@@ -324,7 +324,7 @@ public:
 
 	Iterator pop(ConstIterator where) {									// Remove component at where position
 		if (where.is_end())
-			throw std::out_of_range("Cannot pop end iterator...");
+			throw std::out_of_range("Cannot pop end iterator.");
 
 		_NodePtr temp 			= where._Ptr;
 		Iterator prevIterator 	= Iterator(temp->_Previous, &_data);
@@ -334,35 +334,35 @@ public:
 	}
 
 	Reference front() noexcept {								// Get the value of the first component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
 	ConstReference front() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
 	Reference back() noexcept {									// Get the value of the last component
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Previous->_Value;
 	}
 
 	ConstReference back() const noexcept {
-		CUSTOM_ASSERT(!empty(), "Container is empty...");
+		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Previous->_Value;
 	}
 
 	Reference at(const size_t index) {
 		if (index >= _data._Size)
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return _scroll_node(index)->_Value;
 	}
 
 	ConstReference at(const size_t index) const {
 		if (index >= _data._Size)
-			throw std::out_of_range("Index out of bounds...");
+			throw std::out_of_range("Index out of bounds.");
 
 		return _scroll_node(index)->_Value;
 	}

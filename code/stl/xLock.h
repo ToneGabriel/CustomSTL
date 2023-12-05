@@ -269,7 +269,7 @@ public:
 
     void unlock() {
         if (_ownedMutex == nullptr || _owns == false)
-            throw std::logic_error("No mutex owned...");
+            throw std::logic_error("No mutex owned.");
 
         _ownedMutex->unlock();
         _owns = false;
@@ -296,10 +296,10 @@ private:
 
     void _validate() const {        // check if mutex can be locked
         if (_ownedMutex == nullptr)
-            throw std::logic_error("No mutex owned...");
+            throw std::logic_error("No mutex owned.");
 
         if (_owns)
-            throw std::logic_error("Mutex already locked...");
+            throw std::logic_error("Mutex already locked.");
     }
 }; // END UniqueLock
 

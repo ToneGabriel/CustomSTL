@@ -55,7 +55,7 @@ public:
             case EBUSY:
                 return false;
             default:
-                throw std::runtime_error("Mutex lock failed...");
+                throw std::runtime_error("Mutex lock failed.");
         }
     }
 

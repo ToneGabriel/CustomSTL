@@ -1,12 +1,10 @@
 #pragma once
-#include "cStringView.h"
-
 
 // Project Variables
 
-static constexpr custom::StringView ProjectName     = "@PROJECT_NAME@";
-static constexpr custom::StringView ProjectVersion  = "@PROJECT_VERSION@";
+constexpr char ProjectName[]         = "@PROJECT_NAME@";
+constexpr char ProjectVersion[]      = "@PROJECT_VERSION@";
 
-static constexpr int ProjectVersionMajor            = @PROJECT_VERSION_MAJOR@;
-static constexpr int ProjectVersionMinor            = @PROJECT_VERSION_MINOR@;
-static constexpr int ProjectVersionPatch            = @PROJECT_VERSION_PATCH@;
+constexpr int ProjectVersionMajor    = @PROJECT_VERSION_MAJOR@;
+constexpr int ProjectVersionMinor    = @PROJECT_VERSION_MINOR@;
+constexpr int ProjectVersionPatch    = @PROJECT_VERSION_PATCH@;

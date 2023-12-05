@@ -130,7 +130,7 @@ public:
 
 	Iterator erase(ConstIterator iterator) {
 		if (iterator == end())
-			throw std::out_of_range("Map erase iterator outside range...");
+			throw std::out_of_range("Map erase iterator outside range.");
 
 		return erase(iterator._Ptr->_Value);
 	}
@@ -264,7 +264,7 @@ protected:
 		_ConstBucketIterator it = _find_in_array(key);
 		
 		if (it == _buckets[bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
+			throw std::out_of_range("Invalid key.");
 
 		return Traits::extract_mapval((*it)->_Value);
 	}
@@ -273,7 +273,7 @@ protected:
 		_BucketIterator it = _find_in_array(key);
 
 		if (it == _buckets[bucket(key)].end())
-			throw std::out_of_range("Invalid key...");
+			throw std::out_of_range("Invalid key.");
 
 		return const_cast<MappedType&>(Traits::extract_mapval((*it)->_Value));
 	}
