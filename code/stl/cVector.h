@@ -60,7 +60,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator+=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
@@ -84,7 +84,7 @@ public:
 	}
 
 	constexpr VectorConstIterator& operator-=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}

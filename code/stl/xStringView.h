@@ -26,7 +26,7 @@ struct _BasicStringViewData
 
 
 template<class BasicStrVData>
-class BasicStringViewIterator
+class BasicStringViewIterator	// This is only const
 {
 private:
 	using _Data				= BasicStrVData;
@@ -97,12 +97,12 @@ public:
 	}
 
 	constexpr Pointer operator->() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData._Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
 		return _Ptr;
 	}
 
 	constexpr Reference operator*() const noexcept {
-		CUSTOM_ASSERT(_Ptr < _RefData._Last, "Cannot access end iterator...");
+		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator...");
 		return *_Ptr;
 	}
 
@@ -151,9 +151,9 @@ public:
 	using ConstPointer			= typename _Data::ConstPointer;
     
 	using ConstIterator 		= BasicStringViewIterator<_Data>;
-    using Iterator 				= ConstIterator;
+    using Iterator 				= ConstIterator;		// only const
     using ConstReverseIterator 	= custom::ReverseIterator<ConstIterator>;
-    using ReverseIterator 		= ConstReverseIterator;
+    using ReverseIterator 		= ConstReverseIterator;	// only const
 
     static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -252,8 +252,9 @@ public:
     }
 
 // Compare
-    constexpr int compare(const BasicStringView& other) const noexcept {		
-		return TraitsType::compare(_data._First, other._data._First, (custom::max)(size(), other.size()));
+    constexpr int compare(const BasicStringView& other) const noexcept {
+		return detail::_traits_cstring_compare<TraitsType>(	_data._First, 0, size(),
+															other._data._First, 0, other.size());
     }
 
     constexpr int compare(const size_t pos, const size_t count, const BasicStringView& other) const {
@@ -294,11 +295,11 @@ public:
         if (size() < otherSize)
             return false;
 
-        return Traits::compare(_data._First, other._data._First, otherSize) == 0;
+        return TraitsType::compare(_data._First, other._data._First, otherSize) == 0;
     }
 
     constexpr bool starts_with(const ValueType chr) const noexcept {
-        return !empty() && Traits::eq(front(), chr);
+        return !empty() && TraitsType::eq(front(), chr);
     }
 
     constexpr bool starts_with(const ValueType* const cstring) const noexcept {
@@ -313,11 +314,11 @@ public:
         if (size() < otherSize)
             return false;
 
-        return Traits::compare(_data._Last - otherSize, other._data._First, otherSize) == 0;
+        return TraitsType::compare(_data._Last - otherSize, other._data._First, otherSize) == 0;
     }
 
     constexpr bool ends_with(const ValueType chr) const noexcept {
-        return !empty() && Traits::eq(back(), chr);
+        return !empty() && TraitsType::eq(back(), chr);
     }
 
     constexpr bool ends_with(const ValueType* const cstring) const noexcept {

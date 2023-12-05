@@ -63,7 +63,7 @@ public:
 	}
 
 	constexpr BasicStringConstIterator& operator+=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr + diff < _RefData->_Last, "Cannot increment end iterator...");
+		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator...");
 		_Ptr += diff;
 		return *this;
 	}
@@ -87,7 +87,7 @@ public:
 	}
 
 	constexpr BasicStringConstIterator& operator-=(const DifferenceType diff) noexcept {
-		CUSTOM_ASSERT(_Ptr - diff > _RefData->_First, "Cannot decrement begin iterator...");
+		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator...");
 		_Ptr -= diff;
 		return *this;
 	}
@@ -689,10 +689,8 @@ private:
 	}
 
 	constexpr void _insert_from_cstring(size_t pos, ConstPointer cstring, size_t subpos, size_t sublen) {
-		if (pos > size())		// pos = start pos
-			throw std::out_of_range("Invalid starting position...");
-		if (subpos + sublen > TraitsType::length(cstring))
-			throw std::out_of_range("Invalid length...");
+		if (pos > size() || subpos + sublen > TraitsType::length(cstring))
+			throw std::out_of_range("Invalid length or starting position...");
 
 		size_t newSize = size() + sublen;
 		if (newSize > capacity())
@@ -705,7 +703,7 @@ private:
 	}
 
 	constexpr void _insert_char(size_t pos, size_t nchar, ValueType chr) {
-		if (pos > size())		// pos = start pos
+		if (pos > size())
 			throw std::out_of_range("Invalid starting position...");
 
 		size_t newSize = size() + nchar;
@@ -719,10 +717,8 @@ private:
 	}
 
 	constexpr void _remove_from_cstring(size_t pos, size_t len) {
-		if (pos > size())		// pos = start pos
-			throw std::out_of_range("Invalid starting position...");
 		if (pos + len > size())
-			throw std::out_of_range("Invalid length...");
+			throw std::out_of_range("Invalid length or starting position...");
 
 		(void)TraitsType::move(_data._First + pos, _data._First + pos + len, size() - pos - len);
 		_data._Last 	= _data._First + size() - len;
@@ -730,14 +726,16 @@ private:
 	}
 
 	constexpr int _compare_with_cstring(size_t pos, size_t len, ConstPointer cstring, size_t subpos, size_t sublen) const {
-		return TraitsType::compare(_data._First + pos, cstring + subpos, (custom::max)(len, sublen));
+		if (pos + len > size() || subpos + sublen > Traits::length(cstring))
+			throw std::out_of_range("Invalid length or starting position...");
+
+		return detail::_traits_cstring_compare<TraitsType>(	_data._First, pos, len,
+															cstring, subpos, sublen);
 	}
 
 	constexpr size_t _search_for_cstring(ConstPointer cstring, size_t pos, size_t len) const {
-		if (pos > size())		// pos = start pos
-			throw std::out_of_range("Invalid starting position...");
 		if (pos + len > size() || len > TraitsType::length(cstring))
-			throw std::out_of_range("Invalid length...");
+			throw std::out_of_range("Invalid length or starting position...");
 
 		size_t endLoop = size() - len;
 		for (size_t i = pos; i <= endLoop; ++i)

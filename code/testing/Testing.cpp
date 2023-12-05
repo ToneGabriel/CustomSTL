@@ -309,7 +309,10 @@ void string_test() {
 }
 
 void string_view_test() {
-	// TODO: add test
+	custom::StringView sv1 = "abcdef";
+	custom::StringView sv2 = "abcdxx";
+
+	std::cout << sv1.compare(1, 4, sv2, 1, 4) << '\n';
 }
 
 void array_test() {

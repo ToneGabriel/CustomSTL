@@ -130,5 +130,24 @@ struct CharTraits<char8_t> : _CharTraits<char8_t, unsigned int> {};
 #endif
 
 
+CUSTOM_DETAIL_BEGIN
+
+template<class Traits>
+constexpr int _traits_cstring_compare(	const typename Traits::CharType* cstringLeft,
+										size_t pos, size_t len,
+										const typename Traits::CharType* cstringRight,
+										size_t subpos, size_t sublen) {
+	
+	if (len < sublen)
+		return -1;
+	
+	if (len > sublen)
+		return 1;
+
+	return Traits::compare(cstringLeft + pos, cstringRight + subpos, len);	// same length
+}
+
+CUSTOM_DETAIL_END
+
 
 CUSTOM_END
