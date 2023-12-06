@@ -448,6 +448,15 @@ public:
 		return _data._Last[-1];
 	}
 
+    constexpr void swap(BasicString& other) noexcept {
+		if (_data._First != other._data._First)
+		{
+			custom::swap(_data._First, other._data._First);
+			custom::swap(_data._Last, other._data._Last);
+			custom::swap(_data._Final, other._data._Final);
+		}
+    }
+
 	constexpr BasicString substr(size_t pos, size_t len) const {					// Create substring from current string
 		if (pos + len > size())
 			throw std::out_of_range("Invalid length or starting position.");
@@ -605,6 +614,38 @@ public:
 		return _find_cstring(&chr, pos, 1);
 	}
 // end Find
+
+// Rfind function overload
+	constexpr size_t rfind(const BasicString& string, size_t pos = npos) const {
+		return _rfind_cstring(string._data._First, pos, string.size());
+	}
+
+	constexpr size_t rfind(ConstPointer cstring, size_t pos = npos) const {
+		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
+	}
+
+	constexpr size_t rfind(ConstPointer cstring, size_t pos, size_t len) const {
+		return _rfind_cstring(cstring, pos, len);
+	}
+
+	constexpr size_t rfind(ValueType chr, size_t pos = npos) const {
+		return _rfind_cstring(&chr, pos, 1);
+	}
+// end Rfind
+
+// Contains
+    constexpr bool contains(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
+        return find(sv.data()) != npos;
+    }
+
+    constexpr bool contains(ConstPointer cstring) const noexcept {
+        return find(cstring) != npos;
+    }
+
+    constexpr bool contains(const ValueType chr) const noexcept {
+        return find(chr) != npos;
+    }
+// END Contains
 
 // Starts With overload
 	constexpr bool starts_with(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
@@ -783,6 +824,13 @@ private:
 			throw std::out_of_range("Invalid length or starting position.");
 
 		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
+	}
+
+	constexpr size_t _rfind_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+		if (len > TraitsType::length(cstring))
+			throw std::out_of_range("Invalid length.");
+
+		return detail::_traits_cstring_rfind<TraitsType>(_data._First, cstring, pos, len);
 	}
 };	// END BasicString
 

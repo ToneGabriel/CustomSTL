@@ -235,7 +235,11 @@ public:
 	}
 
     constexpr void swap(BasicStringView& other) noexcept {
-		custom::swap(*this, other);
+		if (_data._First != other._data._First)
+		{
+			custom::swap(_data._First, other._data._First);
+			custom::swap(_data._Last, other._data._Last);
+		}
     }
 
 	constexpr size_t copy(ValueType* dest, size_t len, size_t pos = 0 ) const {
@@ -300,6 +304,24 @@ public:
 		return _find_cstring(&chr, pos, 1);
     }
 // END Find
+
+// Rfind function
+	constexpr size_t rfind(const BasicStringView& other, size_t pos = npos) const {
+		return _rfind_cstring(other._data._First, pos, other.size());
+	}
+
+	constexpr size_t rfind(ConstPointer cstring, size_t pos = npos) const {
+		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
+	}
+
+	constexpr size_t rfind(ConstPointer cstring, size_t pos, size_t len) const {
+		return _rfind_cstring(cstring, pos, len);
+	}
+
+	constexpr size_t rfind(ValueType chr, size_t pos = npos) const {
+		return _rfind_cstring(&chr, pos, 1);
+	}
+// end Rfind
 
 // Contains
     constexpr bool contains(const BasicStringView& other) const noexcept {
@@ -409,6 +431,13 @@ private:
 			throw std::out_of_range("Invalid length or starting position.");
 
 		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
+	}
+
+	constexpr size_t _rfind_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+		if (len > TraitsType::length(cstring))
+			throw std::out_of_range("Invalid length.");
+
+		return detail::_traits_cstring_rfind<TraitsType>(_data._First, cstring, pos, len);
 	}
 };  // END BasicStringView
 

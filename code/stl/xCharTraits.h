@@ -34,6 +34,9 @@ struct _CharTraits
 									const CharType* first2,
 									size_t count) noexcept {
 
+		// the sign of the result is the sign of
+		// the difference between the values of the first pair of bytes
+		// that differ in the objects being compared.
 		return ::memcmp(first1, first2, count * sizeof(CharType));
 	}
 
@@ -138,11 +141,8 @@ constexpr int _traits_cstring_compare(	const typename Traits::CharType* cstringL
 										const typename Traits::CharType* cstringRight,
 										size_t subpos, size_t sublen) noexcept {
 	
-	if (len < sublen)
-		return -1;
-	
-	if (len > sublen)
-		return 1;
+	if (len != sublen)
+		return len - sublen;
 
 	return Traits::compare(cstringLeft + pos, cstringRight + subpos, len);	// same length
 }
@@ -154,10 +154,34 @@ constexpr size_t _traits_cstring_find(	const typename Traits::CharType* cstringL
 
 	// search in [cstringLeft + pos, end) the string [cstringRight, cstringRight + len]
 
-	size_t endLoop = Traits::length(cstringLeft) - len;
-	for (size_t i = pos; i <= endLoop; ++i)
+	// last pos from which a substring of length len can be formed
+	size_t lastSubstrPos = Traits::length(cstringLeft) - len;
+
+	for (size_t i = pos; i <= lastSubstrPos; ++i)
 		if (Traits::compare(cstringLeft + i, cstringRight, len) == 0)
 			return i;
+
+    return static_cast<size_t>(-1);	// npos
+}
+
+template<class Traits>
+constexpr size_t _traits_cstring_rfind(	const typename Traits::CharType* cstringLeft,
+										const typename Traits::CharType* cstringRight,
+										size_t pos, size_t len) noexcept {
+
+	// search in [cstringLeft, cstringLeft + pos) the string [cstringRight, cstringRight + len]
+	// from right to left
+
+	size_t leftSize 		= Traits::length(cstringLeft);
+	size_t lastSubstrPos 	= (pos > leftSize) ? leftSize - len : pos;
+	// last pos from which a substring of length len can be formed
+
+	for (size_t i = lastSubstrPos; i > 0; --i)
+		if (Traits::compare(cstringLeft + i, cstringRight, len) == 0)
+			return i;
+
+	if (Traits::compare(cstringLeft, cstringRight, len) == 0)	// case for i == 0
+		return static_cast<size_t>(0);
 
     return static_cast<size_t>(-1);	// npos
 }
