@@ -7,6 +7,9 @@
 
 CUSTOM_BEGIN
 
+template<class Type, class Traits>
+class BasicStringView;
+
 
 template<class Type, class Alloc>
 struct _BasicStringData
@@ -246,6 +249,12 @@ public:
 	using ReverseIterator		= custom::ReverseIterator<Iterator>;
 	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;
 
+	template<class StringViewType>
+	using IsStringView = 	EnableIf_t<Conjunction_v<
+										IsConvertible<const StringViewType&, BasicStringView<Type, Traits>>,
+										Negation<IsConvertible<const StringViewType&, const Type*>>>,
+							bool>;
+
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
 private:
@@ -263,6 +272,11 @@ public:
 
 	constexpr BasicString(ConstPointer cstring) {
 		_initialize_from_cstring(cstring);
+	}
+
+	template<class StringViewType, IsStringView<StringViewType> = true>
+	constexpr BasicString(const StringViewType& sv) {
+		_initialize_from_cstring(sv.data());
 	}
 
 	constexpr BasicString(const size_t newCapacity) {
@@ -283,6 +297,11 @@ public:
 
 public:
 	// Operators
+
+    constexpr operator BasicStringView<ValueType, TraitsType>() const noexcept {
+        // return a StringView around *this's character-type sequence
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()};
+    }
 
 	constexpr ConstReference operator[](const size_t index) const noexcept{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
@@ -430,10 +449,8 @@ public:
 	}
 
 	constexpr BasicString substr(size_t pos, size_t len) const {					// Create substring from current string
-		if (pos > size())
-			throw std::out_of_range("Invalid starting position.");
-		if (len + pos > size())
-			throw std::out_of_range("Invalid length.");
+		if (pos + len > size())
+			throw std::out_of_range("Invalid length or starting position.");
 
 		BasicString sub(len);	// empty string with capacity = len
 		(void)TraitsType::copy(sub._data._First, _data._First + pos, len);
@@ -573,21 +590,49 @@ public:
 
 // Find function overload
 	constexpr size_t find(const BasicString& string, size_t pos = 0) const {
-		return _search_for_cstring(string._data._First, pos, string.size());
+		return _find_cstring(string._data._First, pos, string.size());
 	}
 
 	constexpr size_t find(ConstPointer cstring, size_t pos = 0) const {
-		return _search_for_cstring(cstring, pos, TraitsType::length(cstring));
+		return _find_cstring(cstring, pos, TraitsType::length(cstring));
 	}
 
 	constexpr size_t find(ConstPointer cstring, size_t pos, size_t len) const {
-		return _search_for_cstring(cstring, pos, len);
+		return _find_cstring(cstring, pos, len);
 	}
 
 	constexpr size_t find(ValueType chr, size_t pos = 0) const {
-		return _search_for_cstring(&chr, pos, 1);
+		return _find_cstring(&chr, pos, 1);
 	}
 // end Find
+
+// Starts With overload
+	constexpr bool starts_with(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(sv);
+    }
+
+    constexpr bool starts_with(const ValueType chr) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(chr);
+    }
+
+    constexpr bool starts_with(ConstPointer cstring) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(cstring);
+    }
+// END Starts With
+
+// Ends With overload
+	constexpr bool ends_with(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(sv);
+    }
+
+    constexpr bool ends_with(const ValueType chr) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(chr);
+    }
+
+    constexpr bool ends_with(ConstPointer cstring) const noexcept {
+        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(cstring);
+    }
+// END Ends With
 
 	constexpr void print_details() const {									// For Debugging
 		size_t currentSize 		= size();
@@ -733,16 +778,11 @@ private:
 															cstring, subpos, sublen);
 	}
 
-	constexpr size_t _search_for_cstring(ConstPointer cstring, size_t pos, size_t len) const {
-		if (pos + len > size() || len > TraitsType::length(cstring))
+	constexpr size_t _find_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+		if (pos > size() || len > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
-		size_t endLoop = size() - len;
-		for (size_t i = pos; i <= endLoop; ++i)
-			if (TraitsType::compare(_data._First + i, cstring, len) == 0)
-				return i;
-
-		return npos;
+		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
 	}
 };	// END BasicString
 

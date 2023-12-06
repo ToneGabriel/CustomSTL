@@ -165,15 +165,16 @@ public:
 
     constexpr BasicStringView() noexcept                        = default;
     constexpr BasicStringView(const BasicStringView&) noexcept  = default;
+    constexpr BasicStringView(std::nullptr_t) 					= delete;
 
     constexpr BasicStringView(ConstPointer cstring) noexcept {
         _data._First    = cstring;
         _data._Last     = cstring + TraitsType::length(cstring);
     }
 
-    constexpr BasicStringView(ConstPointer cstring, const size_t count) noexcept {
+    constexpr BasicStringView(ConstPointer cstring, const size_t len) noexcept {
         _data._First    = cstring;
-        _data._Last     = cstring + count;
+        _data._Last     = cstring + len;
     }
 
 public:
@@ -223,70 +224,96 @@ public:
 		return _data._Last[-1];
 	}
 
-	constexpr void remove_prefix(size_t count) noexcept {
-        CUSTOM_ASSERT(size() >= count, "Cannot remove prefix longer than total size");
-		_data._First += count;
+	constexpr void remove_prefix(size_t len) noexcept {
+        CUSTOM_ASSERT(size() >= len, "Cannot remove prefix longer than total size");
+		_data._First += len;
 	}
 
-	constexpr void remove_suffix(size_t count) noexcept {
-        CUSTOM_ASSERT(size() >= count, "Cannot remove suffix longer than total size");
-		_data._Last -= count;
+	constexpr void remove_suffix(size_t len) noexcept {
+        CUSTOM_ASSERT(size() >= len, "Cannot remove suffix longer than total size");
+		_data._Last -= len;
 	}
 
     constexpr void swap(BasicStringView& other) noexcept {
 		custom::swap(*this, other);
     }
 
-	constexpr size_t copy(ValueType* dest, size_t count, size_t pos = 0 ) const {
+	constexpr size_t copy(ValueType* dest, size_t len, size_t pos = 0 ) const {
         CUSTOM_ASSERT(size() >= pos, "Offset longer than total size.");
-		count = _clamp_suffix_size(pos, count);		// max number of elems that can be copied
-		TraitsType::copy(dest, _data._First + pos, count);
-		return count;
+		len = _clamp_suffix_size(pos, len);		// max number of elems that can be copied
+		TraitsType::copy(dest, _data._First + pos, len);
+		return len;
 	}
 
-    constexpr BasicStringView substr(const size_t pos = 0, size_t count = npos) const {
-        // return a new BasicStringView moved forward by pos and trimmed to count elements
+    constexpr BasicStringView substr(const size_t pos = 0, size_t len = npos) const {
+        // return a new BasicStringView moved forward by pos and trimmed to len elements
         CUSTOM_ASSERT(size() >= pos, "Offset longer than total size.");
-        count = _clamp_suffix_size(pos, count);
-        return BasicStringView(_data._First + pos, count);
+        len = _clamp_suffix_size(pos, len);
+        return BasicStringView(_data._First + pos, len);
     }
 
 // Compare
     constexpr int compare(const BasicStringView& other) const noexcept {
-		return detail::_traits_cstring_compare<TraitsType>(	_data._First, 0, size(),
-															other._data._First, 0, other.size());
+		return _compare_with_cstring(0, size(), other._data._First, 0, other.size());
     }
 
-    constexpr int compare(const size_t pos, const size_t count, const BasicStringView& other) const {
-        // compare [pos, pos + count) with other
-        return substr(pos, count).compare(other);
+    constexpr int compare(const size_t pos, const size_t len, const BasicStringView& other) const {
+		return _compare_with_cstring(pos, len, other._data._First, 0, other.size());
     }
 
-    constexpr int compare(	const size_t pos, const size_t count,
+    constexpr int compare(	const size_t pos, const size_t len,
 							const BasicStringView& other,
-							const size_t otherPos, const size_t otherCount) const {
+							const size_t subpos, const size_t sublen) const {
 
-        // compare [pos, pos + count) with other [otherPos, otherPos + otherCount)
-        return substr(pos, count).compare(other.substr(otherPos, otherCount));
+		return _compare_with_cstring(pos, len, other._data._First, subpos, sublen);
     }
 
-    constexpr int compare(const ValueType* const cstring) const {
-		// compare [0, size()) with [cstring, nullptr)
-        return compare(BasicStringView(cstring));
+    constexpr int compare(ConstPointer cstring) const {
+		return _compare_with_cstring(0, size(), cstring, 0, TraitsType::length(cstring));
     }
 
-    constexpr int compare(const size_t pos, const size_t count, const ValueType* const cstring) const {
-        // compare [pos, pos + count) with [cstring, nullptr)
-        return substr(pos, count).compare(BasicStringView(cstring));
+    constexpr int compare(const size_t pos, const size_t len, ConstPointer cstring) const {
+		return _compare_with_cstring(pos, len, cstring, 0, TraitsType::length(cstring));
     }
 
-    constexpr int compare(	const size_t pos, const size_t count,
-        					const ValueType* const cstring, const size_t ptrCount) const {
+    constexpr int compare(	const size_t pos, const size_t len,
+        					ConstPointer cstring, const size_t cstringCount) const {
 
-        // compare [pos, pos + count) with [cstring, cstring + ptrCount)
-        return substr(pos, count).compare(BasicStringView(cstring, ptrCount));
+		return _compare_with_cstring(pos, len, cstring, 0, cstringCount);
     }
 // END Compare
+
+// Find
+    constexpr size_t find(const BasicStringView& other, const size_t pos = 0) const noexcept {
+		return _find_cstring(other._data._First, pos, other.size());
+    }
+
+    constexpr size_t find(ConstPointer cstring, const size_t pos = 0) const noexcept {
+		return _find_cstring(cstring, pos, TraitsType::length(cstring));
+    }
+
+    constexpr size_t find(ConstPointer cstring, size_t pos, size_t len) const noexcept {
+		return _find_cstring(cstring, pos, len);
+	}
+
+    constexpr size_t find(const ValueType chr, const size_t pos = 0) const noexcept {
+		return _find_cstring(&chr, pos, 1);
+    }
+// END Find
+
+// Contains
+    constexpr bool contains(const BasicStringView& other) const noexcept {
+        return find(other) != npos;
+    }
+
+    constexpr bool contains(ConstPointer cstring) const noexcept {
+        return find(cstring) != npos;
+    }
+
+    constexpr bool contains(const ValueType chr) const noexcept {
+        return find(chr) != npos;
+    }
+// END Contains
 
 // Starts With
 	constexpr bool starts_with(const BasicStringView& other) const noexcept {
@@ -302,7 +329,7 @@ public:
         return !empty() && TraitsType::eq(front(), chr);
     }
 
-    constexpr bool starts_with(const ValueType* const cstring) const noexcept {
+    constexpr bool starts_with(ConstPointer cstring) const noexcept {
         return starts_with(BasicStringView(cstring));
     }
 // END Starts With
@@ -321,7 +348,7 @@ public:
         return !empty() && TraitsType::eq(back(), chr);
     }
 
-    constexpr bool ends_with(const ValueType* const cstring) const noexcept {
+    constexpr bool ends_with(ConstPointer cstring) const noexcept {
         return ends_with(BasicStringView(cstring));
     }
 // END Ends With
@@ -364,10 +391,25 @@ public:
 private:
 	// Helpers
 
-    constexpr size_t _clamp_suffix_size(const size_t pos, const size_t count) const noexcept {
-        // trims count to the longest it can be assuming a string at/after pos
-        return (custom::min)(count, size() - pos);
+    constexpr size_t _clamp_suffix_size(const size_t pos, const size_t len) const noexcept {
+        // trims len to the longest it can be assuming a string at/after pos
+        return (custom::min)(len, size() - pos);
     }
+
+	constexpr int _compare_with_cstring(size_t pos, size_t len, ConstPointer cstring, size_t subpos, size_t sublen) const {
+		if (pos + len > size() || subpos + sublen > TraitsType::length(cstring))
+			throw std::out_of_range("Invalid length or starting position.");
+
+		return detail::_traits_cstring_compare<TraitsType>(	_data._First, pos, len,
+															cstring, subpos, sublen);
+	}
+
+	constexpr size_t _find_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+		if (pos > size() || len > TraitsType::length(cstring))
+			throw std::out_of_range("Invalid length or starting position.");
+
+		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
+	}
 };  // END BasicStringView
 
 

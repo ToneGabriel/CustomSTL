@@ -309,10 +309,16 @@ void string_test() {
 }
 
 void string_view_test() {
+	custom::String str = "cdef";
 	custom::StringView sv1 = "abcdef";
-	custom::StringView sv2 = "abcdxx";
+	custom::StringView sv2(str);
+	std::cout << sv1.find(sv2, 1) << '\n';
 
-	std::cout << sv1.compare(1, 4, sv2, 1, 4) << '\n';
+	// =====================================
+	
+	custom::StringView sv3 = "abcd";
+	custom::String str1(sv3);
+	std::cout << str1 << '\n';
 }
 
 void array_test() {

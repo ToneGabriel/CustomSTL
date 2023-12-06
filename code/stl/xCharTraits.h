@@ -136,7 +136,7 @@ template<class Traits>
 constexpr int _traits_cstring_compare(	const typename Traits::CharType* cstringLeft,
 										size_t pos, size_t len,
 										const typename Traits::CharType* cstringRight,
-										size_t subpos, size_t sublen) {
+										size_t subpos, size_t sublen) noexcept {
 	
 	if (len < sublen)
 		return -1;
@@ -145,6 +145,21 @@ constexpr int _traits_cstring_compare(	const typename Traits::CharType* cstringL
 		return 1;
 
 	return Traits::compare(cstringLeft + pos, cstringRight + subpos, len);	// same length
+}
+
+template<class Traits>
+constexpr size_t _traits_cstring_find(	const typename Traits::CharType* cstringLeft,
+										const typename Traits::CharType* cstringRight,
+										size_t pos, size_t len) noexcept {
+
+	// search in [cstringLeft + pos, end) the string [cstringRight, cstringRight + len]
+
+	size_t endLoop = Traits::length(cstringLeft) - len;
+	for (size_t i = pos; i <= endLoop; ++i)
+		if (Traits::compare(cstringLeft + i, cstringRight, len) == 0)
+			return i;
+
+    return static_cast<size_t>(-1);	// npos
 }
 
 CUSTOM_DETAIL_END
