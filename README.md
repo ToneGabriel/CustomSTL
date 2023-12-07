@@ -1,6 +1,6 @@
 # CustomSTL
 
-Personal approach inspired from MSVC STL. Actual code is found in "code/stl" folder.
+Personal approach inspired from MSVC STL. Actual implementation is found in "code/stl" folder.
 
 Compilation requirements:
 
@@ -13,4 +13,3 @@ Components not fully operational:
 - Algorithm.h
 - Complex.h
 - ForwardList.h operations (splice/sort/merge)
-- BasicStringView

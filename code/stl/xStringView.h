@@ -7,7 +7,6 @@
 
 CUSTOM_BEGIN
 
-// TODO: implement all
 
 template<class Type>
 struct _BasicStringViewData
@@ -440,6 +439,22 @@ private:
 		return detail::_traits_cstring_rfind<TraitsType>(_data._First, cstring, pos, len);
 	}
 };  // END BasicStringView
+
+
+// BasicStringView binary operators
+template<class Type, class Traits>
+constexpr bool operator==(	const BasicStringView<Type, Traits>& left,
+							const BasicStringView<Type, Traits>& right) {
+
+	return left.compare(right) == 0;
+}
+
+template<class Type, class Alloc, class Traits>
+constexpr bool operator!=(	const BasicStringView<Type, Traits>& left,
+							const BasicStringView<Type, Traits>& right) {
+
+	return !(left == right);
+}
 
 
 CUSTOM_END
