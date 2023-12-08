@@ -453,12 +453,12 @@ public:
 			otherFirst._RefData->_Head != otherLast._RefData->_Head)
 			throw std::domain_error("List provided by otherFirst and otherLast must be the same, but different from the one provided by where");
 
-		size_t count = _distance(otherFirst, otherLast);
+		size_t count = static_cast<size_t>(custom::distance(otherFirst, otherLast));
 
 		if (max_size() - _data._Size < count)
 			throw std::out_of_range("List too long");
 
-		if (_data._Head != other._data._Head && count != 0)		// worth splicing
+		if (count != 0)		// worth splicing
 		{
 			// do sizes
 			_data._Size 		+= count;
@@ -611,12 +611,6 @@ private:
 	void _delete_until_size(const size_t newSize) {						// Remove elements until current size equals newSize
 		while (_data._Size > newSize)
 			pop_back();
-	}
-
-	size_t _distance(ConstIterator first, ConstIterator last) {
-		size_t count = 0;
-		for (_NodePtr temp = first._Ptr; temp != last._Ptr; temp = temp->_Next, ++count) { /*do nothing*/ }
-		return count;
 	}
 
 	void _splice(_NodePtr thisFirst, _NodePtr otherFirst, _NodePtr otherLast) {

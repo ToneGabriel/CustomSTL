@@ -206,13 +206,13 @@ constexpr void advance(InputIt& first, Offset off) {
         first += off;
     else
     {
-        if constexpr (IsSigned_v<off> && !IsBidirectionalIterator_v<InputIt>)
+        if constexpr (IsSigned_v<Offset> && !IsBidirectionalIterator_v<InputIt>)
             CUSTOM_ASSERT(off >= 0, "Negative advance of non-bidirectional iterator!");
 
         for (; off > 0; --off)  // happens for both input and bidirectional iterator
             ++first;
 
-        if constexpr (IsSigned_v<off> && IsBidirectionalIterator_v<InputIt>)
+        if constexpr (IsSigned_v<Offset> && IsBidirectionalIterator_v<InputIt>)
             for (; off < 0; ++off)
                 --first;
     }

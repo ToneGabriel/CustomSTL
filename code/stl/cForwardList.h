@@ -376,17 +376,39 @@ public:
 	}
 
 	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst, ConstIterator otherLast) {
-		// TODO: implement
+		// splice (otherFirst, otherLast) AFTER where
+
+		if (where._RefData->_Head == otherFirst._RefData->_Head ||
+			otherFirst._RefData->_Head != otherLast._RefData->_Head)
+			throw std::domain_error("ForwardList provided by otherFirst and otherLast must be the same, but different from the one provided by where");
+
+		size_t count = static_cast<size_t>(custom::distance(otherFirst, otherLast) - 1);
+
+		if (max_size() - _data._Size < count)
+			throw std::out_of_range("ForwardList too long");
+
+		if (count != 0)		// worth splicing
+		{
+			// do sizes
+			_data._Size 		+= count;
+			other._data._Size 	-= count;
+
+			// to node ptrs from iterators
+			_NodePtr thisFirst 	= where._Ptr;					// here otherFirst->_Next should link to (AFTER where)
+			_NodePtr oFirst 	= otherFirst._Ptr;				// otherFirst node ptr (not included)
+			_NodePtr oLast 		= otherLast._Ptr;				// otherLast node ptr (not included)
+			
+			// take nodes from other list and link them to this one
+			_splice_after(thisFirst, oFirst, oLast);
+		}
 	}
 
 	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst) {
-		// TODO: check
-		splice(where, other, otherFirst, other.end());
+		splice_after(where, other, otherFirst, other.end());
 	}
 
 	void splice_after(ConstIterator where, ForwardList& other) {
-		// TODO: check
-		splice(where, other, other.begin(), other.end());
+		splice_after(where, other, other.before_begin(), other.end());
 	}
 
 	template<class Compare>
@@ -492,6 +514,23 @@ private:
 	void _delete_until_size(const size_t newSize) {						// Remove elements until current size equals newSize
 		while (_data._Size > newSize)
 			pop_front();
+	}
+
+	void _splice_after(_NodePtr thisFirst, _NodePtr otherFirst, _NodePtr otherLast) {
+		// here beforeOtherLast should link to
+		_NodePtr thisLast				= thisFirst->_Next;
+
+		// get node before otherLast
+		_NodePtr beforeOtherLast = otherFirst;
+		while (beforeOtherLast->_Next != otherLast)
+			beforeOtherLast = beforeOtherLast->_Next;
+
+		// open this list and link to other ends
+		thisFirst->_Next 				= otherFirst->_Next;
+		beforeOtherLast->_Next 			= thisLast;
+
+		// close other list
+		otherFirst->_Next 				= otherLast;
 	}
 };	// END ForwardList
 
