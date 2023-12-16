@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cPair.h"
-#include "cTuple.h"
 #include "cString.h"
 #include "cStringView.h"
 #include "cArray.h"
@@ -23,3 +21,5 @@
 #include "cNumeric.h"
 #include "cComplex.h"
 #include "cBitset.h"
+#include "cPair.h"
+#include "cTuple.h"

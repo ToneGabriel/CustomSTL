@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <array>
 #include <vector>
 #include <deque>
@@ -20,3 +21,4 @@
 #include <numeric>
 #include <complex>
 #include <bitset>
+#include <tuple>

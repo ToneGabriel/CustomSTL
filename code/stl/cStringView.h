@@ -1,5 +1,5 @@
 #pragma once
-#include "xStringView.h"
+#include "xString.h"
 #include "cFunctional.h"
 
 
