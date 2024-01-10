@@ -7,6 +7,9 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
+
 // TODO: check if needed
 // #define PI_LONG         3.1415926535897932384626433832795029L
 // #define PI_BY_2_LONG    1.5707963267948966192313216916397514L
@@ -61,7 +64,7 @@ struct _ComplexTraitsBase
 
 struct _ComplexTraitsFloat : _ComplexTraitsBase<float>
 {
-    using FloatType = _ComplexTraitsBase<float>::FloatType; // float
+    using FloatType = typename _ComplexTraitsBase<float>::FloatType; // float
 
     static FloatType copysign(FloatType magnitude, FloatType sign) {
         return ::copysignf(magnitude, sign);
@@ -138,7 +141,7 @@ struct _ComplexTraitsFloat : _ComplexTraitsBase<float>
 
 struct _ComplexTraitsDouble : _ComplexTraitsBase<double>
 {
-    using FloatType = _ComplexTraitsBase<double>::FloatType; // double
+    using FloatType = typename _ComplexTraitsBase<double>::FloatType; // double
 
     static FloatType copysign(FloatType magnitude, FloatType sign) {
         return ::copysign(magnitude, sign);
@@ -215,7 +218,7 @@ struct _ComplexTraitsDouble : _ComplexTraitsBase<double>
 
 struct _ComplexTraitsLongDouble : _ComplexTraitsBase<long double>
 {
-    using FloatType = _ComplexTraitsBase<long double>::FloatType; // long double
+    using FloatType = typename _ComplexTraitsBase<long double>::FloatType; // long double
 
     static FloatType copysign(FloatType magnitude, FloatType sign) {
         return ::copysignl(magnitude, sign);
@@ -290,19 +293,21 @@ struct _ComplexTraitsLongDouble : _ComplexTraitsBase<long double>
     }
 };  // END _ComplexTraitsLongDouble
 
+CUSTOM_DETAIL_END
+
 
 // complex traits specialization
 template<class Type>
-struct ComplexTraits : _ComplexTraitsBase<Type> {};  // cannot use other than specializations below
+struct ComplexTraits : detail::_ComplexTraitsBase<Type> {};  // cannot use other than specializations below
 
 template<>
-struct ComplexTraits<float> : _ComplexTraitsFloat {};
+struct ComplexTraits<float> : detail::_ComplexTraitsFloat {};
 
 template<>
-struct ComplexTraits<double> : _ComplexTraitsDouble {};
+struct ComplexTraits<double> : detail::_ComplexTraitsDouble {};
 
 template<>
-struct ComplexTraits<long double> : _ComplexTraitsLongDouble {};
+struct ComplexTraits<long double> : detail::_ComplexTraitsLongDouble {};
 
 
 template<class Type>
@@ -479,10 +484,10 @@ private:
         }
         else if (TraitsType::abs_v(otherImag) < TraitsType::abs_v(otherReal))
         {
-            ValueType _Wr = otherImag / otherReal;
-            ValueType _Wd = otherReal + _Wr * otherImag;
+            ValueType wr = otherImag / otherReal;
+            ValueType wd = otherReal + wr * otherImag;
 
-            if (TraitsType::is_nan(_Wd) || _Wd == 0)
+            if (TraitsType::is_nan(wd) || wd == 0)
             {
                 // set NaN result
                 _rep[Real] = TraitsType::nan_v();
@@ -491,8 +496,8 @@ private:
             else
             {
                 // compute representable result
-                ValueType temp  = (_rep[Real] + _rep[Imag] * _Wr) / _Wd;
-                _rep[Imag]      = (_rep[Imag] - _rep[Real] * _Wr) / _Wd;
+                ValueType temp  = (_rep[Real] + _rep[Imag] * wr) / wd;
+                _rep[Imag]      = (_rep[Imag] - _rep[Real] * wr) / wd;
                 _rep[Real]      = temp;
             }
         }
@@ -503,10 +508,10 @@ private:
         }
         else // 0 < |other._rep[Real]| <= |other._rep[Imag]|
         {
-            ValueType _Wr = otherReal / otherImag;
-            ValueType _Wd = otherImag + _Wr * otherReal;
+            ValueType wr = otherReal / otherImag;
+            ValueType wd = otherImag + wr * otherReal;
 
-            if (TraitsType::is_nan(_Wd) || _Wd == 0)
+            if (TraitsType::is_nan(wd) || wd == 0)
             {
                 // set NaN result
                 _rep[Real] = TraitsType::nan_v();
@@ -515,8 +520,8 @@ private:
             else
             {
                 // compute representable result
-                ValueType temp  = (_rep[Real] * _Wr + _rep[Imag]) / _Wd;
-                _rep[Imag]      = (_rep[Imag] * _Wr - _rep[Real]) / _Wd;
+                ValueType temp  = (_rep[Real] * wr + _rep[Imag]) / wd;
+                _rep[Imag]      = (_rep[Imag] * wr - _rep[Real]) / wd;
                 _rep[Real]      = temp;
             }
         }

@@ -6,6 +6,7 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
 
 // char traits implementation
 template<class Type, class Integer>
@@ -111,30 +112,7 @@ public:
 	}
 };
 
-// char traits specialization
-template<class Type>
-struct CharTraits : _CharTraits<Type, long> {};
-
-template<>
-struct CharTraits<char> : _CharTraits<char, int> {};
-
-template<>
-struct CharTraits<wchar_t> : _WCharTraits<wchar_t> {};
-
-template<>
-struct CharTraits<char16_t> : _WCharTraits<char16_t> {};
-
-template<>
-struct CharTraits<char32_t> : _CharTraits<char32_t, unsigned int> {};
-
-#ifdef __cpp_char8_t
-template<>
-struct CharTraits<char8_t> : _CharTraits<char8_t, unsigned int> {};
-#endif
-
-
-CUSTOM_DETAIL_BEGIN
-
+// helper functions
 template<class Traits>
 constexpr int _traits_cstring_compare(	const typename Traits::CharType* cstringLeft,
 										size_t pos, size_t len,
@@ -187,6 +165,28 @@ constexpr size_t _traits_cstring_rfind(	const typename Traits::CharType* cstring
 }
 
 CUSTOM_DETAIL_END
+
+
+// char traits specialization
+template<class Type>
+struct CharTraits : detail::_CharTraits<Type, long> {};
+
+template<>
+struct CharTraits<char> : detail::_CharTraits<char, int> {};
+
+template<>
+struct CharTraits<wchar_t> : detail::_WCharTraits<wchar_t> {};
+
+template<>
+struct CharTraits<char16_t> : detail::_WCharTraits<char16_t> {};
+
+template<>
+struct CharTraits<char32_t> : detail::_CharTraits<char32_t, unsigned int> {};
+
+#ifdef __cpp_char8_t
+template<>
+struct CharTraits<char8_t> : detail::_CharTraits<char8_t, unsigned int> {};
+#endif
 
 
 CUSTOM_END
