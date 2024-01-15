@@ -11,7 +11,7 @@ TEST_BEGIN
 class Test      // basic test class
 {
 public:
-	int value = 0;
+	int TestValue = 0;
 
 public:
     // Constructors & Operators

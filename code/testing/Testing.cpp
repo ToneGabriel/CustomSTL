@@ -8,38 +8,38 @@ Test::Test() {
 }
 
 Test::Test(int x) {
-	value = x;
-	std::cout << "Custom Construct " << value << '\n';
+	TestValue = x;
+	std::cout << "Custom Construct " << TestValue << '\n';
 }
 
 Test::Test(const Test& other) {
-	value = other.value;
-	std::cout << "Copy Construct " << value << '\n';
+	TestValue = other.TestValue;
+	std::cout << "Copy Construct " << TestValue << '\n';
 }
 
 Test::Test(Test&& other) noexcept {
-	value = custom::move(other.value);
-	std::cout << "Move Construct " << value << '\n';
+	TestValue = custom::move(other.TestValue);
+	std::cout << "Move Construct " << TestValue << '\n';
 }
 
 Test::~Test() {
-	std::cout << "Destruct " << value << '\n';
+	std::cout << "Destruct " << TestValue << '\n';
 }
 
 Test& Test::operator=(const Test& other) {
-	value = other.value;
-	std::cout << "Copy Assign " << value << '\n';
+	TestValue = other.TestValue;
+	std::cout << "Copy Assign " << TestValue << '\n';
 	return *this;
 }
 
 Test& Test::operator=(Test&& other) noexcept {
-	value = custom::move(other.value);
-	std::cout << "Move Assign " << value << '\n';
+	TestValue = custom::move(other.TestValue);
+	std::cout << "Move Assign " << TestValue << '\n';
 	return *this;
 }
 
 bool Test::operator==(const Test& other) const {
-	return value == other.value;
+	return TestValue == other.TestValue;
 }
 
 bool Test::operator!=(const Test& other) const {
@@ -47,18 +47,17 @@ bool Test::operator!=(const Test& other) const {
 }
 
 void Test::operator()() const {
-	std::cout << "Value= " << value << '\n';
+	std::cout << "TestValue= " << TestValue << '\n';
 }
 
 std::ostream& operator<<(std::ostream& os, const Test& test) {
-	os << "Test val = " << test.value;
+	os << "TestValue = " << test.TestValue;
 	return os;
 }
 
 bool operator<(const Test& test1, const Test& test2) {
-	return test1.value < test2.value;
+	return test1.TestValue < test2.TestValue;
 }
-
 
 int Test::test_function(int x) {
 	return x;
