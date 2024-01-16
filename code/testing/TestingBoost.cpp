@@ -223,6 +223,14 @@ void condition_variable_any_test() {
     consumerThread.join();
 }
 
+void shared_mutex_test() {
+    // TODO: implement
+}
+
+void shared_timed_mutex_test() {
+    // TODO: implement
+}
+
 TEST_BOOST_END
 
 #endif		// __GNUG__

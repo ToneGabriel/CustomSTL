@@ -36,6 +36,8 @@ int main()
 	//test_boost::timed_mutex_test();
 	//test_boost::recursive_timed_mutex_test();
 	//test_boost::condition_variable_any_test();
+	//test_boost::shared_mutex_test();
+	//test_boost::shared_timed_mutex_test();
 
 	return 0;
 }

@@ -1,15 +1,10 @@
 #pragma once
 
 #if defined __GNUG__
-#include "cThread.h"
 #include "xLock.h"
 
 
 CUSTOM_BEGIN
-
-class ConditionVariable;
-class ConditionVariableAny;
-
 
 class MutexBase         // Mutex adaptor for pthread_mutex_t
 {

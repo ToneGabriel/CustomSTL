@@ -33,6 +33,8 @@ void semaphore_test();
 void timed_mutex_test();
 void recursive_timed_mutex_test();
 void condition_variable_any_test();
+void shared_mutex_test();
+void shared_timed_mutex_test();
 
 TEST_BOOST_END
 

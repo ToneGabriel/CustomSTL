@@ -3,7 +3,20 @@
 #if defined __GNUG__
 #include "cThread.h"
 
+
 CUSTOM_BEGIN
+
+class Mutex;
+class RecursiveMutex;
+class TimedMutex;
+class RecursiveTimedMutex;
+
+class SharedMutex;
+class SharedTimedMutex;
+
+class ConditionVariable;
+class ConditionVariableAny;
+
 
 CUSTOM_DETAIL_BEGIN     // lock impl
 
@@ -304,6 +317,24 @@ private:
 }; // END UniqueLock
 
 
+// is shared mutex
+template<class Ty>
+constexpr bool IsSharedMutex_v = IsAnyOf_v<RemoveCV_t<Ty>,  SharedMutex,
+                                                            SharedTimedMutex>;
+
+template<class Ty>
+struct IsSharedMutex : BoolConstant<IsSharedMutex_v<Ty>> {};
+
+
+template<class Mtx>
+class SharedLock        // try implement in xLock.h (add static_assert for type of mutex)
+{
+public:
+    static_assert(IsSharedMutex_v<Mtx>, "SharedLock requires shared mutex type!");
+    // TODO: implement
+};  // END SharedLock
+
+
 template<class... Mutexes>
 class ScopedLock            // locks/unlocks multiple mutexes
 {
@@ -362,6 +393,7 @@ public:
     ScopedLock(const ScopedLock&)            = delete;
     ScopedLock& operator=(const ScopedLock&) = delete;
 }; // END ScopedLock one
+
 
 template<>
 class ScopedLock<>

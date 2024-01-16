@@ -1,15 +1,12 @@
 #pragma once
 
 #if defined __GNUG__
-#include "cThread.h"
 #include "xLock.h"
 
-// TODO: try implement using pthread_rwlock_t
 
 CUSTOM_BEGIN
 
-
-class SharedMutex
+class SharedMutex   // Adaptor for pthread_rwlock_t (read-write mutex)
 {
 public:
     using NativeHandleType = pthread_rwlock_t;
@@ -17,38 +14,75 @@ public:
 private:
     friend class SharedTimedMutex;
 
-    pthread_rwlock_t _rwLock = PTHREAD_RWLOCK_INITIALIZER;
+    pthread_rwlock_t _rwMutex;
 
 public:
     // Constructors & Operators
 
+    SharedMutex() {
+        pthread_rwlock_init(&_rwMutex, nullptr);
+    }
+
+    ~SharedMutex() {
+        pthread_rwlock_destroy(&_rwMutex);
+    }
+
+    SharedMutex(const SharedMutex&)             = delete;
+    SharedMutex& operator= (const SharedMutex&) = delete;
+
 public:
     // Main functions
 
-// Exclusive ownership
-    void lock();
-    bool try_lock();
-    void unlock();
+    void lock() {
+        pthread_rwlock_wrlock(&_rwMutex);               // write
+    }
 
-// Shared ownership
-    void lock_shared();
-    bool try_lock_shared();
-    void unlock_shared();
+    bool try_lock() {
+        switch (pthread_rwlock_trywrlock(&_rwMutex))    // write
+        {
+            case 0:
+                return true;
+            case EBUSY:
+                return false;
+            default:
+                throw std::runtime_error("SharedMutex exclusive lock failed.");
+        }
+    }
 
+    void unlock() {
+        pthread_rwlock_unlock(&_rwMutex);               // read / write
+    }
+
+    void lock_shared() {
+        pthread_rwlock_rdlock(&_rwMutex);               // read
+    }
+
+    bool try_lock_shared() {
+        switch (pthread_rwlock_tryrdlock(&_rwMutex))    // read
+        {
+            case 0:
+                return true;
+            case EBUSY:
+                return false;
+            default:
+                throw std::runtime_error("SharedMutex shared lock failed.");
+        }
+    }
+
+    void unlock_shared() {
+        pthread_rwlock_unlock(&_rwMutex);               // same as unlock
+    }
+
+    NativeHandleType native_handle() {
+        return _rwMutex;
+    }
 };  // END SharedMutex
 
 
 class SharedTimedMutex
 {
-
+    // TODO: implement
 };  // END SharedTimedMutex
-
-
-template<class Mtx>
-class SharedLock        // try implement in xLock.h (add static_assert for type of mutex)
-{
-
-};  // END SharedLock
 
 CUSTOM_END
 
