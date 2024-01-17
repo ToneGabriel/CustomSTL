@@ -116,7 +116,7 @@ int try_lock(Locks&... locks) { // try to lock multiple locks
 }
 
 
-// tag struct declarations for construction of UniqueLock objects
+// tag struct declarations for construction of UniqueLock/SharedLock objects
 struct AdoptLock_t { explicit AdoptLock_t() = default; };
 struct DeferLock_t { explicit DeferLock_t() = default; };
 struct TryToLock_t { explicit TryToLock_t() = default; };
@@ -327,11 +327,139 @@ struct IsSharedMutex : BoolConstant<IsSharedMutex_v<Ty>> {};
 
 
 template<class Mtx>
-class SharedLock        // try implement in xLock.h (add static_assert for type of mutex)
+class SharedLock
 {
 public:
     static_assert(IsSharedMutex_v<Mtx>, "SharedLock requires shared mutex type!");
-    // TODO: implement
+    using MutexType = Mtx;
+
+private:
+    MutexType* _ownedSMutex = nullptr;
+    bool _owns              = false;
+
+public:
+    // Constructors
+
+    SharedLock()                    = default;
+    SharedLock(const SharedLock&)   = delete;
+
+    SharedLock(MutexType& mtx) : _ownedSMutex(&mtx), _owns(false) {                              // construct and lock
+        _ownedSMutex->lock_shared();
+        _owns = true;
+    }
+
+    SharedLock(MutexType& mtx, AdoptLock_t)                                                     // construct and assume already locked
+        : _ownedSMutex(&mtx), _owns(true) { /*Empty*/ }
+
+    SharedLock(MutexType& mtx, DeferLock_t) noexcept                                            // construct but don't lock
+        : _ownedSMutex(&mtx), _owns(false) { /*Empty*/ }
+
+    SharedLock(MutexType& mtx, TryToLock_t)                                                     // construct and try to lock
+        : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared()) { /*Empty*/ }
+
+    template<class Rep, class Period>
+    SharedLock(MutexType& mtx, const custom::chrono::Duration<Rep, Period>& relativeTime)          // construct and lock with timeout
+        : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared_for(relativeTime)) { /*Empty*/ }
+
+    template<class Clock, class Duration>
+    SharedLock(MutexType& mtx, const custom::chrono::TimePoint<Clock, Duration>& absoluteTime)    // construct and lock with timeout
+        : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared_until(absoluteTime)) { /*Empty*/ }
+
+    SharedLock(SharedLock&& other) noexcept : _ownedSMutex(other._ownedSMutex), _owns(other._owns) {
+        other._ownedSMutex  = nullptr;
+        other._owns         = false;
+    }
+
+    ~SharedLock() {
+        if (_owns)
+            _ownedSMutex->unlock_shared();
+    }
+
+public:
+    // Operators
+
+    SharedLock& operator=(const SharedLock&) = delete;
+
+    SharedLock& operator=(SharedLock&& other) {
+        if (_ownedSMutex != other._ownedSMutex)
+        {
+            if (_owns)
+                _ownedSMutex->unlock_shared();  // can throw
+
+            _ownedSMutex    = custom::exchange(other._ownedSMutex, nullptr);
+            _owns           = custom::exchange(other._owns, false);
+        }
+
+        return *this;
+    }
+
+    explicit operator bool() const noexcept {
+        return _owns;
+    }
+
+public:
+    // Main functions
+
+    void lock() {
+        _validate();
+        _ownedSMutex->lock_shared();
+        _owns = true;
+    }
+
+    bool try_lock() {
+        _validate();
+        _owns = _ownedSMutex->try_lock_shared();
+        return _owns;
+    }
+
+    template<class Rep, class Period>
+    bool try_lock_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+        _validate();
+        _owns = _ownedSMutex->try_lock_shared_for(relativeTime);
+        return _owns;
+    }
+
+    template<class Clock, class Duration>
+    bool try_lock_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+        _validate();
+        _owns = _ownedSMutex->try_lock_shared_until(absoluteTime);
+        return _owns;
+    }
+
+    void unlock() {
+        if (_ownedSMutex == nullptr || _owns == false)
+            throw std::logic_error("No mutex owned.");
+
+        _ownedSMutex->unlock_shared();
+        _owns = false;
+    }
+
+    MutexType* release() {
+        MutexType* temp = _ownedSMutex;
+        _ownedSMutex    = nullptr;
+        _owns           = false;
+
+        return temp;
+    }
+
+    MutexType* mutex() const noexcept{
+        return _ownedSMutex;
+    }
+
+    bool owns_lock() const {
+        return _owns;
+    }
+
+private:
+    // Helpers
+
+    void _validate() const {        // check if mutex can be locked
+        if (_ownedSMutex == nullptr)
+            throw std::logic_error("No mutex owned.");
+
+        if (_owns)
+            throw std::logic_error("Mutex already locked.");
+    }
 };  // END SharedLock
 
 

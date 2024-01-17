@@ -225,6 +225,28 @@ void condition_variable_any_test() {
 
 void shared_mutex_test() {
     // TODO: implement
+    auto writer = [](custom::SharedMutex& smtx) {
+        custom::LockGuard<custom::SharedMutex> lock(smtx);  // exclusive
+        // modify data
+    };
+
+    auto reader = [](custom::SharedMutex& smtx) {
+        custom::SharedLock<custom::SharedMutex> lock(smtx); // shared
+        // read data
+        custom::this_thread::sleep_for(custom::chrono::Milliseconds(100));
+    };
+
+    custom::Vector<custom::Thread> threads;
+    custom::SharedMutex smtx;
+
+    for (int i = 0; i < 20; ++i)
+        threads.emplace_back(custom::Thread(reader, custom::ref(smtx)));
+
+    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));
+    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));
+
+    for (int i = 0; i < 20; ++i)
+        threads.emplace_back(custom::Thread(reader, custom::ref(smtx)));
 }
 
 void shared_timed_mutex_test() {
