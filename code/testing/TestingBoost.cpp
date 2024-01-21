@@ -224,33 +224,81 @@ void condition_variable_any_test() {
 }
 
 void shared_mutex_test() {
-    // TODO: implement
-    auto writer = [](custom::SharedMutex& smtx) {
+    int sharedData      = 0;        // critical resource
+    int storedData[40]  = {-1};     // output ("safe" to share)
+
+    auto writer = [&](custom::SharedMutex& smtx) {
         custom::LockGuard<custom::SharedMutex> lock(smtx);  // exclusive
-        // modify data
+        ++sharedData;                                       // modify data
     };
 
-    auto reader = [](custom::SharedMutex& smtx) {
+    auto reader = [&](custom::SharedMutex& smtx, int current) {
         custom::SharedLock<custom::SharedMutex> lock(smtx); // shared
-        // read data
-        custom::this_thread::sleep_for(custom::chrono::Milliseconds(100));
+        storedData[current] = sharedData;                   // read data
+        //custom::this_thread::sleep_for(custom::chrono::Milliseconds(100));
     };
 
     custom::Vector<custom::Thread> threads;
     custom::SharedMutex smtx;
+    int index = 0;
 
-    for (int i = 0; i < 20; ++i)
-        threads.emplace_back(custom::Thread(reader, custom::ref(smtx)));
+    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start 1 writer
 
-    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));
-    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));
+    for (; index < 20; ++index)
+        threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start 20 readers
 
-    for (int i = 0; i < 20; ++i)
-        threads.emplace_back(custom::Thread(reader, custom::ref(smtx)));
+    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start another writer
+
+    for (; index < 40; ++index)
+        threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start onother 20 readers
+
+    for (auto& thr : threads)
+        thr.join();                                                                 // join all
+
+    std::cout << "Stored Data=\n";
+    for (index = 0; index < 40; ++index)                                            // print results
+        std::cout << storedData[index] << ' ';
+    
+    std::cout << "\nShared Data= " << sharedData << '\n';
 }
 
 void shared_timed_mutex_test() {
-    // TODO: implement
+    int sharedData      = 0;        // critical resource
+    int storedData[40]  = {-1};     // output ("safe" to share)
+
+    auto writer = [&](custom::SharedTimedMutex& stmtx) {
+        custom::UniqueLock<custom::SharedTimedMutex> lock(stmtx, custom::chrono::Seconds(2));  // exclusive (try_lock_for)
+        ++sharedData;                                       // modify data
+    };
+
+    auto reader = [&](custom::SharedTimedMutex& stmtx, int current) {
+        custom::SharedLock<custom::SharedTimedMutex> lock(stmtx, custom::chrono::Seconds(1)); // shared (try_lock_shared_for)
+        storedData[current] = sharedData;                   // read data
+        custom::this_thread::sleep_for(custom::chrono::Milliseconds(2000));
+    };
+
+    custom::Vector<custom::Thread> threads;
+    custom::SharedTimedMutex stmtx;
+    int index = 0;
+
+    threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start 1 writer
+
+    for (; index < 20; ++index)
+        threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start 20 readers
+
+    threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start another writer
+
+    for (; index < 40; ++index)
+        threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start onother 20 readers
+
+    for (auto& thr : threads)
+        thr.join();                                                                 // join all
+
+    std::cout << "Stored Data=\n";
+    for (index = 0; index < 40; ++index)                                            // print results
+        std::cout << storedData[index] << ' ';
+    
+    std::cout << "\nShared Data= " << sharedData << '\n';
 }
 
 TEST_BOOST_END

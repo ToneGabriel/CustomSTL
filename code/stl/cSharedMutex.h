@@ -33,12 +33,13 @@ public:
 public:
     // Main functions
 
+// Exclusive (Write)
     void lock() {
-        pthread_rwlock_wrlock(&_rwMutex);               // write
+        pthread_rwlock_wrlock(&_rwMutex);
     }
 
     bool try_lock() {
-        switch (pthread_rwlock_trywrlock(&_rwMutex))    // write
+        switch (pthread_rwlock_trywrlock(&_rwMutex))
         {
             case 0:
                 return true;
@@ -52,13 +53,15 @@ public:
     void unlock() {
         pthread_rwlock_unlock(&_rwMutex);               // read / write
     }
+// end Exclusive
 
+// Shared (Read)
     void lock_shared() {
-        pthread_rwlock_rdlock(&_rwMutex);               // read
+        pthread_rwlock_rdlock(&_rwMutex);
     }
 
     bool try_lock_shared() {
-        switch (pthread_rwlock_tryrdlock(&_rwMutex))    // read
+        switch (pthread_rwlock_tryrdlock(&_rwMutex))
         {
             case 0:
                 return true;
@@ -72,6 +75,7 @@ public:
     void unlock_shared() {
         pthread_rwlock_unlock(&_rwMutex);               // same as unlock
     }
+// end Shared
 
     NativeHandleType native_handle() {
         return _rwMutex;
@@ -79,9 +83,106 @@ public:
 };  // END SharedMutex
 
 
-class SharedTimedMutex
+class SharedTimedMutex : private SharedMutex
 {
-    // TODO: implement
+private:
+    using _Base         = SharedMutex;
+    
+#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
+    using _ReqClock     = custom::chrono::SteadyClock;
+#else
+    using _ReqClock     = custom::chrono::SystemClock;
+#endif
+
+public:
+    // Constructors & Operators
+
+    SharedTimedMutex()                                      = default;
+    ~SharedTimedMutex()                                     = default;
+
+    SharedTimedMutex(const SharedTimedMutex&)               = delete;
+    SharedTimedMutex& operator=(const SharedTimedMutex&)    = delete;
+
+public:
+    // Main Functions
+
+// Exclusive (Write)
+    void lock() {
+        _Base::lock();
+    }
+
+    bool try_lock() {
+        return _Base::try_lock();
+    }
+
+    void unlock() {
+        _Base::unlock();
+    }
+
+    template<class Clock, class Duration,
+    EnableIf_t<IsSame_v<Clock, _ReqClock>, bool> = true>
+    bool try_lock_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+        // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
+        // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
+        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
+        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - secondsTime);
+        struct timespec ts  =   {
+                                    static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
+                                    static_cast<long>(nanoseconds.count())
+                                };
+
+#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
+        return ((pthread_rwlock_clockwrlock(&_rwMutex, CLOCK_MONOTONIC, &ts) == 0 ) ? true : false);
+#else
+        return ((pthread_rwlock_timedwrlock(&_rwMutex, &ts) == 0 ) ? true : false);
+#endif
+    }
+    
+    template<class Rep, class Period>
+    bool try_lock_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+        return try_lock_until(  _ReqClock::now() + 
+                                custom::chrono::ceil<typename _ReqClock::Duration>(relativeTime));
+    }
+// end Exclusive
+
+// Shared (Read)
+    void lock_shared() {
+        _Base::lock_shared();
+    }
+
+    bool try_lock_shared() {
+        return _Base::try_lock_shared();
+    }
+
+    void unlock_shared() {
+        _Base::unlock_shared();
+    }
+
+    template<class Clock, class Duration,
+    EnableIf_t<IsSame_v<Clock, _ReqClock>, bool> = true>
+    bool try_lock_shared_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+        // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
+        // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
+        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
+        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - secondsTime);
+        struct timespec ts  =   {
+                                    static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
+                                    static_cast<long>(nanoseconds.count())
+                                };
+
+#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
+        return ((pthread_rwlock_clockrdlock(&_rwMutex, CLOCK_MONOTONIC, &ts) == 0 ) ? true : false);
+#else
+        return ((pthread_rwlock_timedrdlock(&_rwMutex, &ts) == 0 ) ? true : false);
+#endif
+    }
+
+    template<class Rep, class Period>
+    bool try_lock_shared_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+        return try_lock_shared_until(   _ReqClock::now() + 
+                                        custom::chrono::ceil<typename _ReqClock::Duration>(relativeTime));
+    }
+// end Shared
 };  // END SharedTimedMutex
 
 CUSTOM_END

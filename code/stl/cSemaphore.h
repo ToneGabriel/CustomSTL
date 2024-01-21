@@ -11,6 +11,8 @@ class CountingSemaphore                 // Semaphore adaptor for sem_t
 {
 private:
     static_assert((LeastMaxValue >= 0 && LeastMaxValue <= INT_MAX), "Invalid semaphore count.");
+    using _ReqClock = custom::chrono::SystemClock; // required due to sem_timedwait
+
     sem_t _semaphore;
 
 public:
@@ -48,9 +50,9 @@ public:
         return (sem_trywait(&_semaphore) > 0) ? true : false;
     }
 
-    template<class Clock, class Duration>
+    template<class Clock, class Duration,
+    EnableIf_t<IsSame_v<Clock, _ReqClock>, bool> = true>
     bool try_acquire_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
-        // WARNING - use only SystemClock (due to sem_timedwait)
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
@@ -65,8 +67,8 @@ public:
 
     template<class Rep, class Period>
     bool try_acquire_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
-        return try_acquire_until(   custom::chrono::SystemClock::now() + 
-                                    custom::chrono::ceil<typename custom::chrono::SystemClock::Duration>(relativeTime));
+        return try_acquire_until(   _ReqClock::now() + 
+                                    custom::chrono::ceil<typename _ReqClock::Duration>(relativeTime));
     }
 }; // END CountingSemaphore
 
