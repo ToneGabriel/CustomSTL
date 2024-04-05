@@ -414,26 +414,26 @@ void complex_test() {
 	std::cout << "proj= " 	<< custom::proj(cf1) << '\n';
 	std::cout << "polar= " 	<< custom::polar(-2.5, 4.3) << '\n';
 
-	//std::cout << "exp= " 	<< custom::exp(cf1) << '\n';
-	//std::cout << "log= " 	<< custom::log(cf1) << '\n';
-	//std::cout << "log10= " 	<< custom::log10(cf1) << '\n';
+	std::cout << "exp= " 	<< custom::exp(cf1) << '\n';
+	std::cout << "log= " 	<< custom::log(cf1) << '\n';
+	std::cout << "log10= " 	<< custom::log10(cf1) << '\n';
 	//std::cout << "sqrt= " 	<< custom::sqrt(cf1) << '\n';
 	//std::cout << "pow 2= " 	<< custom::pow(cf1, 2.0f) << '\n';
 
 	std::cout << "sin= " 	<< custom::sin(cf1) << '\n';
-	//std::cout << "asin= " 	<< custom::asin(cf1) << '\n';
+	std::cout << "asin= " 	<< custom::asin(cf1) << '\n';
 	std::cout << "sinh= " 	<< custom::sinh(cf1) << '\n';
-	//std::cout << "asinh= " 	<< custom::asinh(cf1) << '\n';
+	std::cout << "asinh= " 	<< custom::asinh(cf1) << '\n';
 
 	std::cout << "cos= " 	<< custom::cos(cf1) << '\n';
-	//std::cout << "acos= " 	<< custom::acos(cf1) << '\n';
+	std::cout << "acos= " 	<< custom::acos(cf1) << '\n';
 	std::cout << "cosh= " 	<< custom::cosh(cf1) << '\n';
-	//std::cout << "acosh= " 	<< custom::acosh(cf1) << '\n';
+	std::cout << "acosh= " 	<< custom::acosh(cf1) << '\n';
 
-	//std::cout << "tan= " 	<< custom::tan(cf1) << '\n';
-	//std::cout << "atan= " 	<< custom::atan(cf1) << '\n';
-	//std::cout << "tanh= " 	<< custom::tanh(cf1) << '\n';
-	//std::cout << "atanh= " 	<< custom::atanh(cf1) << '\n';
+	std::cout << "tan= " 	<< custom::tan(cf1) << '\n';
+	std::cout << "atan= " 	<< custom::atan(cf1) << '\n';
+	std::cout << "tanh= " 	<< custom::tanh(cf1) << '\n';
+	std::cout << "atanh= " 	<< custom::atanh(cf1) << '\n';
 }
 
 void bitset_test() {
