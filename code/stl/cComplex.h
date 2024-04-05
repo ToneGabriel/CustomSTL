@@ -12,7 +12,7 @@ CUSTOM_DETAIL_BEGIN
 
 // TODO: check if needed
 // #define PI_LONG         3.1415926535897932384626433832795029L
-// #define PI_BY_2_LONG    1.5707963267948966192313216916397514L
+#define PI_BY_2_LONG 1.5707963267948966192313216916397514L
 // #define LOG10_E_LONG    0.4342944819032518276511289189166051L
 // #define SQRT_2_LONG     1.4142135623730950488016887242096981L
 
@@ -724,20 +724,20 @@ Complex<Type> polar(const Type& rho, const Type& theta = Type{0}) {
 
 template<class Type>
 Complex<Type> exp(const Complex<Type>& val) {
-    return Complex<Type>();
-    // TODO: implement
+    return custom::polar(ComplexTraits<Type>::exp(val.real()), val.imag());
+    // TODO: check
 }
 
 template<class Type>
 Complex<Type> log(const Complex<Type>& val) {
-    return Complex<Type>();
-    // TODO: implement
+    return Complex<Type>(ComplexTraits<Type>::log(custom::abs(val)), custom::arg(val));
+    // TODO: check
 }
 
 template<class Type>
 Complex<Type> log10(const Complex<Type>& val) {
-    return Complex<Type>();
-    // TODO: implement
+    return custom::log(val) / ComplexTraits<Type>::log(Type(10.0));
+    // TODO: check
 }
 
 template<class Type>
@@ -749,6 +749,14 @@ Complex<Type> sqrt(const Complex<Type>& val) {
 template<class Type>
 Complex<Type> pow(const Complex<Type>& base, const Type& ex) {
     return Complex<Type>();
+    // if (base.imag() == 0)
+    //     if (ComplexTraits<Type>::signbit(base.imag()))
+    //         return custom::conj(_Pow(base.real(), ex));
+    //     else
+    //         return _Pow(base.real(), ex);
+    // else
+    //     return custom::exp(ex * custom::log(base));
+
     // TODO: implement
 }
 
@@ -771,7 +779,14 @@ Complex<Type> sin(const Complex<Type>& val) {
 }
 
 template<class Type>
-Complex<Type> asinh(const Complex<Type>& val);  // TODO: implement
+Complex<Type> asinh(const Complex<Type>& val) {
+    Complex<Type> aux(  (val.real() - val.imag()) * (val.real() + val.imag()) + Type(1.0),
+			            Type(2.0) * val.real() * val.imag());
+
+    return custom::log(custom::sqrt(aux) + val);
+
+    // TODO: check
+}
 
 template<class Type>
 Complex<Type> asin(const Complex<Type>& val) {
@@ -792,7 +807,12 @@ Complex<Type> cos(const Complex<Type>& val) {
 }
 
 template<class Type>
-Complex<Type> acos(const Complex<Type>& val);  // TODO: implement
+Complex<Type> acos(const Complex<Type>& val) {
+    const Complex<Type> asinTemp = custom::asin(val);
+    return Complex<Type>(PI_BY_2_LONG - asinTemp.real(), -asinTemp.imag());
+
+    // TODO: check
+}
 
 template<class Type>
 Complex<Type> cosh(const Complex<Type>& val) {
@@ -801,7 +821,13 @@ Complex<Type> cosh(const Complex<Type>& val) {
 }
 
 template<class Type>
-Complex<Type> acosh(const Complex<Type>& val);  // TODO: implement
+Complex<Type> acosh(const Complex<Type>& val) {
+    // Kahan's formula.
+    return Type(2.0) * custom::log( custom::sqrt(Type(0.5) * (val + Type(1.0))) +
+                                    custom::sqrt(Type(0.5) * (val - Type(1.0))));
+
+    // TODO: check
+}
 
 template<class Type>
 Complex<Type> tan(const Complex<Type>& val) {
@@ -810,7 +836,20 @@ Complex<Type> tan(const Complex<Type>& val) {
 }
 
 template<class Type>
-Complex<Type> atanh(const Complex<Type>& val);  // TODO: implement
+Complex<Type> atanh(const Complex<Type>& val) {
+    const Type imag2    = val.imag() * val.imag();
+    const Type aux      = Type(1.0) - imag2 - val.real() * val.real();
+
+    Type num = Type(1.0) + val.real();
+    Type den = Type(1.0) - val.real();
+
+    num = imag2 + num * num;
+    den = imag2 + den * den;
+
+    return Complex<Type>(   Type(0.25) * (ComplexTraits<Type>::log(num) - ComplexTraits<Type>::log(den)),
+			                Type(0.5) * ComplexTraits<Type>::atan2(Type(2.0) * val.imag(), aux));
+    // TODO: check
+}
 
 template<class Type>
 Complex<Type> atan(const Complex<Type>& val) {
@@ -819,6 +858,9 @@ Complex<Type> atan(const Complex<Type>& val) {
 }
 
 template<class Type>
-Complex<Type> tanh(const Complex<Type>& val);   // TODO: implement
+Complex<Type> tanh(const Complex<Type>& val) {
+    return custom::sinh(val) / custom::cosh(val);
+    // TODO: check
+}
 
 CUSTOM_END
