@@ -386,7 +386,9 @@ void complex_test() {
 	std::cout << "log= " 	<< std::log(cf) << '\n';
 	std::cout << "log10= " 	<< std::log10(cf) << '\n';
 	std::cout << "sqrt= " 	<< std::sqrt(cf) << '\n';
-	std::cout << "pow 2= " 	<< std::pow(cf, 2.0f) << '\n';
+	std::cout << "pow c2= "	<< std::pow(cf, 2.0f) << '\n';
+	std::cout << "pow 2c= "	<< std::pow(2.0f, cf) << '\n';
+	std::cout << "pow cc= "	<< std::pow(cf, cf) << '\n';
 
 	std::cout << "sin= " 	<< std::sin(cf) << '\n';
 	std::cout << "asin= " 	<< std::asin(cf) << '\n';
@@ -417,8 +419,10 @@ void complex_test() {
 	std::cout << "exp= " 	<< custom::exp(cf1) << '\n';
 	std::cout << "log= " 	<< custom::log(cf1) << '\n';
 	std::cout << "log10= " 	<< custom::log10(cf1) << '\n';
-	//std::cout << "sqrt= " 	<< custom::sqrt(cf1) << '\n';
-	//std::cout << "pow 2= " 	<< custom::pow(cf1, 2.0f) << '\n';
+	std::cout << "sqrt= " 	<< custom::sqrt(cf1) << '\n';
+	std::cout << "pow c2= "	<< custom::pow(cf1, 2.0f) << '\n';
+	std::cout << "pow 2c= "	<< custom::pow(2.0f, cf1) << '\n';
+	std::cout << "pow cc= "	<< custom::pow(cf1, cf1) << '\n';
 
 	std::cout << "sin= " 	<< custom::sin(cf1) << '\n';
 	std::cout << "asin= " 	<< custom::asin(cf1) << '\n';

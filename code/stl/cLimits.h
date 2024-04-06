@@ -1,5 +1,5 @@
 #pragma once
-#include "xCommon.h"
+#include "cTypeTraits.h"
 
 #include <float.h>
 

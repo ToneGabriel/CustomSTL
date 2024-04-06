@@ -11,5 +11,4 @@ Components not fully operational:
 
 - cMemory.h (Shared/Weak)
 - cAlgorithm.h
-- cComplex.h
 - cForwardList.h operations (splice/sort/merge)

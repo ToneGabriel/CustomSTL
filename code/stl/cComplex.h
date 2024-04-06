@@ -7,13 +7,6 @@
 
 CUSTOM_BEGIN
 
-// TODO: check if needed
-// #define PI_LONG         3.1415926535897932384626433832795029L
-#define PI_BY_2_LONG 1.5707963267948966192313216916397514L
-// #define LOG10_E_LONG    0.4342944819032518276511289189166051L
-// #define SQRT_2_LONG     1.4142135623730950488016887242096981L
-
-
 // Definitions
 template<class Type>
 class Complex;
@@ -37,7 +30,7 @@ template<class Type>
 Complex<Type> proj(const Complex<Type>& val); // return complex projection
 
 template<class Type>
-Complex<Type> polar(const Type& rho, const Type& theta = Type{0});
+Complex<Type> polar(const Type& rho, const Type& theta = Type());
 
 template<class Type>
 Complex<Type> exp(const Complex<Type>& val);
@@ -384,7 +377,7 @@ Complex<Type> _polar_positive_nan_inf_zero_rho(const Type& rho, const Type& thet
             return Complex<Type>(rho, ComplexTraits<Type>::sin(theta)); // (Inf, NaN/Inf)
         else
             return Complex<Type>(rho, ComplexTraits<Type>::copysign(rho, theta)); // (NaN/0, NaN/Inf)
-    else if (theta == Type{ 0 })
+    else if (theta == Type())
         return Complex<Type>(rho, theta); // (NaN/Inf/0, 0)
     else // theta is finite non-zero
         return Complex<Type>(rho * ComplexTraits<Type>::cos(theta),
@@ -793,7 +786,7 @@ template<class Type>
 Complex<Type> proj(const Complex<Type>& val) { // return complex projection
     if (ComplexTraits<Type>::is_inf(val.real()) || ComplexTraits<Type>::is_inf(val.imag()))
         return Complex<Type>(   ComplexTraits<Type>::inf_v(),
-                                ComplexTraits<Type>::copysign(Type{0}, val.imag()));
+                                ComplexTraits<Type>::copysign(Type(), val.imag()));
 
     return val;
 }
@@ -823,34 +816,47 @@ Complex<Type> log10(const Complex<Type>& val) {
 
 template<class Type>
 Complex<Type> sqrt(const Complex<Type>& val) {
-    return Complex<Type>();
-    // TODO: implement
+    const Type realVal  = val.real();
+    const Type imagVal  = val.imag();
+    const Type zeroVal  = Type();
+
+    if (realVal == zeroVal)
+    {
+        Type temp = ComplexTraits<Type>::sqrt(ComplexTraits<Type>::abs_v(imagVal) / Type(2.0));
+        return Complex<Type>(temp, imagVal < zeroVal ? -temp : temp);
+    }
+    else
+    {
+        Type temp       = ComplexTraits<Type>::sqrt(Type(2.0) * (custom::abs(val) + ComplexTraits<Type>::abs_v(realVal)));
+        Type tempBy2    = temp / Type(2.0);
+        
+        return realVal > zeroVal ?  Complex<Type>(tempBy2, imagVal / temp) :
+                                    Complex<Type>(  ComplexTraits<Type>::abs_v(imagVal) / temp,
+                                                    imagVal < zeroVal ? -tempBy2 : tempBy2);
+    }
 }
 
 template<class Type>
 Complex<Type> pow(const Complex<Type>& base, const Type& ex) {
-    return Complex<Type>();
-    // if (base.imag() == 0)
-    //     if (ComplexTraits<Type>::signbit(base.imag()))
-    //         return custom::conj(_Pow(base.real(), ex));
-    //     else
-    //         return _Pow(base.real(), ex);
-    // else
-    //     return custom::exp(ex * custom::log(base));
+    if (base.imag() == Type() && base.real() > Type())
+        return ComplexTraits<Type>::pow(base.real(), ex);
 
-    // TODO: implement
+    Complex<Type> temp = custom::log(base);
+    return custom::polar<Type>(ComplexTraits<Type>::exp(ex * temp.real()), ex * temp.imag());
 }
 
 template<class Type>
 Complex<Type> pow(const Type& base, const Complex<Type>& ex) {
-    return Complex<Type>();
-    // TODO: implement
+    if (base > Type())
+        return custom::polar<Type>( ComplexTraits<Type>::pow(base, ex.real()),
+                                    ex.imag() * ComplexTraits<Type>::log(base));
+
+    return custom::pow(Complex<Type>(base), ex);
 }
 
 template<class Type>
 Complex<Type> pow(const Complex<Type>& base, const Complex<Type>& ex) {
-    return Complex<Type>();
-    // TODO: implement
+    return base == Type() ? Type() : custom::exp(ex * custom::log(base));
 }
 
 template<class Type>
@@ -863,8 +869,6 @@ template<class Type>
 Complex<Type> asin(const Complex<Type>& val) {
     Complex<Type> asinhTemp = custom::asinh(Complex<Type>(-val.imag(), val.real()));
     return Complex<Type>(asinhTemp.imag(), -asinhTemp.real());
-
-    // TODO: check
 }
 
 template<class Type>
@@ -875,16 +879,11 @@ Complex<Type> sinh(const Complex<Type>& val) {
 
 template<class Type>
 Complex<Type> asinh(const Complex<Type>& val) {
-    // Kahan's formula.
-    // return Type(2.0) * custom::log( custom::sqrt(Type(0.5) * (val - Type(1.0))) +
-    //                                 custom::sqrt(Type(0.5) * (val + Type(1.0))));
+    // Kahan's formula -> asinh(z) = ln(z + sqrt(z^2 + 1))
+    Complex<Type> temp((val.real() - val.imag()) * (val.real() + val.imag()) + Type(1.0),
+                        Type(2.0) * val.real() * val.imag());
 
-    Complex<Type> aux(  (val.real() - val.imag()) * (val.real() + val.imag()) + Type(1.0),
-			            Type(2.0) * val.real() * val.imag());
-
-    return custom::log(custom::sqrt(aux) + val);
-
-    // TODO: check
+    return custom::log(custom::sqrt(temp) + val);
 }
 
 template<class Type>
@@ -897,8 +896,6 @@ template<class Type>
 Complex<Type> acos(const Complex<Type>& val) {
     const Complex<Type> asinTemp = custom::asin(val);
     return Complex<Type>(PI_BY_2_LONG - asinTemp.real(), -asinTemp.imag());
-
-    // TODO: check
 }
 
 template<class Type>
@@ -909,18 +906,14 @@ Complex<Type> cosh(const Complex<Type>& val) {
 
 template<class Type>
 Complex<Type> acosh(const Complex<Type>& val) {
-    // Kahan's formula.
+    // Kahan's formula -> acosh(z) = ln(z + sqrt(z^2 - 1))
     return Type(2.0) * custom::log( custom::sqrt(Type(0.5) * (val + Type(1.0))) +
                                     custom::sqrt(Type(0.5) * (val - Type(1.0))));
-
-    // TODO: check
 }
 
 template<class Type>
 Complex<Type> tan(const Complex<Type>& val) {
     return custom::sin(val) / custom::cos(val);
-
-    // TODO: check
 }
 
 template<class Type>
@@ -937,7 +930,7 @@ Complex<Type> tanh(const Complex<Type>& val) {
 template<class Type>
 Complex<Type> atanh(const Complex<Type>& val) {
     const Type imag2    = val.imag() * val.imag();
-    const Type aux      = Type(1.0) - imag2 - val.real() * val.real();
+    const Type temp     = Type(1.0) - imag2 - val.real() * val.real();
 
     Type num = Type(1.0) + val.real();
     Type den = Type(1.0) - val.real();
@@ -946,7 +939,7 @@ Complex<Type> atanh(const Complex<Type>& val) {
     den = imag2 + den * den;
 
     return Complex<Type>(   Type(0.25) * (ComplexTraits<Type>::log(num) - ComplexTraits<Type>::log(den)),
-			                Type(0.5) * ComplexTraits<Type>::atan2(Type(2.0) * val.imag(), aux));
+			                Type(0.5) * ComplexTraits<Type>::atan2(Type(2.0) * val.imag(), temp));
 }
 
 CUSTOM_END
