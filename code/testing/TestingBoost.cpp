@@ -204,7 +204,7 @@ void condition_variable_any_test() {
 #if 1   // switch 0/1 for different example
         cva.wait(lock, [&dataReady] { return dataReady; });
         std::cout << "Consumer: Data can be used!" << std::endl;    // Process the data
-#else   // TODO: fix SharedPtr to use this example
+#else
         if (cva.wait_for(lock, custom::chrono::Seconds(3), [&dataReady] { return dataReady; })) // Data is available within 3 seconds
             std::cout << "Consumer: Data can be used!" << std::endl;
         else    // Timeout occurred

@@ -61,7 +61,7 @@ struct _TemporaryOwner
     }
 };  // END _TemporaryOwner
 
-template<class TypePtr, class Deleter>  // TODO: why _UxptrOrNullptr and not just Type?
+template<class TypePtr, class Deleter>
 struct _TemporaryOwnerDel
 {
     TypePtr _Ptr;
@@ -250,23 +250,23 @@ public:
     using Pointer       = typename _GetDeleterPointerType<Type, RemoveReference_t<Deleter>>::Type;
 
     template<class Ty, class IsNullptr = IsSame<Ty, std::nullptr_t>>
-    using _EnableConstructorReset = EnableIf_t<Disjunction_v<
+    using _EnableConstructorAndReset =  EnableIf_t<Disjunction_v<
                                                     IsSame<Ty, Pointer>,
                                                     IsNullptr,
                                                     Conjunction<
                                                         IsSame<Pointer, ElementType*>,
                                                         IsPointer<Ty>,
                                                         IsConvertible<RemovePointer_t<Ty>(*)[], ElementType(*)[]>>>,
-                                    bool>;
+                                        bool>;
 
     template<class Ty, class Del, class More,
-    class UpPointer         = typename UniquePtr<Ty, Del>::Pointer,
-    class UpValueType       = typename UniquePtr<Ty, Del>::ElementType>
+    class UPPointer         = typename UniquePtr<Ty, Del>::Pointer,
+    class UPElementType     = typename UniquePtr<Ty, Del>::ElementType>
     using _EnableConversion =   EnableIf_t<Conjunction_v<
                                                 IsArray<Ty>,
                                                 IsSame<Pointer, ElementType*>,
-                                                IsSame<UpPointer, UpValueType*>,
-                                                IsConvertible<UpValueType(*)[], ElementType(*)[]>,
+                                                IsSame<UPPointer, UPElementType*>,
+                                                IsConvertible<UPElementType(*)[], ElementType(*)[]>,
                                                 More>,  // More is used for additional enable traits
                                 bool>;
 
@@ -283,13 +283,13 @@ public:
 
     template<class Ty, class Del = Deleter,
     _UniquePtrEnableDefault_t<Del> = true,
-    _EnableConstructorReset<Ty> = true>
+    _EnableConstructorAndReset<Ty> = true>
     constexpr explicit UniquePtr(Ty ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
     template<class Ty, class Del = Deleter, 
     EnableIf_t<IsCopyConstructible_v<Del>, bool> = true,
-    _EnableConstructorReset<Ty> = true>
+    _EnableConstructorAndReset<Ty> = true>
     constexpr UniquePtr(Ty ptr, const Deleter& del) noexcept
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
@@ -297,7 +297,7 @@ public:
     EnableIf_t<Conjunction_v<
                     Negation<IsReference<Del>>,
                     IsMoveConstructible<Del>>, bool> = true,
-    _EnableConstructorReset<Ty> = true>
+    _EnableConstructorAndReset<Ty> = true>
     constexpr UniquePtr(Ty ptr, Deleter&& del) noexcept
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
@@ -377,7 +377,7 @@ public:
         return custom::exchange(_ptr, nullptr);
     }
 
-    template<class Ty, _EnableConstructorReset<Ty, FalseType> = true>               // FalseType (don't allow nullptr ???)
+    template<class Ty, _EnableConstructorAndReset<Ty, FalseType> = true>            // FalseType (don't allow nullptr ???)
     constexpr void reset(Ty ptr) noexcept {                                         // Replaces the managed object and deletes old
         Pointer old = custom::exchange(_ptr, ptr);
 
@@ -542,43 +542,28 @@ private:
     // Helpers
 
     virtual void _destroy() noexcept = 0;
-
     virtual void _delete_this() noexcept = 0;
 }; // END _RefCountBase
 
-template<class Type>
-class _RefCount : public _RefCountBase    // handle reference counting for pointer without deleter
-{
-private:
-    Type* _ptr;
 
-public:
-
-    explicit _RefCount(Type* ptr)
-        : _RefCountBase(), _ptr(ptr) { /*Empty*/ }
-
-private:
-
-    void _destroy() noexcept override {     // destroy managed resource
-        delete _ptr;
-    }
-
-    void _delete_this() noexcept override { // destroy self
-        delete this;
-    }
-}; // END _RefCount
-
-template<class Type, class Deleter>
+template<class TypePtr, class Deleter>
 class _RefCountDeleter : public _RefCountBase     // handle reference counting for object with deleter
 {
 private:
-    Type* _ptr;
+    TypePtr _ptr;
     Deleter _deleter;
 
 public:
 
-    explicit _RefCountDeleter(Type* ptr, Deleter& del)
+    explicit _RefCountDeleter(TypePtr ptr, Deleter del)
         : _RefCountBase(), _ptr(ptr), _deleter(del) { /*Empty*/ }
+
+    void* get_deleter(const std::type_info& ti) const noexcept override {
+        if (ti == typeid(Deleter))
+            return const_cast<Deleter*>(&_deleter);
+
+        return nullptr;
+    }
 
 private:
     void _destroy() noexcept override { // destroy managed resource
@@ -591,18 +576,35 @@ private:
 }; // END _RefCountDeleter
 
 
+template<class TypePtr, class Deleter, class Alloc>
+class _RefCountDeleterAlloc : public _RefCountBase     // handle reference counting for object with deleter and allocator
+{
+private:
+    TypePtr _ptr;
+    Deleter _deleter;
+    Alloc _alloc;
+
+private:
+    void _destroy() noexcept override { // destroy managed resource
+        // TODO: use alloc
+        _deleter(_ptr);
+    }
+
+    void _delete_this() noexcept override { // destroy self
+        delete this;
+    }
+};
+
+
 template<class Type>
 class _SharedWeakBase        // base class for SharedPtr and WeakPtr
 {
 public:
     using ElementType = RemoveExtent_t<Type>;
 
-private:
+protected:
     ElementType* _ptr       = nullptr;
     _RefCountBase* _rep     = nullptr;
-
-    friend SharedPtr<Type>;
-    friend WeakPtr<Type>;
 
 public:
     // Constructors & Operators
@@ -796,11 +798,7 @@ public:
         if constexpr (IsArray_v<Type>)
             _set_pointer_default(ptr, DefaultDelete<Ty[]>{});
         else
-        {
-            _TemporaryOwner<Ty> temp(ptr);
-            _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCount<Ty>(temp._Ptr));
-            temp._Ptr = nullptr;
-        }
+            _set_pointer_default(ptr, DefaultDelete<Ty>{});
     }
 
     template<class Ty, class Del,
@@ -916,14 +914,19 @@ public:
         return *this;
     }
 
-    template<EnableIf_t<!Disjunction_v<IsArray<Type>, IsVoid<Type>>, bool> = true>
-    Type& operator*() const noexcept {
+    template<class Ty = Type, EnableIf_t<!Disjunction_v<IsArray<Ty>, IsVoid<Ty>>, bool> = true>
+    Ty& operator*() const noexcept {
         return *this->get();
     }
 
-    template<EnableIf_t<!IsArray_v<Type>, bool> = true>
-    Type* operator->() const noexcept {
+    template<class Ty = Type, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+    Ty* operator->() const noexcept {
         return this->get();
+    }
+
+    template<class Ty = Type, class Elem = ElementType, EnableIf_t<IsArray_v<Ty>, bool> = true>
+    Elem& operator[](ptrdiff_t index) const noexcept {
+        return this->get()[index];
     }
 
     explicit operator bool() const noexcept {
@@ -932,10 +935,6 @@ public:
 
 public:
     // Main functions
-
-    // void swap(SharedPtr& other) noexcept {   // TODO: check if needed or can work only with base
-    //     this->_swap(other);
-    // }
 
     void reset() noexcept {             // release resource and convert to empty SharedPtr object
         SharedPtr().swap(*this);
@@ -967,7 +966,7 @@ public:
 private:
     // Helpers
 
-    template<class TypePtr, class Deleter>  // TODO: why _UxptrOrNullptr and not Type
+    template<class TypePtr, class Deleter>
     void _set_pointer_default(const TypePtr ptr, Deleter del) { // take ownership of ptr, deleter
         _TemporaryOwnerDel<TypePtr, Deleter> temp(ptr, del);
         _set_ptr_rep_and_enable_shared(temp._Ptr, new _RefCountDeleter<TypePtr, Deleter>(temp._Ptr, custom::move(del)));
@@ -1062,12 +1061,8 @@ public:
     // Main functions
 
     void reset() noexcept {     // release resource, convert to null WeakPtr object
-        WeakPtr().swap(*this);  // TODO: why WeakPtr{} ??? instead of ()
+        WeakPtr().swap(*this);
     }
-
-    // void swap(weak_ptr& other) noexcept {
-    //     this->_Swap(other);
-    // }
 
     bool expired() const noexcept {
         return this->use_count() == 0;

@@ -341,7 +341,19 @@ void invoke_test() {
 }
 
 void memory_test() {
-	custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+	// UniquePtr===============
+	//custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+
+	// SharedPtr===============
+	custom::SharedPtr<Test[]> sharedArray(new Test[5]);
+
+    for (int i = 0; i < 5; ++i)
+        sharedArray[i] = i; // Populating the array
+
+    for (int i = 0; i < 5; ++i)
+        std::cout << sharedArray[i] << " "; // Printing array elements
+
+    std::cout << '\n';
 }
 
 void chrono_test() {
