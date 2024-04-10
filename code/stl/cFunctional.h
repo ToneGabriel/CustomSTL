@@ -334,7 +334,7 @@ static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
 
 
 template<class RetType, class... Args>
-class _CallableInterface
+class CUSTOM_NOVTABLE_ATTR _CallableInterface
 {
 public:
     _CallableInterface()                                        = default;
