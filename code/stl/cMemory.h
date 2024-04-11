@@ -534,13 +534,10 @@ public:
         return static_cast<long>(_uses);
     }
 
-    virtual void* get_deleter(const std::type_info& ti) const noexcept {    // TODO: wtf is this?
-        return nullptr;
-    }
-
 private:
     // Helpers
 
+    virtual void* _get_deleter(const std::type_info& ti) const noexcept = 0;
     virtual void _destroy() noexcept = 0;
     virtual void _delete_this() noexcept = 0;
 }; // END _RefCountBase
@@ -556,16 +553,16 @@ private:
 public:
 
     explicit _RefCountDeleter(TypePtr ptr, Deleter del)
-        : _RefCountBase(), _ptr(ptr), _deleter(del) { /*Empty*/ }
+        : _RefCountBase(), _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
-    void* get_deleter(const std::type_info& ti) const noexcept override {
+private:
+    void* _get_deleter(const std::type_info& ti) const noexcept override {
         if (ti == typeid(Deleter))
             return const_cast<Deleter*>(&_deleter);
 
         return nullptr;
     }
 
-private:
     void _destroy() noexcept override { // destroy managed resource
         _deleter(_ptr);
     }
@@ -584,14 +581,29 @@ private:
     Deleter _deleter;
     Alloc _alloc;
 
+public:
+    explicit _RefCountDeleterAlloc(TypePtr ptr, Deleter del, const Alloc& alloc)
+        : _RefCountBase(), _ptr(ptr), _deleter(custom::move(del)), _alloc(alloc) { /*Empty*/ }
+
 private:
+    void* _get_deleter(const std::type_info& ti) const noexcept override {
+        if (ti == typeid(Deleter))
+            return const_cast<Deleter*>(&_deleter);
+
+        return nullptr;
+    }
+
     void _destroy() noexcept override { // destroy managed resource
-        // TODO: use alloc
         _deleter(_ptr);
     }
 
     void _delete_this() noexcept override { // destroy self
-        delete this;
+        using _AllocRefCount        = typename AllocatorTraits<Alloc>::template RebindAlloc<_RefCountDeleterAlloc>;
+        using _AllocRefCountTraits  = AllocatorTraits<_AllocRefCount>;
+
+        _AllocRefCount alref(_alloc);
+		_AllocRefCountTraits::destroy(alref, this);
+        alref.deallocate(this, 1);
     }
 };
 
@@ -820,6 +832,25 @@ public:
         _set_pointer_default(nullptr, custom::move(del));
     }
 
+    template<class Ty, class Del, class Alloc,
+    EnableIf_t<Conjunction_v<
+                        IsMoveConstructible<Del>,
+                        _CanCallFunctionObject<Del&, Ty*&>,
+                        _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    SharedPtr(Ty* ptr, Del del, Alloc alloc) { // construct with ptr, deleter, allocator
+        _set_pointer_alloc(ptr, custom::move(del), alloc);
+    }
+
+    template<class Del, class Alloc,
+    EnableIf_t<Conjunction_v<
+                        IsMoveConstructible<Del>,
+                        _CanCallFunctionObject<Del&, std::nullptr_t&>>,
+    bool> = true>
+    SharedPtr(std::nullptr_t, Del del, Alloc alloc) { // construct with nullptr, deleter, allocator
+        _set_pointer_alloc(nullptr, custom::move(del), alloc);
+    }
+
     SharedPtr(const SharedPtr& other) noexcept { // construct SharedPtr object that owns same resource as other
         this->_copy_construct(other);
     }
@@ -959,6 +990,16 @@ public:
         SharedPtr(ptr, del).swap(*this);
     }
 
+    template<class Ty, class Del, class Alloc,
+    EnableIf_t<Conjunction_v<
+                    IsMoveConstructible<Del>, 
+                    _CanCallFunctionObject<Del&, Ty*&>,
+                    _SharedPtrConvertible<Ty, Type>>,
+    bool> = true>
+    void reset(Ty* ptr, Del del, Alloc alloc) {      // release, take ownership of ptr, with deleter and allocator alloc
+        SharedPtr(ptr, del, alloc).swap(*this);
+    }
+
     bool unique() const noexcept {      // return true if no other SharedPtr object owns this resource
         return this->use_count() == 1;
     }
@@ -973,13 +1014,32 @@ private:
         temp._CallDeleter = false;
     }
 
+    template<class TypePtr, class Deleter, class Alloc>
+    void _set_pointer_alloc(const TypePtr ptr, Deleter del, Alloc alloc) { // take ownership of ptr, deleter del, allocator alloc
+        using _RefCountDelAl            = _RefCountDeleterAlloc<TypePtr, Deleter, Alloc>;
+        using _AllocRefCountDelAl       = typename AllocatorTraits<Alloc>::template RebindAlloc<_RefCountDelAl>;
+        using _AllocRefCountDelAlTraits = AllocatorTraits<_AllocRefCountDelAl>;
+
+        _TemporaryOwnerDel<TypePtr, Deleter> temp(ptr, del);
+        _AllocRefCountDelAl alref(alloc);
+
+        typename _AllocRefCountDelAlTraits::Pointer refCountPtr = alref.allocate(1);
+		_AllocRefCountDelAlTraits::construct(alref, refCountPtr, temp._Ptr, custom::move(del), alloc);
+
+        _set_ptr_rep_and_enable_shared(temp._Ptr, refCountPtr);
+        temp._CallDeleter = false;
+    }
+
     template<class Ty>
     void _set_ptr_rep_and_enable_shared(Ty* const ptr, _RefCountBase* const refCount) noexcept { // take ownership of ptr
         this->_ptr = ptr;
         this->_rep = refCount;
 
         // this is for EnableSharedFromThis
-        if constexpr (Conjunction_v<Negation<IsArray<Type>>, Negation<IsVolatile<Ty>>, _CanEnableShared<Ty>>)
+        if constexpr (Conjunction_v<
+                            Negation<IsArray<Type>>,
+                            Negation<IsVolatile<Ty>>,
+                            _CanEnableShared<Ty>>)
             if (ptr && ptr->_wptr.expired()) 
                 ptr->_wptr = SharedPtr<RemoveCV_t<Ty>>(*this, const_cast<RemoveCV_t<Ty>*>(ptr));
     }
@@ -988,14 +1048,19 @@ private:
         this->_ptr = nullptr;
         this->_rep = refCount;
     }
+
+private:
+    // Friends
+
+    template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool>>
+    friend constexpr SharedPtr<Ty> make_shared(Args&&... args);
+
+    template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool>>
+    friend SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args);
+
+    template<class Del, class Ty>
+    friend Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept;
 }; // END SharedPtr
-
-
-// build SharedPtr
-template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-constexpr SharedPtr<Ty> make_shared(Args&&... args) {
-    return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
-}
 
 #pragma endregion SharedPtr
 
@@ -1075,5 +1140,32 @@ public:
     }
 }; // END WeakPtr
 #pragma endregion WeakPtr
+
+
+#pragma region Non-Member fct
+
+// TODO
+// build SharedPtr
+template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+constexpr SharedPtr<Ty> make_shared(Args&&... args) {
+    return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
+}
+
+template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args) {
+    return SharedPtr<Ty>();
+    //return SharedPtr<Ty>(alloc, std::forward<Args>(args)...);
+}
+
+// get_deleter
+template<class Del, class Ty>
+Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept {   // return pointer to shared_ptr's deleter object if its type is Del
+    if (ptr._rep)
+        return static_cast<Del*>(ptr._rep->_get_deleter(typeid(Del)));
+
+    return nullptr;
+}
+
+#pragma endregion Non-Member fct
 
 CUSTOM_END
