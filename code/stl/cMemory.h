@@ -117,13 +117,16 @@ private:
 public:
     // Constructors
 
-    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
+    template<class Del = Deleter,
+    _UniquePtrEnableDefault_t<Del> = true>
     constexpr UniquePtr() noexcept { /*Empty*/ }
 
-    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
+    template<class Del = Deleter,
+    _UniquePtrEnableDefault_t<Del> = true>
     constexpr UniquePtr(std::nullptr_t) noexcept { /*Empty*/ }
 
-    template<class Del = Deleter, _UniquePtrEnableDefault_t<Del> = true>
+    template<class Del = Deleter,
+    _UniquePtrEnableDefault_t<Del> = true>
     constexpr explicit UniquePtr(Pointer ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
@@ -404,7 +407,7 @@ void make_unique(Args&&...) = delete;
 
 template<class Ty, EnableIf_t<!IsArray_v<Ty>, bool> = true>
 constexpr UniquePtr<Ty> make_unique_for_overwrite() {      // make a UniquePtr with default initialization
-    return UniquePtr<Ty>(new Ty);
+    return UniquePtr<Ty>(new Ty());
 }
 
 template<class Ty, EnableIf_t<IsUnboundedArray_v<Ty>, bool> = true>
@@ -1062,6 +1065,28 @@ private:
     friend Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept;
 }; // END SharedPtr
 
+// TODO
+// build SharedPtr
+template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+constexpr SharedPtr<Ty> make_shared(Args&&... args) {
+    return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
+}
+
+template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
+SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args) {
+    return SharedPtr<Ty>();
+    //return SharedPtr<Ty>(alloc, std::forward<Args>(args)...);
+}
+
+// get_deleter
+template<class Del, class Ty>
+Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept {   // return pointer to shared_ptr's deleter object if its type is Del
+    if (ptr._rep)
+        return static_cast<Del*>(ptr._rep->_get_deleter(typeid(Del)));
+
+    return nullptr;
+}
+
 #pragma endregion SharedPtr
 
 
@@ -1140,32 +1165,5 @@ public:
     }
 }; // END WeakPtr
 #pragma endregion WeakPtr
-
-
-#pragma region Non-Member fct
-
-// TODO
-// build SharedPtr
-template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-constexpr SharedPtr<Ty> make_shared(Args&&... args) {
-    return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
-}
-
-template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args) {
-    return SharedPtr<Ty>();
-    //return SharedPtr<Ty>(alloc, std::forward<Args>(args)...);
-}
-
-// get_deleter
-template<class Del, class Ty>
-Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept {   // return pointer to shared_ptr's deleter object if its type is Del
-    if (ptr._rep)
-        return static_cast<Del*>(ptr._rep->_get_deleter(typeid(Del)));
-
-    return nullptr;
-}
-
-#pragma endregion Non-Member fct
 
 CUSTOM_END
