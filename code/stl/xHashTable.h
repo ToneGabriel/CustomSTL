@@ -4,15 +4,61 @@
 #include "cPair.h"
 #include "cUtility.h"
 #include "cFunctional.h"	// EqualTo, Hash
-#include <cmath>		// std::ceil
+#include <cmath>			// std::ceil
 
 
 CUSTOM_BEGIN
 
 CUSTOM_DETAIL_BEGIN
 
+#if CUSTOM_OPTIMAL_IMPLEMENTATION
+
+// _HashTable Template implemented as vector of nodes stored in a list
+// The vector holds pairs for bucket count and the first node in bucket
 template<class Traits>
-class _HashTable				// _HashTable Template implemented as vector of lists
+class _HashTable
+{
+	// TODO
+protected:
+	using _IterList				= List<typename Traits::ValueType, typename Traits::AllocatorType>;		// List of ValueType used for iteration
+	using _AllocNode			= typename _IterList::_AllocNode;
+	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
+	using _NodePtr 				= typename _IterList::_NodePtr;
+	using _Bucket 				= Pair<size_t, _NodePtr>;
+	using _HashArray			= Vector<_Bucket>;						// Vector of pairs
+
+	using KeyType           	= typename Traits::KeyType;				// Type of Key
+    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
+    using Hasher            	= typename Traits::Hasher;				// Hash struct
+	using KeyEqual 				= typename Traits::KeyEqual;
+	
+	using ValueType				= typename _IterList::ValueType;		// Type of values stored in container
+	using DifferenceType		= typename _IterList::DifferenceType;
+	using Reference 			= typename _IterList::Reference;
+	using ConstReference 		= typename _IterList::ConstReference;
+	using Pointer 				= typename _IterList::Pointer;
+	using ConstPointer 			= typename _IterList::ConstPointer;
+	using AllocatorType 		= typename _IterList::AllocatorType;
+
+	using Iterator				= typename _IterList::Iterator;			// Iterator for this container (identical to List iterator)
+	using ConstIterator			= typename _IterList::ConstIterator;
+
+protected:
+	Hasher _hash;														// Used for initial(non-compressed) hash value
+	_IterList _elems;													// Used to iterate through container
+	_HashArray _buckets;												// Used to map elems from _IterList
+	_AllocNode _alloc;
+
+	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;					// The maximum load factor admitted before rehashing
+	static constexpr size_t _DEFAULT_BUCKETS	= 8;					// Default number of buckets
+};	// END _HashTable Template
+
+#else	// CUSTOM_OPTIMAL_IMPLEMENTATION
+
+// _HashTable Template implemented as vector of lists
+// The lists in vector hold references to nodes in the main elements list
+template<class Traits>
+class _HashTable				
 {
 protected:
 	using _IterList				= List<typename Traits::ValueType, typename Traits::AllocatorType>;		// List of ValueType used for iteration
@@ -156,7 +202,7 @@ public:
 	}
 
 	void rehash(const size_t buckets) {							// rebuild table with at least buckets
-		size_t newBucketCount = std::max(_min_load_factor_buckets(size()), buckets);	// don't violate bucket_count() >= size() / max_load_factor()
+		size_t newBucketCount = (custom::max)(_min_load_factor_buckets(size()), buckets);	// don't violate bucket_count() >= size() / max_load_factor()
 		if (newBucketCount > bucket_count())
 			_force_rehash(newBucketCount);
 	}
@@ -319,6 +365,7 @@ private:
 	}
 }; // END _HashTable Template
 
+#endif	// CUSTOM_OPTIMAL_IMPLEMENTATION
 
 // _HashTable binary operators
 template<class Traits>
