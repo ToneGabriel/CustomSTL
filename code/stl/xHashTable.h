@@ -44,9 +44,10 @@ protected:
 
 protected:
 	Hasher _hash;														// Used for initial(non-compressed) hash value
+	KeyEqual _equal;													// Used for comparison between keys
 	_IterList _elems;													// Used to iterate through container
 	_HashArray _buckets;												// Used to map elems from _IterList
-	_AllocNode _alloc;
+	_AllocNode _alloc;													// Used to allocate nodes
 
 	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;					// The maximum load factor admitted before rehashing
 	static constexpr size_t _DEFAULT_BUCKETS	= 8;					// Default number of buckets
@@ -158,7 +159,7 @@ public:
 		size_t currentBucketIndex 	= 0;
 		Iterator it(currentBucket.Second, &_elems._data);
 
-		while (currentBucketIndex < currentBucket.First && Traits::extract_key(*it) != key)
+		while (currentBucketIndex < currentBucket.First && !_equal(Traits::extract_key(*it), key))
 		{
 			++currentBucketIndex;
 			++it;
@@ -175,7 +176,7 @@ public:
 		size_t currentBucketIndex 	= 0;
 		ConstIterator it(currentBucket.Second, &_elems._data);
 
-		while (currentBucketIndex < currentBucket.First && Traits::extract_key(*it) != key)
+		while (currentBucketIndex < currentBucket.First && !_equal(Traits::extract_key(*it), key))
 		{
 			++currentBucketIndex;
 			++it;
@@ -414,6 +415,7 @@ protected:
 
 protected:
 	Hasher _hash;														// Used for initial(non-compressed) hash value
+	KeyEqual _equal;													// Used for comparison between keys
 	_IterList _elems;													// Used to iterate through container
 	_HashArray _buckets;												// Used to map elems from _IterList
 	_AllocNode _alloc;
@@ -659,7 +661,7 @@ private:
 		_Bucket& currentBucket 	= _buckets[bucket(key)];
 		_BucketIterator it 		= currentBucket.begin();
 
-		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
+		while (it != currentBucket.end() && !_equal(Traits::extract_key((*it)->_Value), key))
 			++it;
 
 		return it;
@@ -669,7 +671,7 @@ private:
 		const _Bucket& currentBucket = _buckets[bucket(key)];
 		_ConstBucketIterator it 		= currentBucket.begin();
 
-		while (it != currentBucket.end() && Traits::extract_key((*it)->_Value) != key)
+		while (it != currentBucket.end() && !_equal(Traits::extract_key((*it)->_Value), key))
 			++it;
 
 		return it;
