@@ -13,7 +13,7 @@
 
 #define CUSTOM_ASSERT(Expr, Msg) custom::__Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
-#define CUSTOM_OPTIMAL_IMPLEMENTATION    // some implementations are easier to understand, but have lower performance
+#define CUSTOM_OPTIMAL_IMPLEMENTATION 0    // some implementations are easier to understand, but have lower performance
 
 #ifdef _MSC_VER
 // This is a Microsoft Specific. This is a __declspec extended attribute.

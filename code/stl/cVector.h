@@ -253,6 +253,10 @@ public:
 		reserve(_DEFAULT_CAPACITY);
 	}
 
+	constexpr Vector(const size_t newCapacity) {							// Add multiple default copies Constructor
+		realloc(newCapacity);
+	}
+
 	constexpr Vector(	const size_t newCapacity,
 						const ValueType& copyValue) {						// Add multiple copies Constructor
 		realloc(newCapacity, copyValue);

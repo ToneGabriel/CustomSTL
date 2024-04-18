@@ -322,7 +322,7 @@ bool _test_callable(const Callable& obj) noexcept { // determine whether custom:
 }
 
 
-#ifdef CUSTOM_OPTIMAL_IMPLEMENTATION   // store callable object impl in stack or heap depending on size
+#if CUSTOM_OPTIMAL_IMPLEMENTATION   // store callable object impl in stack or heap depending on size
 
 static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
 static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
@@ -604,7 +604,7 @@ private:
 #else   // CUSTOM_OPTIMAL_IMPLEMENTATION - store callable object impl in heap regardless of size
 
 template<class RetType, class... Args>
-class _CallableInterface
+class CUSTOM_NOVTABLE_ATTR _CallableInterface
 {
 public:
     _CallableInterface()                                        = default;

@@ -271,7 +271,7 @@ public:
 	template<class... Args>
 	void emplace_back(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		_insert_node_before(_data._Head, newNode);
+		_link_node_before(_data._Head, newNode);
 	}
 
 	void push_back(const ValueType& copyValue) {				// Construct object using reference and add it to the tail
@@ -290,7 +290,7 @@ public:
 	template<class... Args>
 	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the head
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		_insert_node_before(_data._Head->_Next, newNode);
+		_link_node_before(_data._Head->_Next, newNode);
 	}
 
 	void push_front(const ValueType& copyValue) {				// Construct object using reference and add it to the head
@@ -309,7 +309,7 @@ public:
 	template<class... Args>
 	Iterator emplace(ConstIterator where, Args&&... args) {				// Construct object using arguments (Args) and add it BEFORE the where position
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
-		_insert_node_before(where._Ptr, newNode);
+		_link_node_before(where._Ptr, newNode);
 
 		return Iterator(newNode, &_data);
 	}
@@ -570,7 +570,7 @@ private:
 		return newNode;
 	}
 
-	void _insert_node_before(_NodePtr beforeNode, _NodePtr newNode) {	// Insert Node before another
+	void _link_node_before(_NodePtr beforeNode, _NodePtr newNode) {	// Insert Node before another
 		newNode->_Previous 				= beforeNode->_Previous;
 		newNode->_Next 					= beforeNode;
 
@@ -580,11 +580,21 @@ private:
 		++_data._Size;
 	}
 
-	void _remove_node(_NodePtr junkNode) {							// Remove Node and relink
-		junkNode->_Previous->_Next = junkNode->_Next;
-		junkNode->_Next->_Previous = junkNode->_Previous;
-		--_data._Size;
+	void _unlink_node(_NodePtr targetNode) {						// Unlink node from list
+		CUSTOM_ASSERT(	targetNode->_Next != nullptr && targetNode->_Previous != nullptr,
+						"Unlink only if linked");
 
+		targetNode->_Previous->_Next	= targetNode->_Next;
+		targetNode->_Next->_Previous	= targetNode->_Previous;
+
+		targetNode->_Next				= nullptr;
+		targetNode->_Previous			= nullptr;
+
+		--_data._Size;
+	}
+
+	void _remove_node(_NodePtr junkNode) {						// Remove Node and relink
+		_unlink_node(junkNode);
 		_AllocNodeTraits::destroy(_alloc, &(junkNode->_Value));
 		_alloc.deallocate(junkNode, 1);
 	}
