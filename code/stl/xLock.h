@@ -37,7 +37,6 @@ bool _try_lock_from_locks(const int target, IndexSequence<Indices...>, Locks&...
 
 template<size_t... Indices, class... Locks>
 void _unlock_locks(const int first, const int last, IndexSequence<Indices...>, Locks&... locks) noexcept {
-    // terminates
     // unlock locks in locks[first, last)
     int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void()), 0)...};
     (void)ignored;
@@ -68,20 +67,22 @@ int _try_lock_range(const int first, const int last, Locks&... locks) {
 
 template<class... Locks>
 int _lock_attempt(const int hardLock, Locks&... locks) {
-    // attempt to lock locks, starting by locking locks[hardLock] and trying to lock the rest
-
     using Indices = IndexSequenceFor<Locks...>;
 
+    // lock the one that failed in previous iteration (or the first if none exists)
     _lock_from_locks(hardLock, Indices{}, locks...);
+
     int failed          = -1;
-    int backoutStart    = hardLock; // that is, unlock hardLock
+    int backoutStart    = hardLock; // unlock just hardLock if fail (at the end)
 
     try
     {
+        // try to lock from 0 to the one that failed
         failed = _try_lock_range(0, hardLock, locks...);
-        if (failed == -1)
+
+        if (failed == -1)   // ok so far
         {
-            backoutStart    = 0;    // that is, unlock [0, hardLock] if the next throws
+            backoutStart    = 0;    // unlock [0, hardLock] if the next throws
             failed          = _try_lock_range(hardLock + 1, sizeof...(Locks), locks...);
             
             if (failed == -1)       // we got all the locks
@@ -91,7 +92,7 @@ int _lock_attempt(const int hardLock, Locks&... locks) {
     catch (...)
     {
         _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
-        throw;  // terminates
+        CUSTOM_RERAISE;  // terminates
     }
 
     // didn't get all the locks, backout
@@ -107,11 +108,17 @@ template<class... Locks>
 void lock(Locks&... locks) {    // lock multiple locks, without deadlock
     int hardLock = 0;
     while (hardLock != -1)
+        // hardLock stores the position of the last failed lock (-1 is ok)
+        // _lock_attempt applies try_lock for [0, hardLock)
+        // then lock ONLY for hardLock
+        // then again try_lock for rest (hardLock, ...]
         hardLock = detail::_lock_attempt(hardLock, locks...);
 }
 
 template<class... Locks>
-int try_lock(Locks&... locks) { // try to lock multiple locks
+int try_lock(Locks&... locks) {
+    // try to lock multiple locks
+    // -1 on success, or ​0​-based index value of the object that failed to lock.
     return detail::_try_lock_range(0, sizeof...(Locks), locks...);
 }
 
