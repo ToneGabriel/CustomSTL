@@ -43,7 +43,7 @@ struct _CharTraits
 
 	static constexpr size_t length(const CharType* cstr) noexcept {
 		size_t count = 0;
-		for (; *cstr != NULLCHR; ++count, ++cstr) { /*do nothing*/ }
+		for (/*Empty*/; *cstr != NULLCHR; ++count, ++cstr) { /*do nothing*/ }
 		return count;
 	}
 
@@ -51,7 +51,7 @@ struct _CharTraits
 											size_t count,
 											const CharType& ch) noexcept {	// look for ch in [cstr, cstr + count)
 
-		for (; 0 < count; --count, ++cstr)
+		for (/*Empty*/; 0 < count; --count, ++cstr)
             if (*cstr == ch)
                 return cstr;
 

@@ -11,7 +11,7 @@ template<class ForwardIt, class Type>
 constexpr void iota(ForwardIt first, ForwardIt last, Type value) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first, ++value)
+    for (/*Empty*/; first != last; ++first, ++value)
         *first = value;
 }
 // END iota
@@ -22,7 +22,7 @@ template<class InputIt, class Type, class BinaryOperation>
 constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperation op) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         init = op(custom::move(init), *first);
  
     return init;
@@ -43,7 +43,7 @@ constexpr Type inner_product(   InputIt1 first1, InputIt1 last1,
 
     _verify_iteration_range(first1, last1);
 
-    for (; first1 != last1; ++first1, ++first2)
+    for (/*Empty*/; first1 != last1; ++first1, ++first2)
         init = op1(custom::move(init), op2(*first1, *first2));
 
     return init;
@@ -124,7 +124,7 @@ template<class InputIt, class Type, class BinaryOperation>
 constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         init = op(custom::move(init), *first);
 
     return init;
@@ -184,7 +184,7 @@ constexpr OutputIt inclusive_scan( InputIt first, InputIt last, OutputIt destFir
 
     _verify_iteration_range(first, last);
     
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
     {
         init = op(custom::move(init), *first);
         *destFirst++ = init;
@@ -235,7 +235,7 @@ constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1,
 
     _verify_iteration_range(first1, last1);
 
-    for (; first1 != last1; ++first1, ++first2)
+    for (/*Empty*/; first1 != last1; ++first1, ++first2)
         init = bop1(custom::move(init), bop2(*first1, *first2));
 
     return init;
@@ -252,7 +252,7 @@ constexpr Type transform_reduce(InputIt1 first, InputIt1 last,
     
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         init = bop(custom::move(init), uop(*first));
 
     return init;
@@ -295,7 +295,7 @@ constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last, OutputI
 
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
     {
         init = bop(custom::move(init), uop(*first));
         *destFirst++ = init;

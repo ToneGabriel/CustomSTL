@@ -39,7 +39,7 @@ constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(IsNothrowSwappab
         Ty* last1  = first1 + Size;
         Ty* first2 = right;
 
-        for (; first1 != last1; ++first1, ++first2)
+        for (/*Empty*/; first1 != last1; ++first1, ++first2)
             custom::swap(*first1, *first2);
     }
 }

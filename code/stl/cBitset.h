@@ -240,7 +240,7 @@ public:
         
 		BasicString<CharType, Alloc, Traits> string(Bits);	// create string and reserve Bits capacity
 
-        for (size_t pos = Bits; 0 < pos;)
+        for (size_t pos = Bits; 0 < pos; /*Empty*/)
             string.push_back(_get_bit(--pos) ? placeholder1 : placeholder0);
 
         return string;
@@ -341,7 +341,7 @@ private:
                 _array[block++] = thisBlock;
         }
 
-        for (; block <= _BLOCKS; ++block)
+        for (/*Empty*/; block <= _BLOCKS; ++block)
             _array[block] = 0;
     }
 

@@ -21,14 +21,25 @@ class ConditionVariableAny;
 CUSTOM_DETAIL_BEGIN     // lock impl
 
 template<size_t... Indices, class... Locks>
-void _lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
-    // use this to mimic a loop aver Indices
+void _lock_one_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // lock locks[target]
+    // ((static_cast<int>(Indices) == target ? (void)locks.lock() : void()), ...);
+    
+    // Without the array initializer, the fold expression could potentially be optimized away
+    // by the compiler if it determines that the result of the expression isn't needed.
+    // This optimization might lead to unexpected behavior because
+    // the actions inside the fold expression wouldn't be performed.
+
+    // By introducing the array initializer, you force the compiler to evaluate
+    // the fold expression for each element in the pack and ensure that the actions are executed,
+    // regardless of whether their results are actually used.
+    // This guarantees that the critical operations performed are executed as intended.
+
     int ignored[] = {((static_cast<int>(Indices) == target ? (void)locks.lock() : void()), 0)...};
-    (void)ignored; // suppress warning on unused variable
+    (void)ignored; // suppress warning for unused variable
 }
 
 template<size_t... Indices, class... Locks>
-bool _try_lock_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // try to lock locks[target]
+bool _try_lock_one_from_locks(const int target, IndexSequence<Indices...>, Locks&... locks) { // try to lock locks[target]
     bool result;
     int ignored[] = {((static_cast<int>(Indices) == target ? (void)(result = locks.try_lock()) : void()), 0)...};
     (void)ignored;
@@ -36,7 +47,7 @@ bool _try_lock_from_locks(const int target, IndexSequence<Indices...>, Locks&...
 }
 
 template<size_t... Indices, class... Locks>
-void _unlock_locks(const int first, const int last, IndexSequence<Indices...>, Locks&... locks) noexcept {
+void _unlock_locks_range(const int first, const int last, IndexSequence<Indices...>, Locks&... locks) noexcept {
     // unlock locks in locks[first, last)
     int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void()), 0)...};
     (void)ignored;
@@ -49,56 +60,20 @@ int _try_lock_range(const int first, const int last, Locks&... locks) {
     int next = first;   // initialized here because of catch
     try
     {
-        for (; next != last; ++next)
-            if (!_try_lock_from_locks(next, Indices{}, locks...))   // try_lock failed, backout
+        for (/*Empty*/; next != last; ++next)
+            if (!_try_lock_one_from_locks(next, Indices{}, locks...))   // try_lock failed, backout
             {
-                _unlock_locks(first, next, Indices{}, locks...);
+                _unlock_locks_range(first, next, Indices{}, locks...);
                 return next;
             }
     }
     catch (...)
     {
-        _unlock_locks(first, next, Indices{}, locks...);
-        throw;      // terminates
+        _unlock_locks_range(first, next, Indices{}, locks...);
+        CUSTOM_RERAISE;      // terminates
     }
 
     return -1;
-}
-
-template<class... Locks>
-int _lock_attempt(const int hardLock, Locks&... locks) {
-    using Indices = IndexSequenceFor<Locks...>;
-
-    // lock the one that failed in previous iteration (or the first if none exists)
-    _lock_from_locks(hardLock, Indices{}, locks...);
-
-    int failed          = -1;
-    int backoutStart    = hardLock; // unlock just hardLock if fail (at the end)
-
-    try
-    {
-        // try to lock from 0 to the one that failed
-        failed = _try_lock_range(0, hardLock, locks...);
-
-        if (failed == -1)   // ok so far
-        {
-            backoutStart    = 0;    // unlock [0, hardLock] if the next throws
-            failed          = _try_lock_range(hardLock + 1, sizeof...(Locks), locks...);
-            
-            if (failed == -1)       // we got all the locks
-                return -1;
-        }
-    }
-    catch (...)
-    {
-        _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
-        CUSTOM_RERAISE;  // terminates
-    }
-
-    // didn't get all the locks, backout
-    _unlock_locks(backoutStart, hardLock + 1, Indices{}, locks...);
-    custom::this_thread::yield();
-    return failed;
 }
 
 CUSTOM_DETAIL_END   // lock impl
@@ -106,13 +81,51 @@ CUSTOM_DETAIL_END   // lock impl
 
 template<class... Locks>
 void lock(Locks&... locks) {    // lock multiple locks, without deadlock
-    int hardLock = 0;
-    while (hardLock != -1)
-        // hardLock stores the position of the last failed lock (-1 is ok)
-        // _lock_attempt applies try_lock for [0, hardLock)
-        // then lock ONLY for hardLock
-        // then again try_lock for rest (hardLock, ...]
-        hardLock = detail::_lock_attempt(hardLock, locks...);
+    using Indices = IndexSequenceFor<Locks...>;
+
+    // hardLockIndex stores the position of the last failed lock (-1 is ok)
+    // attempt lock -> applies try_lock for [0, hardLockIndex)
+    // then lock ONLY for hardLockIndex
+    // then again try_lock for rest (hardLockIndex, rest...]
+
+    const int lockCount = sizeof...(Locks);
+    int hardLockIndex   = 0;
+    int failedLockIndex;
+    int backoutStart;
+
+    while (hardLockIndex != -1)  // attempt lock
+    {
+        // lock the one that failed in previous iteration (or the first if none exists)
+        detail::_lock_one_from_locks(hardLockIndex, Indices{}, locks...);
+
+        backoutStart    = hardLockIndex;    // unlock just hardLockIndex if fail (at the end)
+        failedLockIndex = -1;
+
+        try
+        {
+            // try to lock from 0 to the one that failed
+            failedLockIndex = detail::_try_lock_range(0, hardLockIndex, locks...);
+
+            if (failedLockIndex == -1)  // ok so far
+            {
+                backoutStart    = 0;   // unlock [0, hardLockIndex] if the next throws
+                failedLockIndex = detail::_try_lock_range(hardLockIndex + 1, lockCount, locks...);  // try to lock rest...
+                
+                if (failedLockIndex == -1)  // we got all the locks
+                    return;
+            }
+        }
+        catch (...)
+        {
+            detail::_unlock_locks_range(backoutStart, hardLockIndex + 1, Indices{}, locks...);
+            CUSTOM_RERAISE;  // terminates
+        }
+
+        // didn't get all the locks, backout
+        detail::_unlock_locks_range(backoutStart, hardLockIndex + 1, Indices{}, locks...);
+        custom::this_thread::yield();
+        hardLockIndex = failedLockIndex;
+    }
 }
 
 template<class... Locks>

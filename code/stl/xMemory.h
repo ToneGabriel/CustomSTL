@@ -212,17 +212,17 @@ NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardI
     
     try
     {
-        for (; first != last; ++first, (void)++current)
+        for (/*Empty*/; first != last; ++first, (void)++current)
             ::new(&(*current)) ValueType(*first);
 
         return current;
     }
     catch (...)
     {
-        for (; destFirst != current; ++destFirst)
+        for (/*Empty*/; destFirst != current; ++destFirst)
             destFirst->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 
@@ -233,16 +233,17 @@ NoThrowForwardIt uninitialized_copy_n(InputIt first, Size count, NoThrowForwardI
     NoThrowForwardIt current = destFirst;
     try
     {
-        for (; count > 0; ++first, (void)++current, --count)
+        for (/*Empty*/; count > 0; ++first, (void)++current, --count)
             ::new(&(*current)) ValueType(*first);
     
         return current;
     }
     catch (...)
     {
-        for (; destFirst != current; ++destFirst)
+        for (/*Empty*/; destFirst != current; ++destFirst)
             destFirst->~ValueType();
-        throw;
+
+        CUSTOM_RERAISE;
     }
 }
 // END uninitialized_copy, uninitialized_copy_n
@@ -258,14 +259,15 @@ void uninitialized_fill(ForwardIt first, ForwardIt last, const Type& value) {
 
     try
     {
-        for (; current != last; ++current)
+        for (/*Empty*/; current != last; ++current)
             ::new(&(*current)) ValueType(value);
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
-        throw;
+
+        CUSTOM_RERAISE;
     }
 }
 
@@ -277,17 +279,17 @@ ForwardIt uninitialized_fill_n(ForwardIt first, Size count, const Type& value) {
 
     try
     {
-        for (; count > 0; ++current, (void)--count)
+        for (/*Empty*/; count > 0; ++current, (void)--count)
             ::new(&(*current)) ValueType(value);
 
         return current;
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 // END uninitialized_fill, uninitialized_fill_n
@@ -303,17 +305,17 @@ NoThrowForwardIt uninitialized_move(InputIt first, InputIt last, NoThrowForwardI
 
     try
     {
-        for (; first != last; ++first, (void)++current)
+        for (/*Empty*/; first != last; ++first, (void)++current)
             ::new(&(*current)) ValueType(custom::move(*first));
 
         return current;
     }
     catch (...)
     {
-        for (; destFirst != current; ++destFirst)
+        for (/*Empty*/; destFirst != current; ++destFirst)
             destFirst->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 
@@ -325,17 +327,17 @@ custom::Pair<InputIt, NoThrowForwardIt> uninitialized_move_n(InputIt first, Size
 
     try
     {
-        for (; count > 0; ++first, (void)++current, --count)
+        for (/*Empty*/; count > 0; ++first, (void)++current, --count)
             ::new(&(*current)) ValueType(custom::move(*first));
     
         return { first, current };
     }
     catch (...)
     {
-        for (; destFirst != current; ++destFirst)
+        for (/*Empty*/; destFirst != current; ++destFirst)
             destFirst->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 // END uninitialized_move, uninitialized_move_n
@@ -351,15 +353,15 @@ void uninitialized_default_construct(ForwardIt first, ForwardIt last) {
 
     try
     {
-        for (; current != last; ++current)
+        for (/*Empty*/; current != last; ++current)
             ::new(&(*current)) ValueType;
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 
@@ -371,17 +373,17 @@ ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n) {
     
     try
     {
-        for (; n > 0; (void)++current, --n)
+        for (/*Empty*/; n > 0; (void)++current, --n)
             ::new(&(*current)) ValueType;
 
         return current;
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 // END uninitialized_default_construct, uninitialized_default_construct_n
@@ -397,15 +399,15 @@ void uninitialized_value_construct(ForwardIt first, ForwardIt last) {
 
     try
     {
-        for (; current != last; ++current)
+        for (/*Empty*/; current != last; ++current)
             ::new(&(*current)) ValueType();
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 
@@ -417,17 +419,17 @@ ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n) {
 
     try
     {
-        for (; n > 0; (void)++current, --n)
+        for (/*Empty*/; n > 0; (void)++current, --n)
             ::new(&(*current)) ValueType();
 
         return current;
     }
     catch (...)
     {
-        for (; first != current; ++first)
+        for (/*Empty*/; first != current; ++first)
             first->~ValueType();
 
-        throw;
+        CUSTOM_RERAISE;
     }
 }
 // END uninitialized_value_construct, uninitialized_value_construct_n
@@ -455,13 +457,13 @@ template<class ForwardIt>
 constexpr void destroy(ForwardIt first, ForwardIt last) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         custom::destroy_at(&(*first));
 }
 
 template<class ForwardIt, class Size>
 constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
-    for (; n > 0; (void)++first, --n)
+    for (/*Empty*/; n > 0; (void)++first, --n)
         custom::destroy_at(&(*first));
 
     return first;

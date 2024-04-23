@@ -578,7 +578,7 @@ private:
 		if (_data._Head->_Parent == _data._Head)					// first node
 			position._Parent = _data._Head;
 		else
-			for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil;)
+			for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil; /*Empty*/)
 			{
 				position._Parent = iterNode;
 				if (_less(Traits::extract_key(newNode->_Value), Traits::extract_key(iterNode->_Value)))
@@ -701,7 +701,7 @@ private:
 			fixNode 		= oldNode;
 			fixNodeParent 	= oldNode->_Parent;
 
-			for (; fixNode != _data._Head->_Parent && fixNode->_Color == _Node::Colors::Black; fixNodeParent = fixNode->_Parent)
+			for (/*Empty*/; fixNode != _data._Head->_Parent && fixNode->_Color == _Node::Colors::Black; fixNodeParent = fixNode->_Parent)
 			{
 				if (fixNode == fixNodeParent->_Left)	// left subtree
 				{

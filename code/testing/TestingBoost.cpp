@@ -39,9 +39,10 @@ void _Employee::assign_lunch_partner(_Employee &e1, _Employee &e2)
     // use custom::lock to acquire two locks without worrying about 
     // other calls to assign_lunch_partner deadlocking us
     {
-        custom::lock(e1._Mutex, e2._Mutex);
-        custom::LockGuard<custom::Mutex> lk1(e1._Mutex, custom::AdoptLock);
-        custom::LockGuard<custom::Mutex> lk2(e2._Mutex, custom::AdoptLock);
+        // ========= Classical solution =========
+        // custom::lock(e1._Mutex, e2._Mutex);
+        // custom::LockGuard<custom::Mutex> lk1(e1._Mutex, custom::AdoptLock);
+        // custom::LockGuard<custom::Mutex> lk2(e2._Mutex, custom::AdoptLock);
         
         // ========= Equivalent code (if UniqueLocks are needed, e.g. for condition variables) =========
         // custom::UniqueLock<custom::Mutex> lk1(e1._Mutex, custom::DeferLock);
@@ -49,7 +50,7 @@ void _Employee::assign_lunch_partner(_Employee &e1, _Employee &e2)
 		// custom::lock(lk1, lk2);
 
         // ========= Superior solution available in C++17 =========
-        // custom::ScopedLock slk(e1._Mutex, e2._Mutex);
+        custom::ScopedLock slk(e1._Mutex, e2._Mutex);
 
         {
             custom::LockGuard<custom::Mutex> lk(io_mutex);
@@ -244,12 +245,12 @@ void shared_mutex_test() {
 
     threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start 1 writer
 
-    for (; index < 20; ++index)
+    for (/*Empty*/; index < 20; ++index)
         threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start 20 readers
 
     threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start another writer
 
-    for (; index < 40; ++index)
+    for (/*Empty*/; index < 40; ++index)
         threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start onother 20 readers
 
     for (auto& thr : threads)
@@ -283,12 +284,12 @@ void shared_timed_mutex_test() {
 
     threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start 1 writer
 
-    for (; index < 20; ++index)
+    for (/*Empty*/; index < 20; ++index)
         threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start 20 readers
 
     threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start another writer
 
-    for (; index < 40; ++index)
+    for (/*Empty*/; index < 40; ++index)
         threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start onother 20 readers
 
     for (auto& thr : threads)

@@ -12,7 +12,7 @@ template<class InputIt, class UnaryPredicate>
 constexpr bool all_of(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (!pred(*first))
             return false;
 
@@ -23,7 +23,7 @@ template<class InputIt, class UnaryPredicate>
 constexpr bool any_of(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (pred(*first))
             return true;
 
@@ -42,7 +42,7 @@ template<class InputIt, class UnaryFunction>
 constexpr UnaryFunction for_each(InputIt first, InputIt last, UnaryFunction func) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         func(*first);
  
     return func; // implicit move
@@ -77,7 +77,7 @@ constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 la
                                                     InputIt2 first2, BinaryPredicate pred) {
     
     _verify_iteration_range(first1, last1);
-    for (; first1 != last1 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
+    for (/*Empty*/; first1 != last1 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
     return {first1, first2};
 }
 
@@ -93,7 +93,7 @@ constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 la
     
     _verify_iteration_range(first1, last1);
     _verify_iteration_range(first2, last2);
-    for (; first1 != last1 && first2 != last2 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
+    for (/*Empty*/; first1 != last1 && first2 != last2 && pred(*first1, *first2); ++first1, ++first2) { /*do nothing*/ }
     return {first1, first2};
 }
 
@@ -143,7 +143,7 @@ template<class InputIt, class Type>
 constexpr InputIt find(InputIt first, InputIt last, const Type& value) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (*first == value)
             return first;
  
@@ -154,7 +154,7 @@ template<class InputIt, class UnaryPredicate>
 constexpr InputIt find_if(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (pred(*first))
             return first;
  
@@ -165,7 +165,7 @@ template<class InputIt, class UnaryPredicate>
 constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (!pred(*first))
             return first;
  
@@ -181,7 +181,7 @@ template<class InputIt, class OutputIt>
 constexpr OutputIt copy(InputIt first, InputIt last, OutputIt destFirst) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first, ++destFirst)
+    for (/*Empty*/; first != last; ++first, ++destFirst)
         *destFirst = *first;
 
     return destFirst;
@@ -191,7 +191,7 @@ template<class InputIt, class OutputIt, class UnaryPredicate>
 constexpr OutputIt copy_if(InputIt first, InputIt last, OutputIt destFirst, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (pred(*first))
         {
             *destFirst = *first;
@@ -231,7 +231,7 @@ template<class InputIt, class OutputIt>
 constexpr OutputIt move(InputIt first, InputIt last, OutputIt destFirst) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first, ++destFirst)
+    for (/*Empty*/; first != last; ++first, ++destFirst)
         *destFirst = custom::move(*first);
 
     return destFirst;
@@ -282,7 +282,7 @@ template<class ForwardIt, class Generator>
 constexpr void generate(ForwardIt first, ForwardIt last, Generator gen) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         *first = gen();
 }
 
@@ -301,7 +301,7 @@ template<class ForwardIt, class Type>
 constexpr void fill(ForwardIt first, ForwardIt last, const Type& value) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         *first = value;
 }
 
@@ -326,7 +326,7 @@ constexpr ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2
 {
     _verify_iteration_range(first1, last1);
     
-    for (; first1 != last1; ++first1, ++first2)
+    for (/*Empty*/; first1 != last1; ++first1, ++first2)
         custom::iter_swap(first1, first2);
 
     return first2;
@@ -382,11 +382,11 @@ template<class InputIt, class UnaryPredicate>
 constexpr bool is_partitioned(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (!pred(*first))
             break;
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (pred(*first))
             return false;
 
@@ -400,7 +400,7 @@ custom::Pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
 
     _verify_iteration_range(first, last);
 
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (pred(*first))
         {
             *destFirstTrue = *first;
@@ -529,7 +529,7 @@ ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
     ForwardIt largest = first;
     ++first;
  
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (comp(*largest, *first))
             largest = first;
  
@@ -565,7 +565,7 @@ ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp) {
     ForwardIt smallest = first;
     ++first;
  
-    for (; first != last; ++first)
+    for (/*Empty*/; first != last; ++first)
         if (comp(*first, *smallest))
             smallest = first;
  
@@ -588,7 +588,7 @@ constexpr bool equal(   InputIt1 first1, InputIt1 last1,
 
     _verify_iteration_range(first1, last1);
 
-    for (; first1 != last1; ++first1, ++first2)
+    for (/*Empty*/; first1 != last1; ++first1, ++first2)
         if (!pred(*first1, *first2))
             return false;
 
@@ -610,7 +610,7 @@ constexpr bool lexicographical_compare( InputIt1 first1, InputIt1 last1,
     _verify_iteration_range(first1, last1);
     _verify_iteration_range(first2, last2);
 
-    for (; (first1 != last1) && (first2 != last2); ++first1, ++first2)
+    for (/*Empty*/; (first1 != last1) && (first2 != last2); ++first1, ++first2)
     {
         if (comp(*first1, *first2))
             return true;

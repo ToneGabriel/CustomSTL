@@ -38,7 +38,7 @@ public:
     }
 
     void release(int update = 1) noexcept {
-        for (; update != 0; --update)
+        for (/*Empty*/; update != 0; --update)
             sem_post(&_semaphore);     
     }
 

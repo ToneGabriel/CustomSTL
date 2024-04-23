@@ -193,7 +193,7 @@ constexpr typename IteratorTraits<InputIt>::DifferenceType distance(InputIt firs
     {
         typename IteratorTraits<InputIt>::DifferenceType dist = 0;
 
-        for (; first != last; ++first)
+        for (/*Empty*/; first != last; ++first)
             ++dist;
 
         return dist;
@@ -209,11 +209,11 @@ constexpr void advance(InputIt& first, Offset off) {
         if constexpr (IsSigned_v<Offset> && !IsBidirectionalIterator_v<InputIt>)
             CUSTOM_ASSERT(off >= 0, "Negative advance of non-bidirectional iterator!");
 
-        for (; off > 0; --off)  // happens for both input and bidirectional iterator
+        for (/*Empty*/; off > 0; --off)  // happens for both input and bidirectional iterator
             ++first;
 
         if constexpr (IsSigned_v<Offset> && IsBidirectionalIterator_v<InputIt>)
-            for (; off < 0; ++off)
+            for (/*Empty*/; off < 0; ++off)
                 --first;
     }
 }
