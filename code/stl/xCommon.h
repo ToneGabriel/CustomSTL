@@ -31,18 +31,10 @@
 #define CUSTOM_NOVTABLE_ATTR    // Defined only for _MSC_VER
 #endif
 
-// math vals
-#define PI_LONG 3.1415926535897932384626433832795029L
-#define PI_BY_2_LONG 1.5707963267948966192313216916397514L
-#define E_LONG 2.7182818284590452353602874713526624L
-#define LOG10_E_LONG 0.4342944819032518276511289189166051L
-#define SQRT_2_LONG 1.4142135623730950488016887242096981L
-
-
 
 CUSTOM_BEGIN
 
-CUSTOM_DETAIL_BEGIN // ensure the "detail" namespace is placed only in "custom" namespace
+CUSTOM_DETAIL_BEGIN // create the "detail" namespace inside "custom" namespace
 CUSTOM_DETAIL_END
 
 inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {

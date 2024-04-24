@@ -1055,11 +1055,11 @@ private:
 private:
     // Friends
 
-    template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool>>
-    friend constexpr SharedPtr<Ty> make_shared(Args&&... args);
+    template<class Ty, class... Args>
+    friend EnableIf_t<!IsArray_v<Ty>, SharedPtr<Ty>> make_shared(Args&&... args);
 
-    template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool>>
-    friend SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args);
+    template<class Ty, class Alloc, class... Args>
+    friend EnableIf_t<!IsArray_v<Ty>, SharedPtr<Ty>> allocate_shared(const Alloc& alloc, Args&&... args);
 
     template<class Del, class Ty>
     friend Del* get_deleter(const SharedPtr<Ty>& ptr) noexcept;
@@ -1067,13 +1067,13 @@ private:
 
 // TODO
 // build SharedPtr
-template<class Ty, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-constexpr SharedPtr<Ty> make_shared(Args&&... args) {
+template<class Ty, class... Args>
+EnableIf_t<!IsArray_v<Ty>, SharedPtr<Ty>> make_shared(Args&&... args) {
     return SharedPtr<Ty>(new Ty(custom::forward<Args>(args)...));
 }
 
-template<class Ty, class Alloc, class... Args, EnableIf_t<!IsArray_v<Ty>, bool> = true>
-SharedPtr<Ty> allocate_shared(const Alloc& alloc, Args&&... args) {
+template<class Ty, class Alloc, class... Args>
+EnableIf_t<!IsArray_v<Ty>, SharedPtr<Ty>> allocate_shared(const Alloc& alloc, Args&&... args) {
     return SharedPtr<Ty>();
     //return SharedPtr<Ty>(alloc, std::forward<Args>(args)...);
 }

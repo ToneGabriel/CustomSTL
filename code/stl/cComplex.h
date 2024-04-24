@@ -1,6 +1,7 @@
 #pragma once
 #include "cUtility.h"
 #include "cLimits.h"
+#include "cNumbers.h"
 
 #include <cmath>
 
@@ -895,7 +896,7 @@ Complex<Type> cos(const Complex<Type>& val) {
 template<class Type>
 Complex<Type> acos(const Complex<Type>& val) {
     const Complex<Type> asinTemp = custom::asin(val);
-    return Complex<Type>(PI_BY_2_LONG - asinTemp.real(), -asinTemp.imag());
+    return Complex<Type>(custom::numbers::pi_by_2_v<Type> - asinTemp.real(), -asinTemp.imag());
 }
 
 template<class Type>
