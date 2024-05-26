@@ -914,13 +914,10 @@ constexpr auto _fix_one_arg(BoundArgType& boundArg, UnboundTuple&& unboundTuple)
 }
 
 template<class Functor, class BoundTuple, size_t... Ix, class UnboundTuple>
-auto _call_binder(Functor&& func, BoundTuple&& boundTuple, IndexSequence<Ix...>, UnboundTuple&& unboundTuple)
--> decltype(custom::invoke(  static_cast<Functor&&>(func),
-                            _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...)) {
-
+constexpr auto _call_binder(Functor& func, BoundTuple& boundTuple, IndexSequence<Ix...>, UnboundTuple&& unboundTuple) noexcept
+-> decltype(custom::invoke(func, _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...)) {
     // _fix_one_arg is called for every boundTuple item (YES: unboundTuple is moved every call)
-    return custom::invoke(  static_cast<Functor&&>(func),
-                            _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...);
+    return custom::invoke(func, _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...);
 }
 
 CUSTOM_DETAIL_END
@@ -931,21 +928,32 @@ template<class Functor, class... Args>
 class Binder
 {
 private:
-    Decay_t<Functor> _functor;
+    Decay_t<Functor>        _functor;
     Tuple<Decay_t<Args>...> _boundArgs;
 
 public:
-    explicit Binder(Functor&& func, Args&&... args)
-        : _functor(custom::forward<Functor>(func)), _boundArgs(custom::forward<Args>(args)...) { /*Empty*/ }
+    constexpr explicit Binder(Functor&& func, Args&&... args)
+        :   _functor(custom::forward<Functor>(func)),
+            _boundArgs(custom::forward<Args>(args)...) { /*Empty*/ }
+
+// just a shortcut used in operator()
+#define _CALL_BINDER                                                            \
+    detail::_call_binder(   _functor, _boundArgs, IndexSequenceFor<Args...>{},  \
+                            custom::forward_as_tuple(custom::forward<UnboundArgs>(unboundArgs)...))
 
     template<class... UnboundArgs>
-    auto operator()(UnboundArgs&&... unboundArgs) noexcept
-    -> decltype(detail::_call_binder(_functor, _boundArgs, IndexSequenceFor<Args...>{},
-                                custom::forward_as_tuple(custom::forward<UnboundArgs>(unboundArgs)...))) {
-
-        return detail::_call_binder(_functor, _boundArgs, IndexSequenceFor<Args...>{},
-                                custom::forward_as_tuple(custom::forward<UnboundArgs>(unboundArgs)...));
+    constexpr auto operator()(UnboundArgs&&... unboundArgs) noexcept(noexcept(_CALL_BINDER))
+    -> decltype(_CALL_BINDER) {
+        return _CALL_BINDER;
     }
+
+    template<class... UnboundArgs>
+    constexpr auto operator()(UnboundArgs&&... unboundArgs) const noexcept(noexcept(_CALL_BINDER))
+    -> decltype(_CALL_BINDER) {
+        return _CALL_BINDER;
+    }
+
+#undef _CALL_BINDER // used only here
 };
 
 template<class Functor, class... Args>

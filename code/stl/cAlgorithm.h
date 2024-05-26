@@ -336,7 +336,6 @@ constexpr ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2
 
 
 #pragma region Partitioning operations
-// TODO: implement
 // partition, partition_point, is_partitioned, partition_copy
 template<class ForwardIt, class UnaryPredicate>
 constexpr ForwardIt partition(ForwardIt first, ForwardIt last, UnaryPredicate pred) {
@@ -435,6 +434,37 @@ custom::Pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
 
 #pragma region Set operations // (on sorted ranges)
 // TODO: implement
+// includes
+template<class InputIt1, class InputIt2, class BinaryPredicate>
+constexpr bool includes(InputIt1 first1, InputIt1 last1,
+                        InputIt2 first2, InputIt2 last2,
+                        BinaryPredicate pred) {
+
+    // test if every element in sorted [first2, last2) is in sorted [first1, last1)
+
+    _verify_iteration_range(first1, last1);
+    _verify_iteration_range(first2, last2);
+    
+    _verify_iteration_order<InputIt2>(first1, last1, pred);
+    _verify_iteration_order<InputIt1>(first2, last2, pred);
+
+    for (/*Empty*/; first1 != last1 && first2 != last2; ++first1)
+    {
+        if (_verify_predicate_order(pred, *first2, *first1))
+            return false;
+
+        if (!pred(*first1, *first2))
+            ++first2;
+    }
+
+    return first2 == last2;
+}
+
+template<class InputIt1, class InputIt2>
+constexpr bool includes(InputIt1 first1, InputIt1 last1,
+                        InputIt2 first2, InputIt2 last2) {
+    return custom::includes(first1, last1, first2, last2, Less<>{});
+}
 #pragma endregion Set operations
 
 

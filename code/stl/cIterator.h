@@ -1,54 +1,8 @@
 #pragma once
-#include "cUtility.h"
+#include "xIterator.h"
 
 
 CUSTOM_BEGIN
-
-// iterator tags
-struct InputIteratorTag {};
-struct OutputIteratorTag {};
-struct ForwardIteratorTag       : InputIteratorTag {};
-struct BidirectionalIteratorTag : ForwardIteratorTag {};
-struct RandomAccessIteratorTag  : BidirectionalIteratorTag {};
-
-// normal iterator traits helpers
-template<class Iterator, class = void>
-struct _IteratorTraits {};
-
-template<class Iterator>
-struct _IteratorTraits<Iterator, Void_t<    typename Iterator::IteratorCategory,
-                                            typename Iterator::ValueType,
-                                            typename Iterator::DifferenceType,
-                                            typename Iterator::Pointer,
-                                            typename Iterator::Reference>>
-{
-    using IteratorCategory = typename Iterator::IteratorCategory;
-    using ValueType        = typename Iterator::ValueType;
-    using DifferenceType   = typename Iterator::DifferenceType;
-    using Pointer          = typename Iterator::Pointer;
-    using Reference        = typename Iterator::Reference;
-};
-
-// pointer iterator traits helpers
-template<class Type, bool = IsObject_v<Type>>
-struct _IteratorTraitsPtr
-{
-    using IteratorCategory = RandomAccessIteratorTag;
-    using ValueType        = RemoveCV_t<Type>;
-    using DifferenceType   = ptrdiff_t;
-    using Pointer          = Type*;
-    using Reference        = Type&;
-};
-
-template<class Type>
-struct _IteratorTraitsPtr<Type, false> {};
-
-// iterator traits
-template<class Iterator>
-struct IteratorTraits : _IteratorTraits<Iterator> {};
-
-template<class Type>
-struct IteratorTraits<Type*> : _IteratorTraitsPtr<Type> {};
 
 // helpers for ReverseIterator operator->()
 template<class Iterator, class Pointer, bool = IsPointer_v<RemoveCVRef_t<Iterator>>>
@@ -149,37 +103,6 @@ constexpr bool operator!=(const ReverseIterator<Iterator1>& left, const ReverseI
 noexcept(noexcept(_fake_copy_init<bool>(left.const_ref_base() != right.const_ref_base()))) {
     return left.const_ref_base() != right.const_ref_base();
 }
-
-
-// is iterator
-template<class Iter, class = void>
-constexpr bool IsIterator_v = false;
-
-template<class Iter>
-constexpr bool IsIterator_v<Iter, Void_t<typename IteratorTraits<Iter>::IteratorCategory>> = true;
-
-template<class Iter>
-struct IsIterator : BoolConstant<IsIterator_v<Iter>> {};
-
-// is input iterator
-template<class Iter>
-constexpr bool IsInputIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, InputIteratorTag>;
-
-// is output iterator
-template<class Iter>
-constexpr bool IsOutputIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, OutputIteratorTag>;
-
-// is forward iterator
-template<class Iter>
-constexpr bool IsForwardIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, ForwardIteratorTag>;
-
-// is bidirectional iterator
-template<class Iter>
-constexpr bool IsBidirectionalIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, BidirectionalIteratorTag>;
-
-// is random access iterator
-template<class Iter>
-constexpr bool IsRandomAccessIterator_v = IsConvertible_v<typename IteratorTraits<Iter>::IteratorCategory, RandomAccessIteratorTag>;
 
 
 // iterator functions
