@@ -348,14 +348,6 @@ constexpr bool operator!=(const Array<Ty, Size>& left, const Array<Ty, Size>& ri
 
 CUSTOM_DETAIL_BEGIN
 
-template<class First, class... Rest>
-struct _AssertSame													// Assert all types to be the same
-{
-	static_assert(Conjunction_v<IsSame<First, Rest>...>, "All types must be the same. Otherwise the program is ill-formed.");
-
-	using Type = First;												// Get type
-};
-
 template<class Ty, size_t Size, size_t... Idx>
 constexpr Array<RemoveCV_t<Ty>, Size> _to_array_copy_impl(Ty (&builtInArray)[Size], IndexSequence<Idx...>) {
 	return { builtInArray[Idx]... };
@@ -369,8 +361,11 @@ constexpr Array<RemoveCV_t<Ty>, Size> _to_array_move_impl(Ty (&&builtInArray)[Si
 CUSTOM_DETAIL_END
 
 
+// Deduction guide (ex: custom::Array arr {1, 2, 3};)
+// All types must be the same. Otherwise the program is ill-formed
 template<class First, class... Rest>
-Array(First, Rest...) -> Array<typename detail::_AssertSame<First, Rest...>::Type, 1 + sizeof...(Rest)>;
+Array(First, Rest...) -> Array<	EnableIf_t<(Conjunction_v<IsSame<First, Rest>...>), First>,
+								1 + sizeof...(Rest)>;
 
 // to array
 template<class Ty, size_t Size>

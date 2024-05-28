@@ -6,6 +6,12 @@
 
 CUSTOM_BEGIN
 
+// template<class Ret, class Callable, class... Iterators>
+// using _EnableCallFromIterators =
+// EnableIf_t< Conjunction_v<  Conjunction<IsIterator<Iterators>...>,
+//                             IsInvocableRet<Ret, Callable, typename IteratorTraits<Iterators>::Reference...>>, bool>;
+
+
 #pragma region Non-modifying sequence operations
 // all_of, any_of, none_of
 template<class InputIt, class UnaryPredicate>
@@ -44,7 +50,7 @@ constexpr UnaryFunction for_each(InputIt first, InputIt last, UnaryFunction func
 
     for (/*Empty*/; first != last; ++first)
         func(*first);
- 
+
     return func; // implicit move
 }
 
@@ -250,27 +256,27 @@ constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 destLas
 
 
 // transform
-template<class InputIt, class OutputIt, class UnaryOperation >
+template<class InputIt, class OutputIt, class UnaryFunction>
 constexpr OutputIt transform( InputIt first, InputIt last,
-                              OutputIt destFirst, UnaryOperation uop ) {
+                              OutputIt destFirst, UnaryFunction func) {
 
     _verify_iteration_range(first, last);
 
     while (first != last)
-        *destFirst++ = uop(*first++);
+        *destFirst++ = func(*first++);
  
     return destFirst;
 }
 
-template<class InputIt1, class InputIt2, class OutputIt, class BinaryOperation>
+template<class InputIt1, class InputIt2, class OutputIt, class BinaryFunction>
 constexpr OutputIt transform(   InputIt1 first1, InputIt1 last1, 
                                 InputIt2 first2, OutputIt destFirst,
-                                BinaryOperation bop) {
+                                BinaryFunction func) {
 
     _verify_iteration_range(first1, last1);
 
     while (first1 != last1)
-        *destFirst++ = bop(*first1++, *first2++);
+        *destFirst++ = func(*first1++, *first2++);
  
     return destFirst;
 }
@@ -434,7 +440,7 @@ custom::Pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
 
 #pragma region Set operations // (on sorted ranges)
 // TODO: implement
-// includes
+// includes, set_intersection
 template<class InputIt1, class InputIt2, class BinaryPredicate>
 constexpr bool includes(InputIt1 first1, InputIt1 last1,
                         InputIt2 first2, InputIt2 last2,
@@ -464,6 +470,41 @@ template<class InputIt1, class InputIt2>
 constexpr bool includes(InputIt1 first1, InputIt1 last1,
                         InputIt2 first2, InputIt2 last2) {
     return custom::includes(first1, last1, first2, last2, Less<>{});
+}
+
+template<class InputIt1, class InputIt2, class OutputIt, class BinaryPredicate>
+constexpr OutputIt set_intersection(InputIt1 first1, InputIt1 last1,
+                                    InputIt2 first2, InputIt2 last2,
+                                    OutputIt destFirst, BinaryPredicate pred) {
+
+    _verify_iteration_range(first1, last1);
+    _verify_iteration_range(first2, last2);
+    
+    _verify_iteration_order<InputIt2>(first1, last1, pred);
+    _verify_iteration_order<InputIt1>(first2, last2, pred);
+
+    while (first1 != last1 && first2 != last2)
+    {
+        if (_verify_predicate_order(pred, *first1, *first2))
+            ++first1;
+        else if (pred(*first2, *first1))
+            ++first2;
+        else
+        {
+            *destFirst = *first1;
+            ++destFirst;
+            ++first1;
+            ++first2;
+        }
+    }
+
+    return destFirst;
+}
+
+template<class InputIt1, class InputIt2, class OutputIt>
+constexpr OutputIt set_intersection(InputIt1 first1, InputIt1 last1,
+                                    InputIt2 first2, InputIt2 last2) {
+    return custom::set_intersection(first1, last1, first2, last2, Less<>{});
 }
 #pragma endregion Set operations
 

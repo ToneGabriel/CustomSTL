@@ -114,6 +114,66 @@ constexpr auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
     return detail::_Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
 
+// IsInvocable
+template<class Callable, class AlwaysVoid, class... Args>
+struct _IsInvocableImpl : custom::FalseType {};
+
+template<class Callable, class... Args>
+struct _IsInvocableImpl<Callable,
+custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : custom::TrueType {};
+
+template<class Callable, class... Args>
+struct IsInvocable : _IsInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
+
+template<class Callable, class... Args>
+constexpr bool IsInvocable_v = IsInvocable<Callable, Args...>::Value;
+
+// IsInvocableRet
+template<class Ret, class Callable, class AlwaysVoid, class... Args>
+struct _IsInvocableRetImpl : custom::FalseType {};
+
+template<class Ret, class Callable, class... Args>
+struct _IsInvocableRetImpl<Ret, Callable,
+custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
+custom::IsConvertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret> {};
+
+template<class Ret, class Callable, class... Args>
+struct IsInvocableRet : _IsInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
+
+template<class Ret, class Callable, class... Args>
+constexpr bool IsInvocableRet_v = IsInvocableRet<Ret, Callable, Args...>::Value;
+
+// IsNothrowInvocable
+template<class Callable, class AlwaysVoid, class... Args>
+struct _IsNothrowInvocableImpl : custom::FalseType {};
+
+template<class Callable, class... Args>
+struct _IsNothrowInvocableImpl<Callable,
+custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : 
+custom::BoolConstant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))> {};
+
+template<class Callable, class... Args>
+struct IsNothrowInvocable : _IsNothrowInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
+
+template<class Callable, class... Args>
+constexpr bool IsNothrowInvocable_v = IsNothrowInvocable<Callable, Args...>::Value;
+
+// IsNothrowInvocableRet
+template<class Ret, class Callable, class AlwaysVoid, class... Args>
+struct _IsNothrowInvocableRetImpl : custom::FalseType {};
+
+template<class Ret, class Callable, class... Args>
+struct _IsNothrowInvocableRetImpl<Ret, Callable,
+custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
+custom::Conjunction<custom::IsConvertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret>,
+                    custom::BoolConstant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))>> {};
+
+template<class Ret, class Callable, class... Args>
+struct IsNothrowInvocableRet : _IsNothrowInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
+
+template<class Ret, class Callable, class... Args>
+constexpr bool IsNothrowInvocableRet_v = IsNothrowInvocableRet<Ret, Callable, Args...>::Value;
+
 #pragma endregion invoke
 
 

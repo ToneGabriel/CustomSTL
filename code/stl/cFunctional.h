@@ -9,17 +9,17 @@ CUSTOM_BEGIN
 
 #pragma region Unary/Binary Operations
 
-// unary function
+// unary function traits
 template<class Arg, class Res>
-struct UnaryFunction
+struct UnaryFunctionTraits
 {
     using ArgumentType  = Arg;
     using ResultType    = Res;
 };
 
-// binary function
+// binary function traits
 template<class Arg1, class Arg2, class Res>
-struct BinaryFunction
+struct BinaryFunctionTraits
 {
     using FirstArgumentType     = Arg1;
     using SecondArgumentType    = Arg2;
@@ -28,7 +28,7 @@ struct BinaryFunction
 
 // equal to
 template<class Ty = void>
-struct EqualTo : public BinaryFunction<Ty, Ty, bool>
+struct EqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left == right;
@@ -50,7 +50,7 @@ struct EqualTo<void>
 
 // not equal to
 template<class Ty = void>
-struct NotEqualTo : public BinaryFunction<Ty, Ty, bool>
+struct NotEqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left != right;
@@ -72,7 +72,7 @@ struct NotEqualTo<void>
 
 // greater
 template<class Ty = void>
-struct Greater : public BinaryFunction<Ty, Ty, bool>
+struct Greater : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left > right;
@@ -94,7 +94,7 @@ struct Greater<void>
 
 // greater equal
 template<class Ty = void>
-struct GreaterEqual : public BinaryFunction<Ty, Ty, bool>
+struct GreaterEqual : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left >= right;
@@ -116,7 +116,7 @@ struct GreaterEqual<void>
 
 // less
 template<class Ty = void>
-struct Less : public BinaryFunction<Ty, Ty, bool>
+struct Less : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left < right;
@@ -138,7 +138,7 @@ struct Less<void>
 
 // less equal
 template<class Ty = void>
-struct LessEqual : public BinaryFunction<Ty, Ty, bool>
+struct LessEqual : public BinaryFunctionTraits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left <= right;
@@ -160,7 +160,7 @@ struct LessEqual<void>
 
 // plus
 template<class Ty = void>
-struct Plus : public BinaryFunction<Ty, Ty, Ty>
+struct Plus : public BinaryFunctionTraits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left + right;
@@ -182,7 +182,7 @@ struct Plus<void>
 
 // minus
 template<class Ty = void>
-struct Minus : public BinaryFunction<Ty, Ty, Ty>
+struct Minus : public BinaryFunctionTraits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left - right;
@@ -204,7 +204,7 @@ struct Minus<void>
 
 // multiplies
 template<class Ty = void>
-struct Multiplies : public BinaryFunction<Ty, Ty, Ty>
+struct Multiplies : public BinaryFunctionTraits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left * right;
@@ -226,7 +226,7 @@ struct Multiplies<void>
 
 // divides
 template<class Ty = void>
-struct Divides : public BinaryFunction<Ty, Ty, Ty>
+struct Divides : public BinaryFunctionTraits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left / right;
@@ -248,7 +248,7 @@ struct Divides<void>
 
 // modulus
 template<class Ty = void>
-struct Modulus : public BinaryFunction<Ty, Ty, Ty>
+struct Modulus : public BinaryFunctionTraits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left % right;
@@ -270,7 +270,7 @@ struct Modulus<void>
 
 // negate
 template<class Ty = void>
-struct Negate : public UnaryFunction<Ty, Ty>
+struct Negate : public UnaryFunctionTraits<Ty, Ty>
 {
     constexpr Ty operator()(const Ty& val) const {
         return -val;

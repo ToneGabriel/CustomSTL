@@ -397,7 +397,7 @@ constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
 
 
 //least common multiple
-template <class First, class Second>
+template<class First, class Second>
 constexpr CommonType_t<First, Second> lcm(const First val1, const Second val2) noexcept {
     static_assert(IsNonboolIntegral<First> && IsNonboolIntegral<Second>, "LCM requires nonbool integral types");
     
