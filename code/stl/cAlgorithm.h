@@ -6,12 +6,6 @@
 
 CUSTOM_BEGIN
 
-// template<class Ret, class Callable, class... Iterators>
-// using _EnableCallFromIterators =
-// EnableIf_t< Conjunction_v<  Conjunction<IsIterator<Iterators>...>,
-//                             IsInvocableRet<Ret, Callable, typename IteratorTraits<Iterators>::Reference...>>, bool>;
-
-
 #pragma region Non-modifying sequence operations
 // all_of, any_of, none_of
 template<class InputIt, class UnaryPredicate>
@@ -65,15 +59,31 @@ constexpr InputIt for_each_n(InputIt first, Size n, UnaryFunction func) {
 
 
 // count, count_if
-// template<class InputIt, class Type>
-// constexpr typename iterator_traits<InputIt>::difference_type count(InputIt first, InputIt last, const Type& value) {
+template<class InputIt, class Type>
+constexpr typename IteratorTraits<InputIt>::DifferenceType count(InputIt first, InputIt last, const Type& value) {
+    _verify_iteration_range(first, last);
+    
+    typename IteratorTraits<InputIt>::DifferenceType ret = 0;
 
-// }
+    for (/*Empty*/; first != last; ++first)
+        if (*first == value)
+            ++ret;
 
-// template<class InputIt, class UnaryPredicate>
-// constexpr typename iterator_traits<InputIt>::difference_type count_if(InputIt first, InputIt last, UnaryPredicate pred) {
+    return ret;
+}
 
-// }
+template<class InputIt, class UnaryPredicate>
+constexpr typename IteratorTraits<InputIt>::DifferenceType count_if(InputIt first, InputIt last, UnaryPredicate pred) {
+    _verify_iteration_range(first, last);
+    
+    typename IteratorTraits<InputIt>::DifferenceType ret = 0;
+
+    for (/*Empty*/; first != last; ++first)
+        if (pred(*first))
+            ++ret;
+
+    return ret;
+}
 // END count, count_if
 
 
@@ -328,8 +338,7 @@ constexpr void iter_swap(ForwardIt1 it1, ForwardIt2 it2) {
 }
 
 template<class ForwardIt1, class ForwardIt2>
-constexpr ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2)
-{
+constexpr ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2) {
     _verify_iteration_range(first1, last1);
     
     for (/*Empty*/; first1 != last1; ++first1, ++first2)
