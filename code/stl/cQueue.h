@@ -1,8 +1,8 @@
 #pragma once
 // #include "Deque.h"	// can be used as Container in Queue/PriorityQueue
 #include "cList.h"
-#include "cVector.h"
-#include "cUtility.h"
+#include "c_vector.h"
+#include "c_utility.h"
 #include "cFunctional.h"	// for custom::Less
 
 
@@ -20,10 +20,10 @@ public:
 	using ContainerType 	= Container;
 	using ValueType 		= typename ContainerType::ValueType;
 	using DifferenceType 	= typename ContainerType::DifferenceType;
-	using Reference			= typename ContainerType::Reference;
-	using ConstReference	= typename ContainerType::ConstReference;
-	using Pointer			= typename ContainerType::Pointer;
-	using ConstPointer		= typename ContainerType::ConstPointer;
+	using reference			= typename ContainerType::reference;
+	using const_reference	= typename ContainerType::const_reference;
+	using pointer			= typename ContainerType::pointer;
+	using const_pointer		= typename ContainerType::const_pointer;
 
 private:
 	ContainerType _baseContainer;
@@ -81,19 +81,19 @@ public:
 		return _baseContainer.clear();
 	}
 
-	Reference front() noexcept {
+	reference front() noexcept {
 		return _baseContainer.front();
 	}
 
-	ConstReference front() const noexcept {
+	const_reference front() const noexcept {
 		return _baseContainer.front();
 	}
 
-	Reference back() noexcept {
+	reference back() noexcept {
 		return _baseContainer.back();
 	}
 
-	ConstReference back() const noexcept {
+	const_reference back() const noexcept {
 		return _baseContainer.back();
 	}
 
@@ -119,24 +119,24 @@ bool operator!=(const Queue<_Type, _Container>& left, const Queue<_Type, _Contai
 }
 
 
-template<class Type, class Container = custom::Vector<Type>, class Compare = custom::Less<Type>>
+template<class Type, class Container = custom::vector<Type>, class Compare = custom::Less<Type>>
 class PriorityQueue		// Priority Queue Template implemented as array heap
 {
 // The Container must satisfy the requirements of SequenceContainer,
 // and its iterators must satisfy the requirements of LegacyRandomAccessIterator.
 // Additionally, it must provide the following functions with the usual semantics:
 // front(), push_back() (... or emplace_back()), pop_back()
-// custom::Vector and custom::Deque satisfy these requirements
+// custom::vector and custom::Deque satisfy these requirements
 
 public:
 	using ContainerType 	= Container;
 	using ValueCompare 		= Compare;
 	using ValueType 		= typename ContainerType::ValueType;
 	using DifferenceType 	= typename ContainerType::DifferenceType;
-	using Reference			= typename ContainerType::Reference;
-	using ConstReference	= typename ContainerType::ConstReference;
-	using Pointer			= typename ContainerType::Pointer;
-	using ConstPointer		= typename ContainerType::ConstPointer;
+	using reference			= typename ContainerType::reference;
+	using const_reference	= typename ContainerType::const_reference;
+	using pointer			= typename ContainerType::pointer;
+	using const_pointer		= typename ContainerType::const_pointer;
 
 private:
 	ContainerType _baseContainer;
@@ -202,11 +202,11 @@ public:
 		return _baseContainer.clear();
 	}
 
-	Reference front() noexcept {
+	reference front() noexcept {
 		return _baseContainer.front();
 	}
 
-	ConstReference front() const noexcept {
+	const_reference front() const noexcept {
 		return _baseContainer.front();
 	}
 

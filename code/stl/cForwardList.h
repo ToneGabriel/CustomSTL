@@ -1,8 +1,8 @@
 #pragma once
 #include "xNode.h"
 #include "xMemory.h"
-#include "cUtility.h"
-#include "cIterator.h"
+#include "c_utility.h"
+#include "c_iterator.h"
 #include "cFunctional.h"
 
 
@@ -12,18 +12,18 @@ template<class Type, class Alloc>
 struct _ForwardListData
 {
 	// deduce data types and forward them
-	using _AllocTraits		= AllocatorTraits<Alloc>;
+	using _AllocTraits		= allocator_traits<Alloc>;
 	using _Node				= detail::_ForwardNode<Type>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
-	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
-	using _NodePtr			= typename _AllocNodeTraits::Pointer;
+	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
+	using _NodePtr			= typename _AllocNodeTraits::pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;
-	using Reference			= typename _AllocTraits::Reference;
-	using ConstReference	= typename _AllocTraits::ConstReference;
-	using Pointer			= typename _AllocTraits::Pointer;
-	using ConstPointer		= typename _AllocTraits::ConstPointer;
+	using reference			= typename _AllocTraits::reference;
+	using const_reference	= typename _AllocTraits::const_reference;
+	using pointer			= typename _AllocTraits::pointer;
+	using const_pointer		= typename _AllocTraits::const_pointer;
 
 	size_t _Size			= 0;									// Number of Nodes held
 	_NodePtr _Head 			= nullptr;								// Head of list
@@ -37,11 +37,11 @@ private:
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using IteratorCategory 	= ForwardIteratorTag;
+    using iterator_category 	= forward_iterator_tag;
 	using ValueType			= typename _Data::ValueType;
 	using DifferenceType 	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::ConstReference;
-	using Pointer			= typename _Data::ConstPointer;
+	using reference			= typename _Data::const_reference;
+	using pointer			= typename _Data::const_pointer;
 
 	_NodePtr _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -65,11 +65,11 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
-		return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this); calls operator*
+	pointer operator->() const noexcept {
+		return pointer_traits<pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
-	Reference operator*() const noexcept {
+	reference operator*() const noexcept {
 		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
@@ -103,7 +103,7 @@ public:
 }; // END ForwardListConstIterator
 
 template<class ForwardListData>
-class ForwardListIterator : public ForwardListConstIterator<ForwardListData>		// Linked List Iterator
+class ForwardListIterator : public ForwardListConstIterator<ForwardListData>		// Linked List iterator
 {
 private:
 	using _Base				= ForwardListConstIterator<ForwardListData>;
@@ -111,11 +111,11 @@ private:
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using IteratorCategory 	= ForwardIteratorTag;
+    using iterator_category 	= forward_iterator_tag;
 	using ValueType 		= typename _Data::ValueType;
 	using DifferenceType 	= typename _Data::DifferenceType;
-	using Reference 		= typename _Data::Reference;
-	using Pointer 			= typename _Data::Pointer;
+	using reference 		= typename _Data::reference;
+	using pointer 			= typename _Data::pointer;
 
 public:
 
@@ -135,17 +135,17 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(_Base::operator->());
+	pointer operator->() const noexcept {
+		return const_cast<pointer>(_Base::operator->());
 	}
 
-	Reference operator*() const noexcept {
-		return const_cast<Reference>(_Base::operator*());
+	reference operator*() const noexcept {
+		return const_cast<reference>(_Base::operator*());
 	}
 }; // END ForwardListIterator
 
 
-template<class Type, class Alloc = custom::Allocator<Type>>
+template<class Type, class Alloc = custom::allocator<Type>>
 class ForwardList				// Singly Linked List
 {
 private:
@@ -157,23 +157,23 @@ private:
 	using _NodePtr				= typename _Data::_NodePtr;
 
 public:
-	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
-	static_assert(IsObject_v<Type>, "Containers require object type!");
+	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and allocator type must be the same!");
+	static_assert(is_object_v<Type>, "Containers require object type!");
 
 	using ValueType 			= typename _Data::ValueType;
 	using DifferenceType 		= typename _Data::DifferenceType;
-	using Reference				= typename _Data::Reference;
-	using ConstReference		= typename _Data::ConstReference;
-	using Pointer				= typename _Data::Pointer;
-	using ConstPointer			= typename _Data::ConstPointer;
-	using AllocatorType			= Alloc;
+	using reference				= typename _Data::reference;
+	using const_reference		= typename _Data::const_reference;
+	using pointer				= typename _Data::pointer;
+	using const_pointer			= typename _Data::const_pointer;
+	using allocator_type			= Alloc;
 
-	using Iterator				= ForwardListIterator<_Data>;				// Iterator type
-	using ConstIterator			= ForwardListConstIterator<_Data>;			// Const Iterator type
+	using iterator				= ForwardListIterator<_Data>;				// iterator type
+	using const_iterator			= ForwardListConstIterator<_Data>;			// Const iterator type
 
 private:
 	_Data _data;															// Actual container data
-	_AllocNode _alloc;														// Allocator for nodes
+	_AllocNode _alloc;														// allocator for nodes
 
 public:
 	// Constructors
@@ -256,33 +256,33 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace_after(ConstIterator where, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the where position
+	iterator emplace_after(const_iterator where, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the where position
 		if (where.is_end())
 			throw std::out_of_range("Cannot emplace after end iterator.");
 
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_after(where._Ptr, newNode);
 
-		return Iterator(newNode, &_data);
+		return iterator(newNode, &_data);
 	}
 
-	Iterator pop_after(ConstIterator where) {						// Remove component after where position
+	iterator pop_after(const_iterator where) {						// Remove component after where position
 		if (where.is_end() || where.is_last_valid())
 			throw std::out_of_range("Cannot pop after end iterator.");
 
 		_NodePtr temp 			= where._Ptr;
-		Iterator nextIterator 	= Iterator(temp->_Next, &_data);
+		iterator nextIterator 	= iterator(temp->_Next, &_data);
 		_remove_node_after(temp);
 
 		return nextIterator;
 	}
 
-	Reference front() noexcept {								// Get the value of the first component
+	reference front() noexcept {								// Get the value of the first component
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
-	ConstReference front() const noexcept {
+	const_reference front() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
@@ -292,7 +292,7 @@ public:
 	}
 
 	size_t max_size() const noexcept {
-        return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+        return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
 								_AllocNodeTraits::max_size(_alloc));
     }
 
@@ -375,7 +375,7 @@ public:
 		return unique(EqualTo<>{});
 	}
 
-	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst, ConstIterator otherLast) {
+	void splice_after(const_iterator where, ForwardList& other, const_iterator otherFirst, const_iterator otherLast) {
 		// splice (otherFirst, otherLast) AFTER where
 
 		if (where._RefData->_Head == otherFirst._RefData->_Head ||
@@ -403,11 +403,11 @@ public:
 		}
 	}
 
-	void splice_after(ConstIterator where, ForwardList& other, ConstIterator otherFirst) {
+	void splice_after(const_iterator where, ForwardList& other, const_iterator otherFirst) {
 		splice_after(where, other, otherFirst, other.end());
 	}
 
-	void splice_after(ConstIterator where, ForwardList& other) {
+	void splice_after(const_iterator where, ForwardList& other) {
 		splice_after(where, other, other.before_begin(), other.end());
 	}
 
@@ -430,30 +430,30 @@ public:
 	}
 
 public:
-	// Iterator specific functions
+	// iterator specific functions
 
-	Iterator before_begin() noexcept {
-        return Iterator(_data._Head, &_data);
+	iterator before_begin() noexcept {
+        return iterator(_data._Head, &_data);
     }
 
-    ConstIterator before_begin() const noexcept {
-        return ConstIterator(_data._Head, &_data);
+    const_iterator before_begin() const noexcept {
+        return const_iterator(_data._Head, &_data);
     }
 
-	Iterator begin() noexcept {
-		return Iterator(_data._Head->_Next, &_data);
+	iterator begin() noexcept {
+		return iterator(_data._Head->_Next, &_data);
 	}
 
-	ConstIterator begin() const noexcept {
-		return ConstIterator(_data._Head->_Next, &_data);
+	const_iterator begin() const noexcept {
+		return const_iterator(_data._Head->_Next, &_data);
 	}
 
-	Iterator end() noexcept {
-		return Iterator(nullptr, &_data);
+	iterator end() noexcept {
+		return iterator(nullptr, &_data);
 	}
 
-	ConstIterator end() const noexcept {
-		return ConstIterator(nullptr, &_data);
+	const_iterator end() const noexcept {
+		return const_iterator(nullptr, &_data);
 	}
 
 private:

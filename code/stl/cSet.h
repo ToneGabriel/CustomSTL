@@ -11,7 +11,7 @@ public:
 	using MappedType 		= Key;
 	using KeyCompare 		= Compare;
 	using ValueType 		= MappedType;
-	using AllocatorType 	= Alloc;
+	using allocator_type 	= Alloc;
 
 public:
 
@@ -29,7 +29,7 @@ public:
 
 template<class Key,
 class Compare 	= custom::Less<Key>,
-class Alloc		= custom::Allocator<Key>>
+class Alloc		= custom::allocator<Key>>
 class Set : public detail::_SearchTree<SetTraits<Key, Compare, Alloc>>		// Set Template
 {
 private:
@@ -40,16 +40,16 @@ public:
 	using MappedType 			= typename _Base::MappedType;
 	using KeyCompare			= typename _Base::KeyCompare;
 	using ValueType 			= typename _Base::ValueType;
-	using Reference 			= typename _Base::Reference;
-	using ConstReference 		= typename _Base::ConstReference;
-	using Pointer 				= typename _Base::Pointer;
-	using ConstPointer 			= typename _Base::ConstPointer;
-	using AllocatorType 		= typename _Base::AllocatorType;
+	using reference 			= typename _Base::reference;
+	using const_reference 		= typename _Base::const_reference;
+	using pointer 				= typename _Base::pointer;
+	using const_pointer 			= typename _Base::const_pointer;
+	using allocator_type 		= typename _Base::allocator_type;
 
-	using Iterator				= typename _Base::Iterator;
-	using ConstIterator			= typename _Base::ConstIterator;
-	using ReverseIterator		= typename _Base::ReverseIterator;
-	using ConstReverseIterator	= typename _Base::ConstReverseIterator;
+	using iterator				= typename _Base::iterator;
+	using const_iterator			= typename _Base::const_iterator;
+	using reverse_iterator		= typename _Base::reverse_iterator;
+	using const_reverse_iterator	= typename _Base::const_reverse_iterator;
 
 public:
     // Constructors

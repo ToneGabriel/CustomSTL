@@ -9,7 +9,7 @@ CUSTOM_BEGIN
 class MutexBase         // Mutex adaptor for pthread_mutex_t
 {
 public:
-    using NativeHandleType = pthread_mutex_t;
+    using native_handle_type = pthread_mutex_t;
 
 private:
     friend ConditionVariable;
@@ -58,7 +58,7 @@ public:
         pthread_mutex_unlock(&_mutex);
     }
 
-    NativeHandleType native_handle() {
+    native_handle_type native_handle() {
         return _mutex;
     }
 }; // END MutexBase

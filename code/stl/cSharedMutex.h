@@ -9,7 +9,7 @@ CUSTOM_BEGIN
 class SharedMutex   // Adaptor for pthread_rwlock_t (read-write mutex)
 {
 public:
-    using NativeHandleType = pthread_rwlock_t;
+    using native_handle_type = pthread_rwlock_t;
 
 private:
     friend class SharedTimedMutex;
@@ -77,7 +77,7 @@ public:
     }
 // end Shared
 
-    NativeHandleType native_handle() {
+    native_handle_type native_handle() {
         return _rwMutex;
     }
 };  // END SharedMutex
@@ -89,9 +89,9 @@ private:
     using _Base         = SharedMutex;
     
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
-    using _ReqClock     = custom::chrono::SteadyClock;
+    using _ReqClock     = custom::chrono::steady_clock;
 #else
-    using _ReqClock     = custom::chrono::SystemClock;
+    using _ReqClock     = custom::chrono::system_clock;
 #endif
 
 public:
@@ -119,9 +119,9 @@ public:
         _Base::unlock();
     }
 
-    template<class Clock, class Duration,
-    EnableIf_t<IsSame_v<Clock, _ReqClock>, bool> = true>
-    bool try_lock_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+    template<class Clock, class duration,
+    enable_if_t<is_same_v<Clock, _ReqClock>, bool> = true>
+    bool try_lock_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
@@ -139,9 +139,9 @@ public:
     }
     
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
         return try_lock_until(  _ReqClock::now() + 
-                                custom::chrono::ceil<typename _ReqClock::Duration>(relativeTime));
+                                custom::chrono::ceil<typename _ReqClock::duration>(relativeTime));
     }
 // end Exclusive
 
@@ -158,9 +158,9 @@ public:
         _Base::unlock_shared();
     }
 
-    template<class Clock, class Duration,
-    EnableIf_t<IsSame_v<Clock, _ReqClock>, bool> = true>
-    bool try_lock_shared_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+    template<class Clock, class duration,
+    enable_if_t<is_same_v<Clock, _ReqClock>, bool> = true>
+    bool try_lock_shared_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
@@ -178,9 +178,9 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_lock_shared_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
+    bool try_lock_shared_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
         return try_lock_shared_until(   _ReqClock::now() + 
-                                        custom::chrono::ceil<typename _ReqClock::Duration>(relativeTime));
+                                        custom::chrono::ceil<typename _ReqClock::duration>(relativeTime));
     }
 // end Shared
 };  // END SharedTimedMutex

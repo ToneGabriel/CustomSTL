@@ -10,26 +10,26 @@ public:
 	using KeyType 			= Key;
 	using MappedType 		= Type;
 	using KeyCompare 		= Compare;
-	using ValueType 		= Pair<Key, Type>;
-	using AllocatorType 	= Alloc;
+	using ValueType 		= pair<Key, Type>;
+	using allocator_type 	= Alloc;
 
 public:
 
 	MapTraits() = default;
 
 	static const KeyType& extract_key(const ValueType& value) noexcept {		// extract key from element value
-		return value.First;
+		return value.first;
 	}
 
 	static const MappedType& extract_mapval(const ValueType& value) noexcept {	// extract mapped val from element value
-		return value.Second;
+		return value.second;
 	}
 }; // END Map Traits
 
 
 template<class Key, class Type,
 class Compare 	= custom::Less<Key>,
-class Alloc		= custom::Allocator<custom::Pair<Key, Type>>>
+class Alloc		= custom::allocator<custom::pair<Key, Type>>>
 class Map : public detail::_SearchTree<MapTraits<Key, Type, Compare, Alloc>>		// Map Template
 {
 private:
@@ -40,16 +40,16 @@ public:
 	using MappedType 			= typename _Base::MappedType;
 	using KeyCompare			= typename _Base::KeyCompare;
 	using ValueType 			= typename _Base::ValueType;
-	using Reference 			= typename _Base::Reference;
-	using ConstReference 		= typename _Base::ConstReference;
-	using Pointer 				= typename _Base::Pointer;
-	using ConstPointer 			= typename _Base::ConstPointer;
-	using AllocatorType 		= typename _Base::AllocatorType;
+	using reference 			= typename _Base::reference;
+	using const_reference 		= typename _Base::const_reference;
+	using pointer 				= typename _Base::pointer;
+	using const_pointer 			= typename _Base::const_pointer;
+	using allocator_type 		= typename _Base::allocator_type;
 
-	using Iterator				= typename _Base::Iterator;
-	using ConstIterator			= typename _Base::ConstIterator;
-	using ReverseIterator		= typename _Base::ReverseIterator;
-	using ConstReverseIterator	= typename _Base::ConstReverseIterator;
+	using iterator				= typename _Base::iterator;
+	using const_iterator			= typename _Base::const_iterator;
+	using reverse_iterator		= typename _Base::reverse_iterator;
+	using const_reverse_iterator	= typename _Base::const_reverse_iterator;
 
 public:
 	// Constructors
@@ -69,11 +69,11 @@ public:
 	// Operators
 
 	MappedType& operator[](const KeyType& key) {				// Access value or create new one with key and assignment (no const)
-		return this->_try_emplace(key).First->Second;
+		return this->_try_emplace(key).first->second;
 	}
 
 	MappedType& operator[](KeyType&& key) {
-		return this->_try_emplace(custom::move(key)).First->Second;
+		return this->_try_emplace(custom::move(key)).first->second;
 	}
 
 	Map& operator=(const Map& other) {
@@ -90,12 +90,12 @@ public:
 	// Main functions
 
 	template<class... Args>
-	Pair<Iterator, bool> try_emplace(const KeyType& key, Args&&... args) {	// Force construction with known key and given arguments for object
+	pair<iterator, bool> try_emplace(const KeyType& key, Args&&... args) {	// Force construction with known key and given arguments for object
 		return this->_try_emplace(key, custom::forward<Args>(args)...);
 	}
 
 	template<class... Args>
-	Pair<Iterator, bool> try_emplace(KeyType&& key, Args&&... args) {
+	pair<iterator, bool> try_emplace(KeyType&& key, Args&&... args) {
 		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 

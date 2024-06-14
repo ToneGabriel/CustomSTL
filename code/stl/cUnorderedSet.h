@@ -3,16 +3,16 @@
 
 CUSTOM_BEGIN
 
-template<class Key, class Hash, class Compare, class Alloc>
+template<class Key, class hash, class Compare, class Alloc>
 class UsetTraits					// UnorderedSet Traits
 {
 public:
 	using KeyType			= Key;
 	using MappedType		= Key;
-	using Hasher 			= Hash;
+	using Hasher 			= hash;
 	using KeyEqual 			= Compare;
 	using ValueType			= MappedType;
-	using AllocatorType 	= Alloc;
+	using allocator_type 	= Alloc;
 
 public:
 
@@ -29,31 +29,31 @@ public:
 
 
 template<class Key,
-class Hash 		= custom::Hash<Key>,
+class hash 		= custom::hash<Key>,
 class Compare 	= custom::EqualTo<Key>,
-class Alloc 	= custom::Allocator<Key>>
-class UnorderedSet : public detail::_HashTable<UsetTraits<Key, Hash, Compare, Alloc>>		// UnorderedSet Template
+class Alloc 	= custom::allocator<Key>>
+class UnorderedSet : public detail::_HashTable<UsetTraits<Key, hash, Compare, Alloc>>		// UnorderedSet Template
 {
 private:
-	using _Base = detail::_HashTable<UsetTraits<Key, Hash, Compare, Alloc>>;
+	using _Base = detail::_HashTable<UsetTraits<Key, hash, Compare, Alloc>>;
 
 public:
-	static_assert(IsSame_v<Key, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
-	static_assert(IsObject_v<Key>, "Containers require object type!");
+	static_assert(is_same_v<Key, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(is_object_v<Key>, "Containers require object type!");
 
 	using KeyType 			= typename _Base::KeyType;
 	using MappedType 		= typename _Base::MappedType;
 	using Hasher 			= typename _Base::Hasher;
 	using KeyEqual 			= typename _Base::KeyEqual;
 	using ValueType 		= typename _Base::ValueType;
-	using Reference 		= typename _Base::Reference;
-	using ConstReference 	= typename _Base::ConstReference;
-	using Pointer 			= typename _Base::Pointer;
-	using ConstPointer 		= typename _Base::ConstPointer;
-	using AllocatorType 	= typename _Base::AllocatorType;
+	using reference 		= typename _Base::reference;
+	using const_reference 	= typename _Base::const_reference;
+	using pointer 			= typename _Base::pointer;
+	using const_pointer 		= typename _Base::const_pointer;
+	using allocator_type 	= typename _Base::allocator_type;
 
-	using Iterator			= typename _Base::Iterator;
-	using ConstIterator 	= typename _Base::ConstIterator;
+	using iterator			= typename _Base::iterator;
+	using const_iterator 	= typename _Base::const_iterator;
 
 public:
 	// Constructors

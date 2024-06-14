@@ -1,7 +1,7 @@
 #pragma once
-#include "cTypeTraits.h"
-#include "cLimits.h"
-#include "cRatio.h"
+#include "c_type_traits.h"
+#include "c_limits.h"
+#include "c_ratio.h"
 #include <ctime>        // std::time_t
 
 #if defined _MSC_VER    // for Clock::now()
@@ -52,36 +52,36 @@ CUSTOM_DETAIL_END
 
 // duration values
 template<class Rep>
-struct DurationValues  // gets arithmetic properties of a type
+struct duration_values  // gets arithmetic properties of a type
 {
     static constexpr Rep zero() noexcept {      // get zero value
         return Rep(0);
     }
 
     static constexpr Rep (min)() noexcept {     // get smallest value
-        return NumericLimits<Rep>::lowest();
+        return numeric_limits<Rep>::lowest();
     }
 
     static constexpr Rep (max)() noexcept {     // get largest value
-        return (NumericLimits<Rep>::max)();
+        return (numeric_limits<Rep>::max)();
     }
 };
 
 
 // is clock
 template<class Clock, class = void>
-constexpr bool IsClock_v = false;
+constexpr bool is_clock_v = false;
 
 template<class Clock>
-constexpr bool IsClock_v<Clock, Void_t< typename Clock::Rep,
+constexpr bool is_clock_v<Clock, void_t<typename Clock::Rep,
                                         typename Clock::Period,
-                                        typename Clock::Duration,
-                                        typename Clock::TimePoint,
-                                        decltype(Clock::IsSteady),
+                                        typename Clock::duration,
+                                        typename Clock::time_point,
+                                        decltype(Clock::is_steady),
                                         decltype(Clock::now())>> = true;
 
 template<class Clock>
-struct IsClock : BoolConstant<IsClock_v<Clock>> {};
+struct is_clock : bool_constant<is_clock_v<Clock>> {};
 
 CUSTOM_CHRONO_END
 

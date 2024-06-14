@@ -70,7 +70,7 @@ void lock_locks_test() {
     _Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
  
     // assign in parallel threads because mailing users about lunch assignments takes a long time
-    custom::Vector<custom::Thread> threads;
+    custom::vector<custom::thread> threads;
     threads.emplace_back(_Employee::assign_lunch_partner, custom::ref(alice), custom::ref(bob));
     threads.emplace_back(_Employee::assign_lunch_partner, custom::ref(christina), custom::ref(bob));
     threads.emplace_back(_Employee::assign_lunch_partner, custom::ref(christina), custom::ref(alice));
@@ -87,13 +87,13 @@ void lock_locks_test() {
 
 void thread_test() {
 	std::cout << custom::this_thread::get_id();
-	custom::Thread t(test::deque_test);
+	custom::thread t(test::deque_test);
 	t.join();
 }
 
 void semaphore_test() {
     auto semaphore_test_task = [](int id, custom::CountingSemaphore<>& sem) {
-        // custom::chrono::SystemClock::now() + custom::chrono::Milliseconds(2000);
+        // custom::chrono::system_clock::now() + custom::chrono::Milliseconds(2000);
         // custom::chrono::Milliseconds(2000);
 
         if (sem.try_acquire_for(custom::chrono::Milliseconds(2000)))
@@ -113,11 +113,11 @@ void semaphore_test() {
 
 	const int numTasks = 3;
     custom::CountingSemaphore<> semaphore(2); // Initialize semaphore with a count of 2
-    custom::Thread tasks[numTasks];
+    custom::thread tasks[numTasks];
     
     // Start multiple tasks that attempt to acquire the semaphore
     for (int i = 0; i < numTasks; ++i)
-        tasks[i] = custom::Thread(semaphore_test_task, i + 1, custom::ref(semaphore));
+        tasks[i] = custom::thread(semaphore_test_task, i + 1, custom::ref(semaphore));
 
     // Join all threads to the main thread
     for (int i = 0; i < numTasks; ++i)
@@ -129,20 +129,20 @@ void timed_mutex_test() {
         // Try to acquire the timed mutex for 3 seconds
         if (mtx.try_lock_for(custom::chrono::Seconds(3)))
         {
-            std::cout << "Thread " << id << " acquired the timed mutex." << std::endl;
+            std::cout << "thread " << id << " acquired the timed mutex." << std::endl;
             // Simulating some work
             custom::this_thread::sleep_for(custom::chrono::Seconds(2));
             // Release the mutex
             mtx.unlock();
-            std::cout << "Thread " << id << " released the timed mutex." << std::endl;
+            std::cout << "thread " << id << " released the timed mutex." << std::endl;
         }
         else
-            std::cout << "Thread " << id << " couldn't acquire the timed mutex within 3 seconds." << std::endl;
+            std::cout << "thread " << id << " couldn't acquire the timed mutex within 3 seconds." << std::endl;
     };  // task for timed mutex
 
     custom::TimedMutex mtx;
-    custom::Thread t1(timed_mutex_test_task, 1, custom::ref(mtx));
-    custom::Thread t2(timed_mutex_test_task, 2, custom::ref(mtx));
+    custom::thread t1(timed_mutex_test_task, 1, custom::ref(mtx));
+    custom::thread t2(timed_mutex_test_task, 2, custom::ref(mtx));
 
     t1.join();
     t2.join();
@@ -160,7 +160,7 @@ void recursive_timed_mutex_test() {
         // Try to acquire the recursive timed mutex for 3 seconds
         if (rmtx.try_lock_for(custom::chrono::Seconds(3)))
         {
-            std::cout << "Thread " << id << " acquired the recursive timed mutex." << std::endl;
+            std::cout << "thread " << id << " acquired the recursive timed mutex." << std::endl;
 
             // Simulating some work
             custom::this_thread::sleep_for(custom::chrono::Seconds(1));
@@ -170,15 +170,15 @@ void recursive_timed_mutex_test() {
             
             // Release the mutex
             rmtx.unlock();
-            std::cout << "Thread " << id << " released the recursive timed mutex." << std::endl;
+            std::cout << "thread " << id << " released the recursive timed mutex." << std::endl;
         }
         else
-            std::cout << "Thread " << id << " couldn't acquire the recursive timed mutex within 3 seconds." << std::endl;
+            std::cout << "thread " << id << " couldn't acquire the recursive timed mutex within 3 seconds." << std::endl;
     };  // task for recursive timed mutex
 
 	custom::RecursiveTimedMutex rmtx;
-    custom::Thread t1(recursive_timed_mutex_test_task, 1, 3, custom::ref(rmtx), recursive_timed_mutex_test_task);
-    custom::Thread t2(recursive_timed_mutex_test_task, 2, 2, custom::ref(rmtx), recursive_timed_mutex_test_task);
+    custom::thread t1(recursive_timed_mutex_test_task, 1, 3, custom::ref(rmtx), recursive_timed_mutex_test_task);
+    custom::thread t2(recursive_timed_mutex_test_task, 2, 2, custom::ref(rmtx), recursive_timed_mutex_test_task);
 
     t1.join();
     t2.join();
@@ -217,8 +217,8 @@ void condition_variable_any_test() {
     custom::Mutex mtx;
     bool dataReady = false;
 
-    custom::Thread producerThread(cva_producer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
-    custom::Thread consumerThread(cva_consumer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
+    custom::thread producerThread(cva_producer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
+    custom::thread consumerThread(cva_consumer, custom::ref(cva), custom::ref(mtx), custom::ref(dataReady));
 
     producerThread.join();
     consumerThread.join();
@@ -239,19 +239,19 @@ void shared_mutex_test() {
         //custom::this_thread::sleep_for(custom::chrono::Milliseconds(100));
     };
 
-    custom::Vector<custom::Thread> threads;
+    custom::vector<custom::thread> threads;
     custom::SharedMutex smtx;
     int index = 0;
 
-    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start 1 writer
+    threads.emplace_back(custom::thread(writer, custom::ref(smtx)));                // start 1 writer
 
     for (/*Empty*/; index < 20; ++index)
-        threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start 20 readers
+        threads.emplace_back(custom::thread(reader, custom::ref(smtx), index));     // start 20 readers
 
-    threads.emplace_back(custom::Thread(writer, custom::ref(smtx)));                // start another writer
+    threads.emplace_back(custom::thread(writer, custom::ref(smtx)));                // start another writer
 
     for (/*Empty*/; index < 40; ++index)
-        threads.emplace_back(custom::Thread(reader, custom::ref(smtx), index));     // start onother 20 readers
+        threads.emplace_back(custom::thread(reader, custom::ref(smtx), index));     // start onother 20 readers
 
     for (auto& thr : threads)
         thr.join();                                                                 // join all
@@ -278,19 +278,19 @@ void shared_timed_mutex_test() {
         custom::this_thread::sleep_for(custom::chrono::Milliseconds(2000));
     };
 
-    custom::Vector<custom::Thread> threads;
+    custom::vector<custom::thread> threads;
     custom::SharedTimedMutex stmtx;
     int index = 0;
 
-    threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start 1 writer
+    threads.emplace_back(custom::thread(writer, custom::ref(stmtx)));               // start 1 writer
 
     for (/*Empty*/; index < 20; ++index)
-        threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start 20 readers
+        threads.emplace_back(custom::thread(reader, custom::ref(stmtx), index));    // start 20 readers
 
-    threads.emplace_back(custom::Thread(writer, custom::ref(stmtx)));               // start another writer
+    threads.emplace_back(custom::thread(writer, custom::ref(stmtx)));               // start another writer
 
     for (/*Empty*/; index < 40; ++index)
-        threads.emplace_back(custom::Thread(reader, custom::ref(stmtx), index));    // start onother 20 readers
+        threads.emplace_back(custom::thread(reader, custom::ref(stmtx), index));    // start onother 20 readers
 
     for (auto& thr : threads)
         thr.join();                                                                 // join all

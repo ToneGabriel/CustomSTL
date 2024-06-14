@@ -1,7 +1,7 @@
 #pragma once
 #include "cFunctional.h"
-#include "cIterator.h"
-#include "cPair.h"
+#include "c_iterator.h"
+#include "c_pair.h"
 
 
 CUSTOM_BEGIN
@@ -60,10 +60,10 @@ constexpr InputIt for_each_n(InputIt first, Size n, UnaryFunction func) {
 
 // count, count_if
 template<class InputIt, class Type>
-constexpr typename IteratorTraits<InputIt>::DifferenceType count(InputIt first, InputIt last, const Type& value) {
+constexpr typename iterator_traits<InputIt>::DifferenceType count(InputIt first, InputIt last, const Type& value) {
     _verify_iteration_range(first, last);
     
-    typename IteratorTraits<InputIt>::DifferenceType ret = 0;
+    typename iterator_traits<InputIt>::DifferenceType ret = 0;
 
     for (/*Empty*/; first != last; ++first)
         if (*first == value)
@@ -73,10 +73,10 @@ constexpr typename IteratorTraits<InputIt>::DifferenceType count(InputIt first, 
 }
 
 template<class InputIt, class UnaryPredicate>
-constexpr typename IteratorTraits<InputIt>::DifferenceType count_if(InputIt first, InputIt last, UnaryPredicate pred) {
+constexpr typename iterator_traits<InputIt>::DifferenceType count_if(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
     
-    typename IteratorTraits<InputIt>::DifferenceType ret = 0;
+    typename iterator_traits<InputIt>::DifferenceType ret = 0;
 
     for (/*Empty*/; first != last; ++first)
         if (pred(*first))
@@ -89,7 +89,7 @@ constexpr typename IteratorTraits<InputIt>::DifferenceType count_if(InputIt firs
 
 // mismatch
 template<class InputIt1, class InputIt2, class BinaryPredicate>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                     InputIt2 first2, BinaryPredicate pred) {
     
     _verify_iteration_range(first1, last1);
@@ -98,12 +98,12 @@ constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 la
 }
 
 template<class InputIt1, class InputIt2>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
     return custom::mismatch(first1, last1, first2, EqualTo<>{});
 }
 
 template<class InputIt1, class InputIt2, class BinaryPredicate>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                     InputIt2 first2, InputIt2 last2,
                                                     BinaryPredicate pred) {
     
@@ -114,7 +114,7 @@ constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 la
 }
 
 template<class InputIt1, class InputIt2>
-constexpr custom::Pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                     InputIt2 first2, InputIt2 last2) {
 
     return custom::mismatch(first1, last1, first2, last2, EqualTo<>{});
@@ -408,7 +408,7 @@ constexpr bool is_partitioned(InputIt first, InputIt last, UnaryPredicate pred) 
 }
 
 template<class InputIt, class OutputIt1, class OutputIt2, class UnaryPredicate>
-custom::Pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
+custom::pair<OutputIt1, OutputIt2> partition_copy(  InputIt first, InputIt last,
                                                     OutputIt1 destFirstTrue, OutputIt2 destFirstFalse,
                                                     UnaryPredicate pred) {
 

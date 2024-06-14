@@ -1,11 +1,11 @@
 #pragma once
-#include "cTypeTraits.h"
+#include "c_type_traits.h"
 
 
 CUSTOM_BEGIN
 
 template<class Ty>
-class ReferenceWrapper;
+class reference_wrapper;
 
 
 #pragma region invoke
@@ -77,9 +77,9 @@ struct _InvokerPMDPointer
 };
 
 // Invoker implementation choice
-template<class Callable, class Type = void, class NoCVRef_t = RemoveCVRef_t<Callable>,
-bool IsPMF = IsMemberFunctionPointer_v<NoCVRef_t>,
-bool IsPMD = IsMemberObjectPointer_v<NoCVRef_t>>
+template<class Callable, class Type = void, class NoCVRef_t = remove_cv_ref_t<Callable>,
+bool IsPMF = is_member_function_pointer_v<NoCVRef_t>,
+bool IsPMD = is_member_object_pointer_v<NoCVRef_t>>
 struct _Invoker;
 
 template<class Callable, class Type, class NoCVRef_t>
@@ -88,15 +88,15 @@ struct _Invoker<Callable, Type, NoCVRef_t, false, false>    // non-member functi
 
 template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, true, false>     // pointer to member function
-: Conditional_t<IsBaseOf_v<typename _IsMemberFunctionPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
+: conditional_t<is_base_of_v<typename _IsMemberFunctionPointer<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
 _InvokerPMFObject,
-Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMFRefwrap, _InvokerPMFPointer>> {};
+conditional_t<is_specialization_v<remove_cv_ref_t<Type>, reference_wrapper>, _InvokerPMFRefwrap, _InvokerPMFPointer>> {};
 
 template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, false, true>     // pointer to member data
-: Conditional_t<IsBaseOf_v<typename _IsMemberObjectPointer<NoCVRef_t>::ClassType, RemoveReference_t<Type>>,
+: conditional_t<is_base_of_v<typename _IsMemberObjectPointer<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
 _InvokerPMDObject,
-Conditional_t<IsSpecialization_v<RemoveCVRef_t<Type>, ReferenceWrapper>, _InvokerPMDRefwrap, _InvokerPMDPointer>> {};
+conditional_t<is_specialization_v<remove_cv_ref_t<Type>, reference_wrapper>, _InvokerPMDRefwrap, _InvokerPMDPointer>> {};
 
 CUSTOM_DETAIL_END
 
@@ -114,106 +114,106 @@ constexpr auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
     return detail::_Invoker<Callable, Type>::invoke_impl(static_cast<Callable&&>(func), static_cast<Type&&>(arg1), static_cast<Args&&>(args)...);
 }
 
-// IsInvocable
+// is_invocable
 template<class Callable, class AlwaysVoid, class... Args>
-struct _IsInvocableImpl : custom::FalseType {};
+struct _IsInvocableImpl : custom::false_type {};
 
 template<class Callable, class... Args>
 struct _IsInvocableImpl<Callable,
-custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : custom::TrueType {};
+custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : custom::true_type {};
 
 template<class Callable, class... Args>
-struct IsInvocable : _IsInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
+struct is_invocable : _IsInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Callable, class... Args>
-constexpr bool IsInvocable_v = IsInvocable<Callable, Args...>::Value;
+constexpr bool is_invocable_v = is_invocable<Callable, Args...>::Value;
 
-// IsInvocableRet
+// is_invocable_ret
 template<class Ret, class Callable, class AlwaysVoid, class... Args>
-struct _IsInvocableRetImpl : custom::FalseType {};
+struct _IsInvocableRetImpl : custom::false_type {};
 
 template<class Ret, class Callable, class... Args>
 struct _IsInvocableRetImpl<Ret, Callable,
-custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
-custom::IsConvertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret> {};
+custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
+custom::is_convertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret> {};
 
 template<class Ret, class Callable, class... Args>
-struct IsInvocableRet : _IsInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
+struct is_invocable_ret : _IsInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Ret, class Callable, class... Args>
-constexpr bool IsInvocableRet_v = IsInvocableRet<Ret, Callable, Args...>::Value;
+constexpr bool is_invocable_ret_v = is_invocable_ret<Ret, Callable, Args...>::Value;
 
-// IsNothrowInvocable
+// is_nothrow_invocable
 template<class Callable, class AlwaysVoid, class... Args>
-struct _IsNothrowInvocableImpl : custom::FalseType {};
+struct _IsNothrowInvocableImpl : custom::false_type {};
 
 template<class Callable, class... Args>
 struct _IsNothrowInvocableImpl<Callable,
-custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : 
-custom::BoolConstant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))> {};
+custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : 
+custom::bool_constant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))> {};
 
 template<class Callable, class... Args>
-struct IsNothrowInvocable : _IsNothrowInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
+struct is_nothrow_invocable : _IsNothrowInvocableImpl<Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Callable, class... Args>
-constexpr bool IsNothrowInvocable_v = IsNothrowInvocable<Callable, Args...>::Value;
+constexpr bool is_nothrow_invocable_v = is_nothrow_invocable<Callable, Args...>::Value;
 
-// IsNothrowInvocableRet
+// is_nothrow_invocable_ret
 template<class Ret, class Callable, class AlwaysVoid, class... Args>
-struct _IsNothrowInvocableRetImpl : custom::FalseType {};
+struct _IsNothrowInvocableRetImpl : custom::false_type {};
 
 template<class Ret, class Callable, class... Args>
 struct _IsNothrowInvocableRetImpl<Ret, Callable,
-custom::Void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
-custom::Conjunction<custom::IsConvertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret>,
-                    custom::BoolConstant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))>> {};
+custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> :
+custom::conjunction<custom::is_convertible<decltype(custom::declval<Callable>()(custom::declval<Args>()...)), Ret>,
+                    custom::bool_constant<noexcept(custom::declval<Callable>()(custom::declval<Args>()...))>> {};
 
 template<class Ret, class Callable, class... Args>
-struct IsNothrowInvocableRet : _IsNothrowInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
+struct is_nothrow_invocable_ret : _IsNothrowInvocableRetImpl<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Ret, class Callable, class... Args>
-constexpr bool IsNothrowInvocableRet_v = IsNothrowInvocableRet<Ret, Callable, Args...>::Value;
+constexpr bool is_nothrow_invocable_ret_v = is_nothrow_invocable_ret<Ret, Callable, Args...>::Value;
 
 #pragma endregion invoke
 
 
 #pragma region ReferenceWrapper
 
-// ReferenceWrapper
+// reference_wrapper
 template<class Ty>
-void _RefwrapConstructorFunc(TypeIdentity_t<Ty&>) noexcept; // not defined
+void _RefwrapConstructorFunc(type_identity_t<Ty&>) noexcept; // not defined
 
 template<class Ty>
-void _RefwrapConstructorFunc(TypeIdentity_t<Ty&&>) = delete;
+void _RefwrapConstructorFunc(type_identity_t<Ty&&>) = delete;
 
 template<class Ty, class Base, class = void>
-struct _RefwrapHasConstructorFrom : FalseType {};
+struct _RefwrapHasConstructorFrom : false_type {};
 
 template<class Ty, class Base>
 struct _RefwrapHasConstructorFrom<Ty, Base,
-Void_t<decltype(_RefwrapConstructorFunc<Ty>(custom::declval<Base>()))>> : TrueType {};
+void_t<decltype(_RefwrapConstructorFunc<Ty>(custom::declval<Base>()))>> : true_type {};
 
 template<class Ty>
-class ReferenceWrapper      // ReferenceWrapper Template
+class reference_wrapper      // reference_wrapper Template
 {
 public:
-    static_assert(IsObject_v<Ty> || IsFunction_v<Ty>,
-                    "ReferenceWrapper<Ty> requires Ty to be an object type or a function type.");
+    static_assert(is_object_v<Ty> || is_function_v<Ty>,
+                    "reference_wrapper<Ty> requires Ty to be an object type or a function type.");
     
-    using Type = Ty;
+    using type = Ty;
 
 private:
-    Type* _ptr = nullptr;
+    type* _ptr = nullptr;
 
 public:
     // Constructors & Operators
 
     template<class Base,
-    EnableIf_t<Conjunction_v<
-                    Negation<IsSame<RemoveCVRef_t<Base>, ReferenceWrapper>>, 
-                    _RefwrapHasConstructorFrom<Type, Base>>, bool> = true>
-    constexpr ReferenceWrapper(Base&& val)
-    noexcept(noexcept(_RefwrapConstructorFunc<Type>(custom::declval<Base>()))) {
+    enable_if_t<conjunction_v<
+                    negation<is_same<remove_cv_ref_t<Base>, reference_wrapper>>, 
+                    _RefwrapHasConstructorFrom<type, Base>>, bool> = true>
+    constexpr reference_wrapper(Base&& val)
+    noexcept(noexcept(_RefwrapConstructorFunc<type>(custom::declval<Base>()))) {
         _ptr = &static_cast<Base&&>(val);
     }
 
@@ -224,57 +224,57 @@ public:
         return custom::invoke(*_ptr, static_cast<Args&&>(args)...);
     }
 
-    constexpr operator Type& () const noexcept {
+    constexpr operator type& () const noexcept {
         return *_ptr;
     }
 
 public:
     // Main functions
 
-    constexpr Type& get() const noexcept {
+    constexpr type& get() const noexcept {
         return *_ptr;
     }
-}; // END ReferenceWrapper
+}; // END reference_wrapper
 
-// ReferenceWrapper builders
+// reference_wrapper builders
 template<class Ty>
-ReferenceWrapper(Ty&) -> ReferenceWrapper<Ty>;  // deduce type
+reference_wrapper(Ty&) -> reference_wrapper<Ty>;  // deduce type
 
 template<class Ty>
-ReferenceWrapper<Ty> ref(Ty& val) noexcept {
-    return ReferenceWrapper<Ty>(val);
+reference_wrapper<Ty> ref(Ty& val) noexcept {
+    return reference_wrapper<Ty>(val);
 }
 
 template<class Ty>
 void ref(const Ty&&) = delete;
 
 template<class Ty>
-ReferenceWrapper<Ty> ref(ReferenceWrapper<Ty> val) noexcept {
+reference_wrapper<Ty> ref(reference_wrapper<Ty> val) noexcept {
     return val;
 }
 
 template<class Ty>
-ReferenceWrapper<const Ty> cref(const Ty& val) noexcept {
-    return ReferenceWrapper<const Ty>(val);
+reference_wrapper<const Ty> cref(const Ty& val) noexcept {
+    return reference_wrapper<const Ty>(val);
 }
 
 template<class Ty>
 void cref(const Ty&&) = delete;
 
 template<class Ty>
-ReferenceWrapper<const Ty> cref(ReferenceWrapper<Ty> val) noexcept {
+reference_wrapper<const Ty> cref(reference_wrapper<Ty> val) noexcept {
     return val;
 }
 
-// decay, then unwrap a ReferenceWrapper
+// decay, then unwrap a reference_wrapper
 template<class Ty>
-struct UnRefWrap { using Type = Ty; };
+struct unrefwrap { using type = Ty; };
 
 template<class Ty>
-struct UnRefWrap<ReferenceWrapper<Ty>> { using Type = Ty&; };
+struct unrefwrap<reference_wrapper<Ty>> { using type = Ty&; };
 
 template<class Ty>
-using UnRefWrap_t = typename UnRefWrap<Decay_t<Ty>>::Type;
+using unrefwrap_t = typename unrefwrap<decay_t<Ty>>::type;
 
 #pragma endregion ReferenceWrapper
 
@@ -311,7 +311,7 @@ size_t _fnv1a_append_range( const size_t val,
                             const Ty* const first,
                             const Ty* const last) noexcept {
 
-    static_assert(IsTrivial_v<Ty>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivial_v<Ty>, "Only trivial types can be directly hashed.");
 
     const auto firstAsUChar = reinterpret_cast<const unsigned char*>(first);
     const auto lastAsUChar  = reinterpret_cast<const unsigned char*>(last);
@@ -324,7 +324,7 @@ template<class Key>
 size_t _fnv1a_append_value( const size_t val,
                             const Key& key) noexcept {
 
-    static_assert(IsTrivial_v<Key>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivial_v<Key>, "Only trivial types can be directly hashed.");
     return _fnv1a_append_bytes(val, &reinterpret_cast<const unsigned char&>(key), sizeof(Key));
 }
 
@@ -339,7 +339,7 @@ template<class Key>
 size_t _hash_array_representation(  const Key* const first,
                                     const size_t count) noexcept {
 
-    static_assert(IsTrivial_v<Key>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivial_v<Key>, "Only trivial types can be directly hashed.");
     return _fnv1a_append_bytes(_FNVOffsetBasis, reinterpret_cast<const unsigned char*>(first), count * sizeof(Key));
 }
 
@@ -347,19 +347,19 @@ CUSTOM_DETAIL_END   // hash representation
 
 
 template<class Key>
-struct Hash;
+struct hash;
 
 template<class Key, bool Enabled>
-struct _BaseHashEnabler  // conditionally enabled Hash base
+struct _BaseHashEnabler  // conditionally enabled hash base
 {
     size_t operator()(const Key& key) const
-    noexcept(noexcept(Hash<Key>::compute_hash(key))) {
-        return Hash<Key>::compute_hash(key);
+    noexcept(noexcept(hash<Key>::compute_hash(key))) {
+        return hash<Key>::compute_hash(key);
     }
 };
 
 template<class Key>
-struct _BaseHashEnabler<Key, false>  // conditionally disabled Hash base
+struct _BaseHashEnabler<Key, false>  // conditionally disabled hash base
 {
     _BaseHashEnabler()                                      = delete;
     _BaseHashEnabler(const _BaseHashEnabler&)               = delete;
@@ -369,19 +369,19 @@ struct _BaseHashEnabler<Key, false>  // conditionally disabled Hash base
 };
 
 template<class Key>
-struct Hash : _BaseHashEnabler<Key, (!IsConst_v<Key> &&
-                                     !IsVolatile_v<Key> &&
-                                     (IsEnum_v<Key> || IsIntegral_v<Key> || IsPointer_v<Key>))>
+struct hash : _BaseHashEnabler<Key, (!is_const_v<Key> &&
+                                     !is_volatile_v<Key> &&
+                                     (is_enum_v<Key> || is_integral_v<Key> || is_pointer_v<Key>))>
 {
     static size_t compute_hash(const Key& key) noexcept {
         return detail::_hash_representation(key);
     }
-};  // END Hash
+};  // END hash
 
 
-// Hash specializations
+// hash specializations
 template<>
-struct Hash<float>
+struct hash<float>
 {
     size_t operator()(const float key) const noexcept {
         return detail::_hash_representation(key == 0.0F ? 0.0F : key);  // map -0 to 0
@@ -389,7 +389,7 @@ struct Hash<float>
 };
 
 template<>
-struct Hash<double>
+struct hash<double>
 {
     size_t operator()(const double key) const noexcept {
         return detail::_hash_representation(key == 0.0 ? 0.0 : key);    // map -0 to 0
@@ -397,7 +397,7 @@ struct Hash<double>
 };
 
 template<>
-struct Hash<long double>
+struct hash<long double>
 {
     size_t operator()(const long double key) const noexcept {
         return detail::_hash_representation(key == 0.0L ? 0.0L : key); // map -0 to 0
@@ -405,7 +405,7 @@ struct Hash<long double>
 };
 
 template<>
-struct Hash<std::nullptr_t>
+struct hash<std::nullptr_t>
 {
     size_t operator()(std::nullptr_t) const noexcept {
         void* voidPtr{};

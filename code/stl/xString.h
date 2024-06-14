@@ -1,8 +1,8 @@
 #pragma once
 #include "xCharTraits.h"
 #include "xMemory.h"
-#include "cIterator.h"
-#include "cAlgorithm.h"
+#include "c_iterator.h"
+#include "c_algorithm.h"
 
 
 CUSTOM_BEGIN
@@ -14,14 +14,14 @@ struct _BasicStringViewData
 {
 	using ValueType			= Type;
 	using DifferenceType	= ptrdiff_t;
-	using Reference			= ValueType&;
-	using ConstReference	= const ValueType&;
-	using Pointer			= ValueType*;
-	using ConstPointer		= const ValueType*;
+	using reference			= ValueType&;
+	using const_reference	= const ValueType&;
+	using pointer			= ValueType*;
+	using const_pointer		= const ValueType*;
 
 
-	ConstPointer _First		= nullptr;
-	ConstPointer _Last		= nullptr;
+	const_pointer _First		= nullptr;
+	const_pointer _Last		= nullptr;
 };  // END _BasicStringViewData
 
 
@@ -32,20 +32,20 @@ private:
 	using _Data				= BasicStrVData;
 
 public:
-	using IteratorCategory	= RandomAccessIteratorTag;
+	using iterator_category	= random_access_iterator_tag;
 	using ValueType			= typename _Data::ValueType;
 	using DifferenceType	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::ConstReference;
-	using Pointer			= typename _Data::ConstPointer;
+	using reference			= typename _Data::const_reference;
+	using pointer			= typename _Data::const_pointer;
 
-	Pointer _Ptr			= nullptr;
+	pointer _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
 
 public:
 
 	constexpr BasicStringViewIterator() noexcept = default;
 
-	constexpr explicit BasicStringViewIterator(Pointer ptr, const _Data* data) noexcept
+	constexpr explicit BasicStringViewIterator(pointer ptr, const _Data* data) noexcept
 		: _Ptr(ptr), _RefData(data) { /*Empty*/
 	}
 
@@ -97,17 +97,17 @@ public:
 		return temp;
 	}
 
-	constexpr Pointer operator->() const noexcept {
+	constexpr pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return _Ptr;
 	}
 
-	constexpr Reference operator*() const noexcept {
+	constexpr reference operator*() const noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return *_Ptr;
 	}
 
-	constexpr Reference operator[](const DifferenceType diff) const noexcept {
+	constexpr reference operator[](const DifferenceType diff) const noexcept {
 		return *(*this + diff);
 	}
 
@@ -137,24 +137,24 @@ private:
 	using _Data					= _BasicStringViewData<Type>;
 
 public:
-	static_assert(IsSame_v<Type, typename Traits::CharType>,
+	static_assert(is_same_v<Type, typename Traits::CharType>,
 		"The program is ill-formed if Traits::CharType is not the same type as Type.");
 
-	static_assert(!IsArray_v<Type>&& IsTrivial_v<Type>&& IsStandardLayout_v<Type>,
+	static_assert(!is_array_v<Type>&& IsTrivial_v<Type>&& IsStandardLayout_v<Type>,
 		"The character type of BasicStringView must be a non-array trivial standard-layout type.");
 
 	using TraitsType			= Traits;
 	using ValueType				= typename _Data::ValueType;
 	using DifferenceType		= typename _Data::DifferenceType;
-	using Reference				= typename _Data::Reference;
-	using ConstReference		= typename _Data::ConstReference;
-	using Pointer				= typename _Data::Pointer;
-	using ConstPointer			= typename _Data::ConstPointer;
+	using reference				= typename _Data::reference;
+	using const_reference		= typename _Data::const_reference;
+	using pointer				= typename _Data::pointer;
+	using const_pointer			= typename _Data::const_pointer;
 
-	using ConstIterator			= BasicStringViewIterator<_Data>;
-	using Iterator				= ConstIterator;		// only const
-	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;
-	using ReverseIterator		= ConstReverseIterator;	// only const
+	using const_iterator			= BasicStringViewIterator<_Data>;
+	using iterator				= const_iterator;		// only const
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
+	using reverse_iterator		= const_reverse_iterator;	// only const
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -168,12 +168,12 @@ public:
 	constexpr BasicStringView(const BasicStringView&) noexcept	= default;
 	constexpr BasicStringView(std::nullptr_t)					= delete;
 
-	constexpr BasicStringView(ConstPointer cstring) noexcept {
+	constexpr BasicStringView(const_pointer cstring) noexcept {
 		_data._First = cstring;
 		_data._Last = cstring + TraitsType::length(cstring);
 	}
 
-	constexpr BasicStringView(ConstPointer cstring, const size_t len) noexcept {
+	constexpr BasicStringView(const_pointer cstring, const size_t len) noexcept {
 		_data._First = cstring;
 		_data._Last = cstring + len;
 	}
@@ -183,7 +183,7 @@ public:
 
 	constexpr BasicStringView& operator=(const BasicStringView&) noexcept = default;
 
-	constexpr ConstReference operator[](const size_t index) const noexcept {
+	constexpr const_reference operator[](const size_t index) const noexcept {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
@@ -196,7 +196,7 @@ public:
 	}
 
 	constexpr size_t max_size() const noexcept {
-		return (custom::min)(static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+		return (custom::min)(static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
 			static_cast<size_t>(-1) / sizeof(ValueType));
 	}
 
@@ -204,23 +204,23 @@ public:
 		return (_data._First == _data._Last);
 	}
 
-	constexpr ConstPointer data() const noexcept {
+	constexpr const_pointer data() const noexcept {
 		return _data._First;
 	}
 
-	constexpr ConstReference at(const size_t index) const {						// Acces char at index with check (read only)
+	constexpr const_reference at(const size_t index) const {						// Acces char at index with check (read only)
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
-	constexpr ConstReference front() const noexcept {
+	constexpr const_reference front() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
-	constexpr ConstReference back() const noexcept {
+	constexpr const_reference back() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
@@ -273,16 +273,16 @@ public:
 		return _compare_with_cstring(pos, len, other._data._First, subpos, sublen);
 	}
 
-	constexpr int compare(ConstPointer cstring) const {
+	constexpr int compare(const_pointer cstring) const {
 		return _compare_with_cstring(0, size(), cstring, 0, TraitsType::length(cstring));
 	}
 
-	constexpr int compare(const size_t pos, const size_t len, ConstPointer cstring) const {
+	constexpr int compare(const size_t pos, const size_t len, const_pointer cstring) const {
 		return _compare_with_cstring(pos, len, cstring, 0, TraitsType::length(cstring));
 	}
 
 	constexpr int compare(const size_t pos, const size_t len,
-		ConstPointer cstring, const size_t cstringCount) const {
+		const_pointer cstring, const size_t cstringCount) const {
 
 		return _compare_with_cstring(pos, len, cstring, 0, cstringCount);
 	}
@@ -293,11 +293,11 @@ public:
 		return _find_cstring(other._data._First, pos, other.size());
 	}
 
-	constexpr size_t find(ConstPointer cstring, const size_t pos = 0) const noexcept {
+	constexpr size_t find(const_pointer cstring, const size_t pos = 0) const noexcept {
 		return _find_cstring(cstring, pos, TraitsType::length(cstring));
 	}
 
-	constexpr size_t find(ConstPointer cstring, size_t pos, size_t len) const noexcept {
+	constexpr size_t find(const_pointer cstring, size_t pos, size_t len) const noexcept {
 		return _find_cstring(cstring, pos, len);
 	}
 
@@ -311,11 +311,11 @@ public:
 		return _rfind_cstring(other._data._First, pos, other.size());
 	}
 
-	constexpr size_t rfind(ConstPointer cstring, size_t pos = npos) const {
+	constexpr size_t rfind(const_pointer cstring, size_t pos = npos) const {
 		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
 	}
 
-	constexpr size_t rfind(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t rfind(const_pointer cstring, size_t pos, size_t len) const {
 		return _rfind_cstring(cstring, pos, len);
 	}
 
@@ -329,7 +329,7 @@ public:
 		return find(other) != npos;
 	}
 
-	constexpr bool contains(ConstPointer cstring) const noexcept {
+	constexpr bool contains(const_pointer cstring) const noexcept {
 		return find(cstring) != npos;
 	}
 
@@ -352,7 +352,7 @@ public:
 		return !empty() && TraitsType::eq(front(), chr);
 	}
 
-	constexpr bool starts_with(ConstPointer cstring) const noexcept {
+	constexpr bool starts_with(const_pointer cstring) const noexcept {
 		return starts_with(BasicStringView(cstring));
 	}
 	// END Starts With
@@ -371,44 +371,44 @@ public:
 		return !empty() && TraitsType::eq(back(), chr);
 	}
 
-	constexpr bool ends_with(ConstPointer cstring) const noexcept {
+	constexpr bool ends_with(const_pointer cstring) const noexcept {
 		return ends_with(BasicStringView(cstring));
 	}
 	// END Ends With
 
 public:
-	// Iterator specific
+	// iterator specific
 
-	constexpr Iterator begin() noexcept {
-		return Iterator(_data._First, &_data);
+	constexpr iterator begin() noexcept {
+		return iterator(_data._First, &_data);
 	}
 
-	constexpr ConstIterator begin() const noexcept {
-		return ConstIterator(_data._First, &_data);
+	constexpr const_iterator begin() const noexcept {
+		return const_iterator(_data._First, &_data);
 	}
 
-	constexpr ReverseIterator rbegin() noexcept {
-		return ReverseIterator(end());
+	constexpr reverse_iterator rbegin() noexcept {
+		return reverse_iterator(end());
 	}
 
-	constexpr ConstReverseIterator rbegin() const noexcept {
-		return ConstReverseIterator(end());
+	constexpr const_reverse_iterator rbegin() const noexcept {
+		return const_reverse_iterator(end());
 	}
 
-	constexpr Iterator end() noexcept {
-		return Iterator(_data._Last, &_data);
+	constexpr iterator end() noexcept {
+		return iterator(_data._Last, &_data);
 	}
 
-	constexpr ConstIterator end() const noexcept {
-		return ConstIterator(_data._Last, &_data);
+	constexpr const_iterator end() const noexcept {
+		return const_iterator(_data._Last, &_data);
 	}
 
-	constexpr ReverseIterator rend() noexcept {
-		return ReverseIterator(begin());
+	constexpr reverse_iterator rend() noexcept {
+		return reverse_iterator(begin());
 	}
 
-	constexpr ConstReverseIterator rend() const noexcept {
-		return ConstReverseIterator(begin());
+	constexpr const_reverse_iterator rend() const noexcept {
+		return const_reverse_iterator(begin());
 	}
 
 private:
@@ -419,7 +419,7 @@ private:
 		return (custom::min)(len, size() - pos);
 	}
 
-	constexpr int _compare_with_cstring(size_t pos, size_t len, ConstPointer cstring, size_t subpos, size_t sublen) const {
+	constexpr int _compare_with_cstring(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
 		if (pos + len > size() || subpos + sublen > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
@@ -427,14 +427,14 @@ private:
 			cstring, subpos, sublen);
 	}
 
-	constexpr size_t _find_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t _find_cstring(const_pointer cstring, size_t pos, size_t len) const {
 		if (pos > size() || len > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
 		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
 	}
 
-	constexpr size_t _rfind_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t _rfind_cstring(const_pointer cstring, size_t pos, size_t len) const {
 		if (len > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length.");
 
@@ -465,19 +465,19 @@ constexpr bool operator!=(const BasicStringView<Type, Traits>& left,
 template<class Type, class Alloc>
 struct _BasicStringData
 {
-	using _AllocTraits		= AllocatorTraits<Alloc>;
+	using _AllocTraits		= allocator_traits<Alloc>;
 
 	using ValueType			= typename _AllocTraits::ValueType;
 	using DifferenceType	= typename _AllocTraits::DifferenceType;
-	using Reference			= typename _AllocTraits::Reference;
-	using ConstReference	= typename _AllocTraits::ConstReference;
-	using Pointer			= typename _AllocTraits::Pointer;
-	using ConstPointer		= typename _AllocTraits::ConstPointer;
+	using reference			= typename _AllocTraits::reference;
+	using const_reference	= typename _AllocTraits::const_reference;
+	using pointer			= typename _AllocTraits::pointer;
+	using const_pointer		= typename _AllocTraits::const_pointer;
 
 
-	Pointer _First			= nullptr;			// Actual container array
-	Pointer _Last			= nullptr;			// Pointer to end
-	Pointer _Final			= nullptr;			// Pointer to capacity end
+	pointer _First			= nullptr;			// Actual container array
+	pointer _Last			= nullptr;			// pointer to end
+	pointer _Final			= nullptr;			// pointer to capacity end
 };	// END _BasicStringData
 
 
@@ -488,11 +488,11 @@ private:
 	using _Data				= BasicStrData;
 
 public:
-    using IteratorCategory 	= RandomAccessIteratorTag;
+    using iterator_category 	= random_access_iterator_tag;
 	using ValueType 		= typename _Data::ValueType;
 	using DifferenceType	= typename _Data::DifferenceType;
-	using Reference 		= typename _Data::ConstReference;
-	using Pointer			= typename _Data::ConstPointer;
+	using reference 		= typename _Data::const_reference;
+	using pointer			= typename _Data::const_pointer;
 
 	ValueType* _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -552,17 +552,17 @@ public:
 		return temp;
 	}
 
-	constexpr Pointer operator->() const noexcept {
+	constexpr pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
-		return PointerTraits<Pointer>::pointer_to(**this);
+		return pointer_traits<pointer>::pointer_to(**this);
 	}
 
-	constexpr Reference operator*() const noexcept {
+	constexpr reference operator*() const noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator.");
 		return *_Ptr;
 	}
 
-	constexpr Reference operator[](const DifferenceType diff) const noexcept {
+	constexpr reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -596,18 +596,18 @@ public:
 
 
 template<class BasicStrData>
-class BasicStringIterator : public BasicStringConstIterator<BasicStrData>		// BasicString Iterator
+class BasicStringIterator : public BasicStringConstIterator<BasicStrData>		// BasicString iterator
 {
 private:
 	using _Base				= BasicStringConstIterator<BasicStrData>;
 	using _Data				= BasicStrData;
 	
 public:
-    using IteratorCategory 	= RandomAccessIteratorTag;
+    using iterator_category 	= random_access_iterator_tag;
 	using ValueType 		= typename _Data::ValueType;
 	using DifferenceType	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::Reference;
-	using Pointer			= typename _Data::Pointer;
+	using reference			= typename _Data::reference;
+	using pointer			= typename _Data::pointer;
 
 public:
 
@@ -660,21 +660,21 @@ public:
 		return temp;
 	}
 
-	constexpr Pointer operator->() const noexcept {
-		return const_cast<Pointer>(_Base::operator->());
+	constexpr pointer operator->() const noexcept {
+		return const_cast<pointer>(_Base::operator->());
 	}
 
-	constexpr Reference operator*() const noexcept {
-		return const_cast<Reference>(_Base::operator*());
+	constexpr reference operator*() const noexcept {
+		return const_cast<reference>(_Base::operator*());
 	}
 
-	constexpr Reference operator[](const DifferenceType diff) const noexcept {
-        return const_cast<Reference>(_Base::operator[](diff));
+	constexpr reference operator[](const DifferenceType diff) const noexcept {
+        return const_cast<reference>(_Base::operator[](diff));
     }
 }; // END BasicStringIterator
 
 
-template<class Type, class Alloc = custom::Allocator<Type>, class Traits = custom::CharTraits<Type>>
+template<class Type, class Alloc = custom::allocator<Type>, class Traits = custom::CharTraits<Type>>
 class BasicString		// null-terminated array of elements
 {
 private:
@@ -682,28 +682,28 @@ private:
 	using _AllocTraits			= typename _Data::_AllocTraits;
 
 public:
-	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
-	static_assert(!IsArray_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
+	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(!is_array_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
 					"The character type of BasicString must be a non-array trivial standard-layout type.");
 
 	using TraitsType			= Traits;
 	using ValueType				= typename _Data::ValueType;
 	using DifferenceType		= typename _Data::DifferenceType;
-	using Reference				= typename _Data::Reference;
-	using ConstReference		= typename _Data::ConstReference;
-	using Pointer				= typename _Data::Pointer;
-	using ConstPointer			= typename _Data::ConstPointer;
-	using AllocatorType			= Alloc;
+	using reference				= typename _Data::reference;
+	using const_reference		= typename _Data::const_reference;
+	using pointer				= typename _Data::pointer;
+	using const_pointer			= typename _Data::const_pointer;
+	using allocator_type			= Alloc;
 
-	using Iterator				= BasicStringIterator<_Data>;
-	using ConstIterator			= BasicStringConstIterator<_Data>;
-	using ReverseIterator		= custom::ReverseIterator<Iterator>;
-	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;
+	using iterator				= BasicStringIterator<_Data>;
+	using const_iterator			= BasicStringConstIterator<_Data>;
+	using reverse_iterator		= custom::reverse_iterator<iterator>;
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 	template<class StringViewType>
-	using IsStringView = 	EnableIf_t<Conjunction_v<
+	using IsStringView = 	enable_if_t<Conjunction_v<
 										IsConvertible<const StringViewType&, BasicStringView<Type, Traits>>,
-										Negation<IsConvertible<const StringViewType&, const Type*>>>,
+										negation<IsConvertible<const StringViewType&, const Type*>>>,
 							bool>;
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
@@ -712,7 +712,7 @@ private:
 	static constexpr size_t _DEFAULT_CAPACITY = 15;
 
 	_Data _data;
-	AllocatorType _alloc;
+	allocator_type _alloc;
 
 public:
 	// Constructors
@@ -721,7 +721,7 @@ public:
 		_initialize_from_cstring(nullptr);
 	}
 
-	constexpr BasicString(ConstPointer cstring) {
+	constexpr BasicString(const_pointer cstring) {
 		_initialize_from_cstring(cstring);
 	}
 
@@ -754,12 +754,12 @@ public:
         return BasicStringView<ValueType, TraitsType> {_data._First, size()};
     }
 
-	constexpr ConstReference operator[](const size_t index) const noexcept{
+	constexpr const_reference operator[](const size_t index) const noexcept{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
-	constexpr Reference operator[](const size_t index) noexcept {
+	constexpr reference operator[](const size_t index) noexcept {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
@@ -789,7 +789,7 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& operator+=(ConstPointer cstring) {
+	constexpr BasicString& operator+=(const_pointer cstring) {
 		append(cstring);
 		return *this;
 	}
@@ -807,7 +807,7 @@ public:
 			_data._Last = _data._First + newCapacity;
 
 		size_t newSize		= size();
-		Pointer newString 	= _alloc.allocate(newCapacity + 1);
+		pointer newString 	= _alloc.allocate(newCapacity + 1);
 		(void)TraitsType::copy(newString, _data._First, size());
 		_clean_up_string();
 
@@ -836,7 +836,7 @@ public:
 	}
 
 	constexpr size_t max_size() const noexcept {
-		return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+		return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
 								_AllocTraits::max_size(_alloc));
 	}
 
@@ -853,48 +853,48 @@ public:
 		_data._First[0] = TraitsType::NULLCHR;
 	}
 
-	constexpr ConstPointer data() const noexcept {
+	constexpr const_pointer data() const noexcept {
 		return _data._First;
 	}
 
-	constexpr Pointer data() noexcept {
+	constexpr pointer data() noexcept {
 		return _data._First;
 	}
 
-	constexpr ConstPointer c_str() const noexcept {
+	constexpr const_pointer c_str() const noexcept {
 		return _data._First;
 	}
 
-	constexpr ConstReference at(const size_t index) const {						// Acces char at index with check (read only)
+	constexpr const_reference at(const size_t index) const {						// Acces char at index with check (read only)
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
-	constexpr Reference at(const size_t index) {									// Acces char at index with check
+	constexpr reference at(const size_t index) {									// Acces char at index with check
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
-	constexpr ConstReference front() const {
+	constexpr const_reference front() const {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
-	constexpr Reference front() {													// Get the value of the first component
+	constexpr reference front() {													// Get the value of the first component
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
-	constexpr ConstReference back() const {
+	constexpr const_reference back() const {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 
-	constexpr Reference back() {													// Get the value of the last component
+	constexpr reference back() {													// Get the value of the last component
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
@@ -931,12 +931,12 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& append(ConstPointer cstring) {									// Appends a copy of a c-string.
+	constexpr BasicString& append(const_pointer cstring) {									// Appends a copy of a c-string.
 		_insert_from_cstring(size(), cstring, 0, TraitsType::length(cstring));
 		return *this;
 	}
 
-	constexpr BasicString& append(ConstPointer cstring, size_t nchar) {						// Appends a copy of the first n characters in the c-string
+	constexpr BasicString& append(const_pointer cstring, size_t nchar) {						// Appends a copy of the first n characters in the c-string
 		_insert_from_cstring(size(), cstring, 0, nchar);
 		return *this;
 	}
@@ -958,12 +958,12 @@ public:
 		return *this;	
 	}
 
-	constexpr BasicString& insert(size_t pos, ConstPointer cstring) {
+	constexpr BasicString& insert(size_t pos, const_pointer cstring) {
 		_insert_from_cstring(pos, cstring, 0, TraitsType::length(cstring));
 		return *this;
 	}
 
-	constexpr BasicString& insert(size_t pos, ConstPointer cstring, size_t len) {
+	constexpr BasicString& insert(size_t pos, const_pointer cstring, size_t len) {
 		_insert_from_cstring(pos, cstring, 0, len);
 		return *this;
 	}
@@ -973,21 +973,21 @@ public:
 		return *this;
 	}
 
-	constexpr Iterator insert(ConstIterator where, ValueType chr) {
+	constexpr iterator insert(const_iterator where, ValueType chr) {
 		size_t pos = where.get_index();
 		_insert_char(pos, 1, chr);
 
-		return Iterator(_data._First + pos, &_data);
+		return iterator(_data._First + pos, &_data);
 	}
 
-	constexpr Iterator insert(ConstIterator where, size_t nchar, ValueType chr) {
+	constexpr iterator insert(const_iterator where, size_t nchar, ValueType chr) {
 		size_t pos = where.get_index();
 		_insert_char(pos, nchar, chr);
 
-		return Iterator(_data._First + pos, &_data);
+		return iterator(_data._First + pos, &_data);
 	}
 
-	constexpr Iterator insert(ConstIterator where, ConstIterator first, ConstIterator last) {
+	constexpr iterator insert(const_iterator where, const_iterator first, const_iterator last) {
 		if (where._RefData->_First == first._RefData->_First ||
 			first._RefData->_First != last._RefData->_First)	// Check if pos string != first/last string
 			throw std::domain_error("BasicString provided by first and last must be the same, but different from the one provided by where");
@@ -995,10 +995,10 @@ public:
 		size_t pos 				= where.get_index();
 		size_t posFrom 			= first.get_index();
 		size_t posTo 			= last.get_index();
-		ConstPointer cstring 	= first._RefData->_First;
+		const_pointer cstring 	= first._RefData->_First;
 		_insert_from_cstring(pos, cstring, posFrom, posTo - posFrom);
 
-		return Iterator(_data._First + pos, &_data);
+		return iterator(_data._First + pos, &_data);
 	}
 // end Insert
 
@@ -1008,17 +1008,17 @@ public:
 		return *this;
 	}
 
-	constexpr Iterator erase(ConstIterator where) {
+	constexpr iterator erase(const_iterator where) {
 		if (where.is_end())
 			throw std::out_of_range("BasicString erase iterator outside range.");
 
 		size_t pos = where.get_index();
 		_remove_from_cstring(pos, 1);
 
-		return Iterator(_data._First + pos, &_data);
+		return iterator(_data._First + pos, &_data);
 	}
 
-	constexpr Iterator erase(ConstIterator first, ConstIterator last) {
+	constexpr iterator erase(const_iterator first, const_iterator last) {
 		if (first.is_end())
 			throw std::out_of_range("BasicString erase iterator outside range.");
 
@@ -1026,7 +1026,7 @@ public:
 		size_t posTo	= last.get_index();
 		_remove_from_cstring(posFrom, posTo - posFrom);
 
-		return Iterator(_data._First + posFrom, &_data);
+		return iterator(_data._First + posFrom, &_data);
 	}
 // end Erase
 
@@ -1039,11 +1039,11 @@ public:
 		return _compare_with_cstring(pos, len, string._data._First, subpos, sublen);
 	}
 
-	constexpr int compare(ConstPointer cstring) const {
+	constexpr int compare(const_pointer cstring) const {
 		return _compare_with_cstring(0, size(), cstring, 0, TraitsType::length(cstring));
 	}
 
-	constexpr int compare(size_t pos, size_t len, ConstPointer cstring, size_t subpos, size_t sublen) const {
+	constexpr int compare(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
 		return _compare_with_cstring(pos, len, cstring, subpos, sublen);
 	}
 // end Compare
@@ -1053,11 +1053,11 @@ public:
 		return _find_cstring(string._data._First, pos, string.size());
 	}
 
-	constexpr size_t find(ConstPointer cstring, size_t pos = 0) const {
+	constexpr size_t find(const_pointer cstring, size_t pos = 0) const {
 		return _find_cstring(cstring, pos, TraitsType::length(cstring));
 	}
 
-	constexpr size_t find(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t find(const_pointer cstring, size_t pos, size_t len) const {
 		return _find_cstring(cstring, pos, len);
 	}
 
@@ -1071,11 +1071,11 @@ public:
 		return _rfind_cstring(string._data._First, pos, string.size());
 	}
 
-	constexpr size_t rfind(ConstPointer cstring, size_t pos = npos) const {
+	constexpr size_t rfind(const_pointer cstring, size_t pos = npos) const {
 		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
 	}
 
-	constexpr size_t rfind(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t rfind(const_pointer cstring, size_t pos, size_t len) const {
 		return _rfind_cstring(cstring, pos, len);
 	}
 
@@ -1089,7 +1089,7 @@ public:
         return find(sv.data()) != npos;
     }
 
-    constexpr bool contains(ConstPointer cstring) const noexcept {
+    constexpr bool contains(const_pointer cstring) const noexcept {
         return find(cstring) != npos;
     }
 
@@ -1107,7 +1107,7 @@ public:
         return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(chr);
     }
 
-    constexpr bool starts_with(ConstPointer cstring) const noexcept {
+    constexpr bool starts_with(const_pointer cstring) const noexcept {
         return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(cstring);
     }
 // END Starts With
@@ -1121,7 +1121,7 @@ public:
         return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(chr);
     }
 
-    constexpr bool ends_with(ConstPointer cstring) const noexcept {
+    constexpr bool ends_with(const_pointer cstring) const noexcept {
         return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(cstring);
     }
 // END Ends With
@@ -1135,38 +1135,38 @@ public:
 	}
 
 public:
-	// Iterator specific
+	// iterator specific
 
-	constexpr Iterator begin() noexcept {
-		return Iterator(_data._First, &_data);
+	constexpr iterator begin() noexcept {
+		return iterator(_data._First, &_data);
 	}
 
-	constexpr ConstIterator begin() const noexcept {
-		return ConstIterator(_data._First, &_data);
+	constexpr const_iterator begin() const noexcept {
+		return const_iterator(_data._First, &_data);
 	}
 
-	constexpr ReverseIterator rbegin() noexcept {
-		return ReverseIterator(end());
+	constexpr reverse_iterator rbegin() noexcept {
+		return reverse_iterator(end());
 	}
 
-	constexpr ConstReverseIterator rbegin() const noexcept {
-		return ConstReverseIterator(end());
+	constexpr const_reverse_iterator rbegin() const noexcept {
+		return const_reverse_iterator(end());
 	}
 
-	constexpr Iterator end() noexcept {
-		return Iterator(_data._Last, &_data);
+	constexpr iterator end() noexcept {
+		return iterator(_data._Last, &_data);
 	}
 
-	constexpr ConstIterator end() const noexcept {
-		return ConstIterator(_data._Last, &_data);
+	constexpr const_iterator end() const noexcept {
+		return const_iterator(_data._Last, &_data);
 	}
 
-	constexpr ReverseIterator rend() noexcept {
-		return ReverseIterator(begin());
+	constexpr reverse_iterator rend() noexcept {
+		return reverse_iterator(begin());
 	}
 
-	constexpr ConstReverseIterator rend() const noexcept {
-		return ConstReverseIterator(begin());
+	constexpr const_reverse_iterator rend() const noexcept {
+		return const_reverse_iterator(begin());
 	}
 
 private:
@@ -1179,7 +1179,7 @@ private:
 		_data._Last[0]	= TraitsType::NULLCHR;
 	}
 
-	constexpr void _initialize_from_cstring(ConstPointer cstring) {
+	constexpr void _initialize_from_cstring(const_pointer cstring) {
 		if (cstring == nullptr)
 			_alloc_empty(_DEFAULT_CAPACITY);
 		else
@@ -1225,7 +1225,7 @@ private:
 		other._initialize_from_cstring(nullptr);
 	}
 
-	constexpr void _insert_from_cstring(size_t pos, ConstPointer cstring, size_t subpos, size_t sublen) {
+	constexpr void _insert_from_cstring(size_t pos, const_pointer cstring, size_t subpos, size_t sublen) {
 		if (pos > size() || subpos + sublen > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
@@ -1262,7 +1262,7 @@ private:
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
 
-	constexpr int _compare_with_cstring(size_t pos, size_t len, ConstPointer cstring, size_t subpos, size_t sublen) const {
+	constexpr int _compare_with_cstring(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
 		if (pos + len > size() || subpos + sublen > Traits::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
@@ -1270,14 +1270,14 @@ private:
 															cstring, subpos, sublen);
 	}
 
-	constexpr size_t _find_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t _find_cstring(const_pointer cstring, size_t pos, size_t len) const {
 		if (pos > size() || len > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
 		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
 	}
 
-	constexpr size_t _rfind_cstring(ConstPointer cstring, size_t pos, size_t len) const {
+	constexpr size_t _rfind_cstring(const_pointer cstring, size_t pos, size_t len) const {
 		if (len > TraitsType::length(cstring))
 			throw std::out_of_range("Invalid length.");
 

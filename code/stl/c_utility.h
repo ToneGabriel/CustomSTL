@@ -1,29 +1,29 @@
 #pragma once
-#include "cTypeTraits.h"
+#include "c_type_traits.h"
 
 
 CUSTOM_BEGIN
 
 // move
 template<class Ty>
-constexpr RemoveReference_t<Ty>&& move(Ty&& val) noexcept { 
-    return static_cast<RemoveReference_t<Ty>&&>(val);
+constexpr remove_reference_t<Ty>&& move(Ty&& val) noexcept { 
+    return static_cast<remove_reference_t<Ty>&&>(val);
 }
 
 // forward
 template<class Ty>
-constexpr Ty&& forward(RemoveReference_t<Ty>& val) noexcept {
+constexpr Ty&& forward(remove_reference_t<Ty>& val) noexcept {
     return static_cast<Ty&&>(val);
 }
 
 template<class Ty>
-constexpr Ty&& forward(RemoveReference_t<Ty>&& val) noexcept {
-    static_assert(!IsLvalueReference_v<Ty>, "bad forward call");
+constexpr Ty&& forward(remove_reference_t<Ty>&& val) noexcept {
+    static_assert(!is_lvalue_reference_v<Ty>, "bad forward call");
     return static_cast<Ty&&>(val);
 }
 
 template<class Ty,
-EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowMoveAssignable_v<Ty>, bool>>
+enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_move_assignable_v<Ty>, bool>>
 constexpr void swap(Ty& first, Ty& second) noexcept {
     Ty temp = custom::move(first);
     first   = custom::move(second);
@@ -31,8 +31,8 @@ constexpr void swap(Ty& first, Ty& second) noexcept {
 }
 
 template<class Ty, size_t Size,
-EnableIf_t<IsSwappable<Ty>::Value, bool>>
-constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(IsNothrowSwappable<Ty>::Value) {
+enable_if_t<is_swappable<Ty>::Value, bool>>
+constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swappable<Ty>::Value) {
     if (&left != &right)
     {
         Ty* first1 = left;
@@ -45,7 +45,7 @@ constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(IsNothrowSwappab
 }
 
 template<class Ty, class Other = Ty,
-EnableIf_t<IsNothrowMoveConstructible_v<Ty> && IsNothrowAssignable_v<Ty&, Other>, bool> = true>
+enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_assignable_v<Ty&, Other>, bool> = true>
 constexpr Ty exchange(Ty& val, Other&& newVal) noexcept {
     // assign newVal to val, return previous val
     Ty old  = custom::move(val);

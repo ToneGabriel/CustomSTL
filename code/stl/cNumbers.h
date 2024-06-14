@@ -1,5 +1,5 @@
 #pragma once
-#include "cTypeTraits.h"
+#include "c_type_traits.h"
 
 CUSTOM_BEGIN
 
@@ -24,59 +24,59 @@ namespace numbers
 // Templates ============================
 
     // e
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty e_v = Ty(E_LONG);
 
     // log_2 e
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty log2e_v = Ty(LOG2E_LONG);
 
     // log_10 e
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty log10e_v = Ty(LOG10E_LONG);
 
     // pi
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty pi_v = Ty(PI_LONG);
 
     // 1/pi
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty inv_pi_v = Ty(INV_PI_LONG);
 
     // 1/sqrt(pi)
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty inv_sqrtpi_v = Ty(INV_SQRT_PI_LONG);
 
     // pi/2
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty pi_by_2_v = Ty(PI_BY_2_LONG);
 
     // log_e 2
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty ln2_v = Ty(LN2_LONG);
 
     // log_e 10
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty ln10_v = Ty(LN10_LONG);
 
     // sqrt(2)
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty sqrt2_v = Ty(SQRT2_LONG);
 
     // sqrt(3)
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty sqrt3_v = Ty(SQRT3_LONG);
 
     // 1/sqrt(3)
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty inv_sqrt3_v = Ty(INV_SQRT3_LONG);
 
     // The Euler-Mascheroni constant
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty egamma_v = Ty(EGAMMA_LONG);
 
     // The golden ratio, (1+sqrt(5))/2
-    template<class Ty, EnableIf_t<IsFloatingPoint_v<Ty>, bool> = true>
+    template<class Ty, enable_if_t<is_floating_point_v<Ty>, bool> = true>
     inline constexpr Ty phi_v = Ty(PHI_LONG);
 
 // Double Specialization ============================

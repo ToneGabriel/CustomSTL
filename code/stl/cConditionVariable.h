@@ -16,7 +16,7 @@ enum class CVStatus
 class ConditionVariable         // Condition variable adaptor for pthread_cond_t
 {
 public:
-    using NativeHandleType = pthread_cond_t;
+    using native_handle_type = pthread_cond_t;
 
 private:
     pthread_cond_t _conditionVar;
@@ -56,8 +56,8 @@ public:
             pthread_cond_wait(&_conditionVar, &lock.mutex()->_mutex);
     }
 
-    template<class Clock, class Duration>
-    CVStatus wait_until(UniqueLock<Mutex>& lock, const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+    template<class Clock, class duration>
+    CVStatus wait_until(UniqueLock<Mutex>& lock, const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
@@ -71,8 +71,8 @@ public:
         return ((Clock::now() < absoluteTime) ? CVStatus::NoTimeout : CVStatus::Timeout);
     }
 
-    template<class Clock, class Duration, class Predicate>
-    bool wait_until(UniqueLock<Mutex>& lock, const custom::chrono::TimePoint<Clock, Duration>& absoluteTime, Predicate pred) {
+    template<class Clock, class duration, class Predicate>
+    bool wait_until(UniqueLock<Mutex>& lock, const custom::chrono::time_point<Clock, duration>& absoluteTime, Predicate pred) {
         while (!pred())
             if (wait_until(lock, absoluteTime) == CVStatus::Timeout)
                 return pred();
@@ -81,21 +81,21 @@ public:
     }
     
     template<class Rep, class Period>
-    CVStatus wait_for(UniqueLock<Mutex>& lock, const custom::chrono::Duration<Rep, Period>& relativeTime) {
+    CVStatus wait_for(UniqueLock<Mutex>& lock, const custom::chrono::duration<Rep, Period>& relativeTime) {
 	    return wait_until(  lock,
-                            custom::chrono::SteadyClock::now() + 
-                            custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
+                            custom::chrono::steady_clock::now() + 
+                            custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime));
     }
 
     template<class Rep, class Period, class Predicate>
-    bool wait_for(UniqueLock<Mutex>& lock, const custom::chrono::Duration<Rep, Period>& relativeTime, Predicate pred) {
+    bool wait_for(UniqueLock<Mutex>& lock, const custom::chrono::duration<Rep, Period>& relativeTime, Predicate pred) {
 	    return wait_until(  lock,
-                            custom::chrono::SteadyClock::now() + 
-                            custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime),
+                            custom::chrono::steady_clock::now() + 
+                            custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime),
                             pred);
     }
 
-    NativeHandleType native_handle() {
+    native_handle_type native_handle() {
         return _conditionVar;
     }
 }; // END ConditionVariable
@@ -148,8 +148,8 @@ public:
             wait(lock);
     }
 
-    template<class Lock, class Clock, class Duration>
-    CVStatus wait_until(Lock& lock, const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+    template<class Lock, class Clock, class duration>
+    CVStatus wait_until(Lock& lock, const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         SharedPtr<Mutex> auxMutexPtr = _mutexPtr;
         UniqueLock<Mutex> unqLock(*auxMutexPtr);
         UnlockGuard<Lock> unlock(lock);
@@ -158,8 +158,8 @@ public:
 	    return _cond.wait_until(unqLock2, absoluteTime);
     }
 
-    template<class Lock, class Clock, class Duration, class Predicate>
-    bool wait_until(Lock& lock, const custom::chrono::TimePoint<Clock, Duration>& absoluteTime, Predicate pred) {
+    template<class Lock, class Clock, class duration, class Predicate>
+    bool wait_until(Lock& lock, const custom::chrono::time_point<Clock, duration>& absoluteTime, Predicate pred) {
         while (!pred())
             if (wait_until(lock, absoluteTime) == CVStatus::Timeout)
                 return pred();
@@ -168,17 +168,17 @@ public:
     }
 
     template<class Lock, class Rep, class Period>
-    CVStatus wait_for(Lock& lock, const custom::chrono::Duration<Rep, Period>& relativeTime) {
+    CVStatus wait_for(Lock& lock, const custom::chrono::duration<Rep, Period>& relativeTime) {
 	    return wait_until(  lock,
-                            custom::chrono::SteadyClock::now() + 
-                            custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
+                            custom::chrono::steady_clock::now() + 
+                            custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime));
     }
 
     template<class Lock, class Rep, class Period, class Predicate>
-    bool wait_for(Lock& lock, const custom::chrono::Duration<Rep, Period>& relativeTime, Predicate pred) {
+    bool wait_for(Lock& lock, const custom::chrono::duration<Rep, Period>& relativeTime, Predicate pred) {
 	    return wait_until(  lock,
-                            custom::chrono::SteadyClock::now() + 
-                            custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime),
+                            custom::chrono::steady_clock::now() + 
+                            custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime),
                             pred);
     }
 }; // END ConditionVariableAny
@@ -196,7 +196,7 @@ struct UINTIsZero   // used as predicate in TimedMutex/RecursiveTimedMutex::try_
 class TimedMutex
 {
 public:
-    using NativeHandleType = typename Mutex::NativeHandleType;
+    using native_handle_type = typename Mutex::native_handle_type;
 
 private:
     Mutex _mutex;
@@ -245,8 +245,8 @@ public:
         _conditionVar.notify_one();
     }
 
-    template<class Clock, class Duration>
-    bool try_lock_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
+    template<class Clock, class duration>
+    bool try_lock_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         UniqueLock<Mutex> lock(_mutex);
 
         if (_conditionVar.wait_until(lock, absoluteTime, UINTIsZero{_locked}) == false)
@@ -257,12 +257,12 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
-        return try_lock_until(  custom::chrono::SteadyClock::now() + 
-                                custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+        return try_lock_until(  custom::chrono::steady_clock::now() + 
+                                custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime));
     }
 
-    NativeHandleType native_handle() {
+    native_handle_type native_handle() {
         return _mutex.native_handle();
     }
 }; // END TimedMutex
@@ -271,13 +271,13 @@ public:
 class RecursiveTimedMutex
 {
 public:
-    using NativeHandleType = typename Mutex::NativeHandleType;
+    using native_handle_type = typename Mutex::native_handle_type;
 
 private:
     Mutex _mutex;
     ConditionVariable _conditionVar;
     unsigned int _locked;
-    Thread::ID _owner;
+    thread::id _owner;
 
 public:
     // Constructors & Operators
@@ -292,7 +292,7 @@ public:
     // Main functions
 
     void lock() {
-        const Thread::ID tid = custom::this_thread::get_id();
+        const thread::id tid = custom::this_thread::get_id();
         UniqueLock<Mutex> lock(_mutex);
 
         if (tid == _owner)
@@ -311,7 +311,7 @@ public:
     }
 
     bool try_lock() noexcept {
-        const Thread::ID tid = custom::this_thread::get_id();
+        const thread::id tid = custom::this_thread::get_id();
         LockGuard<Mutex> lock(_mutex);
 
         if (tid == _owner)
@@ -340,7 +340,7 @@ public:
             if (_locked == 0)
             {
                 notify = true;
-                _owner  = Thread::ID();
+                _owner  = thread::id();
             }
         }
 
@@ -348,9 +348,9 @@ public:
             _conditionVar.notify_one();
     }
 
-    template<class Clock, class Duration>
-    bool try_lock_until(const custom::chrono::TimePoint<Clock, Duration>& absoluteTime) {
-        const Thread::ID tid = custom::this_thread::get_id();
+    template<class Clock, class duration>
+    bool try_lock_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
+        const thread::id tid = custom::this_thread::get_id();
         UniqueLock<Mutex> lock(_mutex);
 
         if (tid == _owner)
@@ -371,12 +371,12 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::Duration<Rep, Period>& relativeTime) {
-        return try_lock_until(  custom::chrono::SteadyClock::now() + 
-                                custom::chrono::ceil<typename custom::chrono::SteadyClock::Duration>(relativeTime));
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+        return try_lock_until(  custom::chrono::steady_clock::now() + 
+                                custom::chrono::ceil<typename custom::chrono::steady_clock::duration>(relativeTime));
     }
 
-    NativeHandleType native_handle() {
+    native_handle_type native_handle() {
         return _mutex.native_handle();
     }
 }; // END RecursiveTimedMutex

@@ -1,4 +1,3 @@
-#include "Config.hpp"
 #include "Testing.h"
 #include "TestingBoost.h"
 

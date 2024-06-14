@@ -41,8 +41,8 @@ struct Less<BasicStringView<Type, Traits>>		// used by Map, Set
 };
 
 template<class Type, class Traits>
-struct Hash<BasicStringView<Type, Traits>>
-: _BaseHashEnabler<BasicStringView<Type, Traits>, IsChar_v<Type>>	// used by UnorderedMap, UnorderedSet
+struct hash<BasicStringView<Type, Traits>>
+: _BaseHashEnabler<BasicStringView<Type, Traits>, is_char_v<Type>>	// used by UnorderedMap, UnorderedSet
 {
 	static size_t compute_hash(const BasicStringView<Type, Traits>& key) noexcept {
 		return detail::_hash_array_representation(key.data(), key.size());

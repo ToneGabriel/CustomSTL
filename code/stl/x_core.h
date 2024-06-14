@@ -4,6 +4,8 @@
 #include <climits>
 #include <iostream>     // debugging
 
+#include "Config.hpp"   // project configuration
+
 
 #define CUSTOM_BEGIN namespace custom { // gloabal namespace for this project
 #define CUSTOM_END }

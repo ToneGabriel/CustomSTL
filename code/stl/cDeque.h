@@ -1,8 +1,8 @@
 #pragma once
 #include "xMemory.h"
-#include "cUtility.h"
-#include "cIterator.h"
-#include "cAlgorithm.h"
+#include "c_utility.h"
+#include "c_iterator.h"
+#include "c_algorithm.h"
 
 
 CUSTOM_BEGIN
@@ -10,17 +10,17 @@ CUSTOM_BEGIN
 template<class Type, class Alloc>
 struct _DequeData
 {
-	using _AllocTraits		= AllocatorTraits<Alloc>;
-	using _AllocPtr 		= typename _AllocTraits::template RebindAlloc<typename _AllocTraits::Pointer>;
-    using _AllocPtrTraits 	= AllocatorTraits<_AllocPtr>;
-	using _MapPtr 			= typename _AllocPtrTraits::Pointer;
+	using _AllocTraits		= allocator_traits<Alloc>;
+	using _AllocPtr 		= typename _AllocTraits::template RebindAlloc<typename _AllocTraits::pointer>;
+    using _AllocPtrTraits 	= allocator_traits<_AllocPtr>;
+	using _MapPtr 			= typename _AllocPtrTraits::pointer;
 
 	using ValueType			= typename _AllocTraits::ValueType;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;
-	using Reference			= typename _AllocTraits::Reference;
-	using ConstReference	= typename _AllocTraits::ConstReference;
-	using Pointer			= typename _AllocTraits::Pointer;
-	using ConstPointer		= typename _AllocTraits::ConstPointer;
+	using reference			= typename _AllocTraits::reference;
+	using const_reference	= typename _AllocTraits::const_reference;
+	using pointer			= typename _AllocTraits::pointer;
+	using const_pointer		= typename _AllocTraits::const_pointer;
 
 	_MapPtr _Map 			= nullptr;
 	size_t _MapCapacity 	= 0;
@@ -41,11 +41,11 @@ private:
 	using _Data				= DequeData;
 
 public:
-    using IteratorCategory 	= RandomAccessIteratorTag;
+    using iterator_category 	= random_access_iterator_tag;
 	using ValueType			= typename _Data::ValueType;
 	using DifferenceType 	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::ConstReference;
-	using Pointer			= typename _Data::ConstPointer;
+	using reference			= typename _Data::const_reference;
+	using pointer			= typename _Data::const_pointer;
 
 	size_t _Offset			= 0;
 	const _Data* _RefData	= nullptr;
@@ -109,11 +109,11 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
-        return PointerTraits<Pointer>::pointer_to(**this);	//return &(**this); calls operator*
+	pointer operator->() const noexcept {
+        return pointer_traits<pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
-	Reference operator*() const noexcept {
+	reference operator*() const noexcept {
 		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
 						_Offset < _RefData->_First + _RefData->_Size,
 						"Cannot dereference end iterator.");
@@ -123,7 +123,7 @@ public:
 		return _RefData->_Map[block][offset];
 	}
 
-	Reference operator[](const DifferenceType diff) const noexcept {
+	reference operator[](const DifferenceType diff) const noexcept {
         return *(*this + diff);
     }
 
@@ -152,18 +152,18 @@ public:
 }; // END DequeConstIterator
 
 template<class DequeData>
-class DequeIterator : public DequeConstIterator<DequeData>			// Deque Iterator
+class DequeIterator : public DequeConstIterator<DequeData>			// Deque iterator
 {
 private:
 	using _Base				= DequeConstIterator<DequeData>;
 	using _Data				= DequeData;
 
 public:
-    using IteratorCategory 	= RandomAccessIteratorTag;
+    using iterator_category 	= random_access_iterator_tag;
 	using ValueType			= typename _Data::ValueType;
 	using DifferenceType 	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::Reference;
-	using Pointer			= typename _Data::Pointer;
+	using reference			= typename _Data::reference;
+	using pointer			= typename _Data::pointer;
 
 public:
 
@@ -216,21 +216,21 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(_Base::operator->());
+	pointer operator->() const noexcept {
+		return const_cast<pointer>(_Base::operator->());
 	}
 
-	Reference operator*() const noexcept {
-		return const_cast<Reference>(_Base::operator*());
+	reference operator*() const noexcept {
+		return const_cast<reference>(_Base::operator*());
 	}
 
-	Reference operator[](const DifferenceType diff) const noexcept {
-        return const_cast<Reference>(_Base::operator[](diff));
+	reference operator[](const DifferenceType diff) const noexcept {
+        return const_cast<reference>(_Base::operator[](diff));
     }
-}; // END Deque Iterator
+}; // END Deque iterator
 
 
-template<class Type, class Alloc = custom::Allocator<Type>>
+template<class Type, class Alloc = custom::allocator<Type>>
 class Deque					// Deque Template implemented as map of blocks
 {
 private:
@@ -241,25 +241,25 @@ private:
 	using _MapPtr				= typename _Data::_MapPtr;
 
 public:
-	static_assert(IsSame_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
-	static_assert(IsObject_v<Type>, "Containers require object type!");
+	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and allocator type must be the same!");
+	static_assert(is_object_v<Type>, "Containers require object type!");
 
 	using ValueType 			= typename _Data::ValueType;				// Type for stored values
 	using DifferenceType 		= typename _Data::DifferenceType;
-	using Reference				= typename _Data::Reference;
-	using ConstReference		= typename _Data::ConstReference;
-	using Pointer				= typename _Data::Pointer;
-	using ConstPointer			= typename _Data::ConstPointer;
-	using AllocatorType 		= Alloc;									// Allocator for block
+	using reference				= typename _Data::reference;
+	using const_reference		= typename _Data::const_reference;
+	using pointer				= typename _Data::pointer;
+	using const_pointer			= typename _Data::const_pointer;
+	using allocator_type 		= Alloc;									// allocator for block
 
-	using Iterator				= DequeIterator<_Data>;						// Iterator type
-	using ConstIterator			= DequeConstIterator<_Data>;				// Const Iterator type
-	using ReverseIterator 		= custom::ReverseIterator<Iterator>;		// ReverseIterator type
-	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;	// Const Reverse Iterator type
+	using iterator				= DequeIterator<_Data>;						// iterator type
+	using const_iterator			= DequeConstIterator<_Data>;				// Const iterator type
+	using reverse_iterator 		= custom::reverse_iterator<iterator>;		// reverse_iterator type
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;	// Const Reverse iterator type
 
 private:
 	_Data _data;
-	AllocatorType _alloc;
+	allocator_type _alloc;
 
 	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
@@ -413,17 +413,17 @@ public:
 	}
 
 	template<class... Args>
-	Iterator emplace(ConstIterator iterator, Args&&... args) {
+	iterator emplace(const_iterator iterator, Args&&... args) {
 		size_t off = iterator._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
 			emplace_front(custom::forward<Args>(args)...);
 			
-			Iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<DifferenceType>(off);
 			ValueType val 		= custom::move(*begin());
 
-			for (Iterator it = begin(); it != current; ++it)
+			for (iterator it = begin(); it != current; ++it)
 				*it = custom::move(*(it + 1));
 
 			*current = val;
@@ -432,10 +432,10 @@ public:
 		{
 			emplace_back(custom::forward<Args>(args)...);
 
-			Iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<DifferenceType>(off);
 			ValueType val 		= custom::move(*--end());
 
-			for (Iterator it = --end(); it != current; --it)
+			for (iterator it = --end(); it != current; --it)
 				*it = custom::move(*(it - 1));
 
 			*current = val;
@@ -444,36 +444,36 @@ public:
 		return begin() + static_cast<DifferenceType>(off);
 	}
 
-	Iterator push(ConstIterator iterator, const ValueType& copyValue) {
+	iterator push(const_iterator iterator, const ValueType& copyValue) {
 		return emplace(iterator, copyValue);
 	}
 
-	Iterator push(ConstIterator iterator, ValueType&& moveValue) {
+	iterator push(const_iterator iterator, ValueType&& moveValue) {
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	Iterator pop(ConstIterator iterator) {
+	iterator pop(const_iterator iterator) {
 		if (iterator.is_end())
-			throw std::out_of_range("Array pop iterator outside range.");
+			throw std::out_of_range("array pop iterator outside range.");
 			
 		size_t off = iterator._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
-			Iterator current 	= begin() + static_cast<DifferenceType>(off);
-			Iterator first 		= begin();
+			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator first 		= begin();
 
-			for (Iterator it = current; it != first; --it)
+			for (iterator it = current; it != first; --it)
 				*it = custom::move(*(it - 1));
 
 			pop_front();
 		}
 		else							// closer to back
 		{
-			Iterator current 	= begin() + static_cast<DifferenceType>(off);
-			Iterator last 		= --end();
+			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator last 		= --end();
 
-			for (Iterator it = current; it != last; ++it)
+			for (iterator it = current; it != last; ++it)
 				*it = custom::move(*(it + 1));
 			
 			pop_back();
@@ -499,7 +499,7 @@ public:
 	}
 
     size_t max_size() const noexcept {
-        return (custom::min)(	static_cast<size_t>((NumericLimits<DifferenceType>::max)()),
+        return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
 								_AllocTraits::max_size(_alloc));
     }
 
@@ -507,36 +507,36 @@ public:
 		return (_data._Size == 0);
 	}
 
-	ConstReference at(const size_t index) const {
+	const_reference at(const size_t index) const {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
-	Reference at(const size_t index) {
+	reference at(const size_t index) {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
-	ConstReference front() const noexcept {
+	const_reference front() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
-	Reference front() noexcept {										// Get the value of the first component
+	reference front() noexcept {										// Get the value of the first component
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
-	ConstReference back() const noexcept {
+	const_reference back() const noexcept {
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
 
-	Reference back() noexcept {                                                      	// Get the value of the last component
+	reference back() noexcept {                                                      	// Get the value of the last component
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
@@ -561,38 +561,38 @@ public:
 	}
 
 public:
-	// Iterator specific functions
+	// iterator specific functions
 
-	Iterator begin() noexcept {
-		return Iterator(_data._First, &_data);
+	iterator begin() noexcept {
+		return iterator(_data._First, &_data);
 	}
 
-	ConstIterator begin() const noexcept {
-		return ConstIterator(_data._First, &_data);
+	const_iterator begin() const noexcept {
+		return const_iterator(_data._First, &_data);
 	}
 
-	ReverseIterator rbegin() noexcept {
-		return ReverseIterator(end());
+	reverse_iterator rbegin() noexcept {
+		return reverse_iterator(end());
 	}
 
-	ConstReverseIterator rbegin() const noexcept {
-		return ConstReverseIterator(end());
+	const_reverse_iterator rbegin() const noexcept {
+		return const_reverse_iterator(end());
 	}
 
-	Iterator end() noexcept {
-		return Iterator(_data._First + _data._Size, &_data);
+	iterator end() noexcept {
+		return iterator(_data._First + _data._Size, &_data);
 	}
 
-	ConstIterator end() const noexcept {
-		return ConstIterator(_data._First + _data._Size, &_data);
+	const_iterator end() const noexcept {
+		return const_iterator(_data._First + _data._Size, &_data);
 	}
 
-	ReverseIterator rend() noexcept {
-		return ReverseIterator(begin());
+	reverse_iterator rend() noexcept {
+		return reverse_iterator(begin());
 	}
 
-	ConstReverseIterator rend() const noexcept {
-		return ConstReverseIterator(begin());
+	const_reverse_iterator rend() const noexcept {
+		return const_reverse_iterator(begin());
 	}
 
 private:

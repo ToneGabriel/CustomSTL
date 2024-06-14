@@ -16,7 +16,7 @@ struct _Employee
 {
     custom::Mutex _Mutex;
     custom::String _ID;
-    custom::Vector<custom::String> _LunchPartners;
+    custom::vector<custom::String> _LunchPartners;
     
     _Employee(custom::String id) : _ID(id) { /*Empty*/ }
 

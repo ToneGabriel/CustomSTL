@@ -1,6 +1,6 @@
 #pragma once
 #include "cBit.h"
-#include "cLimits.h"
+#include "c_limits.h"
 #include "cString.h"
 
 
@@ -24,7 +24,7 @@ private:
 	Type _array[_BLOCKS + 1];   // set of blocks
 
 public:
-	class Reference;	// proxy for an element
+	class reference;	// proxy for an element
 
     constexpr Bitset() noexcept : _array() { /*Empty*/ } // construct with all false values
 
@@ -65,9 +65,9 @@ public:
         return Bits <= pos ? (_validate(pos), false) : _get_bit(pos);
     }
 
-    constexpr Reference operator[](const size_t pos) noexcept {
+    constexpr reference operator[](const size_t pos) noexcept {
         _validate(pos);
-        return Reference(*this, pos);
+        return reference(*this, pos);
     }
 
     constexpr Bitset& operator&=(const Bitset& other) noexcept {
@@ -234,7 +234,7 @@ public:
         return _get_bit(pos);
     }
 
-    template<class CharType = char, class Alloc = custom::Allocator<CharType>, class Traits = custom::CharTraits<CharType>>
+    template<class CharType = char, class Alloc = custom::allocator<CharType>, class Traits = custom::CharTraits<CharType>>
     constexpr BasicString<CharType, Alloc, Traits> to_string(	const CharType placeholder0 = static_cast<CharType>('0'),
 																const CharType placeholder1 = static_cast<CharType>('1')) const {	// convert bitset to string
         
@@ -409,7 +409,7 @@ std::ostream& operator<<(std::ostream& os, const Bitset<Bits>& bitset) {
 
 
 template<size_t Bits>
-class Bitset<Bits>::Reference		// proxy for an element
+class Bitset<Bits>::reference		// proxy for an element
 {
 private:
 	friend Bitset;
@@ -418,23 +418,23 @@ private:
 	size_t _position;
 
 private:
-	constexpr Reference() noexcept
+	constexpr reference() noexcept
 		: _bitsetRef(nullptr), _position(0) { /*Empty*/ }
 
-	constexpr Reference(Bitset<Bits>& bitset, const size_t pos) noexcept
+	constexpr reference(Bitset<Bits>& bitset, const size_t pos) noexcept
 		: _bitsetRef(&bitset), _position(pos) { /*Empty*/ }
 
 public:
-	constexpr Reference(const Reference&) = default;
+	constexpr reference(const reference&) = default;
 
-	constexpr ~Reference() noexcept { /*Empty*/ }
+	constexpr ~reference() noexcept { /*Empty*/ }
 
-	constexpr Reference& operator=(const bool val) noexcept {
+	constexpr reference& operator=(const bool val) noexcept {
 		_bitsetRef->_set_bit(_position, val);
 		return *this;
 	}
 
-	constexpr Reference& operator=(const Reference& bitRef) noexcept {
+	constexpr reference& operator=(const reference& bitRef) noexcept {
 		_bitsetRef->_set_bit(_position, static_cast<bool>(bitRef));
 		return *this;
 	}
@@ -447,10 +447,10 @@ public:
 		return _bitsetRef->_get_bit(_position);
 	}
 
-	constexpr Reference& flip() noexcept {
+	constexpr reference& flip() noexcept {
 		_bitsetRef->_flip_bit(_position);
 		return *this;
 	}
-};	// END Reference
+};	// END reference
 
 CUSTOM_END

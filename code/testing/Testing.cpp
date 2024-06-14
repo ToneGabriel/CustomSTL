@@ -65,19 +65,19 @@ int Test::test_function(int x) {
 
 
 void print_sequence_test() {
-	print_sequence(custom::IntegerSequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
-	print_sequence(custom::MakeIntegerSequence<int, 20>{});
-	print_sequence(custom::MakeIndexSequence<10>{});
-	print_sequence(custom::IndexSequenceFor<float, std::iostream, char>{});
+	print_sequence(custom::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
+	print_sequence(custom::make_integer_sequence<int, 20>{});
+	print_sequence(custom::make_index_sequence<10>{});
+	print_sequence(custom::index_sequence_for<float, std::iostream, char>{});
 }
 
 void piecewise_pair_test() {
-	 custom::Pair<int, Test> p(
-		 custom::PiecewiseConstruct,
+	 custom::pair<int, Test> p(
+		 custom::piecewise_construct,
 		 custom::forward_as_tuple(3),
 		 custom::forward_as_tuple(3));
 
-	std::cout << p.First << ' ' << p.Second << '\n';
+	std::cout << p.first << ' ' << p.second << '\n';
 }
 
 void tuple_test() {
@@ -92,8 +92,8 @@ void tuple_test() {
 	std::cout << "\n\n";
 
 	{
-		custom::Tuple<int, Test> tuple1(3, Test(3));
-		custom::Tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		custom::tuple<int, Test> tuple1(3, Test(3));
+		custom::tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
 		auto tuple3 = custom::tuple_cat(custom::move(tuple1), custom::move(tuple2));
 		std::cout << custom::get<4>(tuple3) << '\n';
 		std::cout << custom::get<1>(tuple1) << '\n';
@@ -154,7 +154,7 @@ void unordered_map_test() {
 	map.print_details();
 	std::cout << '\n';
 	for (auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
+		std::cout << val.first << ' ' << val.second << '\n';
 }
 
 void unordered_set_test() {
@@ -200,13 +200,13 @@ void map_test() {
 	std::cout << "Map before erase\n";
 	map.print_details();
 
-	std::cout << "Current elem= " << (*map.erase(10)).First << '\n';
+	std::cout << "Current elem= " << (*map.erase(10)).first << '\n';
 
 	std::cout << "Map after erase\n";
 	map.print_details();
 
 	for (auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
+		std::cout << val.first << ' ' << val.second << '\n';
 }
 
 void deque_test() {
@@ -280,12 +280,12 @@ void stack_test() {
 }
 
 void vector_test() {
-	custom::Vector<int> v;
+	custom::vector<int> v;
 	v.emplace_back(0);
 	v.emplace_back(1);
 	v.emplace_back(2);
 
-	custom::Vector<int> v1(v);
+	custom::vector<int> v1(v);
 
 
 	for (auto& val : v1)
@@ -321,7 +321,7 @@ void string_view_test() {
 }
 
 void array_test() {
-	custom::Array<Test, 5> arr;
+	custom::array<Test, 5> arr;
 	arr.fill(Test(3));
 
 	for (auto& val : arr)
@@ -374,7 +374,7 @@ void chrono_test() {
 	// ================================================================
 
 	Microseconds ms2(100000);
-	TimePoint<SystemClock, Microseconds> absoluteTime2(ms2);
+	time_point<system_clock, Microseconds> absoluteTime2(ms2);
 
 	auto _seconds2 		= time_point_cast<Seconds>(absoluteTime2);
 	auto _nanoseconds2 	= duration_cast<Nanoseconds>(absoluteTime2 - _seconds2);

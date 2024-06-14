@@ -1,6 +1,6 @@
 #pragma once
-#include "cUtility.h"
-#include "cIterator.h"
+#include "c_utility.h"
+#include "c_iterator.h"
 #include "cBit.h"
 
 
@@ -63,7 +63,7 @@ constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt des
     
     if (first != last)
     {
-        using ValueType = typename IteratorTraits<InputIt>::ValueType;
+        using ValueType = typename iterator_traits<InputIt>::ValueType;
 
         ValueType acc   = *first;
         *destFirst      = acc;
@@ -95,7 +95,7 @@ constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, 
     
     if (first != last)
     {
-        using ValueType = typename IteratorTraits<InputIt>::ValueType;
+        using ValueType = typename iterator_traits<InputIt>::ValueType;
 
         ValueType acc       = *first;
         *destFirst          = acc;
@@ -136,8 +136,8 @@ constexpr Type reduce(InputIt first, InputIt last, Type init) {
 }
 
 template<class InputIt>
-constexpr typename IteratorTraits<InputIt>::ValueType reduce(InputIt first, InputIt last) {
-    return custom::reduce(first, last, typename IteratorTraits<InputIt>::ValueType{}, Plus<>{});
+constexpr typename iterator_traits<InputIt>::ValueType reduce(InputIt first, InputIt last) {
+    return custom::reduce(first, last, typename iterator_traits<InputIt>::ValueType{}, Plus<>{});
 }
 // END reduce
 
@@ -201,7 +201,7 @@ constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
 
     if (first != last)
     {
-        using ValueType = typename IteratorTraits<InputIt>::ValueType;
+        using ValueType = typename iterator_traits<InputIt>::ValueType;
 
         ValueType init = *first;
 
@@ -335,7 +335,7 @@ template<class Integral>
 constexpr auto abs_unsigned(const Integral val) noexcept {
     // computes absolute value of val (converting to an unsigned integer type if necessary to avoid overflow
     // representing the negation of the minimum value)
-    static_assert(IsIntegral_v<Integral>);
+    static_assert(is_integral_v<Integral>);
 
     if constexpr (IsSigned_v<Integral>)
     {
@@ -353,11 +353,11 @@ constexpr auto abs_unsigned(const Integral val) noexcept {
 
 
 // greatest common divizor
-template<class First, class Second>
-constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
-    static_assert(IsNonboolIntegral<First> && IsNonboolIntegral<Second>, "GCD requires nonbool integral types");
+template<class first, class second>
+constexpr CommonType_t<first, second> gcd(first val1, second val2) noexcept {
+    static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "GCD requires nonbool integral types");
 
-    using _Common           = CommonType_t<First, Second>;
+    using _Common           = CommonType_t<first, second>;
     using _CommonUnsigned   = MakeUnsigned_t<_Common>;
 
     _CommonUnsigned valAbs1 = abs_unsigned(val1);
@@ -397,11 +397,11 @@ constexpr CommonType_t<First, Second> gcd(First val1, Second val2) noexcept {
 
 
 //least common multiple
-template<class First, class Second>
-constexpr CommonType_t<First, Second> lcm(const First val1, const Second val2) noexcept {
-    static_assert(IsNonboolIntegral<First> && IsNonboolIntegral<Second>, "LCM requires nonbool integral types");
+template<class first, class second>
+constexpr CommonType_t<first, second> lcm(const first val1, const second val2) noexcept {
+    static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "LCM requires nonbool integral types");
     
-    using _Common           = CommonType_t<First, Second>;
+    using _Common           = CommonType_t<first, second>;
     using _CommonUnsigned   = MakeUnsigned_t<_Common>;
 
     _CommonUnsigned valAbs1 = abs_unsigned(val1);
@@ -418,7 +418,7 @@ constexpr CommonType_t<First, Second> lcm(const First val1, const Second val2) n
 // midpoint
 template<class Type>
 constexpr Type midpoint(Type val1, Type val2) noexcept {
-    if constexpr (IsIntegral_v<Type>)
+    if constexpr (is_integral_v<Type>)
     {
         using _Unsigned         = MakeUnsigned_t<Type>;
 
@@ -432,8 +432,8 @@ constexpr Type midpoint(Type val1, Type val2) noexcept {
     }
     else // IsFloating_v
     {
-        constexpr Type lowLimit     = (NumericLimits<Type>::min)() * 2;
-        constexpr Type highLimit    = (NumericLimits<Type>::max)() / 2;
+        constexpr Type lowLimit     = (numeric_limits<Type>::min)() * 2;
+        constexpr Type highLimit    = (numeric_limits<Type>::max)() / 2;
 
         const Type valAbs1 = val1 < 0 ? -val1 : val1;
         const Type valAbs2 = val2 < 0 ? -val2 : val2;
@@ -453,7 +453,7 @@ constexpr Type midpoint(Type val1, Type val2) noexcept {
     return 0;
 }
 
-template<class Type, EnableIf_t<IsObject_v<Type>, bool> = true>
+template<class Type, enable_if_t<is_object_v<Type>, bool> = true>
 constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept {
     static_assert(sizeof(Type) != 0, "type must be complete");
 

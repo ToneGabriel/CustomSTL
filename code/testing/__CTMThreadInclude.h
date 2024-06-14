@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cThread.h"
+#include "c_thread.h"
 #include "cMutex.h"
 #include "cConditionVariable.h"
 #include "cSemaphore.h"

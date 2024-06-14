@@ -1,11 +1,11 @@
 #pragma once
-#include "cTypeTraits.h"
-#include "cLimits.h"
+#include "c_type_traits.h"
+#include "c_limits.h"
 
 
 CUSTOM_BEGIN
 
-enum class Endian
+enum class endian
 {
 #if defined _MSC_VER
     little = 0,
@@ -20,15 +20,15 @@ enum class Endian
 
 
 template<class To, class From,
-EnableIf_t<Conjunction_v<   BoolConstant<sizeof(To) == sizeof(From)>,
-                            IsTriviallyCopyable<To>,
-                            IsTriviallyCopyable<From>>, bool> = true>
+enable_if_t<conjunction_v<  bool_constant<sizeof(To) == sizeof(From)>,
+                            is_trivially_copyable<To>,
+                            is_trivially_copyable<From>>, bool> = true>
 constexpr To bit_cast(const From& src) noexcept {
     return __builtin_bit_cast(To, src);
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr bool has_single_bit(Ty val) noexcept {
     return val != 0 && (val & (val - 1)) == 0;
 }
@@ -37,12 +37,12 @@ constexpr bool has_single_bit(Ty val) noexcept {
 // Implementation of countl_zero without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-3
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int countl_zero(Ty val) noexcept {
     Ty yy = 0;
 
-    unsigned int nn = NumericLimits<Ty>::Digits;
-    unsigned int cc = NumericLimits<Ty>::Digits / 2;
+    unsigned int nn = numeric_limits<Ty>::digits;
+    unsigned int cc = numeric_limits<Ty>::digits / 2;
 
     do
     {
@@ -64,66 +64,66 @@ constexpr int countl_zero(Ty val) noexcept {
 // Implementation of countr_zero without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-4
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int countr_zero(Ty val) noexcept {
-    constexpr int digits = NumericLimits<Ty>::Digits;
+    constexpr int digits = numeric_limits<Ty>::digits;
     return digits - countl_zero(static_cast<Ty>(static_cast<Ty>(~val) & static_cast<Ty>(val - 1)));
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int countl_one(Ty val) noexcept {
     return custom::countl_zero(static_cast<Ty>(~val));
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int countr_one(Ty val) noexcept {
     return custom::countr_zero(static_cast<Ty>(~val));
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr Ty bit_ceil(Ty val) noexcept {
     if (val <= 1u)
         return Ty{1};
 
-    const int shiftExponent = NumericLimits<Ty>::Digits - custom::countl_zero(static_cast<Ty>(val - 1));
+    const int shiftExponent = numeric_limits<Ty>::digits - custom::countl_zero(static_cast<Ty>(val - 1));
 
     if constexpr (sizeof(Ty) < sizeof(unsigned int)) // for types subject to integral promotion
         if (custom::is_constant_evaluated())
         {
             // If the shift exponent equals number of digits then the correct result is not
             // representable as a value of Ty, and so the result is undefined.
-            CUSTOM_ASSERT(shiftExponent != NumericLimits<Ty>::Digits, "Undefined result");
+            CUSTOM_ASSERT(shiftExponent != numeric_limits<Ty>::digits, "Undefined result");
         }
 
     return static_cast<Ty>(Ty{1} << shiftExponent);
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr Ty bit_floor(Ty val) noexcept {
     if (val == 0)
         return 0;
 
-    return static_cast<Ty>(Ty{1} << (NumericLimits<Ty>::Digits - 1 - custom::countl_zero(val)));
+    return static_cast<Ty>(Ty{1} << (numeric_limits<Ty>::digits - 1 - custom::countl_zero(val)));
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int bit_width(Ty val) noexcept {
-    return NumericLimits<Ty>::Digits - custom::countl_zero(val);
+    return numeric_limits<Ty>::digits - custom::countl_zero(val);
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr Ty rotl(Ty val, int rotation) noexcept;
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr Ty rotr(Ty val, int rotation) noexcept {
-    constexpr int digits    = NumericLimits<Ty>::Digits;
+    constexpr int digits    = numeric_limits<Ty>::digits;
     const int remainder     = rotation % digits;
 
     if (remainder == 0)
@@ -135,9 +135,9 @@ constexpr Ty rotr(Ty val, int rotation) noexcept {
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool>>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool>>
 constexpr Ty rotl(Ty val, int rotation) noexcept {
-    constexpr int digits    = NumericLimits<Ty>::Digits;
+    constexpr int digits    = numeric_limits<Ty>::digits;
     const int remainder     = rotation % digits;
 
     if (remainder == 0)
@@ -149,16 +149,16 @@ constexpr Ty rotl(Ty val, int rotation) noexcept {
 }
 
 
-template<class Ty, EnableIf_t<IsUnsignedInteger_v<Ty>, bool> = true>
+template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
 constexpr int popcount(Ty val) noexcept {
 #ifdef __GNUG__
-    constexpr int digits = NumericLimits<Ty>::Digits;
+    constexpr int digits = numeric_limits<Ty>::digits;
 
-    if constexpr (digits <= NumericLimits<unsigned>::Digits)
+    if constexpr (digits <= numeric_limits<unsigned>::digits)
         return __builtin_popcount(val);
-    else if constexpr (digits <= NumericLimits<unsigned long>::Digits)
+    else if constexpr (digits <= numeric_limits<unsigned long>::digits)
         return __builtin_popcountl(val);
-    else // (digits <= NumericLimits<unsigned long long>::Digits)
+    else // (digits <= numeric_limits<unsigned long long>::digits)
         return __builtin_popcountll(val);
 #else // __GNUG__
     int count = 0;

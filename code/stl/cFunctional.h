@@ -1,7 +1,7 @@
 #pragma once
-#include "xFunctional.h"
-#include "cUtility.h"
-#include "cTuple.h"
+#include "x_functional.h"
+#include "c_utility.h"
+#include "c_tuple.h"
 #include "cMemory.h"
 
 
@@ -329,7 +329,7 @@ static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
 
 template<class Impl>    // when _CallableImpl wraps an object(big) that has operator()
 static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
-                                    alignof(Impl) > alignof(MaxAlign_t) ||
+                                    alignof(Impl) > alignof(max_align_t) ||
                                     !Impl::_NothrowMove::Value;
 
 
@@ -362,14 +362,14 @@ class _CallableImpl final : public _CallableInterface<RetType, Args...>
 {
 public:
     using _Base         = _CallableInterface<RetType, Args...>;
-    using _NothrowMove  = IsNothrowMoveConstructible<Callable>;
+    using _NothrowMove  = is_nothrow_move_constructible<Callable>;
 
 private:
     Callable _callable;
 
 public:
     template<class OtherCallable,
-    EnableIf_t<!IsSame_v<Decay_t<OtherCallable>, _CallableImpl>, bool> = true>
+    enable_if_t<!is_same_v<decay_t<OtherCallable>, _CallableImpl>, bool> = true>
     explicit _CallableImpl(OtherCallable&& val)
         : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
 
@@ -389,7 +389,7 @@ private:
     }
 
     RetType _call(Args&&... args) override {
-        if constexpr (IsVoid_v<RetType>)
+        if constexpr (is_void_v<RetType>)
             (void)custom::invoke(_callable, custom::forward<Args>(args)...);
         else
             return custom::invoke(_callable, custom::forward<Args>(args)...);
@@ -422,7 +422,7 @@ public:
 private:
     union _Storage  // storage for small objects
     {
-        MaxAlign_t _Val;                        // for maximum alignment
+        max_align_t _Val;                        // for maximum alignment
         char Pad[_SpaceSize];                   // to permit aliasing
         Impl* _Ptrs[_SmallObjectNumPtrs];       // _Ptrs[_SmallObjectNumPtrs - 1] is reserved
     };
@@ -446,7 +446,7 @@ public:
         _reset_move(custom::move(other));
     }
 
-    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
     Function(Callable&& val) {
         _reset(custom::forward<Callable>(val));
     }
@@ -478,14 +478,14 @@ public:
         return *this;
     }
 
-    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
     Function& operator=(Callable&& val) {
         Function(custom::forward<Callable>(val)).swap(*this);
         return *this;
     }
 
     template<class Callable>
-    Function& operator=(ReferenceWrapper<Callable> refVal) noexcept {
+    Function& operator=(reference_wrapper<Callable> refVal) noexcept {
         _clean_up_storage();
         _reset(refVal);
         return *this;
@@ -564,7 +564,7 @@ private:
         if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
             return;                 // already empty
 
-        using OtherImpl = _CallableImpl<Decay_t<Callable>, RetType, Args...>;
+        using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
 
         if constexpr (_IsLarge<OtherImpl>)  // dynamically allocate val
             _set_impl(new OtherImpl(custom::forward<Callable>(val)));
@@ -636,7 +636,7 @@ private:
 public:
 
     template<class OtherCallable,
-    EnableIf_t<!IsSame_v<Decay_t<OtherCallable>, _CallableImpl>, bool> = true>
+    enable_if_t<!is_same_v<decay_t<OtherCallable>, _CallableImpl>, bool> = true>
     explicit _CallableImpl(OtherCallable&& val)
         : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
 
@@ -647,7 +647,7 @@ private:
     }
 
     RetType _call(Args&&... args) override {
-        if constexpr (IsVoid_v<RetType>)
+        if constexpr (is_void_v<RetType>)
             (void)custom::invoke(_callable, custom::forward<Args>(args)...);
         else
             return custom::invoke(_callable, custom::forward<Args>(args)...);
@@ -682,7 +682,7 @@ public:
 
     Function(const Function& other) : _storage(other._storage->_copy()) { /*Empty*/ }
 
-    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
     Function(Callable&& val) : _storage(nullptr) {
         _reset(custom::forward<Callable>(val));
     }
@@ -707,14 +707,14 @@ public:
 
     Function& operator=(Function&& other) noexcept = default;
 
-    template<class Callable, EnableIf_t<!IsSame_v<Decay_t<Callable>, Function>, bool> = true>
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
     Function& operator=(Callable&& val) {
         _reset(custom::forward<Callable>(val));
         return *this;
     }
 
     template<class Callable>
-    Function& operator=(ReferenceWrapper<Callable> refVal) noexcept {
+    Function& operator=(reference_wrapper<Callable> refVal) noexcept {
         _reset(refVal);
         return *this;
     }
@@ -761,7 +761,7 @@ private:
         if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
             return;                 // already empty
 
-        using OtherImpl = _CallableImpl<Decay_t<Callable>, RetType, Args...>;
+        using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
 
         _storage.reset(new OtherImpl(custom::forward<Callable>(val)));
     }
@@ -778,8 +778,8 @@ private:
 #pragma region Bind
 
 // placeholder
-template<int Num>
-struct Placeholder { static_assert(Num > 0, "invalid placeholder index"); };
+template<int num>
+struct Placeholder { static_assert(num > 0, "invalid placeholder index"); };
 
 namespace placeholders
 {
@@ -806,10 +806,10 @@ namespace placeholders
 }
 
 template<class Ty>
-struct IsPlaceholder : IntegralConstant<int, 0> {}; // Ty is not a placeholder
+struct IsPlaceholder : integral_constant<int, 0> {}; // Ty is not a placeholder
 
-template<int Num>
-struct IsPlaceholder<Placeholder<Num>> : IntegralConstant<int, Num> {}; // Placeholder is ok
+template<int num>
+struct IsPlaceholder<Placeholder<num>> : integral_constant<int, num> {}; // Placeholder is ok
 
 template<class Ty>
 struct IsPlaceholder<const Ty> : IsPlaceholder<Ty>::Type {}; // ignore cv-qualifiers
@@ -828,10 +828,10 @@ template<class Functor, class... Args>
 class Binder;
 
 template<class Ty>
-struct IsBindExpression : FalseType {}; // Ty is not a bind expression
+struct IsBindExpression : false_type {}; // Ty is not a bind expression
 
 template<class Functor, class... Args>
-struct IsBindExpression<Binder<Functor, Args...>> : TrueType {}; // Binder is a bind expression
+struct IsBindExpression<Binder<Functor, Args...>> : true_type {}; // Binder is a bind expression
 
 template<class Ty>
 struct IsBindExpression<const Ty> : IsBindExpression<Ty>::Type {}; // ignore cv-qualifiers
@@ -850,17 +850,17 @@ CUSTOM_DETAIL_BEGIN
 
 // bind fixers & callers
 template<   class BoundArgType,
-            bool = IsSpecialization_v<RemoveCV_t<BoundArgType>, ReferenceWrapper>,
+            bool = is_specialization_v<RemoveCV_t<BoundArgType>, reference_wrapper>,
             bool = IsBindExpression_v<BoundArgType>,
             int  = IsPlaceholder_v<BoundArgType>>
 struct _BoundArgFixer;
 
 template<class BoundArgType>
-struct _BoundArgFixer<BoundArgType, true, false, 0>         // ReferenceWrapper fixer
+struct _BoundArgFixer<BoundArgType, true, false, 0>         // reference_wrapper fixer
 {
     template<class UnboundTuple>
     static constexpr typename BoundArgType::Type& fix(BoundArgType& boundArg, UnboundTuple&&) noexcept {
-        // unwrap a ReferenceWrapper
+        // unwrap a reference_wrapper
         return boundArg.get();
     }
 };
@@ -880,7 +880,7 @@ struct _BoundArgFixer<BoundArgType, false, true, 0>         // nested bind fixer
 {
 private:
     template<class UnboundTuple, size_t... Ix>
-    static constexpr auto _fix_impl(BoundArgType& boundArg, UnboundTuple&& unboundTuple, IndexSequence<Ix...>) noexcept
+    static constexpr auto _fix_impl(BoundArgType& boundArg, UnboundTuple&& unboundTuple, index_sequence<Ix...>) noexcept
     -> decltype(boundArg(custom::get<Ix>(custom::move(unboundTuple))...)) {
         return boundArg(custom::get<Ix>(custom::move(unboundTuple))...);
     }
@@ -888,8 +888,8 @@ private:
 public:
     template<class UnboundTuple>
     static constexpr auto fix(BoundArgType& boundArg, UnboundTuple&& unboundTuple) noexcept
-    -> decltype(_fix_impl(boundArg, custom::move(unboundTuple), MakeIndexSequence<TupleSize_v<UnboundTuple>>{})) {
-        return _fix_impl(boundArg, custom::move(unboundTuple), MakeIndexSequence<TupleSize_v<UnboundTuple>>{});
+    -> decltype(_fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<TupleSize_v<UnboundTuple>>{})) {
+        return _fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<TupleSize_v<UnboundTuple>>{});
     }
 };
 
@@ -914,7 +914,7 @@ constexpr auto _fix_one_arg(BoundArgType& boundArg, UnboundTuple&& unboundTuple)
 }
 
 template<class Functor, class BoundTuple, size_t... Ix, class UnboundTuple>
-constexpr auto _call_binder(Functor& func, BoundTuple& boundTuple, IndexSequence<Ix...>, UnboundTuple&& unboundTuple) noexcept
+constexpr auto _call_binder(Functor& func, BoundTuple& boundTuple, index_sequence<Ix...>, UnboundTuple&& unboundTuple) noexcept
 -> decltype(custom::invoke(func, _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...)) {
     // _fix_one_arg is called for every boundTuple item (YES: unboundTuple is moved every call)
     return custom::invoke(func, _fix_one_arg(custom::get<Ix>(boundTuple), custom::move(unboundTuple))...);
@@ -928,8 +928,8 @@ template<class Functor, class... Args>
 class Binder
 {
 private:
-    Decay_t<Functor>        _functor;
-    Tuple<Decay_t<Args>...> _boundArgs;
+    decay_t<Functor>        _functor;
+    tuple<decay_t<Args>...> _boundArgs;
 
 public:
     constexpr explicit Binder(Functor&& func, Args&&... args)
@@ -938,7 +938,7 @@ public:
 
 // just a shortcut used in operator()
 #define _CALL_BINDER                                                            \
-    detail::_call_binder(   _functor, _boundArgs, IndexSequenceFor<Args...>{},  \
+    detail::_call_binder(   _functor, _boundArgs, index_sequence_for<Args...>{},  \
                             custom::forward_as_tuple(custom::forward<UnboundArgs>(unboundArgs)...))
 
     template<class... UnboundArgs>

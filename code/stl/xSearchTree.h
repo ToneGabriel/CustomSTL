@@ -1,8 +1,8 @@
 #pragma once
 #include "xMemory.h"
-#include "cPair.h"
-#include "cUtility.h"
-#include "cIterator.h"
+#include "c_pair.h"
+#include "c_utility.h"
+#include "c_iterator.h"
 #include "cFunctional.h"	// for custom::Less
 
 
@@ -30,19 +30,19 @@ struct _SearchTreeData
     using MappedType        = typename Traits::MappedType;			// Type of Mapped _Value
 	using KeyCompare 		= typename Traits::KeyCompare;
 	using ValueType			= typename Traits::ValueType;			// Type of values stored in container
-	using AllocatorType 	= typename Traits::AllocatorType;
+	using allocator_type 	= typename Traits::allocator_type;
 	
-	using _AllocTraits		= AllocatorTraits<AllocatorType>;
+	using _AllocTraits		= allocator_traits<allocator_type>;
 	using _Node				= detail::_TreeNode<ValueType>;
 	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
-	using _AllocNodeTraits	= AllocatorTraits<_AllocNode>;
-	using _NodePtr			= typename _AllocNodeTraits::Pointer;
+	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
+	using _NodePtr			= typename _AllocNodeTraits::pointer;
 
 	using DifferenceType	= typename _AllocTraits::DifferenceType;
-	using Reference 		= typename _AllocTraits::Reference;
-	using ConstReference 	= typename _AllocTraits::ConstReference;
-	using Pointer 			= typename _AllocTraits::Pointer;
-	using ConstPointer 		= typename _AllocTraits::ConstPointer;
+	using reference 		= typename _AllocTraits::reference;
+	using const_reference 	= typename _AllocTraits::const_reference;
+	using pointer 			= typename _AllocTraits::pointer;
+	using const_pointer 		= typename _AllocTraits::const_pointer;
 
 
 	size_t _Size 			= 0;									// Number of Nodes held
@@ -71,11 +71,11 @@ private:
 	using _NodePtr 			= typename _Data::_NodePtr;
 
 public:
-    using IteratorCategory 	= BidirectionalIteratorTag;
+    using iterator_category 	= bidirectional_iterator_tag;
 	using ValueType 		= typename _Data::ValueType;
 	using DifferenceType	= typename _Data::DifferenceType;
-	using Reference			= typename _Data::ConstReference;
-	using Pointer			= typename _Data::ConstPointer;
+	using reference			= typename _Data::const_reference;
+	using pointer			= typename _Data::const_pointer;
 
 	_NodePtr _Ptr 			= nullptr;
 	const _Data* _RefData	= nullptr;
@@ -141,12 +141,12 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
+	pointer operator->() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator.");
-        return PointerTraits<Pointer>::pointer_to(**this);	// return &(**this);
+        return pointer_traits<pointer>::pointer_to(**this);	// return &(**this);
 	}
 
-	Reference operator*() const noexcept {
+	reference operator*() const noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
@@ -166,7 +166,7 @@ public:
 }; // END _SearchTreeConstIterator
 
 template<class _SearchTreeData>
-class _SearchTreeIterator : public _SearchTreeConstIterator<_SearchTreeData>			// _SearchTree Iterator
+class _SearchTreeIterator : public _SearchTreeConstIterator<_SearchTreeData>			// _SearchTree iterator
 {
 private:
 	using _Base				= _SearchTreeConstIterator<_SearchTreeData>;
@@ -174,11 +174,11 @@ private:
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using IteratorCategory 	= BidirectionalIteratorTag;
+    using iterator_category 	= bidirectional_iterator_tag;
 	using ValueType 		= typename _Data::ValueType;
 	using DifferenceType	= typename _Data::DifferenceType;
-	using Reference 		= typename _Data::Reference;
-	using Pointer 			= typename _Data::Pointer;
+	using reference 		= typename _Data::reference;
+	using pointer 			= typename _Data::pointer;
 
 public:
 
@@ -209,12 +209,12 @@ public:
 		return temp;
 	}
 
-	Pointer operator->() const noexcept {
-		return const_cast<Pointer>(_Base::operator->());
+	pointer operator->() const noexcept {
+		return const_cast<pointer>(_Base::operator->());
 	}
 
-	Reference operator*() const noexcept {
-		return const_cast<Reference>(_Base::operator*());
+	reference operator*() const noexcept {
+		return const_cast<reference>(_Base::operator*());
 	}
 }; // END _SearchTreeIterator
 
@@ -236,16 +236,16 @@ protected:
     using KeyCompare    		= typename _Data::KeyCompare;
 	using ValueType 			= typename _Data::ValueType;
 	using DifferenceType		= typename _Data::DifferenceType;
-	using Reference				= typename _Data::Reference;
-	using ConstReference		= typename _Data::ConstReference;
-	using Pointer				= typename _Data::Pointer;
-	using ConstPointer			= typename _Data::ConstPointer;
-	using AllocatorType			= typename _Data::AllocatorType;
+	using reference				= typename _Data::reference;
+	using const_reference		= typename _Data::const_reference;
+	using pointer				= typename _Data::pointer;
+	using const_pointer			= typename _Data::const_pointer;
+	using allocator_type			= typename _Data::allocator_type;
 
-	using Iterator				= _SearchTreeIterator<_Data>;
-	using ConstIterator			= _SearchTreeConstIterator<_Data>;
-	using ReverseIterator		= custom::ReverseIterator<Iterator>;
-	using ConstReverseIterator	= custom::ReverseIterator<ConstIterator>;
+	using iterator				= _SearchTreeIterator<_Data>;
+	using const_iterator			= _SearchTreeConstIterator<_Data>;
+	using reverse_iterator		= custom::reverse_iterator<iterator>;
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 protected:
 	_Data _data;
@@ -299,10 +299,10 @@ public:
     // Main functions
 
     template<class... Args>
-	Iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
+	iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
 		_NodePtr newNode 		= _create_common_node(custom::forward<Args>(args)...);
 		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
-		Iterator it 			= find(newKey);
+		iterator it 			= find(newKey);
 
 		if (it != end())
 		{
@@ -313,44 +313,44 @@ public:
 		{
 			auto insertPosition = _find_insertion_slot(newNode);
 			_insert(newNode, insertPosition);
-			return Iterator(newNode, &_data);
+			return iterator(newNode, &_data);
 		}
 	}
 
-	Iterator erase(const KeyType& key) {
+	iterator erase(const KeyType& key) {
 		_NodePtr nodeToErase 	= _find_in_tree(key);
-		Iterator nextIterator 	= ++Iterator(nodeToErase, &_data);
+		iterator nextIterator 	= ++iterator(nodeToErase, &_data);
 		_destroy(nodeToErase);
 
 		return nextIterator;
 	}
 
-	Iterator erase(ConstIterator iterator) {
+	iterator erase(const_iterator iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range.");
 
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
 
-	Iterator erase(Iterator iterator) {
+	iterator erase(iterator iterator) {
 		if (iterator == end())
 			throw std::out_of_range("Map erase iterator outside range.");
 
 		return erase(Traits::extract_key(iterator._Ptr->_Value));
 	}
 
-	ConstIterator find (const KeyType& key) const {
+	const_iterator find (const KeyType& key) const {
 		_NodePtr foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
-			return ConstIterator(foundNode, &_data);
+			return const_iterator(foundNode, &_data);
 
 		return end();
 	}
 
-	Iterator find(const KeyType& key) {
+	iterator find(const KeyType& key) {
 		_NodePtr foundNode = _find_in_tree(key);
 		if (foundNode != nullptr)
-			return Iterator(foundNode, &_data);
+			return iterator(foundNode, &_data);
 
 		return end();
 	}
@@ -360,7 +360,7 @@ public:
 	}
 
 	size_t max_size() const noexcept {
-		return (custom::min)(static_cast<size_t>((	NumericLimits<DifferenceType>::max)()),
+		return (custom::min)(static_cast<size_t>((	numeric_limits<DifferenceType>::max)()),
 													_AllocNodeTraits::max_size(_alloc));
 	}
 
@@ -378,70 +378,70 @@ public:
 
 	void print_details() const {									// For Debugging
 		std::cout << "Size= " << _data._Size << '\n';
-		std::cout << "First= " << Traits::extract_key(_data._Head->_Left->_Value) << '\n';
+		std::cout << "first= " << Traits::extract_key(_data._Head->_Left->_Value) << '\n';
 		std::cout << "Last= " << Traits::extract_key(_data._Head->_Right->_Value) << '\n';
 		_print_graph(0, _data._Head->_Parent, "HEAD");
 	}
 
 public:
-	// Iterator functions
+	// iterator functions
 
-	Iterator begin() {
-		return Iterator(_data._Head->_Left, &_data);
+	iterator begin() {
+		return iterator(_data._Head->_Left, &_data);
 	}
 
-	ConstIterator begin() const {
-		return ConstIterator(_data._Head->_Left, &_data);
+	const_iterator begin() const {
+		return const_iterator(_data._Head->_Left, &_data);
 	}
 
-	ReverseIterator rbegin() {
-		return ReverseIterator(end());
+	reverse_iterator rbegin() {
+		return reverse_iterator(end());
 	}
 
-	ConstReverseIterator rbegin() const {
-		return ConstReverseIterator(end());
+	const_reverse_iterator rbegin() const {
+		return const_reverse_iterator(end());
 	}
 
-	Iterator end() {
-		return Iterator(_data._Head, &_data);
+	iterator end() {
+		return iterator(_data._Head, &_data);
 	}
 
-	ConstIterator end() const {
-		return ConstIterator(_data._Head, &_data);
+	const_iterator end() const {
+		return const_iterator(_data._Head, &_data);
 	}
 
-	ReverseIterator rend() {
-		return ReverseIterator(begin());
+	reverse_iterator rend() {
+		return reverse_iterator(begin());
 	}
 
-	ConstReverseIterator rend() const {
-		return ConstReverseIterator(begin());
+	const_reverse_iterator rend() const {
+		return const_reverse_iterator(begin());
 	}
 
 protected:
 	// Others
 
 	template<class _KeyType, class... Args>
-	Pair<Iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
-		Iterator it = find(key);
+	pair<iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
+		iterator it = find(key);
 
 		if (it != end())
 			return {it, false};
 		else 
 		{
 			_NodePtr newNode = _create_common_node(
-										custom::PiecewiseConstruct,
+										custom::piecewise_construct,
 										custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 										custom::forward_as_tuple(custom::forward<Args>(args)...));
 
 			auto insertPosition = _find_insertion_slot(newNode);
 			_insert(newNode, insertPosition);
-			return {Iterator(newNode, &_data), true};
+			return {iterator(newNode, &_data), true};
 		}
 	}
 
 	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
-		ConstIterator it = find(key);
+		const_iterator it = find(key);
 		if (it == end())
 			throw std::out_of_range("Invalid key.");
 
@@ -449,7 +449,7 @@ protected:
 	}
 
 	MappedType& _at(const KeyType& key) {
-		Iterator it = find(key);
+		iterator it = find(key);
 		if (it == end())
 			throw std::out_of_range("Invalid key.");
 

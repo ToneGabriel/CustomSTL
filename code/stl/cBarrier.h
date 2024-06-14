@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined __GNUG__
-#include "cThread.h"
+#include "c_thread.h"
 
 CUSTOM_BEGIN
 

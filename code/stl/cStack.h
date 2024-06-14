@@ -1,26 +1,26 @@
 #pragma once
-#include "cVector.h"
-#include "cUtility.h"
+#include "c_vector.h"
+#include "c_utility.h"
 
 
 CUSTOM_BEGIN
 
-template<class Type, class Container = custom::Vector<Type>>
-class Stack				// Stack Template implemented as Vector wrapper
+template<class Type, class Container = custom::vector<Type>>
+class Stack				// Stack Template implemented as vector wrapper
 {
 // The container must satisfy the requirements of SequenceContainer.
 // Additionally, it must provide the following functions with the usual semantics:
 // back(), push_back() (... or emplace_back()), pop_back()
-// custom::Vector, custom::Deque and custom::List satisfy these requirements
+// custom::vector, custom::Deque and custom::List satisfy these requirements
 
 public:
 	using ContainerType 	= Container;
 	using ValueType			= typename ContainerType::ValueType;
 	using DifferenceType 	= typename ContainerType::DifferenceType;
-	using Reference			= typename ContainerType::Reference;
-	using ConstReference	= typename ContainerType::ConstReference;
-	using Pointer			= typename ContainerType::Pointer;
-	using ConstPointer		= typename ContainerType::ConstPointer;
+	using reference			= typename ContainerType::reference;
+	using const_reference	= typename ContainerType::const_reference;
+	using pointer			= typename ContainerType::pointer;
+	using const_pointer		= typename ContainerType::const_pointer;
 
 private:
 	ContainerType _baseContainer;
@@ -78,11 +78,11 @@ public:
 		_baseContainer.clear();
 	}
 
-	ConstReference top() const noexcept {
+	const_reference top() const noexcept {
 		return _baseContainer.back();
 	}
 
-	Reference top() noexcept {
+	reference top() noexcept {
 		return _baseContainer.back();
 	}
 

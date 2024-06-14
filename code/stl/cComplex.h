@@ -1,6 +1,6 @@
 #pragma once
-#include "cUtility.h"
-#include "cLimits.h"
+#include "c_utility.h"
+#include "c_limits.h"
 #include "cNumbers.h"
 
 #include <cmath>
@@ -97,28 +97,28 @@ CUSTOM_DETAIL_BEGIN
 template<class Type>
 struct _ComplexTraitsBase
 {
-    static_assert(IsFloatingPoint_v<Type>, "Complex traits accepts only floating point data type");
+    static_assert(is_floating_point_v<Type>, "Complex traits accepts only floating point data type");
 
     using FloatType = Type;
 
     static constexpr FloatType epsilon_v() {
-        return NumericLimits<FloatType>::epsilon();
+        return numeric_limits<FloatType>::epsilon();
     }
 
     static constexpr FloatType max_v() {
-        return (NumericLimits<FloatType>::max)();
+        return (numeric_limits<FloatType>::max)();
     }
 
     static constexpr FloatType norm_min_v() {
-        return (NumericLimits<FloatType>::min)() > 0 ? (NumericLimits<FloatType>::min)() : 0;
+        return (numeric_limits<FloatType>::min)() > 0 ? (numeric_limits<FloatType>::min)() : 0;
     }
 
     static constexpr FloatType nan_v() {
-        return NumericLimits<FloatType>::quiet_NaN();
+        return numeric_limits<FloatType>::quiet_NaN();
     }
 
     static constexpr FloatType inf_v() {
-        return NumericLimits<FloatType>::infinity();
+        return numeric_limits<FloatType>::infinity();
     }
 
     static constexpr bool is_nan(FloatType val) {
@@ -406,7 +406,7 @@ template<class Type>
 class Complex
 {
 public:
-    static_assert(IsFloatingPoint_v<Type>, "Complex class accepts only floating point data type");
+    static_assert(is_floating_point_v<Type>, "Complex class accepts only floating point data type");
 
     using TraitsType    = ComplexTraits<Type>;
     using ValueType     = Type;
