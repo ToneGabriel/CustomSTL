@@ -1,5 +1,5 @@
 #pragma once
-#include "xMemory.h"
+#include "x_memory.h"
 #include "c_utility.h"
 #include "c_iterator.h"
 #include "c_algorithm.h"
@@ -11,11 +11,11 @@ template<class Type, class Alloc>
 struct _DequeData
 {
 	using _AllocTraits		= allocator_traits<Alloc>;
-	using _AllocPtr 		= typename _AllocTraits::template RebindAlloc<typename _AllocTraits::pointer>;
+	using _AllocPtr 		= typename _AllocTraits::template rebind_alloc<typename _AllocTraits::pointer>;
     using _AllocPtrTraits 	= allocator_traits<_AllocPtr>;
 	using _MapPtr 			= typename _AllocPtrTraits::pointer;
 
-	using ValueType			= typename _AllocTraits::ValueType;
+	using value_type			= typename _AllocTraits::value_type;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
@@ -42,7 +42,7 @@ private:
 
 public:
     using iterator_category 	= random_access_iterator_tag;
-	using ValueType			= typename _Data::ValueType;
+	using value_type			= typename _Data::value_type;
 	using DifferenceType 	= typename _Data::DifferenceType;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
@@ -160,7 +160,7 @@ private:
 
 public:
     using iterator_category 	= random_access_iterator_tag;
-	using ValueType			= typename _Data::ValueType;
+	using value_type			= typename _Data::value_type;
 	using DifferenceType 	= typename _Data::DifferenceType;
 	using reference			= typename _Data::reference;
 	using pointer			= typename _Data::pointer;
@@ -241,10 +241,10 @@ private:
 	using _MapPtr				= typename _Data::_MapPtr;
 
 public:
-	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and allocator type must be the same!");
+	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and allocator type must be the same!");
 	static_assert(is_object_v<Type>, "Containers require object type!");
 
-	using ValueType 			= typename _Data::ValueType;				// Type for stored values
+	using value_type 			= typename _Data::value_type;				// Type for stored values
 	using DifferenceType 		= typename _Data::DifferenceType;
 	using reference				= typename _Data::reference;
 	using const_reference		= typename _Data::const_reference;
@@ -274,7 +274,7 @@ public:
 		resize(newSize);
 	}
 
-	Deque(const size_t newSize, const ValueType& copyValue) {
+	Deque(const size_t newSize, const value_type& copyValue) {
 		resize(newSize, copyValue);
 	}
 
@@ -293,12 +293,12 @@ public:
 public:
 	// Operators
 
-	const ValueType& operator[](const size_t index) const {
+	const value_type& operator[](const size_t index) const {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
 
-	ValueType& operator[](const size_t index) {
+	value_type& operator[](const size_t index) {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<DifferenceType>(index));
 	}
@@ -334,7 +334,7 @@ public:
             pop_back();
 	}
 
-	void resize(const size_t newSize, const ValueType& copyValue) {
+	void resize(const size_t newSize, const value_type& copyValue) {
 		while (_data._Size < newSize)
 			emplace_back(copyValue);
 
@@ -356,11 +356,11 @@ public:
 		++_data._Size;
 	}
 
-	void push_back(const ValueType& copyValue) {
+	void push_back(const value_type& copyValue) {
 		emplace_back(copyValue);
 	}
 
-	void push_back(ValueType&& moveValue) {
+	void push_back(value_type&& moveValue) {
 		emplace_back(custom::move(moveValue));
 	}
 
@@ -391,11 +391,11 @@ public:
 		++_data._Size;
 	}
 
-	void push_front(const ValueType& copyValue) {
+	void push_front(const value_type& copyValue) {
 		emplace_front(copyValue);
 	}
 
-	void push_front(ValueType&& moveValue) {
+	void push_front(value_type&& moveValue) {
 		emplace_front(custom::move(moveValue));
 	}
 
@@ -421,7 +421,7 @@ public:
 			emplace_front(custom::forward<Args>(args)...);
 			
 			iterator current 	= begin() + static_cast<DifferenceType>(off);
-			ValueType val 		= custom::move(*begin());
+			value_type val 		= custom::move(*begin());
 
 			for (iterator it = begin(); it != current; ++it)
 				*it = custom::move(*(it + 1));
@@ -433,7 +433,7 @@ public:
 			emplace_back(custom::forward<Args>(args)...);
 
 			iterator current 	= begin() + static_cast<DifferenceType>(off);
-			ValueType val 		= custom::move(*--end());
+			value_type val 		= custom::move(*--end());
 
 			for (iterator it = --end(); it != current; --it)
 				*it = custom::move(*(it - 1));
@@ -444,11 +444,11 @@ public:
 		return begin() + static_cast<DifferenceType>(off);
 	}
 
-	iterator push(const_iterator iterator, const ValueType& copyValue) {
+	iterator push(const_iterator iterator, const value_type& copyValue) {
 		return emplace(iterator, copyValue);
 	}
 
-	iterator push(const_iterator iterator, ValueType&& moveValue) {
+	iterator push(const_iterator iterator, value_type&& moveValue) {
 		return emplace(iterator, custom::move(moveValue));
 	}
 

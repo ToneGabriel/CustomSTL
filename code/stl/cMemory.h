@@ -1,6 +1,6 @@
 #pragma once
 #include "c_utility.h"
-#include "xMemory.h"
+#include "x_memory.h"
 
 #include <atomic>
 #include <typeinfo>
@@ -601,7 +601,7 @@ private:
     }
 
     void _delete_this() noexcept override { // destroy self
-        using _AllocRefCount        = typename allocator_traits<Alloc>::template RebindAlloc<_RefCountDeleterAlloc>;
+        using _AllocRefCount        = typename allocator_traits<Alloc>::template rebind_alloc<_RefCountDeleterAlloc>;
         using _AllocRefCountTraits  = allocator_traits<_AllocRefCount>;
 
         _AllocRefCount alref(_alloc);
@@ -1020,7 +1020,7 @@ private:
     template<class TypePtr, class Deleter, class Alloc>
     void _set_pointer_alloc(const TypePtr ptr, Deleter del, Alloc alloc) { // take ownership of ptr, deleter del, allocator alloc
         using _RefCountDelAl            = _RefCountDeleterAlloc<TypePtr, Deleter, Alloc>;
-        using _AllocRefCountDelAl       = typename allocator_traits<Alloc>::template RebindAlloc<_RefCountDelAl>;
+        using _AllocRefCountDelAl       = typename allocator_traits<Alloc>::template rebind_alloc<_RefCountDelAl>;
         using _AllocRefCountDelAlTraits = allocator_traits<_AllocRefCountDelAl>;
 
         _TemporaryOwnerDel<TypePtr, Deleter> temp(ptr, del);

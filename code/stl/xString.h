@@ -1,6 +1,6 @@
 #pragma once
-#include "xCharTraits.h"
-#include "xMemory.h"
+#include "x_char_traits.h"
+#include "x_memory.h"
 #include "c_iterator.h"
 #include "c_algorithm.h"
 
@@ -12,12 +12,12 @@ CUSTOM_BEGIN
 template<class Type>
 struct _BasicStringViewData
 {
-	using ValueType			= Type;
+	using value_type			= Type;
 	using DifferenceType	= ptrdiff_t;
-	using reference			= ValueType&;
-	using const_reference	= const ValueType&;
-	using pointer			= ValueType*;
-	using const_pointer		= const ValueType*;
+	using reference			= value_type&;
+	using const_reference	= const value_type&;
+	using pointer			= value_type*;
+	using const_pointer		= const value_type*;
 
 
 	const_pointer _First		= nullptr;
@@ -33,7 +33,7 @@ private:
 
 public:
 	using iterator_category	= random_access_iterator_tag;
-	using ValueType			= typename _Data::ValueType;
+	using value_type			= typename _Data::value_type;
 	using DifferenceType	= typename _Data::DifferenceType;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
@@ -130,21 +130,21 @@ public:
 };  // END BasicStringConstIterator
 
 
-template<class Type, class Traits = custom::CharTraits<Type>>
+template<class Type, class Traits = custom::char_traits<Type>>
 class BasicStringView		// wrapper for any kind of contiguous character buffer
 {
 private:
 	using _Data					= _BasicStringViewData<Type>;
 
 public:
-	static_assert(is_same_v<Type, typename Traits::CharType>,
-		"The program is ill-formed if Traits::CharType is not the same type as Type.");
+	static_assert(is_same_v<Type, typename Traits::char_type>,
+		"The program is ill-formed if Traits::char_type is not the same type as Type.");
 
 	static_assert(!is_array_v<Type>&& IsTrivial_v<Type>&& IsStandardLayout_v<Type>,
 		"The character type of BasicStringView must be a non-array trivial standard-layout type.");
 
 	using TraitsType			= Traits;
-	using ValueType				= typename _Data::ValueType;
+	using value_type				= typename _Data::value_type;
 	using DifferenceType		= typename _Data::DifferenceType;
 	using reference				= typename _Data::reference;
 	using const_reference		= typename _Data::const_reference;
@@ -197,7 +197,7 @@ public:
 
 	constexpr size_t max_size() const noexcept {
 		return (custom::min)(static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
-			static_cast<size_t>(-1) / sizeof(ValueType));
+			static_cast<size_t>(-1) / sizeof(value_type));
 	}
 
 	constexpr bool empty() const noexcept {
@@ -243,7 +243,7 @@ public:
 		}
 	}
 
-	constexpr size_t copy(ValueType* dest, size_t len, size_t pos = 0) const {
+	constexpr size_t copy(value_type* dest, size_t len, size_t pos = 0) const {
 		CUSTOM_ASSERT(size() >= pos, "Offset longer than total size.");
 		len = _clamp_suffix_size(pos, len);		// max number of elems that can be copied
 		TraitsType::copy(dest, _data._First + pos, len);
@@ -301,7 +301,7 @@ public:
 		return _find_cstring(cstring, pos, len);
 	}
 
-	constexpr size_t find(const ValueType chr, const size_t pos = 0) const noexcept {
+	constexpr size_t find(const value_type chr, const size_t pos = 0) const noexcept {
 		return _find_cstring(&chr, pos, 1);
 	}
 	// END Find
@@ -319,7 +319,7 @@ public:
 		return _rfind_cstring(cstring, pos, len);
 	}
 
-	constexpr size_t rfind(ValueType chr, size_t pos = npos) const {
+	constexpr size_t rfind(value_type chr, size_t pos = npos) const {
 		return _rfind_cstring(&chr, pos, 1);
 	}
 	// end Rfind
@@ -333,7 +333,7 @@ public:
 		return find(cstring) != npos;
 	}
 
-	constexpr bool contains(const ValueType chr) const noexcept {
+	constexpr bool contains(const value_type chr) const noexcept {
 		return find(chr) != npos;
 	}
 	// END Contains
@@ -348,7 +348,7 @@ public:
 		return TraitsType::compare(_data._First, other._data._First, otherSize) == 0;
 	}
 
-	constexpr bool starts_with(const ValueType chr) const noexcept {
+	constexpr bool starts_with(const value_type chr) const noexcept {
 		return !empty() && TraitsType::eq(front(), chr);
 	}
 
@@ -367,7 +367,7 @@ public:
 		return TraitsType::compare(_data._Last - otherSize, other._data._First, otherSize) == 0;
 	}
 
-	constexpr bool ends_with(const ValueType chr) const noexcept {
+	constexpr bool ends_with(const value_type chr) const noexcept {
 		return !empty() && TraitsType::eq(back(), chr);
 	}
 
@@ -467,7 +467,7 @@ struct _BasicStringData
 {
 	using _AllocTraits		= allocator_traits<Alloc>;
 
-	using ValueType			= typename _AllocTraits::ValueType;
+	using value_type			= typename _AllocTraits::value_type;
 	using DifferenceType	= typename _AllocTraits::DifferenceType;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
@@ -489,19 +489,19 @@ private:
 
 public:
     using iterator_category 	= random_access_iterator_tag;
-	using ValueType 		= typename _Data::ValueType;
+	using value_type 		= typename _Data::value_type;
 	using DifferenceType	= typename _Data::DifferenceType;
 	using reference 		= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
-	ValueType* _Ptr			= nullptr;
+	value_type* _Ptr			= nullptr;
 	const _Data* _RefData	= nullptr;
 
 public:
 
 	constexpr BasicStringConstIterator() noexcept : _Ptr() { /*Empty*/ }
 
-	constexpr explicit BasicStringConstIterator(ValueType* ptr, const _Data* data) noexcept
+	constexpr explicit BasicStringConstIterator(value_type* ptr, const _Data* data) noexcept
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
 	constexpr BasicStringConstIterator& operator++() noexcept {
@@ -604,7 +604,7 @@ private:
 	
 public:
     using iterator_category 	= random_access_iterator_tag;
-	using ValueType 		= typename _Data::ValueType;
+	using value_type 		= typename _Data::value_type;
 	using DifferenceType	= typename _Data::DifferenceType;
 	using reference			= typename _Data::reference;
 	using pointer			= typename _Data::pointer;
@@ -613,7 +613,7 @@ public:
 
 	constexpr BasicStringIterator() noexcept  = default;
 
-	constexpr explicit BasicStringIterator(ValueType* ptr, const _Data* data) noexcept
+	constexpr explicit BasicStringIterator(value_type* ptr, const _Data* data) noexcept
 		: _Base(ptr, data) { /*Empty*/ }
 
 	constexpr BasicStringIterator& operator++() noexcept {
@@ -674,7 +674,7 @@ public:
 }; // END BasicStringIterator
 
 
-template<class Type, class Alloc = custom::allocator<Type>, class Traits = custom::CharTraits<Type>>
+template<class Type, class Alloc = custom::allocator<Type>, class Traits = custom::char_traits<Type>>
 class BasicString		// null-terminated array of elements
 {
 private:
@@ -682,12 +682,12 @@ private:
 	using _AllocTraits			= typename _Data::_AllocTraits;
 
 public:
-	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and Allocator type must be the same!");
+	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and Allocator type must be the same!");
 	static_assert(!is_array_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
 					"The character type of BasicString must be a non-array trivial standard-layout type.");
 
 	using TraitsType			= Traits;
-	using ValueType				= typename _Data::ValueType;
+	using value_type				= typename _Data::value_type;
 	using DifferenceType		= typename _Data::DifferenceType;
 	using reference				= typename _Data::reference;
 	using const_reference		= typename _Data::const_reference;
@@ -749,9 +749,9 @@ public:
 public:
 	// Operators
 
-    constexpr operator BasicStringView<ValueType, TraitsType>() const noexcept {
+    constexpr operator BasicStringView<value_type, TraitsType>() const noexcept {
         // return a StringView around *this's character-type sequence
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()};
+        return BasicStringView<value_type, TraitsType> {_data._First, size()};
     }
 
 	constexpr const_reference operator[](const size_t index) const noexcept{
@@ -794,7 +794,7 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& operator+=(ValueType chr) {
+	constexpr BasicString& operator+=(value_type chr) {
 		push_back(chr);
 		return *this;
 	}
@@ -821,7 +821,7 @@ public:
 		reserve(size());
 	}
 
-	constexpr void push_back(ValueType chr) {
+	constexpr void push_back(value_type chr) {
 		_extend_if_full();
 		*(_data._Last++)	= chr;
 		_data._Last[0] 		= TraitsType::NULLCHR;
@@ -941,7 +941,7 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& append(size_t nchar, ValueType chr) {							// Appends n consecutive copies of character c
+	constexpr BasicString& append(size_t nchar, value_type chr) {							// Appends n consecutive copies of character c
 		_insert_char(size(), nchar, chr);
 		return *this;
 	}
@@ -968,19 +968,19 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& insert(size_t pos, size_t nchar, ValueType chr) {
+	constexpr BasicString& insert(size_t pos, size_t nchar, value_type chr) {
 		_insert_char(pos, nchar, chr);
 		return *this;
 	}
 
-	constexpr iterator insert(const_iterator where, ValueType chr) {
+	constexpr iterator insert(const_iterator where, value_type chr) {
 		size_t pos = where.get_index();
 		_insert_char(pos, 1, chr);
 
 		return iterator(_data._First + pos, &_data);
 	}
 
-	constexpr iterator insert(const_iterator where, size_t nchar, ValueType chr) {
+	constexpr iterator insert(const_iterator where, size_t nchar, value_type chr) {
 		size_t pos = where.get_index();
 		_insert_char(pos, nchar, chr);
 
@@ -1061,7 +1061,7 @@ public:
 		return _find_cstring(cstring, pos, len);
 	}
 
-	constexpr size_t find(ValueType chr, size_t pos = 0) const {
+	constexpr size_t find(value_type chr, size_t pos = 0) const {
 		return _find_cstring(&chr, pos, 1);
 	}
 // end Find
@@ -1079,13 +1079,13 @@ public:
 		return _rfind_cstring(cstring, pos, len);
 	}
 
-	constexpr size_t rfind(ValueType chr, size_t pos = npos) const {
+	constexpr size_t rfind(value_type chr, size_t pos = npos) const {
 		return _rfind_cstring(&chr, pos, 1);
 	}
 // end Rfind
 
 // Contains
-    constexpr bool contains(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
+    constexpr bool contains(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
         return find(sv.data()) != npos;
     }
 
@@ -1093,36 +1093,36 @@ public:
         return find(cstring) != npos;
     }
 
-    constexpr bool contains(const ValueType chr) const noexcept {
+    constexpr bool contains(const value_type chr) const noexcept {
         return find(chr) != npos;
     }
 // END Contains
 
 // Starts With overload
-	constexpr bool starts_with(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(sv);
+	constexpr bool starts_with(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(sv);
     }
 
-    constexpr bool starts_with(const ValueType chr) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(chr);
+    constexpr bool starts_with(const value_type chr) const noexcept {
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(chr);
     }
 
     constexpr bool starts_with(const_pointer cstring) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.starts_with(cstring);
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(cstring);
     }
 // END Starts With
 
 // Ends With overload
-	constexpr bool ends_with(const BasicStringView<ValueType, TraitsType>& sv) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(sv);
+	constexpr bool ends_with(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(sv);
     }
 
-    constexpr bool ends_with(const ValueType chr) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(chr);
+    constexpr bool ends_with(const value_type chr) const noexcept {
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(chr);
     }
 
     constexpr bool ends_with(const_pointer cstring) const noexcept {
-        return BasicStringView<ValueType, TraitsType> {_data._First, size()}.ends_with(cstring);
+        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(cstring);
     }
 // END Ends With
 
@@ -1239,7 +1239,7 @@ private:
 		_data._Last[0] 	= TraitsType::NULLCHR;
 	}
 
-	constexpr void _insert_char(size_t pos, size_t nchar, ValueType chr) {
+	constexpr void _insert_char(size_t pos, size_t nchar, value_type chr) {
 		if (pos > size())
 			throw std::out_of_range("Invalid starting position.");
 

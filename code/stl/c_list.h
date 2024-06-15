@@ -1,33 +1,33 @@
 #pragma once
-#include "xNode.h"
-#include "xMemory.h"
+#include "x_node.h"
+#include "x_memory.h"
 #include "c_utility.h"
 #include "c_iterator.h"
-#include "cFunctional.h"
+#include "c_functional.h"
 
 
 CUSTOM_BEGIN
 
-CUSTOM_DETAIL_BEGIN	// used to declare _HashTable for friend req in List
+CUSTOM_DETAIL_BEGIN	// used to declare _Hash_Table for friend req in list
 
 template<class Traits>
-class _HashTable;
+class _Hash_Table;
 
 CUSTOM_DETAIL_END
 
 
 template<class Type, class Alloc>
-struct _ListData
+struct _List_Data
 {
 	// deduce data types and forward them
 	using _AllocTraits		= allocator_traits<Alloc>;
 	using _Node				= detail::_DoubleNode<Type>;
-	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
+	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
 	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::pointer;
 
-	using ValueType			= typename _AllocTraits::ValueType;
-	using DifferenceType 	= typename _AllocTraits::DifferenceType;
+	using value_type		= typename _AllocTraits::value_type;
+	using difference_type 	= typename _AllocTraits::difference_type;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
 	using pointer			= typename _AllocTraits::pointer;
@@ -38,16 +38,16 @@ struct _ListData
 };
 
 template<class ListData>
-class ListConstIterator
+class _List_Const_Iterator
 {
 private:
 	using _Data				= ListData;
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using iterator_category 	= bidirectional_iterator_tag;
-	using ValueType			= typename _Data::ValueType;
-	using DifferenceType 	= typename _Data::DifferenceType;
+    using iterator_category	= bidirectional_iterator_tag;
+	using value_type		= typename _Data::value_type;
+	using difference_type	= typename _Data::difference_type;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
@@ -56,31 +56,31 @@ public:
 
 public:
 
-	ListConstIterator() noexcept = default;
+	_List_Const_Iterator() noexcept = default;
 
-	explicit ListConstIterator(_NodePtr nodePtr, const _Data* data) noexcept
+	explicit _List_Const_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
-	ListConstIterator& operator++() noexcept {
+	_List_Const_Iterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator.");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
 
-	ListConstIterator operator++(int) noexcept {
-		ListConstIterator temp = *this;
+	_List_Const_Iterator operator++(int) noexcept {
+		_List_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	ListConstIterator& operator--() noexcept {
+	_List_Const_Iterator& operator--() noexcept {
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Next, "Cannot decrement begin iterator.");
 		_Ptr = _Ptr->_Previous;
 		return *this;
 	}
 
-	ListConstIterator operator--(int) noexcept {
-		ListConstIterator temp = *this;
+	_List_Const_Iterator operator--(int) noexcept {
+		_List_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
@@ -94,11 +94,11 @@ public:
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ListConstIterator& other) const noexcept {
+	bool operator==(const _List_Const_Iterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ListConstIterator& other) const noexcept {
+	bool operator!=(const _List_Const_Iterator& other) const noexcept {
 		return !(*this == other);
 	}
 
@@ -112,52 +112,52 @@ public:
 		return _Ptr == _RefData->_Head;
 	}
 
-	friend void _verify_range(const ListConstIterator& first, const ListConstIterator& last) noexcept {
-		CUSTOM_ASSERT(first._RefData == last._RefData, "List iterators in range are from different containers");
+	friend void _verify_range(const _List_Const_Iterator& first, const _List_Const_Iterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "list iterators in range are from different containers");
 		// No possible way to determine order.
 	}
-}; // END ListConstIterator
+}; // END _List_Const_Iterator
 
 template<class ListData>
-class ListIterator : public ListConstIterator<ListData>		// Linked List iterator
+class _List_Iterator : public _List_Const_Iterator<ListData>		// Linked list iterator
 {
 private:
-	using _Base				= ListConstIterator<ListData>;
+	using _Base				= _List_Const_Iterator<ListData>;
 	using _Data 			= ListData;
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using iterator_category 	= bidirectional_iterator_tag;
-	using ValueType 		= typename _Data::ValueType;
-	using DifferenceType 	= typename _Data::DifferenceType;
+    using iterator_category	= bidirectional_iterator_tag;
+	using value_type 		= typename _Data::value_type;
+	using difference_type 	= typename _Data::difference_type;
 	using reference 		= typename _Data::reference;
 	using pointer 			= typename _Data::pointer;
 
 public:
 
-	ListIterator() noexcept = default;
+	_List_Iterator() noexcept = default;
 
-	explicit ListIterator(_NodePtr nodePtr, const _Data* data) noexcept
+	explicit _List_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		: _Base(nodePtr, data) { /*Empty*/ }
 
-	ListIterator& operator++() noexcept {
+	_List_Iterator& operator++() noexcept {
 		_Base::operator++();
 		return *this;
 	}
 
-	ListIterator operator++(int) noexcept {
-		ListIterator temp = *this;
+	_List_Iterator operator++(int) noexcept {
+		_List_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	ListIterator& operator--() noexcept {
+	_List_Iterator& operator--() noexcept {
 		_Base::operator--();
 		return *this;
 	}
 
-	ListIterator operator--(int) noexcept {
-		ListIterator temp = *this;
+	_List_Iterator operator--(int) noexcept {
+		_List_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
@@ -169,17 +169,17 @@ public:
 	reference operator*() const noexcept {
 		return const_cast<reference>(_Base::operator*());
 	}
-}; // END ListIterator
+}; // END _List_Iterator
 
 
 template<class Type, class Alloc = custom::allocator<Type>>
-class List				// Doubly Linked List
+class list				// Doubly Linked list
 {
 private:
 	template<class>
-	friend class detail::_HashTable;												// Needed in _HashTable class
+	friend class detail::_Hash_Table;												// Needed in _Hash_Table class
 
-	using _Data 				= _ListData<Type, Alloc>;					// Members that are modified
+	using _Data 				= _List_Data<Type, Alloc>;					// Members that are modified
 	using _AllocTraits			= typename _Data::_AllocTraits;
 	using _Node					= typename _Data::_Node;
 	using _AllocNode			= typename _Data::_AllocNode;
@@ -187,21 +187,21 @@ private:
 	using _NodePtr				= typename _Data::_NodePtr;
 
 public:
-	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and allocator type must be the same!");
+	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and allocator type must be the same!");
 	static_assert(is_object_v<Type>, "Containers require object type!");
 
-	using ValueType 			= typename _Data::ValueType;
-	using DifferenceType 		= typename _Data::DifferenceType;
-	using reference				= typename _Data::reference;
-	using const_reference		= typename _Data::const_reference;
-	using pointer				= typename _Data::pointer;
-	using const_pointer			= typename _Data::const_pointer;
+	using value_type				= typename _Data::value_type;
+	using difference_type			= typename _Data::difference_type;
+	using reference					= typename _Data::reference;
+	using const_reference			= typename _Data::const_reference;
+	using pointer					= typename _Data::pointer;
+	using const_pointer				= typename _Data::const_pointer;
 	using allocator_type			= Alloc;
 
-	using iterator				= ListIterator<_Data>;						// iterator type
-	using const_iterator			= ListConstIterator<_Data>;					// Const iterator type
-	using reverse_iterator		= custom::reverse_iterator<iterator>;		// Reverse iterator type
-	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;	// Const Reverse iterator type
+	using iterator					= _List_Iterator<_Data>;
+	using const_iterator			= _List_Const_Iterator<_Data>;
+	using reverse_iterator			= custom::reverse_iterator<iterator>;
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 private:
 	_Data _data;															// Actual container data
@@ -210,23 +210,23 @@ private:
 public:
 	// Constructors
 
-	List() {
+	list() {
 		_create_head();
 	}
 
-	List(const size_t newSize, const ValueType& value) : List() {	// Add multiple copies Constructor
+	list(const size_t newSize, const value_type& value) : list() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
 	}
 
-	List(const List& other) : List() {
+	list(const list& other) : list() {
 		_copy(other);
 	}
 
-	List(List&& other) noexcept : List() {
+	list(list&& other) noexcept : list() {
 		_move(custom::move(other));
 	}
 
-	~List() noexcept {
+	~list() noexcept {
 		clear();
 		_free_head();
 	}
@@ -234,7 +234,7 @@ public:
 public:
 	// Operators
 
-	List& operator=(const List& other) {
+	list& operator=(const list& other) {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -244,7 +244,7 @@ public:
 		return *this;
 	}
 
-	List& operator=(List&& other) noexcept {
+	list& operator=(list&& other) noexcept {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -263,7 +263,7 @@ public:
 	}
 
 	void resize(const size_t newSize,
-				const ValueType& copyValue) {					// Resize the list by removing or adding copy elements to the tail
+				const value_type& copyValue) {					// Resize the list by removing or adding copy elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
 	}
@@ -274,11 +274,11 @@ public:
 		_link_node_before(_data._Head, newNode);
 	}
 
-	void push_back(const ValueType& copyValue) {				// Construct object using reference and add it to the tail
+	void push_back(const value_type& copyValue) {				// Construct object using reference and add it to the tail
 		emplace_back(copyValue);
 	}
 
-	void push_back(ValueType&& moveValue) {						// Construct object using temporary and add it to the tail
+	void push_back(value_type&& moveValue) {						// Construct object using temporary and add it to the tail
 		emplace_back(custom::move(moveValue));
 	}
 	
@@ -293,11 +293,11 @@ public:
 		_link_node_before(_data._Head->_Next, newNode);
 	}
 
-	void push_front(const ValueType& copyValue) {				// Construct object using reference and add it to the head
+	void push_front(const value_type& copyValue) {				// Construct object using reference and add it to the head
 		emplace_front(copyValue);
 	}
 
-	void push_front(ValueType&& moveValue) {					// Construct object using temporary and add it to the head
+	void push_front(value_type&& moveValue) {					// Construct object using temporary and add it to the head
 		emplace_front(custom::move(moveValue));
 	}
 
@@ -314,11 +314,11 @@ public:
 		return iterator(newNode, &_data);
 	}
 
-	iterator push(const_iterator where, const ValueType& copyValue) {		// Construct object using reference and add it BEFORE the where position
+	iterator push(const_iterator where, const value_type& copyValue) {		// Construct object using reference and add it BEFORE the where position
 		return emplace(where, copyValue);
 	}
 
-	iterator push(const_iterator where, ValueType&& moveValue) {			// Construct object using temporary and add it BEFORE the where position
+	iterator push(const_iterator where, value_type&& moveValue) {			// Construct object using temporary and add it BEFORE the where position
 		return emplace(where, custom::move(moveValue));
 	}
 
@@ -372,7 +372,7 @@ public:
 	}
 
 	size_t max_size() const noexcept {
-        return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
+        return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_AllocNodeTraits::max_size(_alloc));
     }
 
@@ -443,20 +443,20 @@ public:
 	}
 
 	size_t unique() {
-		return unique(EqualTo<>{});
+		return unique(equal_to<>{});
 	}
 
-	void splice(const_iterator where, List& other, const_iterator otherFirst, const_iterator otherLast) {
+	void splice(const_iterator where, list& other, const_iterator otherFirst, const_iterator otherLast) {
 		// splice [otherFirst, otherLast) BEFORE where
 
 		if (where._RefData->_Head == otherFirst._RefData->_Head ||
 			otherFirst._RefData->_Head != otherLast._RefData->_Head)
-			throw std::domain_error("List provided by otherFirst and otherLast must be the same, but different from the one provided by where");
+			throw std::domain_error("list provided by otherFirst and otherLast must be the same, but different from the one provided by where");
 
 		size_t count = static_cast<size_t>(custom::distance(otherFirst, otherLast));
 
 		if (max_size() - _data._Size < count)
-			throw std::out_of_range("List too long");
+			throw std::out_of_range("list too long");
 
 		if (count != 0)		// worth splicing
 		{
@@ -474,18 +474,18 @@ public:
 		}
 	}
 
-	void splice(const_iterator where, List& other, const_iterator otherFirst) {
+	void splice(const_iterator where, list& other, const_iterator otherFirst) {
 		// splice [otherFirst, ...) BEFORE where
 		splice(where, other, otherFirst, other.end());
 	}
 
-	void splice(const_iterator where, List& other) {
+	void splice(const_iterator where, list& other) {
 		// spice ALL other list BEFORE where
 		splice(where, other, other.begin(), other.end());
 	}
 
 	template<class Compare>
-	void merge(List& other, Compare comp) {
+	void merge(list& other, Compare comp) {
 		// both lists should be sorted
 		if (_data._Head != other._data._Head && other._data._Size > 0)
 		{
@@ -499,8 +499,8 @@ public:
 		}
 	}
 
-	void merge(List& other) {
-		merge(other, Less<>{});
+	void merge(list& other) {
+		merge(other, less<>{});
 	}
 
 	template<class Compare>
@@ -509,7 +509,7 @@ public:
 	}
 
 	void sort() {
-		sort(Less<>{});
+		sort(less<>{});
 	}
 
 public:
@@ -599,17 +599,16 @@ private:
 		_alloc.deallocate(junkNode, 1);
 	}
 
-	void _copy(const List& other) {								// Generic copy function for list
-		_NodePtr temp = other._data._Head->_Next;
-		while (_data._Size < other._data._Size) {
+	void _copy(const list& other) {								// Generic copy function for list
+		for (	_NodePtr temp = other._data._Head->_Next;
+				_data._Size < other._data._Size;
+				temp = temp->_Next)
 			push_back(temp->_Value);
-			temp = temp->_Next;
-		}
 	}
 
-	void _move(List&& other) noexcept {							// Generic move function for list
+	void _move(list&& other) noexcept {							// Generic move function for list
 		custom::swap(_data._Head, other._data._Head);
-		_data._Size = custom::exchange(other._data._Size, 0);
+		_data._Size = custom::exchange(other._data._Size, 0);	// other list is empty before this
 	}
 
 	template<class... Args>
@@ -707,12 +706,12 @@ private:
 
 		return _data._Head;
 	}
-}; // END Linked List
+}; // END Linked list
 
 
-// List binary operators
+// list binary operators
 template<class _Type, class _Alloc>
-bool operator==(const List<_Type, _Alloc>& left, const List<_Type, _Alloc>& right) {
+bool operator==(const list<_Type, _Alloc>& left, const list<_Type, _Alloc>& right) {
     if (left.size() != right.size())
 		return false;
 
@@ -720,7 +719,7 @@ bool operator==(const List<_Type, _Alloc>& left, const List<_Type, _Alloc>& righ
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const List<_Type, _Alloc>& left, const List<_Type, _Alloc>& right) {
+bool operator!=(const list<_Type, _Alloc>& left, const list<_Type, _Alloc>& right) {
 	return !(left == right);
 }
 

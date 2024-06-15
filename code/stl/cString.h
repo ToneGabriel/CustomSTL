@@ -1,17 +1,17 @@
 #pragma once
 #include "xString.h"
-#include "cFunctional.h"
+#include "c_functional.h"
 
 
 CUSTOM_BEGIN
 
 // All string types
-using String	= BasicString<char, 	custom::allocator<char>, 		custom::CharTraits<char>>;
-using WString	= BasicString<wchar_t, 	custom::allocator<wchar_t>, 	custom::CharTraits<wchar_t>>;
-using U16String = BasicString<char16_t, custom::allocator<char16_t>, 	custom::CharTraits<char16_t>>;
-using U32String = BasicString<char32_t, custom::allocator<char32_t>, 	custom::CharTraits<char32_t>>;
+using String	= BasicString<char, 	custom::allocator<char>, 		custom::char_traits<char>>;
+using WString	= BasicString<wchar_t, 	custom::allocator<wchar_t>, 	custom::char_traits<wchar_t>>;
+using U16String = BasicString<char16_t, custom::allocator<char16_t>, 	custom::char_traits<char16_t>>;
+using U32String = BasicString<char32_t, custom::allocator<char32_t>, 	custom::char_traits<char32_t>>;
 #ifdef __cpp_lib_char8_t
-using U8String	= BasicString<char8_t, 	custom::allocator<char8_t>, 	custom::CharTraits<char8_t>>;;
+using U8String	= BasicString<char8_t, 	custom::allocator<char8_t>, 	custom::char_traits<char8_t>>;;
 #endif
 
 
@@ -57,7 +57,7 @@ inline std::wistream& operator>>(std::wistream& is, WString& wstring) {
 
 // BasicString Helpers
 template<class Type, class Alloc, class Traits>
-struct Less<BasicString<Type, Alloc, Traits>>		// used by Map, Set
+struct less<BasicString<Type, Alloc, Traits>>		// used by map, set
 {
 	constexpr bool operator()(	const BasicString<Type, Alloc, Traits>& left,
 								const BasicString<Type, Alloc, Traits>& right) const {
@@ -68,7 +68,7 @@ struct Less<BasicString<Type, Alloc, Traits>>		// used by Map, Set
 
 template<class Type, class Alloc, class Traits>
 struct hash<BasicString<Type, Alloc, Traits>>
-: _BaseHashEnabler<BasicString<Type, Alloc, Traits>, is_char_v<Type>>	// used by UnorderedMap, UnorderedSet
+: _BaseHashEnabler<BasicString<Type, Alloc, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
 {
 	static size_t compute_hash(const BasicString<Type, Alloc, Traits>& key) noexcept {
 		return detail::_hash_array_representation(key.c_str(), key.size());

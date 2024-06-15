@@ -11,24 +11,24 @@ CUSTOM_BEGIN
 
 // unary function traits
 template<class Arg, class Res>
-struct UnaryFunctionTraits
+struct _Unary_Function_Traits
 {
-    using ArgumentType  = Arg;
-    using ResultType    = Res;
+    using argument_type = Arg;
+    using result_type   = Res;
 };
 
 // binary function traits
 template<class Arg1, class Arg2, class Res>
-struct BinaryFunctionTraits
+struct _Binary_Function_Traits
 {
-    using FirstArgumentType     = Arg1;
-    using SecondArgumentType    = Arg2;
-    using ResultType            = Res;
+    using first_argument_type   = Arg1;
+    using second_argument_type  = Arg2;
+    using result_type           = Res;
 };
 
 // equal to
 template<class Ty = void>
-struct EqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
+struct equal_to : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left == right;
@@ -36,7 +36,7 @@ struct EqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct EqualTo<void>
+struct equal_to<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -45,12 +45,12 @@ struct EqualTo<void>
         return custom::forward<Ty1>(left) == custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // not equal to
 template<class Ty = void>
-struct NotEqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
+struct not_equal_to : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left != right;
@@ -58,7 +58,7 @@ struct NotEqualTo : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct NotEqualTo<void>
+struct not_equal_to<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -67,12 +67,12 @@ struct NotEqualTo<void>
         return custom::forward<Ty1>(left) != custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // greater
 template<class Ty = void>
-struct Greater : public BinaryFunctionTraits<Ty, Ty, bool>
+struct greater : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left > right;
@@ -80,7 +80,7 @@ struct Greater : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct Greater<void>
+struct greater<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -89,12 +89,12 @@ struct Greater<void>
         return custom::forward<Ty1>(left) > custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // greater equal
 template<class Ty = void>
-struct GreaterEqual : public BinaryFunctionTraits<Ty, Ty, bool>
+struct greater_equal : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left >= right;
@@ -102,7 +102,7 @@ struct GreaterEqual : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct GreaterEqual<void>
+struct greater_equal<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -111,12 +111,12 @@ struct GreaterEqual<void>
         return custom::forward<Ty1>(left) >= custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // less
 template<class Ty = void>
-struct Less : public BinaryFunctionTraits<Ty, Ty, bool>
+struct less : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left < right;
@@ -124,7 +124,7 @@ struct Less : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct Less<void>
+struct less<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -133,12 +133,12 @@ struct Less<void>
         return custom::forward<Ty1>(left) < custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // less equal
 template<class Ty = void>
-struct LessEqual : public BinaryFunctionTraits<Ty, Ty, bool>
+struct less_equal : public _Binary_Function_Traits<Ty, Ty, bool>
 {
     constexpr bool operator()(const Ty& left, const Ty& right) const {
         return left <= right;
@@ -146,7 +146,7 @@ struct LessEqual : public BinaryFunctionTraits<Ty, Ty, bool>
 };
 
 template<>
-struct LessEqual<void>
+struct less_equal<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -155,12 +155,12 @@ struct LessEqual<void>
         return custom::forward<Ty1>(left) <= custom::forward<Ty2>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // plus
 template<class Ty = void>
-struct Plus : public BinaryFunctionTraits<Ty, Ty, Ty>
+struct plus : public _Binary_Function_Traits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left + right;
@@ -168,7 +168,7 @@ struct Plus : public BinaryFunctionTraits<Ty, Ty, Ty>
 };
 
 template<>
-struct Plus<void>
+struct plus<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -177,12 +177,12 @@ struct Plus<void>
         return custom::forward<Ty1>(left) + custom::forward<Ty1>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // minus
 template<class Ty = void>
-struct Minus : public BinaryFunctionTraits<Ty, Ty, Ty>
+struct minus : public _Binary_Function_Traits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left - right;
@@ -190,7 +190,7 @@ struct Minus : public BinaryFunctionTraits<Ty, Ty, Ty>
 };
 
 template<>
-struct Minus<void>
+struct minus<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -199,12 +199,12 @@ struct Minus<void>
         return custom::forward<Ty1>(left) - custom::forward<Ty1>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // multiplies
 template<class Ty = void>
-struct Multiplies : public BinaryFunctionTraits<Ty, Ty, Ty>
+struct multiplies : public _Binary_Function_Traits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left * right;
@@ -212,7 +212,7 @@ struct Multiplies : public BinaryFunctionTraits<Ty, Ty, Ty>
 };
 
 template<>
-struct Multiplies<void>
+struct multiplies<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -221,12 +221,12 @@ struct Multiplies<void>
         return custom::forward<Ty1>(left) * custom::forward<Ty1>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // divides
 template<class Ty = void>
-struct Divides : public BinaryFunctionTraits<Ty, Ty, Ty>
+struct divides : public _Binary_Function_Traits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left / right;
@@ -234,7 +234,7 @@ struct Divides : public BinaryFunctionTraits<Ty, Ty, Ty>
 };
 
 template<>
-struct Divides<void>
+struct divides<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -243,12 +243,12 @@ struct Divides<void>
         return custom::forward<Ty1>(left) / custom::forward<Ty1>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // modulus
 template<class Ty = void>
-struct Modulus : public BinaryFunctionTraits<Ty, Ty, Ty>
+struct modulus : public _Binary_Function_Traits<Ty, Ty, Ty>
 {
     constexpr Ty operator()(const Ty& left, const Ty& right) const {
         return left % right;
@@ -256,7 +256,7 @@ struct Modulus : public BinaryFunctionTraits<Ty, Ty, Ty>
 };
 
 template<>
-struct Modulus<void>
+struct modulus<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& left, Ty2&& right) const
@@ -265,12 +265,12 @@ struct Modulus<void>
         return custom::forward<Ty1>(left) % custom::forward<Ty1>(right);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 // negate
 template<class Ty = void>
-struct Negate : public UnaryFunctionTraits<Ty, Ty>
+struct negate : public _Unary_Function_Traits<Ty, Ty>
 {
     constexpr Ty operator()(const Ty& val) const {
         return -val;
@@ -278,7 +278,7 @@ struct Negate : public UnaryFunctionTraits<Ty, Ty>
 };
 
 template<>
-struct Negate<void>
+struct negate<void>
 {
     template<class Ty1, class Ty2>
     constexpr auto operator()(Ty1&& val) const
@@ -287,7 +287,7 @@ struct Negate<void>
         return -custom::forward<Ty1>(val);
     }
 
-    using IsTransparent = int;
+    using is_transparent = int;
 };
 
 #pragma endregion Unary/Binary Operations
@@ -296,9 +296,9 @@ struct Negate<void>
 #pragma region Function
 
 template<class Signature>
-class Function;
+class function;
 
-class BadFunctionCall : public std::exception // exception thrown when an empty custom::Function is called
+class BadFunctionCall : public std::exception // exception thrown when an empty custom::function is called
 {
 public:
     BadFunctionCall() noexcept { /*Empty*/ }
@@ -309,12 +309,12 @@ public:
 };  // END BadFunctionCall
 
 template<class Callable>
-constexpr bool _TestableCallable_v = Disjunction_v<IsPointer<Callable>,
-                                                   IsSpecialization<Callable, Function>,
-                                                   IsMemberPointer<Callable>>;
+constexpr bool _TestableCallable_v = disjunction_v<is_pointer<Callable>,
+                                                   is_specialization<Callable, function>,
+                                                   is_member_pointer<Callable>>;
 
 template<class Callable>
-bool _test_callable(const Callable& obj) noexcept { // determine whether custom::Function must store obj
+bool _test_callable(const Callable& obj) noexcept { // determine whether custom::function must store obj
     if constexpr (_TestableCallable_v<Callable>)
         return !!obj;   // obj != nullptr;
     else
@@ -327,10 +327,10 @@ bool _test_callable(const Callable& obj) noexcept { // determine whether custom:
 static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
 static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
 
-template<class Impl>    // when _CallableImpl wraps an object(big) that has operator()
-static constexpr bool _IsLarge =    sizeof(Impl) > _SpaceSize ||
-                                    alignof(Impl) > alignof(max_align_t) ||
-                                    !Impl::_NothrowMove::Value;
+template<class _Impl>    // when _CallableImpl wraps an object(big) that has operator()
+static constexpr bool _IsLarge =    sizeof(_Impl) > _SpaceSize ||
+                                    alignof(_Impl) > alignof(max_align_t) ||
+                                    !_Impl::_NothrowMove::value;
 
 
 template<class RetType, class... Args>
@@ -413,18 +413,18 @@ private:
 
 
 template<class RetType, class... Args>
-class Function<RetType(Args...)>                // wrapper for callable objects
+class function<RetType(Args...)>                // wrapper for callable objects
 {
 public:
-    using ResultType    = RetType;
-    using Impl          = _CallableInterface<RetType, Args...>;
+    using result_type    = RetType;
+    using _Impl          = _CallableInterface<RetType, Args...>;
 
 private:
     union _Storage  // storage for small objects
     {
         max_align_t _Val;                        // for maximum alignment
         char Pad[_SpaceSize];                   // to permit aliasing
-        Impl* _Ptrs[_SmallObjectNumPtrs];       // _Ptrs[_SmallObjectNumPtrs - 1] is reserved
+        _Impl* _Ptrs[_SmallObjectNumPtrs];       // _Ptrs[_SmallObjectNumPtrs - 1] is reserved
     };
 
     _Storage _storage;
@@ -432,43 +432,43 @@ private:
 public:
     // Constructors
 
-    Function() noexcept {
+    function() noexcept {
         _set_impl(nullptr);
     }
 
-    Function(std::nullptr_t) noexcept : Function() { /*Empty*/ }
+    function(std::nullptr_t) noexcept : function() { /*Empty*/ }
 
-    Function(const Function& other) {
+    function(const function& other) {
         _reset_copy(other);
     }
 
-    Function(Function&& other) noexcept {
+    function(function&& other) noexcept {
         _reset_move(custom::move(other));
     }
 
-    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
-    Function(Callable&& val) {
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, function>, bool> = true>
+    function(Callable&& val) {
         _reset(custom::forward<Callable>(val));
     }
 
-    ~Function() noexcept {
+    ~function() noexcept {
         _clean_up_storage();
     }
 
 public:
     // Operators
 
-    Function& operator=(std::nullptr_t) noexcept {
+    function& operator=(std::nullptr_t) noexcept {
         _clean_up_storage();
         return *this;
     }
 
-    Function& operator=(const Function& other) {
-        Function(other).swap(*this);
+    function& operator=(const function& other) {
+        function(other).swap(*this);
         return *this;
     }
 
-    Function& operator=(Function&& other) noexcept {
+    function& operator=(function&& other) noexcept {
         if (this != &other)
         {
             _clean_up_storage();
@@ -478,20 +478,20 @@ public:
         return *this;
     }
 
-    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
-    Function& operator=(Callable&& val) {
-        Function(custom::forward<Callable>(val)).swap(*this);
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, function>, bool> = true>
+    function& operator=(Callable&& val) {
+        function(custom::forward<Callable>(val)).swap(*this);
         return *this;
     }
 
     template<class Callable>
-    Function& operator=(reference_wrapper<Callable> refVal) noexcept {
+    function& operator=(reference_wrapper<Callable> refVal) noexcept {
         _clean_up_storage();
         _reset(refVal);
         return *this;
     }
 
-    ResultType operator()(Args... args) const {
+    result_type operator()(Args... args) const {
         if (_empty())
             throw custom::BadFunctionCall();
 
@@ -505,7 +505,7 @@ public:
 public:
     // Main functions
 
-    void swap(Function& other) noexcept {
+    void swap(function& other) noexcept {
         if (!_local() && !other._local())   // just swap pointers
         {
             auto _Temp = _get_impl();
@@ -514,7 +514,7 @@ public:
         }
         else                                // do three-way move
         {
-            Function _Temp;
+            function _Temp;
             _Temp._reset_move(custom::move(*this));
             _reset_move(custom::move(other));
             other._reset_move(custom::move(_Temp));
@@ -538,12 +538,12 @@ public:
 private:
     // Helpers
 
-    void _reset_copy(const Function& other) {           // copy other's stored object
+    void _reset_copy(const function& other) {           // copy other's stored object
         if (!other._empty())
             _set_impl(other._get_impl()->_copy(&_storage));  // copy to _storage[0]
     }
 
-    void _reset_move(Function&& other) noexcept {       // move other's stored object
+    void _reset_move(function&& other) noexcept {       // move other's stored object
         if (!other._empty())
         {
             if (other._local()) // move and tidy
@@ -561,7 +561,7 @@ private:
 
     template<class Callable>
     void _reset(Callable&& val) { // store copy of val
-        if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
+        if (!_test_callable(val))   // null member pointer/function pointer/custom::function
             return;                 // already empty
 
         using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
@@ -572,11 +572,11 @@ private:
             _set_impl(::new(&_storage) OtherImpl(custom::forward<Callable>(val)));
     }
 
-    Impl* _get_impl() const noexcept {
+    _Impl* _get_impl() const noexcept {
         return _storage._Ptrs[_SmallObjectNumPtrs - 1];
     }
 
-    void _set_impl(Impl* ptr) noexcept {
+    void _set_impl(_Impl* ptr) noexcept {
         _storage._Ptrs[_SmallObjectNumPtrs - 1] = ptr;
     }
 
@@ -599,7 +599,7 @@ private:
     const void* _target(const std::type_info& info) const noexcept {
         return _get_impl() ? _get_impl()->_target(info) : nullptr;
     }
-};  // END Function
+};  // END function
 
 #else   // CUSTOM_OPTIMAL_IMPLEMENTATION - store callable object impl in heap regardless of size
 
@@ -664,62 +664,62 @@ private:
 
 
 template<class RetType, class... Args>
-class Function<RetType(Args...)>                // wrapper for callable objects
+class function<RetType(Args...)>                // wrapper for callable objects
 {
 public:
-    using ResultType    = RetType;
-    using Impl          = _CallableInterface<RetType, Args...>;
+    using result_type   = RetType;
+    using _Impl         = _CallableInterface<RetType, Args...>;
 
 private:
-    UniquePtr<Impl> _storage;
+    UniquePtr<_Impl> _storage;
 
 public:
     // Constructors
 
-    Function() noexcept { /*Empty*/}
+    function() noexcept { /*Empty*/}
 
-    Function(std::nullptr_t) noexcept { /*Empty*/ }
+    function(std::nullptr_t) noexcept { /*Empty*/ }
 
-    Function(const Function& other) : _storage(other._storage->_copy()) { /*Empty*/ }
+    function(const function& other) : _storage(other._storage->_copy()) { /*Empty*/ }
 
-    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
-    Function(Callable&& val) : _storage(nullptr) {
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, function>, bool> = true>
+    function(Callable&& val) : _storage(nullptr) {
         _reset(custom::forward<Callable>(val));
     }
 
-    Function(Function&& other) noexcept = default;
-    ~Function() noexcept                = default;
+    function(function&& other) noexcept = default;
+    ~function() noexcept                = default;
 
 public:
     // Operators
 
-    Function& operator=(std::nullptr_t) noexcept {
+    function& operator=(std::nullptr_t) noexcept {
         _storage.reset();
         return *this;
     }
 
-    Function& operator=(const Function& other) {
+    function& operator=(const function& other) {
         if (_storage != other._storage)
             _storage.reset(other._storage->_copy());
 
         return *this;
     }
 
-    Function& operator=(Function&& other) noexcept = default;
+    function& operator=(function&& other) noexcept = default;
 
-    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, Function>, bool> = true>
-    Function& operator=(Callable&& val) {
+    template<class Callable, enable_if_t<!is_same_v<decay_t<Callable>, function>, bool> = true>
+    function& operator=(Callable&& val) {
         _reset(custom::forward<Callable>(val));
         return *this;
     }
 
     template<class Callable>
-    Function& operator=(reference_wrapper<Callable> refVal) noexcept {
+    function& operator=(reference_wrapper<Callable> refVal) noexcept {
         _reset(refVal);
         return *this;
     }
 
-    ResultType operator()(Args... args) const {
+    result_type operator()(Args... args) const {
         if (!_storage)
             throw custom::BadFunctionCall();
 
@@ -733,8 +733,8 @@ public:
 public:
     // Main functions
 
-    void swap(Function& other) noexcept {
-        Impl* temp = _storage.release();
+    void swap(function& other) noexcept {
+        _Impl* temp = _storage.release();
         _storage.reset(other._storage.release());
         other._storage.reset(temp);
     }
@@ -758,7 +758,7 @@ private:
 
     template<class Callable>
     void _reset(Callable&& val) { // store copy of val
-        if (!_test_callable(val))   // null member pointer/function pointer/custom::Function
+        if (!_test_callable(val))   // null member pointer/function pointer/custom::function
             return;                 // already empty
 
         using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
@@ -769,7 +769,7 @@ private:
     const void* _target(const std::type_info& info) const noexcept {
         return static_cast<bool>(_storage) ?  _storage->_target(info) : nullptr;
     }
-};  // END Function
+};  // END function
 
 #endif  // CUSTOM_OPTIMAL_IMPLEMENTATION
 #pragma endregion Function
@@ -779,80 +779,80 @@ private:
 
 // placeholder
 template<int num>
-struct Placeholder { static_assert(num > 0, "invalid placeholder index"); };
+struct placeholder { static_assert(num > 0, "invalid placeholder index"); };
 
 namespace placeholders
 {
-    constexpr Placeholder<1> _1;
-    constexpr Placeholder<2> _2;
-    constexpr Placeholder<3> _3;
-    constexpr Placeholder<4> _4;
-    constexpr Placeholder<5> _5;
-    constexpr Placeholder<6> _6;
-    constexpr Placeholder<7> _7;
-    constexpr Placeholder<8> _8;
-    constexpr Placeholder<9> _9;
-    constexpr Placeholder<10> _10;
-    constexpr Placeholder<11> _11;
-    constexpr Placeholder<12> _12;
-    constexpr Placeholder<13> _13;
-    constexpr Placeholder<14> _14;
-    constexpr Placeholder<15> _15;
-    constexpr Placeholder<16> _16;
-    constexpr Placeholder<17> _17;
-    constexpr Placeholder<18> _18;
-    constexpr Placeholder<19> _19;
-    constexpr Placeholder<20> _20;
+    constexpr placeholder<1> _1;
+    constexpr placeholder<2> _2;
+    constexpr placeholder<3> _3;
+    constexpr placeholder<4> _4;
+    constexpr placeholder<5> _5;
+    constexpr placeholder<6> _6;
+    constexpr placeholder<7> _7;
+    constexpr placeholder<8> _8;
+    constexpr placeholder<9> _9;
+    constexpr placeholder<10> _10;
+    constexpr placeholder<11> _11;
+    constexpr placeholder<12> _12;
+    constexpr placeholder<13> _13;
+    constexpr placeholder<14> _14;
+    constexpr placeholder<15> _15;
+    constexpr placeholder<16> _16;
+    constexpr placeholder<17> _17;
+    constexpr placeholder<18> _18;
+    constexpr placeholder<19> _19;
+    constexpr placeholder<20> _20;
 }
 
 template<class Ty>
-struct IsPlaceholder : integral_constant<int, 0> {}; // Ty is not a placeholder
+struct is_placeholder : integral_constant<int, 0> {}; // Ty is not a placeholder
 
 template<int num>
-struct IsPlaceholder<Placeholder<num>> : integral_constant<int, num> {}; // Placeholder is ok
+struct is_placeholder<placeholder<num>> : integral_constant<int, num> {}; // placeholder is ok
 
 template<class Ty>
-struct IsPlaceholder<const Ty> : IsPlaceholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<const Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct IsPlaceholder<volatile Ty> : IsPlaceholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<volatile Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct IsPlaceholder<const volatile Ty> : IsPlaceholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<const volatile Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-constexpr int IsPlaceholder_v = IsPlaceholder<Ty>::Value;
+constexpr int is_placeholder_v = is_placeholder<Ty>::value;
 
 // bind helpers
 template<class Functor, class... Args>
-class Binder;
+class binder;
 
 template<class Ty>
-struct IsBindExpression : false_type {}; // Ty is not a bind expression
+struct is_bind_expression : false_type {}; // Ty is not a bind expression
 
 template<class Functor, class... Args>
-struct IsBindExpression<Binder<Functor, Args...>> : true_type {}; // Binder is a bind expression
+struct is_bind_expression<binder<Functor, Args...>> : true_type {}; // binder is a bind expression
 
 template<class Ty>
-struct IsBindExpression<const Ty> : IsBindExpression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<const Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct IsBindExpression<volatile Ty> : IsBindExpression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<volatile Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct IsBindExpression<const volatile Ty> : IsBindExpression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<const volatile Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
 
 template<class Ty>
-constexpr bool IsBindExpression_v = IsBindExpression<Ty>::Value;
+constexpr bool is_bind_expression_v = is_bind_expression<Ty>::value;
 
 
 CUSTOM_DETAIL_BEGIN
 
 // bind fixers & callers
 template<   class BoundArgType,
-            bool = is_specialization_v<RemoveCV_t<BoundArgType>, reference_wrapper>,
-            bool = IsBindExpression_v<BoundArgType>,
-            int  = IsPlaceholder_v<BoundArgType>>
+            bool = is_specialization_v<remove_cv_t<BoundArgType>, reference_wrapper>,
+            bool = is_bind_expression_v<BoundArgType>,
+            int  = is_placeholder_v<BoundArgType>>
 struct _BoundArgFixer;
 
 template<class BoundArgType>
@@ -896,7 +896,7 @@ public:
 template<class BoundArgType, int Ix>
 struct _BoundArgFixer<BoundArgType, false, false, Ix>      // placeholder fixer
 {
-    static_assert(Ix > 0, "invalid IsPlaceholder value");
+    static_assert(Ix > 0, "invalid is_placeholder value");
 
     template<class UnboundTuple>
     static constexpr auto fix(BoundArgType&, UnboundTuple&& unboundTuple) noexcept
@@ -925,14 +925,14 @@ CUSTOM_DETAIL_END
 
 // bind
 template<class Functor, class... Args>
-class Binder
+class binder
 {
 private:
     decay_t<Functor>        _functor;
     tuple<decay_t<Args>...> _boundArgs;
 
 public:
-    constexpr explicit Binder(Functor&& func, Args&&... args)
+    constexpr explicit binder(Functor&& func, Args&&... args)
         :   _functor(custom::forward<Functor>(func)),
             _boundArgs(custom::forward<Args>(args)...) { /*Empty*/ }
 
@@ -957,8 +957,8 @@ public:
 };
 
 template<class Functor, class... Args>
-constexpr Binder<Functor, Args...> bind(Functor&& func, Args&&... args) {
-    return Binder<Functor, Args...>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+constexpr binder<Functor, Args...> bind(Functor&& func, Args&&... args) {
+    return binder<Functor, Args...>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 }
 
 #pragma endregion Bind

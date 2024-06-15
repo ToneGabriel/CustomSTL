@@ -92,7 +92,7 @@ void thread_test() {
 }
 
 void semaphore_test() {
-    auto semaphore_test_task = [](int id, custom::CountingSemaphore<>& sem) {
+    auto semaphore_test_task = [](int id, custom::counting_semaphore<>& sem) {
         // custom::chrono::system_clock::now() + custom::chrono::Milliseconds(2000);
         // custom::chrono::Milliseconds(2000);
 
@@ -112,7 +112,7 @@ void semaphore_test() {
     };  // semaphore task
 
 	const int numTasks = 3;
-    custom::CountingSemaphore<> semaphore(2); // Initialize semaphore with a count of 2
+    custom::counting_semaphore<> semaphore(2); // Initialize semaphore with a count of 2
     custom::thread tasks[numTasks];
     
     // Start multiple tasks that attempt to acquire the semaphore

@@ -9,9 +9,9 @@ CUSTOM_DETAIL_BEGIN
 template<class Type>
 struct _ForwardNode			// Struct that holds data and references to next struct
 {
-	using ValueType = Type;
+	using value_type = Type;
 
-	ValueType _Value;
+	value_type _Value;
 	_ForwardNode* _Next = nullptr;
 
 	_ForwardNode()									= default;
@@ -19,10 +19,10 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 	_ForwardNode(const _ForwardNode&)				= delete;
 	_ForwardNode& operator=(const _ForwardNode&)	= delete;
 
-	_ForwardNode(const ValueType& copyVal)
+	_ForwardNode(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_ForwardNode(ValueType&& moveVal)
+	_ForwardNode(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>
@@ -34,9 +34,9 @@ struct _ForwardNode			// Struct that holds data and references to next struct
 template<class Type>
 struct _DoubleNode			// Struct that holds data and references to next and previous struct
 {
-	using ValueType = Type;
+	using value_type = Type;
 
-	ValueType _Value;
+	value_type _Value;
 	_DoubleNode* _Previous 	= nullptr;
 	_DoubleNode* _Next 		= nullptr;
 
@@ -45,10 +45,10 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 	_DoubleNode(const _DoubleNode&)				= delete;
 	_DoubleNode& operator=(const _DoubleNode&)	= delete;
 
-	_DoubleNode(const ValueType& copyVal)
+	_DoubleNode(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_DoubleNode(ValueType&& moveVal)
+	_DoubleNode(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>
@@ -58,9 +58,9 @@ struct _DoubleNode			// Struct that holds data and references to next and previo
 
 
 template<class Type>
-struct _TreeNode			// Used in _SearchTree
+struct _TreeNode			// Used in _Search_Tree
 {
-	using ValueType = Type;
+	using value_type = Type;
 	
 	enum class Colors
 	{
@@ -68,7 +68,7 @@ struct _TreeNode			// Used in _SearchTree
 		Black
 	};
 
-	ValueType _Value;
+	value_type _Value;
 	_TreeNode* _Parent 	= nullptr;
 	_TreeNode* _Left 	= nullptr;
 	_TreeNode* _Right 	= nullptr;
@@ -80,10 +80,10 @@ struct _TreeNode			// Used in _SearchTree
 	_TreeNode(const _TreeNode&)				= delete;
 	_TreeNode& operator=(const _TreeNode&)	= delete;
 
-	_TreeNode(const ValueType& copyVal)
+	_TreeNode(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_TreeNode(ValueType&& moveVal)
+	_TreeNode(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>

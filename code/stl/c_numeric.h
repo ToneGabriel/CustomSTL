@@ -1,7 +1,7 @@
 #pragma once
 #include "c_utility.h"
 #include "c_iterator.h"
-#include "cBit.h"
+#include "c_bit.h"
 
 
 CUSTOM_BEGIN
@@ -30,7 +30,7 @@ constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperatio
 
 template<class InputIt, class Type>
 constexpr Type accumulate(InputIt first, InputIt last, Type init) {
-    return custom::accumulate(first, last, init, Plus<>{});
+    return custom::accumulate(first, last, init, plus<>{});
 }
 // END accumulate
 
@@ -51,7 +51,7 @@ constexpr Type inner_product(   InputIt1 first1, InputIt1 last1,
 
 template<class InputIt1, class InputIt2, class Type>
 constexpr Type inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init) {
-    return custom::inner_product(first1, last1, first2, custom::move(init), Plus<>{}, Multiplies<>{});
+    return custom::inner_product(first1, last1, first2, custom::move(init), plus<>{}, multiplies<>{});
 }
 // END inner_product
 
@@ -63,14 +63,14 @@ constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt des
     
     if (first != last)
     {
-        using ValueType = typename iterator_traits<InputIt>::ValueType;
+        using value_type = typename iterator_traits<InputIt>::value_type;
 
-        ValueType acc   = *first;
+        value_type acc   = *first;
         *destFirst      = acc;
     
         while (++first != last)
         {
-            ValueType val   = *first;
+            value_type val   = *first;
             *++destFirst    = op(val, custom::move(acc));
             acc             = custom::move(val);
         }
@@ -83,7 +83,7 @@ constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt des
 
 template<class InputIt, class OutputIt>
 constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt destFirst) {
-    return custom::adjacent_difference(first, last, destFirst, Minus<>{});
+    return custom::adjacent_difference(first, last, destFirst, minus<>{});
 }
 // END adjacent_difference
 
@@ -95,9 +95,9 @@ constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, 
     
     if (first != last)
     {
-        using ValueType = typename iterator_traits<InputIt>::ValueType;
+        using value_type = typename iterator_traits<InputIt>::value_type;
 
-        ValueType acc       = *first;
+        value_type acc       = *first;
         *destFirst          = acc;
     
         while (++first != last)
@@ -114,7 +114,7 @@ constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, 
 
 template<class InputIt, class OutputIt>
 constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst) {
-    return partial_sum(first, last, destFirst, Plus<>{});
+    return partial_sum(first, last, destFirst, plus<>{});
 }
 // END partial_sum
 
@@ -132,12 +132,12 @@ constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op
 
 template<class InputIt, class Type>
 constexpr Type reduce(InputIt first, InputIt last, Type init) {
-    return custom::reduce(first, last, custom::move(init), Plus<>{});
+    return custom::reduce(first, last, custom::move(init), plus<>{});
 }
 
 template<class InputIt>
-constexpr typename iterator_traits<InputIt>::ValueType reduce(InputIt first, InputIt last) {
-    return custom::reduce(first, last, typename iterator_traits<InputIt>::ValueType{}, Plus<>{});
+constexpr typename iterator_traits<InputIt>::value_type reduce(InputIt first, InputIt last) {
+    return custom::reduce(first, last, typename iterator_traits<InputIt>::value_type{}, plus<>{});
 }
 // END reduce
 
@@ -172,7 +172,7 @@ template<class InputIt, class OutputIt, class Type>
 constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
                                     OutputIt destFirst, Type init) {
 
-    return custom::exclusive_scan(first, last, destFirst, custom::move(init), Plus<>{});
+    return custom::exclusive_scan(first, last, destFirst, custom::move(init), plus<>{});
 }
 // END exclusive_scan
 
@@ -201,9 +201,9 @@ constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
 
     if (first != last)
     {
-        using ValueType = typename iterator_traits<InputIt>::ValueType;
+        using value_type = typename iterator_traits<InputIt>::value_type;
 
-        ValueType init = *first;
+        value_type init = *first;
 
         for (;;)
         {
@@ -222,7 +222,7 @@ constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
 
 template<class InputIt, class OutputIt>
 constexpr OutputIt inclusive_scan(InputIt first, InputIt last, OutputIt destFirst) {
-    return custom::inclusive_scan(first, last, destFirst, Plus<>{});
+    return custom::inclusive_scan(first, last, destFirst, plus<>{});
 }
 // END inclusive_scan
 
@@ -243,7 +243,7 @@ constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1,
 
 template<class InputIt1, class InputIt2, class Type>
 constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init) {
-    return custom::transform_reduce(first1, last1, first2, custom::move(init), Plus<>{}, Multiplies<>{});
+    return custom::transform_reduce(first1, last1, first2, custom::move(init), plus<>{}, multiplies<>{});
 }
 
 template<class InputIt1, class Type, class BinaryOperation, class UnaryOperation>
@@ -337,9 +337,9 @@ constexpr auto abs_unsigned(const Integral val) noexcept {
     // representing the negation of the minimum value)
     static_assert(is_integral_v<Integral>);
 
-    if constexpr (IsSigned_v<Integral>)
+    if constexpr (is_signed_v<Integral>)
     {
-        using _Unsigned = MakeUnsigned_t<Integral>;
+        using _Unsigned = make_unsigned_t<Integral>;
 
         // note static_cast to _Unsigned such that Integral == short returns unsigned short rather than int
         if (val < 0)
@@ -354,11 +354,11 @@ constexpr auto abs_unsigned(const Integral val) noexcept {
 
 // greatest common divizor
 template<class first, class second>
-constexpr CommonType_t<first, second> gcd(first val1, second val2) noexcept {
+constexpr common_type_t<first, second> gcd(first val1, second val2) noexcept {
     static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "GCD requires nonbool integral types");
 
-    using _Common           = CommonType_t<first, second>;
-    using _CommonUnsigned   = MakeUnsigned_t<_Common>;
+    using _Common           = common_type_t<first, second>;
+    using _CommonUnsigned   = make_unsigned_t<_Common>;
 
     _CommonUnsigned valAbs1 = abs_unsigned(val1);
     _CommonUnsigned valAbs2 = abs_unsigned(val2);
@@ -398,11 +398,11 @@ constexpr CommonType_t<first, second> gcd(first val1, second val2) noexcept {
 
 //least common multiple
 template<class first, class second>
-constexpr CommonType_t<first, second> lcm(const first val1, const second val2) noexcept {
+constexpr common_type_t<first, second> lcm(const first val1, const second val2) noexcept {
     static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "LCM requires nonbool integral types");
     
-    using _Common           = CommonType_t<first, second>;
-    using _CommonUnsigned   = MakeUnsigned_t<_Common>;
+    using _Common           = common_type_t<first, second>;
+    using _CommonUnsigned   = make_unsigned_t<_Common>;
 
     _CommonUnsigned valAbs1 = abs_unsigned(val1);
     _CommonUnsigned valAbs2 = abs_unsigned(val2);
@@ -420,7 +420,7 @@ template<class Type>
 constexpr Type midpoint(Type val1, Type val2) noexcept {
     if constexpr (is_integral_v<Type>)
     {
-        using _Unsigned         = MakeUnsigned_t<Type>;
+        using _Unsigned = make_unsigned_t<Type>;
 
         const auto valUnsigned1 = static_cast<_Unsigned>(val1);
         const auto valUnsigned2 = static_cast<_Unsigned>(val2);

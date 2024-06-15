@@ -1,5 +1,5 @@
 #pragma once
-#include "cFunctional.h"
+#include "c_functional.h"
 #include "c_iterator.h"
 #include "c_pair.h"
 
@@ -60,10 +60,10 @@ constexpr InputIt for_each_n(InputIt first, Size n, UnaryFunction func) {
 
 // count, count_if
 template<class InputIt, class Type>
-constexpr typename iterator_traits<InputIt>::DifferenceType count(InputIt first, InputIt last, const Type& value) {
+constexpr typename iterator_traits<InputIt>::difference_type count(InputIt first, InputIt last, const Type& value) {
     _verify_iteration_range(first, last);
     
-    typename iterator_traits<InputIt>::DifferenceType ret = 0;
+    typename iterator_traits<InputIt>::difference_type ret = 0;
 
     for (/*Empty*/; first != last; ++first)
         if (*first == value)
@@ -73,10 +73,10 @@ constexpr typename iterator_traits<InputIt>::DifferenceType count(InputIt first,
 }
 
 template<class InputIt, class UnaryPredicate>
-constexpr typename iterator_traits<InputIt>::DifferenceType count_if(InputIt first, InputIt last, UnaryPredicate pred) {
+constexpr typename iterator_traits<InputIt>::difference_type count_if(InputIt first, InputIt last, UnaryPredicate pred) {
     _verify_iteration_range(first, last);
     
-    typename iterator_traits<InputIt>::DifferenceType ret = 0;
+    typename iterator_traits<InputIt>::difference_type ret = 0;
 
     for (/*Empty*/; first != last; ++first)
         if (pred(*first))
@@ -99,7 +99,7 @@ constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 la
 
 template<class InputIt1, class InputIt2>
 constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
-    return custom::mismatch(first1, last1, first2, EqualTo<>{});
+    return custom::mismatch(first1, last1, first2, equal_to<>{});
 }
 
 template<class InputIt1, class InputIt2, class BinaryPredicate>
@@ -117,7 +117,7 @@ template<class InputIt1, class InputIt2>
 constexpr custom::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                     InputIt2 first2, InputIt2 last2) {
 
-    return custom::mismatch(first1, last1, first2, last2, EqualTo<>{});
+    return custom::mismatch(first1, last1, first2, last2, equal_to<>{});
 }
 // END mismatch
 
@@ -149,7 +149,7 @@ template<class ForwardIt1, class ForwardIt2>
 constexpr ForwardIt1 search(ForwardIt1 first, ForwardIt1 last,
                             ForwardIt2 seqFirst, ForwardIt2 seqLast) {
 
-    return custom::search(first, last, seqFirst, seqLast, EqualTo<>{});
+    return custom::search(first, last, seqFirst, seqLast, equal_to<>{});
 }
 // END search
 
@@ -478,7 +478,7 @@ constexpr bool includes(InputIt1 first1, InputIt1 last1,
 template<class InputIt1, class InputIt2>
 constexpr bool includes(InputIt1 first1, InputIt1 last1,
                         InputIt2 first2, InputIt2 last2) {
-    return custom::includes(first1, last1, first2, last2, Less<>{});
+    return custom::includes(first1, last1, first2, last2, less<>{});
 }
 
 template<class InputIt1, class InputIt2, class OutputIt, class BinaryPredicate>
@@ -513,7 +513,7 @@ constexpr OutputIt set_intersection(InputIt1 first1, InputIt1 last1,
 template<class InputIt1, class InputIt2, class OutputIt>
 constexpr OutputIt set_intersection(InputIt1 first1, InputIt1 last1,
                                     InputIt2 first2, InputIt2 last2) {
-    return custom::set_intersection(first1, last1, first2, last2, Less<>{});
+    return custom::set_intersection(first1, last1, first2, last2, less<>{});
 }
 #pragma endregion Set operations
 
@@ -618,7 +618,7 @@ ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
 
 template<class ForwardIt>
 ForwardIt max_element(ForwardIt first, ForwardIt last) {
-    return custom::max_element(first, last, Less<>{});
+    return custom::max_element(first, last, less<>{});
 }
 // END max_element
 
@@ -654,7 +654,7 @@ ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp) {
 
 template<class ForwardIt>
 ForwardIt min_element(ForwardIt first, ForwardIt last) {
-    return custom::min_element(first, last, Less<>{});
+    return custom::min_element(first, last, less<>{});
 }
 // END min_element
 #pragma endregion Minimum/maximum operations
@@ -677,7 +677,7 @@ constexpr bool equal(   InputIt1 first1, InputIt1 last1,
 
 template<class InputIt1, class InputIt2>
 constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
-    return custom::equal(first1, last1, first2, EqualTo<>{});
+    return custom::equal(first1, last1, first2, equal_to<>{});
 }
 // END equal
 
@@ -705,7 +705,7 @@ template<class InputIt1, class InputIt2>
 constexpr bool lexicographical_compare( InputIt1 first1, InputIt1 last1,
                                         InputIt2 first2, InputIt2 last2) {
 
-    return custom::lexicographical_compare(first1, last1, first2, last2, Less<>{});
+    return custom::lexicographical_compare(first1, last1, first2, last2, less<>{});
 }
 // END lexicographical_compare
 #pragma endregion Comparison operations

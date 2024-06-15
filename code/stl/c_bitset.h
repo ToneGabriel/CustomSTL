@@ -1,5 +1,5 @@
 #pragma once
-#include "cBit.h"
+#include "c_bit.h"
 #include "c_limits.h"
 #include "cString.h"
 
@@ -7,32 +7,32 @@
 CUSTOM_BEGIN
 
 template<size_t Bits>
-class Bitset
+class bitset
 {
 private:
-	using Type = Conditional_t<Bits <= sizeof(unsigned long) * CHAR_BIT,
+	using type = conditional_t<Bits <= sizeof(unsigned long) * CHAR_BIT,
 									unsigned long,
 									unsigned long long>;
 
-	static constexpr ptrdiff_t _BITS_PER_BLOCK 	= CHAR_BIT * sizeof(Type);
+	static constexpr ptrdiff_t _BITS_PER_BLOCK 	= CHAR_BIT * sizeof(type);
 	static constexpr ptrdiff_t _BLOCKS 			= (Bits == 0) ? 0 : (Bits - 1) / _BITS_PER_BLOCK;
 
 	// this is used in ull constructor only
 	static constexpr bool _NEED_MASK 			= (Bits < CHAR_BIT * sizeof(unsigned long long));
     static constexpr unsigned long long _MASK 	= (1ULL << (_NEED_MASK ? Bits : 0)) - 1ULL;
 
-	Type _array[_BLOCKS + 1];   // set of blocks
+	type _array[_BLOCKS + 1];   // set of blocks
 
 public:
 	class reference;	// proxy for an element
 
-    constexpr Bitset() noexcept : _array() { /*Empty*/ } // construct with all false values
+    constexpr bitset() noexcept : _array() { /*Empty*/ } // construct with all false values
 
-    constexpr Bitset(unsigned long long val) noexcept
-		: _array{static_cast<Type>(_NEED_MASK ? val & _MASK : val)} { /*Empty*/ }
+    constexpr bitset(unsigned long long val) noexcept
+		: _array{static_cast<type>(_NEED_MASK ? val & _MASK : val)} { /*Empty*/ }
 
     template<class CharType, class Alloc, class Traits>
-    constexpr explicit Bitset(  const BasicString<CharType, Alloc, Traits>& string, size_t pos = 0,
+    constexpr explicit bitset(  const BasicString<CharType, Alloc, Traits>& string, size_t pos = 0,
                                 size_t count = BasicString<CharType, Alloc, Traits>::npos,
                                 CharType placeholder0 = static_cast<CharType>('0'),
                                 CharType placeholder1 = static_cast<CharType>('1')) {   // construct from [pos, pos + count) elements in string
@@ -47,15 +47,15 @@ public:
     }
 
     template<class CharType>
-    constexpr explicit Bitset(  const CharType* cstring,
+    constexpr explicit bitset(  const CharType* cstring,
                                 size_t count = BasicString<CharType>::npos,
                                 CharType placeholder0 = static_cast<CharType>('0'),
                                 CharType placeholder1 = static_cast<CharType>('1')) {
 
         if (count == BasicString<CharType>::npos)
-            count = CharTraits<CharType>::length(cstring);
+            count = char_traits<CharType>::length(cstring);
 
-        _construct_from_cstring<CharTraits<CharType>>(cstring, count, placeholder0, placeholder1);
+        _construct_from_cstring<char_traits<CharType>>(cstring, count, placeholder0, placeholder1);
     }
 
 public:
@@ -70,28 +70,28 @@ public:
         return reference(*this, pos);
     }
 
-    constexpr Bitset& operator&=(const Bitset& other) noexcept {
+    constexpr bitset& operator&=(const bitset& other) noexcept {
         for (size_t block = 0; block <= _BLOCKS; ++block)
             _array[block] &= other._array[block];
 
         return *this;
     }
 
-    constexpr Bitset& operator|=(const Bitset& other) noexcept {
+    constexpr bitset& operator|=(const bitset& other) noexcept {
         for (size_t block = 0; block <= _BLOCKS; ++block)
             _array[block] |= other._array[block];
 
         return *this;
     }
 
-    constexpr Bitset& operator^=(const Bitset& other) noexcept {
+    constexpr bitset& operator^=(const bitset& other) noexcept {
         for (size_t block = 0; block <= _BLOCKS; ++block)
             _array[block] ^= other._array[block];
 
         return *this;
     }
 
-	constexpr Bitset& operator<<=(size_t pos) noexcept {    // shift left by pos, first by blocks then by bits
+	constexpr bitset& operator<<=(size_t pos) noexcept {    // shift left by pos, first by blocks then by bits
         const ptrdiff_t blockShift = static_cast<ptrdiff_t>(pos / _BITS_PER_BLOCK);
 
         if (blockShift != 0)
@@ -110,7 +110,7 @@ public:
         return *this;
 	}
 
-	constexpr Bitset& operator>>=(size_t pos) noexcept {    // shift right by pos, first by blocks then by bits
+	constexpr bitset& operator>>=(size_t pos) noexcept {    // shift right by pos, first by blocks then by bits
         const ptrdiff_t blockShift = static_cast<ptrdiff_t>(pos / _BITS_PER_BLOCK);
 
         if (blockShift != 0)
@@ -128,53 +128,53 @@ public:
         return *this;
 	}
 
-    constexpr Bitset operator<<(const size_t pos) const noexcept {
-        Bitset temp = *this;
+    constexpr bitset operator<<(const size_t pos) const noexcept {
+        bitset temp = *this;
         temp <<= pos;
         return temp;
     }
 
-    constexpr Bitset operator>>(const size_t pos) const noexcept {
-        Bitset temp = *this;
+    constexpr bitset operator>>(const size_t pos) const noexcept {
+        bitset temp = *this;
         temp >>= pos;
         return temp;
     }
 
-    constexpr Bitset operator~() const noexcept { // flip all bits
-        Bitset temp = *this;
+    constexpr bitset operator~() const noexcept { // flip all bits
+        bitset temp = *this;
         temp.flip();
         return temp;
     }
 
 	template<size_t _Bits>
-	friend constexpr bool operator==(const Bitset<_Bits>& left, const Bitset<_Bits>& right);
+	friend constexpr bool operator==(const bitset<_Bits>& left, const bitset<_Bits>& right);
 
 public:
 	// Main functions
 
-	constexpr Bitset& set() {	// set all bits true
+	constexpr bitset& set() {	// set all bits true
 		::memset(&_array, 0xFF, sizeof(_array));
 		_trim();
 		return *this;
 	}
 
-    constexpr Bitset& set(const size_t pos, bool val = true) { // set bit at pos to val
+    constexpr bitset& set(const size_t pos, bool val = true) { // set bit at pos to val
         if (Bits <= pos)
-            throw std::out_of_range("Invalid Bitset position");
+            throw std::out_of_range("Invalid bitset position");
 
         return _set_bit(pos, val);
     }
 
-    constexpr Bitset& reset() noexcept { // set all bits false
+    constexpr bitset& reset() noexcept { // set all bits false
         ::memset(&_array, 0, sizeof(_array));
         return *this;
     }
 
-    constexpr Bitset& reset(const size_t pos) { // set bit at pos to false
+    constexpr bitset& reset(const size_t pos) { // set bit at pos to false
         return set(pos, false);
     }
 
-    constexpr Bitset& flip() noexcept { // flip all bits
+    constexpr bitset& flip() noexcept { // flip all bits
         for (size_t block = 0; block <= _BLOCKS; ++block)
             _array[block] = ~_array[block];
 
@@ -182,9 +182,9 @@ public:
         return *this;
     }
 
-    constexpr Bitset& flip(const size_t pos) { // flip bit at pos
+    constexpr bitset& flip(const size_t pos) { // flip bit at pos
         if (Bits <= pos)
-            throw std::out_of_range("Invalid Bitset position");
+            throw std::out_of_range("Invalid bitset position");
 
         return _flip_bit(pos);
     }
@@ -209,10 +209,10 @@ public:
 
         constexpr bool noPadding = (Bits % _BITS_PER_BLOCK == 0);
         for (size_t block = 0; block < _BLOCKS + noPadding; ++block)
-            if (_array[block] != ~Type{0})
+            if (_array[block] != ~type{0})
                 return false;
 
-        return (noPadding || _array[_BLOCKS] == (Type{1} << (Bits % _BITS_PER_BLOCK)) - 1);
+        return (noPadding || _array[_BLOCKS] == (type{1} << (Bits % _BITS_PER_BLOCK)) - 1);
     }
 
 	constexpr bool any() const noexcept {	// check if any bits are set to true
@@ -229,12 +229,12 @@ public:
 
     constexpr bool test(const size_t pos) const {	// returns the value of the bit at the position pos (counting from 0).
         if (Bits <= pos)
-            throw std::out_of_range("Invalid Bitset position");
+            throw std::out_of_range("Invalid bitset position");
 
         return _get_bit(pos);
     }
 
-    template<class CharType = char, class Alloc = custom::allocator<CharType>, class Traits = custom::CharTraits<CharType>>
+    template<class CharType = char, class Alloc = custom::allocator<CharType>, class Traits = custom::char_traits<CharType>>
     constexpr BasicString<CharType, Alloc, Traits> to_string(	const CharType placeholder0 = static_cast<CharType>('0'),
 																const CharType placeholder1 = static_cast<CharType>('1')) const {	// convert bitset to string
         
@@ -290,14 +290,14 @@ private:
 	// Helpers
 
     static constexpr void _validate(const size_t pos) noexcept {
-        CUSTOM_ASSERT(pos < Bits, "Bitset index outside range");
+        CUSTOM_ASSERT(pos < Bits, "bitset index outside range");
     }
 
 	constexpr void _trim() noexcept { // clear any trailing bits in last block
         constexpr bool allowTrim = Bits == 0 || Bits % _BITS_PER_BLOCK != 0;
 
         if constexpr (allowTrim)
-            _array[_BLOCKS] &= (Type{1} << Bits % _BITS_PER_BLOCK) - 1;
+            _array[_BLOCKS] &= (type{1} << Bits % _BITS_PER_BLOCK) - 1;
     }
 
     template<class Traits, class CharType>
@@ -317,13 +317,13 @@ private:
         if (count != 0)
         {
             size_t bitsInBlock  = 0;
-            Type thisBlock      = 0;
+            type thisBlock      = 0;
             auto last           = cstring + count;
 
             do
             {
                 --last;
-                thisBlock |= static_cast<Type>(Traits::eq(placeholder1, *last)) << bitsInBlock;
+                thisBlock |= static_cast<type>(Traits::eq(placeholder1, *last)) << bitsInBlock;
 
                 if (!Traits::eq(placeholder1, *last) && !Traits::eq(placeholder0, *last))
                     throw std::invalid_argument("Placeholders not recognized!");
@@ -346,17 +346,17 @@ private:
     }
 
     constexpr bool _get_bit(size_t pos) const {
-        return (_array[pos / _BITS_PER_BLOCK] & (Type{1} << pos % _BITS_PER_BLOCK)) != 0;
+        return (_array[pos / _BITS_PER_BLOCK] & (type{1} << pos % _BITS_PER_BLOCK)) != 0;
     }
 
-	constexpr Bitset& _flip_bit(const size_t pos) noexcept { // flip bit at pos, no checking
-        _array[pos / _BITS_PER_BLOCK] ^= Type{1} << pos % _BITS_PER_BLOCK;
+	constexpr bitset& _flip_bit(const size_t pos) noexcept { // flip bit at pos, no checking
+        _array[pos / _BITS_PER_BLOCK] ^= type{1} << pos % _BITS_PER_BLOCK;
         return *this;
     }
 
-	constexpr Bitset& _set_bit(const size_t pos, const bool val) noexcept {	// set bit at pos to val, no checking
-        Type& block     = _array[pos / _BITS_PER_BLOCK];
-        const Type bit  = Type{1} << (pos % _BITS_PER_BLOCK);
+	constexpr bitset& _set_bit(const size_t pos, const bool val) noexcept {	// set bit at pos to val, no checking
+        type& block     = _array[pos / _BITS_PER_BLOCK];
+        const type bit  = type{1} << (pos % _BITS_PER_BLOCK);
         
 		if (val)
             block |= bit;
@@ -365,43 +365,43 @@ private:
 
         return *this;
     }
-};	// END Bitset
+};	// END bitset
 
 
-// Bitset binary operators
+// bitset binary operators
 template<size_t Bits>
-constexpr bool operator==(const Bitset<Bits>& left, const Bitset<Bits>& right) {
+constexpr bool operator==(const bitset<Bits>& left, const bitset<Bits>& right) {
 	return ::memcmp(&left._array[0], &right._array[0], sizeof(left._array));
 }
 
 template<size_t Bits>
-constexpr bool operator!=(const Bitset<Bits>& left, const Bitset<Bits>& right) {
+constexpr bool operator!=(const bitset<Bits>& left, const bitset<Bits>& right) {
 	return !(left == right);
 }
 
 template<size_t Bits>
-constexpr Bitset<Bits> operator&(const Bitset<Bits>& left, const Bitset<Bits>& right) noexcept {
-    Bitset<Bits> res = left;
+constexpr bitset<Bits> operator&(const bitset<Bits>& left, const bitset<Bits>& right) noexcept {
+    bitset<Bits> res = left;
     res &= right;
     return res;
 }
 
 template<size_t Bits>
-constexpr Bitset<Bits> operator|(const Bitset<Bits>& left, const Bitset<Bits>& right) noexcept {
-    Bitset<Bits> res = left;
+constexpr bitset<Bits> operator|(const bitset<Bits>& left, const bitset<Bits>& right) noexcept {
+    bitset<Bits> res = left;
     res |= right;
     return res;
 }
 
 template<size_t Bits>
-constexpr Bitset<Bits> operator^(const Bitset<Bits>& left, const Bitset<Bits>& right) noexcept {
-    Bitset<Bits> res = left;
+constexpr bitset<Bits> operator^(const bitset<Bits>& left, const bitset<Bits>& right) noexcept {
+    bitset<Bits> res = left;
     res ^= right;
     return res;
 }
 
 template<size_t Bits>
-std::ostream& operator<<(std::ostream& os, const Bitset<Bits>& bitset) {
+std::ostream& operator<<(std::ostream& os, const bitset<Bits>& bitset) {
 	os << bitset.to_string();
 	return os;
 }
@@ -409,19 +409,19 @@ std::ostream& operator<<(std::ostream& os, const Bitset<Bits>& bitset) {
 
 
 template<size_t Bits>
-class Bitset<Bits>::reference		// proxy for an element
+class bitset<Bits>::reference		// proxy for an element
 {
 private:
-	friend Bitset;
+	friend bitset;
 
-	Bitset<Bits>* _bitsetRef;
+	bitset<Bits>* _bitsetRef;
 	size_t _position;
 
 private:
 	constexpr reference() noexcept
 		: _bitsetRef(nullptr), _position(0) { /*Empty*/ }
 
-	constexpr reference(Bitset<Bits>& bitset, const size_t pos) noexcept
+	constexpr reference(bitset<Bits>& bitset, const size_t pos) noexcept
 		: _bitsetRef(&bitset), _position(pos) { /*Empty*/ }
 
 public:

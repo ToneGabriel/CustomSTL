@@ -101,8 +101,8 @@ void tuple_test() {
 }
 
 void list_test() {
-	custom::List<Test> list;
-	custom::List<Test> list1;
+	custom::list<Test> list;
+	custom::list<Test> list1;
 
 	list.emplace_back(15);
 	list.emplace_back(8);
@@ -138,7 +138,7 @@ void forward_list_test() {
 }
 
 void unordered_map_test() {
-	custom::UnorderedMap<int, custom::String> map;
+	custom::unordered_map<int, custom::String> map;
 
 	map[10] = "abc";
 	map[11] = "gsa";
@@ -158,8 +158,8 @@ void unordered_map_test() {
 }
 
 void unordered_set_test() {
-	custom::UnorderedSet<custom::String> set;
-	custom::UnorderedSet<custom::String> set1;
+	custom::unordered_set<custom::String> set;
+	custom::unordered_set<custom::String> set1;
 
 	set.emplace("abc");
 	set.emplace("def");
@@ -172,7 +172,7 @@ void unordered_set_test() {
 }
 
 void map_test() {
-	custom::Map<int, int> map;
+	custom::map<int, int> map;
 
 	map.emplace(5, 5);
 	map.emplace(0, 0);
@@ -230,7 +230,7 @@ void deque_test() {
 }
 
 void queue_test() {
-	custom::Queue<Test> q;
+	custom::queue<Test> q;
 
 	for (size_t i = 0; i < 50; ++i)
 		q.emplace(i);
@@ -243,7 +243,7 @@ void queue_test() {
 }
 
 void priority_queue_test() {
-	custom::PriorityQueue<int> pq;
+	custom::priority_queue<int> pq;
 
 	pq.emplace(0);
 	pq.emplace(5);
@@ -265,7 +265,7 @@ void priority_queue_test() {
 }
 
 void stack_test() {
-	custom::Stack<int> s;
+	custom::stack<int> s;
 
 	s.push(0);
 	s.push(3);
@@ -329,8 +329,8 @@ void array_test() {
 }
 
 void function_test() {
-	custom::Function<void()> fct1(unordered_map_test);
-	custom::Function<void()> fct2(Test{});
+	custom::function<void()> fct1(unordered_map_test);
+	custom::function<void()> fct2(Test{});
 	fct1.swap(fct2);
 	fct1();
 }
@@ -419,7 +419,7 @@ void complex_test() {
 
 	std::cout << "======================\n";
 
-	custom::Complex<float> cf1(3.5, 8.0);
+	custom::complex<float> cf1(3.5, 8.0);
 
 	std::cout << "number= " << cf1.real() << '\n' << cf1.imag() << '\n';
 	std::cout << "abs= " 	<< custom::abs(cf1) << '\n';
@@ -458,7 +458,7 @@ void bitset_test() {
 	std::cout << bs1 << '\n' << bs1.count() << '\n';
 
 	custom::String str2 = "aBaaBBaB";
-	custom::Bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
+	custom::bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
 	std::cout << bs2 << '\n' << bs2.count() << '\n';
 }
 

@@ -1,61 +1,61 @@
 #pragma once
-// #include "Deque.h"	// can be used as Container in Queue/PriorityQueue
-#include "cList.h"
+// #include "Deque.h"	// can be used as Container in queue/priority_queue
+#include "c_list.h"
 #include "c_vector.h"
 #include "c_utility.h"
-#include "cFunctional.h"	// for custom::Less
+#include "c_functional.h"	// for custom::Less
 
 
 CUSTOM_BEGIN
 
-template<class Type, class Container = custom::List<Type>>
-class Queue			// Queue template implemented as SequenceContainer wrapper
+template<class Type, class Container = custom::list<Type>>
+class queue			// queue template implemented as SequenceContainer wrapper
 {
 // The Container must satisfy the requirements of SequenceContainer.
 // Additionally, it must provide the following functions with the usual semantics:
 // back(), front(), push_back() (... or emplace_back()), pop_front()
-// custom::Deque and custom::List satisfy these requirements
+// custom::Deque and custom::list satisfy these requirements
 
 public:
-	using ContainerType 	= Container;
-	using ValueType 		= typename ContainerType::ValueType;
-	using DifferenceType 	= typename ContainerType::DifferenceType;
-	using reference			= typename ContainerType::reference;
-	using const_reference	= typename ContainerType::const_reference;
-	using pointer			= typename ContainerType::pointer;
-	using const_pointer		= typename ContainerType::const_pointer;
+	using container_type 	= Container;
+	using value_type 		= typename container_type::value_type;
+	using difference_type 	= typename container_type::difference_type;
+	using reference			= typename container_type::reference;
+	using const_reference	= typename container_type::const_reference;
+	using pointer			= typename container_type::pointer;
+	using const_pointer		= typename container_type::const_pointer;
 
 private:
-	ContainerType _baseContainer;
+	container_type _baseContainer;
 
 public:
 	// Constructors
 
-	Queue() = default;
+	queue() = default;
 
-	Queue(const Queue& other)								// Copy Constructor
+	queue(const queue& other)								// Copy Constructor
 	: _baseContainer(other._baseContainer) { /*Empty*/ }
 
-	Queue(Queue&& other) noexcept							// Move Constructor
+	queue(queue&& other) noexcept							// Move Constructor
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
-	~Queue() noexcept = default;							// Destructor
+	~queue() noexcept = default;							// Destructor
 
 public:
 	// Operators
 
-	Queue& operator=(const Queue& other) {					// Assign operator using reference
+	queue& operator=(const queue& other) {					// Assign operator using reference
 		_baseContainer = other._baseContainer;
 		return *this;
 	}
 
-	Queue& operator=(Queue&& other) noexcept {				// Assign operator using temporary
+	queue& operator=(queue&& other) noexcept {				// Assign operator using temporary
 		_baseContainer = custom::move(other._baseContainer);
 		return *this;
 	}
 
 	template<class _Type, class _Container>
-	friend bool operator==(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right);
+	friend bool operator==(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right);
 
 public:
 	// Main functions
@@ -65,11 +65,11 @@ public:
 		_baseContainer.emplace_back(custom::forward<Args>(args)...);
 	}
 
-	void push(const ValueType& copyValue) {
+	void push(const value_type& copyValue) {
 		emplace(copyValue);
 	}
 
-	void push(ValueType&& moveValue) {
+	void push(value_type&& moveValue) {
 		emplace(custom::move(moveValue));
 	}
 
@@ -104,23 +104,23 @@ public:
 	bool empty() const noexcept {					// Check if list is empty
 		return _baseContainer.empty();
 	}
-}; // END Queue template
+}; // END queue template
 
 
-// Queue binary operators
+// queue binary operators
 template<class _Type, class _Container>
-bool operator==(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right) {
+bool operator==(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right) {
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container>
-bool operator!=(const Queue<_Type, _Container>& left, const Queue<_Type, _Container>& right) {
+bool operator!=(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right) {
 	return !(left == right);
 }
 
 
-template<class Type, class Container = custom::vector<Type>, class Compare = custom::Less<Type>>
-class PriorityQueue		// Priority Queue Template implemented as array heap
+template<class Type, class Container = custom::vector<Type>, class Compare = custom::less<Type>>
+class priority_queue		// Priority queue Template implemented as array heap
 {
 // The Container must satisfy the requirements of SequenceContainer,
 // and its iterators must satisfy the requirements of LegacyRandomAccessIterator.
@@ -129,48 +129,48 @@ class PriorityQueue		// Priority Queue Template implemented as array heap
 // custom::vector and custom::Deque satisfy these requirements
 
 public:
-	using ContainerType 	= Container;
-	using ValueCompare 		= Compare;
-	using ValueType 		= typename ContainerType::ValueType;
-	using DifferenceType 	= typename ContainerType::DifferenceType;
-	using reference			= typename ContainerType::reference;
-	using const_reference	= typename ContainerType::const_reference;
-	using pointer			= typename ContainerType::pointer;
-	using const_pointer		= typename ContainerType::const_pointer;
+	using container_type 	= Container;
+	using value_compare		= Compare;
+	using value_type 		= typename container_type::value_type;
+	using difference_type 	= typename container_type::difference_type;
+	using reference			= typename container_type::reference;
+	using const_reference	= typename container_type::const_reference;
+	using pointer			= typename container_type::pointer;
+	using const_pointer		= typename container_type::const_pointer;
 
 private:
-	ContainerType _baseContainer;
-	ValueCompare _less;
+	container_type _baseContainer;
+	value_compare _less;
 
 public:
 	// Constructors
 
-	PriorityQueue() = default;
+	priority_queue() = default;
 
-	PriorityQueue(const PriorityQueue& other)
+	priority_queue(const priority_queue& other)
 		: _baseContainer(other._baseContainer) { /*Empty*/ }
 
-	PriorityQueue(PriorityQueue&& other) noexcept
+	priority_queue(priority_queue&& other) noexcept
 		: _baseContainer(custom::move(other._baseContainer)) { /*Empty*/ }
 
-	~PriorityQueue() noexcept = default;
+	~priority_queue() noexcept = default;
 
 public:
 	// Operators
 
-	PriorityQueue& operator=(const PriorityQueue& other) {
+	priority_queue& operator=(const priority_queue& other) {
 		_baseContainer = other._baseContainer;
 		return *this;
 	}
 
-	PriorityQueue& operator=(PriorityQueue&& other) noexcept {
+	priority_queue& operator=(priority_queue&& other) noexcept {
 		_baseContainer = custom::move(other._baseContainer);
 		return *this;
 	}
 
 	template<class _Type, class _Container, class _Compare>
-	friend bool operator==(	const PriorityQueue<_Type, _Container, _Compare>& left,
-							const PriorityQueue<_Type, _Container, _Compare>& right);
+	friend bool operator==(	const priority_queue<_Type, _Container, _Compare>& left,
+							const priority_queue<_Type, _Container, _Compare>& right);
 
 public:
 	// Main Functions
@@ -181,11 +181,11 @@ public:
 		_heap_push_adjust();
 	}
 
-	void push(const ValueType& copyValue) {
+	void push(const value_type& copyValue) {
 		emplace(copyValue);
 	}
 
-	void push(ValueType&& moveValue) {
+	void push(value_type&& moveValue) {
 		emplace(custom::move(moveValue));
 	}
 
@@ -297,19 +297,19 @@ private:
 
 		return index;	// 0 (root)
 	}
-}; // END PriorityQueue Template
+}; // END priority_queue Template
 
 
-// PriorityQueue binary operators
+// priority_queue binary operators
 template<class _Type, class _Container, class _Compare>
-bool operator==(const PriorityQueue<_Type, _Container, _Compare>& left,
-				const PriorityQueue<_Type, _Container, _Compare>& right) {
+bool operator==(const priority_queue<_Type, _Container, _Compare>& left,
+				const priority_queue<_Type, _Container, _Compare>& right) {
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container, class _Compare>
-bool operator!=(const PriorityQueue<_Type, _Container, _Compare>& left,
-				const PriorityQueue<_Type, _Container, _Compare>& right) {
+bool operator!=(const priority_queue<_Type, _Container, _Compare>& left,
+				const priority_queue<_Type, _Container, _Compare>& right) {
 	return !(left == right);
 }
 

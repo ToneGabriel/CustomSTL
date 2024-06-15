@@ -6,7 +6,7 @@
 CUSTOM_BEGIN
 
 // template<class CompletionFunction /*TODO: check*/>
-class Barrier                       // Barrier adaptor for pthread_barrier_t
+class barrier                       // barrier adaptor for pthread_barrier_t
 {
 private:
     pthread_barrier_t _barrier;
@@ -14,17 +14,17 @@ private:
 public:
     // Constructors & Operators
 
-    explicit Barrier(int expected) noexcept {
+    explicit barrier(int expected) noexcept {
         CUSTOM_ASSERT(expected >= 0, "Invalid expected value.");
         pthread_barrier_init(&_barrier, nullptr, expected);
     }
 
-    ~Barrier() noexcept {
+    ~barrier() noexcept {
         pthread_barrier_destroy(&_barrier);
     }
 
-    Barrier(const Barrier&)            = delete;
-    Barrier& operator=(const Barrier&) = delete;
+    barrier(const barrier&)            = delete;
+    barrier& operator=(const barrier&) = delete;
 
 public:
     // Main functions
@@ -41,7 +41,7 @@ public:
     // void wait();
     // void arrive_and_drop();
 
-}; // END Barrier
+}; // END barrier
 
 CUSTOM_END
 

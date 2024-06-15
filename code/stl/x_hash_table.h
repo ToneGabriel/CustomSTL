@@ -1,9 +1,9 @@
 #pragma once
-#include "cList.h"
+#include "c_list.h"
 #include "c_vector.h"
 #include "c_pair.h"
 #include "c_utility.h"
-#include "cFunctional.h"	// EqualTo, Hash
+#include "c_functional.h"	// EqualTo, Hash
 #include <cmath>			// std::ceil
 
 
@@ -13,38 +13,38 @@ CUSTOM_DETAIL_BEGIN
 
 #if CUSTOM_OPTIMAL_IMPLEMENTATION
 
-// _HashTable Template implemented as vector of nodes stored in a list
+// _Hash_Table Template implemented as vector of nodes stored in a list
 // The vector holds pairs for bucket count and the first node in bucket
 template<class Traits>
-class _HashTable
+class _Hash_Table
 {
 protected:
-	using _IterList				= List<typename Traits::ValueType, typename Traits::allocator_type>;		// List of ValueType used for iteration
+	using _IterList				= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
 	using _AllocNode			= typename _IterList::_AllocNode;
 	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
 	using _NodePtr 				= typename _IterList::_NodePtr;
 	using _Bucket 				= pair<size_t, _NodePtr>;
 	using _HashArray			= vector<_Bucket>;						// vector of pairs
 
-	using KeyType           	= typename Traits::KeyType;				// Type of Key
-    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
-    using Hasher            	= typename Traits::Hasher;				// hash struct
-	using KeyEqual 				= typename Traits::KeyEqual;
+	using key_type           	= typename Traits::key_type;				// Type of Key
+    using mapped_type        	= typename Traits::mapped_type;			// Type of Mapped _Value
+    using hasher            	= typename Traits::hasher;				// hash struct
+	using key_compare			= typename Traits::key_compare;
 	
-	using ValueType				= typename _IterList::ValueType;		// Type of values stored in container
-	using DifferenceType		= typename _IterList::DifferenceType;
+	using value_type			= typename _IterList::value_type;		// Type of values stored in container
+	using difference_type		= typename _IterList::difference_type;
 	using reference 			= typename _IterList::reference;
 	using const_reference 		= typename _IterList::const_reference;
 	using pointer 				= typename _IterList::pointer;
-	using const_pointer 			= typename _IterList::const_pointer;
+	using const_pointer			= typename _IterList::const_pointer;
 	using allocator_type 		= typename _IterList::allocator_type;
 
-	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to List iterator)
-	using const_iterator			= typename _IterList::const_iterator;
+	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to list iterator)
+	using const_iterator		= typename _IterList::const_iterator;
 
 protected:
-	Hasher _hash;														// Used for initial(non-compressed) hash value
-	KeyEqual _equal;													// Used for comparison between keys
+	hasher _hash;														// Used for initial(non-compressed) hash value
+	key_compare _compare;												// Used for comparison between keys
 	_IterList _elems;													// Used to iterate through container
 	_HashArray _buckets;												// Used to map elems from _IterList
 	_AllocNode _alloc;													// Used to allocate nodes
@@ -55,26 +55,26 @@ protected:
 protected:
     // Constructors
 
-    _HashTable() {
+    _Hash_Table() {
 		rehash(_DEFAULT_BUCKETS);
 	}
 
-	_HashTable(const size_t noBuckets) {
+	_Hash_Table(const size_t noBuckets) {
 		rehash((noBuckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : noBuckets);
 	}
 
-	_HashTable(const _HashTable& other)
+	_Hash_Table(const _Hash_Table& other)
 		: _elems(other._elems), _buckets(other._buckets) { /*Empty*/ }
 
-	_HashTable(_HashTable&& other) noexcept
+	_Hash_Table(_Hash_Table&& other) noexcept
 		: _elems(custom::move(other._elems)), _buckets(custom::move(other._buckets)) { /*Empty*/ }
 
-	virtual ~_HashTable() = default;
+	virtual ~_Hash_Table() = default;
 
 protected:
 	// Operators
 
-	_HashTable& operator=(const _HashTable& other) {
+	_Hash_Table& operator=(const _Hash_Table& other) {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= other._elems;
@@ -84,7 +84,7 @@ protected:
 		return *this;
 	}
 
-	_HashTable& operator=(_HashTable&& other) noexcept {
+	_Hash_Table& operator=(_Hash_Table&& other) noexcept {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= custom::move(other._elems);
@@ -101,7 +101,7 @@ public:
 	iterator emplace(Args&&... args) {
 		_NodePtr newNode 		= _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
-		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
+		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
 		iterator it 			= find(newKey);
 
 		if (it != end())	// Destroy newly-created Node if key exists
@@ -119,7 +119,7 @@ public:
 		}
 	}
 
-	iterator erase(const KeyType& key) {
+	iterator erase(const key_type& key) {
 		iterator it = find(key);
 
 		if (it == end())
@@ -154,12 +154,12 @@ public:
 		return erase(Traits::extract_key(*iterator));
 	}
 
-	iterator find(const KeyType& key) {
+	iterator find(const key_type& key) {
 		_Bucket& currentBucket 		= _buckets[bucket(key)];
 		size_t currentBucketIndex 	= 0;
 		iterator it(currentBucket.second, &_elems._data);
 
-		while (currentBucketIndex < currentBucket.first && !_equal(Traits::extract_key(*it), key))
+		while (currentBucketIndex < currentBucket.first && !_compare(Traits::extract_key(*it), key))
 		{
 			++currentBucketIndex;
 			++it;
@@ -171,12 +171,12 @@ public:
 		return it;
 	}
 
-	const_iterator find(const KeyType& key) const {
+	const_iterator find(const key_type& key) const {
 		_Bucket& currentBucket 		= _buckets[bucket(key)];
 		size_t currentBucketIndex 	= 0;
 		const_iterator it(currentBucket.second, &_elems._data);
 
-		while (currentBucketIndex < currentBucket.first && !_equal(Traits::extract_key(*it), key))
+		while (currentBucketIndex < currentBucket.first && !_compare(Traits::extract_key(*it), key))
 		{
 			++currentBucketIndex;
 			++it;
@@ -188,7 +188,7 @@ public:
 		return it;
 	}
 
-	bool contains(const KeyType& key) const {
+	bool contains(const key_type& key) const {
 		return find(key) != end();
 	}
 
@@ -220,7 +220,7 @@ public:
 		return _buckets[index].first;
 	}
 
-	size_t bucket(const KeyType& key) const {						// Get bucket index from key
+	size_t bucket(const key_type& key) const {						// Get bucket index from key
 		return _hash(key) % bucket_count();
 	}
 
@@ -299,7 +299,7 @@ protected:
 										custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 										custom::forward_as_tuple(custom::forward<Args>(args)...)
 										);
-			const KeyType& newKey = Traits::extract_key(newNode->_Value);
+			const key_type& newKey = Traits::extract_key(newNode->_Value);
 
 			_rehash_if_overload();
 			_map_and_link_node(bucket(newKey), newNode);
@@ -308,7 +308,7 @@ protected:
 		}
 	}
 
-	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
+	const mapped_type& _at(const key_type& key) const {				// Access _Value at key with check
 		const_iterator it = find(key);
 
 		if (it == end())
@@ -317,13 +317,13 @@ protected:
 		return Traits::extract_mapval(it._Ptr->_Value);
 	}
 
-	MappedType& _at(const KeyType& key) {
+	mapped_type& _at(const key_type& key) {
 		const_iterator it = find(key);
 
 		if (it == end())
 			throw std::out_of_range("Invalid key.");
 
-		return const_cast<MappedType&>(Traits::extract_mapval(it._Ptr->_Value));
+		return const_cast<mapped_type&>(Traits::extract_mapval(it._Ptr->_Value));
 	}
 
 private:
@@ -375,47 +375,47 @@ private:
 			_force_rehash(2 * bucket_count());
 	}
 
-	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in List
+	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in list
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
-};	// END _HashTable Template
+};	// END _Hash_Table Template
 
 #else	// CUSTOM_OPTIMAL_IMPLEMENTATION
 
-// _HashTable Template implemented as vector of lists
+// _Hash_Table Template implemented as vector of lists
 // The lists in vector hold references to nodes in the main elements list
 template<class Traits>
-class _HashTable				
+class _Hash_Table
 {
 protected:
-	using _IterList				= List<typename Traits::ValueType, typename Traits::allocator_type>;		// List of ValueType used for iteration
+	using _IterList				= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
 	using _AllocNode			= typename _IterList::_AllocNode;
 	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
 	using _NodePtr 				= typename _IterList::_NodePtr;
-	using _Bucket				= List<_NodePtr>;						// List of Node* (as _Value) from Iteration list
+	using _Bucket				= list<_NodePtr>;						// list of Node* (as _Value) from Iteration list
 	using _HashArray			= vector<_Bucket>;						// vector of lists of Node*
 	using _BucketIterator		= typename _Bucket::iterator;			// iterator for Buckets
 	using _ConstBucketIterator 	= typename _Bucket::const_iterator;
 
-    using KeyType           	= typename Traits::KeyType;				// Type of Key
-    using MappedType        	= typename Traits::MappedType;			// Type of Mapped _Value
-    using Hasher            	= typename Traits::Hasher;				// hash struct
-	using KeyEqual 				= typename Traits::KeyEqual;
+    using key_type           	= typename Traits::key_type;				// Type of Key
+    using mapped_type        	= typename Traits::mapped_type;			// Type of Mapped _Value
+    using hasher            	= typename Traits::hasher;				// hash struct
+	using key_compare			= typename Traits::key_compare;
 	
-	using ValueType				= typename _IterList::ValueType;		// Type of values stored in container
-	using DifferenceType		= typename _IterList::DifferenceType;
+	using value_type			= typename _IterList::value_type;		// Type of values stored in container
+	using difference_type		= typename _IterList::difference_type;
 	using reference 			= typename _IterList::reference;
 	using const_reference 		= typename _IterList::const_reference;
 	using pointer 				= typename _IterList::pointer;
-	using const_pointer 			= typename _IterList::const_pointer;
+	using const_pointer			= typename _IterList::const_pointer;
 	using allocator_type 		= typename _IterList::allocator_type;
 
-	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to List iterator)
-	using const_iterator			= typename _IterList::const_iterator;
+	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to list iterator)
+	using const_iterator		= typename _IterList::const_iterator;
 
 protected:
-	Hasher _hash;														// Used for initial(non-compressed) hash value
-	KeyEqual _equal;													// Used for comparison between keys
+	hasher _hash;														// Used for initial(non-compressed) hash value
+	key_compare _compare;												// Used for comparison between keys
 	_IterList _elems;													// Used to iterate through container
 	_HashArray _buckets;												// Used to map elems from _IterList
 	_AllocNode _alloc;
@@ -426,26 +426,26 @@ protected:
 protected:
     // Constructors
 
-    _HashTable() {
+    _Hash_Table() {
 		rehash(_DEFAULT_BUCKETS);
 	}
 
-	_HashTable(const size_t noBuckets) {
+	_Hash_Table(const size_t noBuckets) {
 		rehash((noBuckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : noBuckets);
 	}
 
-	_HashTable(const _HashTable& other)
+	_Hash_Table(const _Hash_Table& other)
 		: _elems(other._elems), _buckets(other._buckets) { /*Empty*/ }
 
-	_HashTable(_HashTable&& other) noexcept
+	_Hash_Table(_Hash_Table&& other) noexcept
 		: _elems(custom::move(other._elems)), _buckets(custom::move(other._buckets)) { /*Empty*/ }
 
-	virtual ~_HashTable() = default;
+	virtual ~_Hash_Table() = default;
 
 protected:
 	// Operators
 
-	_HashTable& operator=(const _HashTable& other) {
+	_Hash_Table& operator=(const _Hash_Table& other) {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= other._elems;
@@ -455,7 +455,7 @@ protected:
 		return *this;
 	}
 
-	_HashTable& operator=(_HashTable&& other) noexcept {
+	_Hash_Table& operator=(_Hash_Table&& other) noexcept {
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= custom::move(other._elems);
@@ -472,7 +472,7 @@ public:
 	iterator emplace(Args&&... args) {
 		_NodePtr newNode 		= _alloc.allocate(1);
 		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
-		const KeyType& newKey 	= Traits::extract_key(newNode->_Value);
+		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
 		iterator it 			= find(newKey);
 
 		if (it != end())	// Destroy newly-created Node if key exists
@@ -490,7 +490,7 @@ public:
 		}
 	}
 
-	iterator erase(const KeyType& key) {
+	iterator erase(const key_type& key) {
 		size_t index 		= bucket(key);
 		_BucketIterator it 	= _find_in_array(key);
 
@@ -509,7 +509,7 @@ public:
 		return erase(iterator._Ptr->_Value);
 	}
 
-	iterator find(const KeyType& key) {
+	iterator find(const key_type& key) {
 		_BucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
@@ -517,7 +517,7 @@ public:
 		return iterator(*it, &_elems._data);
 	}
 
-	const_iterator find(const KeyType& key) const {
+	const_iterator find(const key_type& key) const {
 		_ConstBucketIterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
@@ -525,7 +525,7 @@ public:
 		return const_iterator(*it, &_elems._data);
 	}
 
-	bool contains(const KeyType& key) const {
+	bool contains(const key_type& key) const {
 		return find(key) != end();
 	}
 
@@ -554,7 +554,7 @@ public:
 		return _buckets[index].size();
 	}
 
-	size_t bucket(const KeyType& key) const {						// Get bucket index from key
+	size_t bucket(const key_type& key) const {						// Get bucket index from key
 		return _hash(key) % bucket_count();
 	}
 
@@ -627,7 +627,7 @@ protected:
 										custom::forward_as_tuple(custom::forward<_KeyType>(key)),
 										custom::forward_as_tuple(custom::forward<Args>(args)...)
 										);
-			const KeyType& newKey = Traits::extract_key(newNode->_Value);
+			const key_type& newKey = Traits::extract_key(newNode->_Value);
 
 			_rehash_if_overload();
 			_elems._link_node_before(_elems._data._Head, newNode);
@@ -636,7 +636,7 @@ protected:
 		}
 	}
 
-	const MappedType& _at(const KeyType& key) const {				// Access _Value at key with check
+	const mapped_type& _at(const key_type& key) const {				// Access _Value at key with check
 		_ConstBucketIterator it = _find_in_array(key);
 		
 		if (it == _buckets[bucket(key)].end())
@@ -645,33 +645,33 @@ protected:
 		return Traits::extract_mapval((*it)->_Value);
 	}
 
-	MappedType& _at(const KeyType& key) {
+	mapped_type& _at(const key_type& key) {
 		_BucketIterator it = _find_in_array(key);
 
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key.");
 
-		return const_cast<MappedType&>(Traits::extract_mapval((*it)->_Value));
+		return const_cast<mapped_type&>(Traits::extract_mapval((*it)->_Value));
 	}
 
 private:
 	// Helpers
 
-	_BucketIterator _find_in_array(const KeyType& key) {
+	_BucketIterator _find_in_array(const key_type& key) {
 		_Bucket& currentBucket 	= _buckets[bucket(key)];
 		_BucketIterator it 		= currentBucket.begin();
 
-		while (it != currentBucket.end() && !_equal(Traits::extract_key((*it)->_Value), key))
+		while (it != currentBucket.end() && !_compare(Traits::extract_key((*it)->_Value), key))
 			++it;
 
 		return it;
 	}
 
-	_ConstBucketIterator _find_in_array(const KeyType& key) const {		// Get iterator from bucket with key
+	_ConstBucketIterator _find_in_array(const key_type& key) const {		// Get iterator from bucket with key
 		const _Bucket& currentBucket = _buckets[bucket(key)];
 		_ConstBucketIterator it 		= currentBucket.begin();
 
-		while (it != currentBucket.end() && !_equal(Traits::extract_key((*it)->_Value), key))
+		while (it != currentBucket.end() && !_compare(Traits::extract_key((*it)->_Value), key))
 			++it;
 
 		return it;
@@ -689,16 +689,16 @@ private:
 			_force_rehash(2 * bucket_count());
 	}
 
-	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in List
+	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in list
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
-}; // END _HashTable Template
+}; // END _Hash_Table Template
 
 #endif	// CUSTOM_OPTIMAL_IMPLEMENTATION
 
-// _HashTable binary operators
+// _Hash_Table binary operators
 template<class Traits>
-bool operator==(const _HashTable<Traits>& left, const _HashTable<Traits>& right) {	// Contains the same elems, but not the same hashtable
+bool operator==(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right) {	// Contains the same elems, but not the same hashtable
 	if (left.size() != right.size())
 		return false;
 
@@ -713,7 +713,7 @@ bool operator==(const _HashTable<Traits>& left, const _HashTable<Traits>& right)
 }
 
 template<class Traits>
-bool operator!=(const _HashTable<Traits>& left, const _HashTable<Traits>& right) {
+bool operator!=(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right) {
 	return !(left == right);
 }
 

@@ -1,9 +1,9 @@
 #pragma once
-#include "xNode.h"
-#include "xMemory.h"
+#include "x_node.h"
+#include "x_memory.h"
 #include "c_utility.h"
 #include "c_iterator.h"
-#include "cFunctional.h"
+#include "c_functional.h"
 
 
 CUSTOM_BEGIN
@@ -14,11 +14,11 @@ struct _ForwardListData
 	// deduce data types and forward them
 	using _AllocTraits		= allocator_traits<Alloc>;
 	using _Node				= detail::_ForwardNode<Type>;
-	using _AllocNode		= typename _AllocTraits::template RebindAlloc<_Node>;
+	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
 	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::pointer;
 
-	using ValueType			= typename _AllocTraits::ValueType;
+	using value_type			= typename _AllocTraits::value_type;
 	using DifferenceType 	= typename _AllocTraits::DifferenceType;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
@@ -38,7 +38,7 @@ private:
 
 public:
     using iterator_category 	= forward_iterator_tag;
-	using ValueType			= typename _Data::ValueType;
+	using value_type			= typename _Data::value_type;
 	using DifferenceType 	= typename _Data::DifferenceType;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
@@ -103,7 +103,7 @@ public:
 }; // END ForwardListConstIterator
 
 template<class ForwardListData>
-class ForwardListIterator : public ForwardListConstIterator<ForwardListData>		// Linked List iterator
+class ForwardListIterator : public ForwardListConstIterator<ForwardListData>		// Linked list iterator
 {
 private:
 	using _Base				= ForwardListConstIterator<ForwardListData>;
@@ -112,7 +112,7 @@ private:
 
 public:
     using iterator_category 	= forward_iterator_tag;
-	using ValueType 		= typename _Data::ValueType;
+	using value_type 		= typename _Data::value_type;
 	using DifferenceType 	= typename _Data::DifferenceType;
 	using reference 		= typename _Data::reference;
 	using pointer 			= typename _Data::pointer;
@@ -146,7 +146,7 @@ public:
 
 
 template<class Type, class Alloc = custom::allocator<Type>>
-class ForwardList				// Singly Linked List
+class ForwardList				// Singly Linked list
 {
 private:
 	using _Data 				= _ForwardListData<Type, Alloc>;
@@ -157,10 +157,10 @@ private:
 	using _NodePtr				= typename _Data::_NodePtr;
 
 public:
-	static_assert(is_same_v<Type, typename Alloc::ValueType>, "Object type and allocator type must be the same!");
+	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and allocator type must be the same!");
 	static_assert(is_object_v<Type>, "Containers require object type!");
 
-	using ValueType 			= typename _Data::ValueType;
+	using value_type 			= typename _Data::value_type;
 	using DifferenceType 		= typename _Data::DifferenceType;
 	using reference				= typename _Data::reference;
 	using const_reference		= typename _Data::const_reference;
@@ -182,7 +182,7 @@ public:
 		_create_head();
 	}
 
-	ForwardList(const size_t newSize, const ValueType& value) : ForwardList() {	// Add multiple copies Constructor
+	ForwardList(const size_t newSize, const value_type& value) : ForwardList() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
 	}
 
@@ -231,7 +231,7 @@ public:
 	}
 
 	void resize(const size_t newSize,
-				const ValueType& copyValue) {					// Resize the list by removing or adding copy elements to the tail
+				const value_type& copyValue) {					// Resize the list by removing or adding copy elements to the tail
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
 	}
@@ -242,11 +242,11 @@ public:
 		_insert_node_after(_data._Head, newNode);
 	}
 
-	void push_front(const ValueType& copyValue) {				// Construct object using reference and add it to the tail
+	void push_front(const value_type& copyValue) {				// Construct object using reference and add it to the tail
 		emplace_front(copyValue);
 	}
 
-	void push_front(ValueType&& moveValue) {					// Construct object using temporary and add it to the tail
+	void push_front(value_type&& moveValue) {					// Construct object using temporary and add it to the tail
 		emplace_front(custom::move(moveValue));
 	}
 
@@ -372,7 +372,7 @@ public:
 	}
 
 	size_t unique() {
-		return unique(EqualTo<>{});
+		return unique(equal_to<>{});
 	}
 
 	void splice_after(const_iterator where, ForwardList& other, const_iterator otherFirst, const_iterator otherLast) {
@@ -417,7 +417,7 @@ public:
 	}
 
 	void merge(ForwardList& other) {
-		merge(other, Less<>{});
+		merge(other, less<>{});
 	}
 
 	template<class Compare>
@@ -426,7 +426,7 @@ public:
 	}
 
 	void sort() {
-		sort(Less<>{});
+		sort(less<>{});
 	}
 
 public:

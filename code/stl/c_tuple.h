@@ -75,7 +75,7 @@ template<class This, class OtherTuple, class OtherType>
 struct tuple_convert<tuple<This>, OtherTuple, OtherType>
 	: bool_constant<!disjunction_v<	is_same<This, OtherType>,
 									is_constructible<This, OtherTuple>,
-									IsConvertible<OtherTuple, This>>> {};
+									is_convertible<OtherTuple, This>>> {};
 
 // tuple element
 template<size_t Index, class _Tuple>
@@ -390,7 +390,7 @@ typename _Tuple_Cat<tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
 	using _KxSeq	= typename Cat::_KxSeq;
 	using _IxSeq	= typename Cat::_IxSeq;
 
-	return detail::_tuple_cat_impl<RetType>(KxSeq{}, IxSeq{}, custom::forward_as_tuple(custom::forward<Tuples>(tuples)...));
+	return detail::_tuple_cat_impl<RetType>(_KxSeq{}, _IxSeq{}, custom::forward_as_tuple(custom::forward<Tuples>(tuples)...));
 }
 
 CUSTOM_END
