@@ -10,31 +10,31 @@ CUSTOM_BEGIN
 
 #pragma region BasicStringView
 template<class Type>
-struct _BasicStringViewData
+struct _Basic_String_View_Data
 {
-	using value_type			= Type;
-	using DifferenceType	= ptrdiff_t;
+	using value_type		= Type;
+	using difference_type	= ptrdiff_t;
 	using reference			= value_type&;
 	using const_reference	= const value_type&;
 	using pointer			= value_type*;
 	using const_pointer		= const value_type*;
 
 
-	const_pointer _First		= nullptr;
+	const_pointer _First	= nullptr;
 	const_pointer _Last		= nullptr;
-};  // END _BasicStringViewData
+};  // END _Basic_String_View_Data
 
 
 template<class BasicStrVData>
-class BasicStringViewIterator	// This is only const
+class _Basic_String_View_Iterator	// This is only const
 {
 private:
 	using _Data				= BasicStrVData;
 
 public:
 	using iterator_category	= random_access_iterator_tag;
-	using value_type			= typename _Data::value_type;
-	using DifferenceType	= typename _Data::DifferenceType;
+	using value_type		= typename _Data::value_type;
+	using difference_type	= typename _Data::difference_type;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
@@ -43,56 +43,56 @@ public:
 
 public:
 
-	constexpr BasicStringViewIterator() noexcept = default;
+	constexpr _Basic_String_View_Iterator() noexcept = default;
 
-	constexpr explicit BasicStringViewIterator(pointer ptr, const _Data* data) noexcept
+	constexpr explicit _Basic_String_View_Iterator(pointer ptr, const _Data* data) noexcept
 		: _Ptr(ptr), _RefData(data) { /*Empty*/
 	}
 
-	constexpr BasicStringViewIterator& operator++() noexcept {
+	constexpr _Basic_String_View_Iterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator.");
 		++_Ptr;
 		return *this;
 	}
 
-	constexpr BasicStringViewIterator operator++(int) noexcept {
-		BasicStringViewIterator temp = *this;
+	constexpr _Basic_String_View_Iterator operator++(int) noexcept {
+		_Basic_String_View_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	constexpr BasicStringViewIterator& operator+=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_View_Iterator& operator+=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator.");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr BasicStringViewIterator operator+(const DifferenceType diff) const noexcept {
-		BasicStringViewIterator temp = *this;
+	constexpr _Basic_String_View_Iterator operator+(const difference_type diff) const noexcept {
+		_Basic_String_View_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	constexpr BasicStringViewIterator& operator--() noexcept {
+	constexpr _Basic_String_View_Iterator& operator--() noexcept {
 		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Ptr;
 		return *this;
 	}
 
-	constexpr BasicStringViewIterator operator--(int) noexcept {
-		BasicStringViewIterator temp = *this;
+	constexpr _Basic_String_View_Iterator operator--(int) noexcept {
+		_Basic_String_View_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	constexpr BasicStringViewIterator& operator-=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_View_Iterator& operator-=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator.");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr BasicStringViewIterator operator-(const DifferenceType diff) const noexcept {
-		BasicStringViewIterator temp = *this;
+	constexpr _Basic_String_View_Iterator operator-(const difference_type diff) const noexcept {
+		_Basic_String_View_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
@@ -107,54 +107,54 @@ public:
 		return *_Ptr;
 	}
 
-	constexpr reference operator[](const DifferenceType diff) const noexcept {
+	constexpr reference operator[](const difference_type diff) const noexcept {
 		return *(*this + diff);
 	}
 
-	constexpr bool operator==(const BasicStringViewIterator& other) const noexcept {
+	constexpr bool operator==(const _Basic_String_View_Iterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	constexpr bool operator!=(const BasicStringViewIterator& other) const noexcept {
+	constexpr bool operator!=(const _Basic_String_View_Iterator& other) const noexcept {
 		return !(*this == other);
 	}
 
 public:
 
-	friend constexpr void _verify_range(const BasicStringViewIterator& first,
-		const BasicStringViewIterator& last) noexcept {
+	friend constexpr void _verify_range(const _Basic_String_View_Iterator& first,
+										const _Basic_String_View_Iterator& last) noexcept {
 
-		CUSTOM_ASSERT(first._RefData == last._RefData, "StringView iterators in range are from different containers");
-		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "StringView iterator range transposed");
+		CUSTOM_ASSERT(first._RefData == last._RefData, "string_view iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "string_view iterator range transposed");
 	}
-};  // END BasicStringConstIterator
+};  // END _Basic_String_Const_Iterator
 
 
 template<class Type, class Traits = custom::char_traits<Type>>
-class BasicStringView		// wrapper for any kind of contiguous character buffer
+class basic_string_view		// wrapper for any kind of contiguous character buffer
 {
 private:
-	using _Data					= _BasicStringViewData<Type>;
+	using _Data						= _Basic_String_View_Data<Type>;
 
 public:
 	static_assert(is_same_v<Type, typename Traits::char_type>,
 		"The program is ill-formed if Traits::char_type is not the same type as Type.");
 
-	static_assert(!is_array_v<Type>&& IsTrivial_v<Type>&& IsStandardLayout_v<Type>,
-		"The character type of BasicStringView must be a non-array trivial standard-layout type.");
+	static_assert(!is_array_v<Type> && is_trivial_v<Type> && is_standard_layout_v<Type>,
+		"The character type of basic_string_view must be a non-array trivial standard-layout type.");
 
-	using TraitsType			= Traits;
+	using traits_type				= Traits;
 	using value_type				= typename _Data::value_type;
-	using DifferenceType		= typename _Data::DifferenceType;
-	using reference				= typename _Data::reference;
-	using const_reference		= typename _Data::const_reference;
-	using pointer				= typename _Data::pointer;
-	using const_pointer			= typename _Data::const_pointer;
+	using difference_type			= typename _Data::difference_type;
+	using reference					= typename _Data::reference;
+	using const_reference			= typename _Data::const_reference;
+	using pointer					= typename _Data::pointer;
+	using const_pointer				= typename _Data::const_pointer;
 
-	using const_iterator			= BasicStringViewIterator<_Data>;
-	using iterator				= const_iterator;		// only const
+	using const_iterator			= _Basic_String_View_Iterator<_Data>;
+	using iterator					= const_iterator;		// only const
 	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
-	using reverse_iterator		= const_reverse_iterator;	// only const
+	using reverse_iterator			= const_reverse_iterator;	// only const
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -164,16 +164,16 @@ private:
 public:
 	// Constructors
 
-	constexpr BasicStringView() noexcept						= default;
-	constexpr BasicStringView(const BasicStringView&) noexcept	= default;
-	constexpr BasicStringView(std::nullptr_t)					= delete;
+	constexpr basic_string_view() noexcept						= default;
+	constexpr basic_string_view(const basic_string_view&) noexcept	= default;
+	constexpr basic_string_view(std::nullptr_t)					= delete;
 
-	constexpr BasicStringView(const_pointer cstring) noexcept {
+	constexpr basic_string_view(const_pointer cstring) noexcept {
 		_data._First = cstring;
-		_data._Last = cstring + TraitsType::length(cstring);
+		_data._Last = cstring + traits_type::length(cstring);
 	}
 
-	constexpr BasicStringView(const_pointer cstring, const size_t len) noexcept {
+	constexpr basic_string_view(const_pointer cstring, const size_t len) noexcept {
 		_data._First = cstring;
 		_data._Last = cstring + len;
 	}
@@ -181,7 +181,7 @@ public:
 public:
 	// Operators
 
-	constexpr BasicStringView& operator=(const BasicStringView&) noexcept = default;
+	constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
 
 	constexpr const_reference operator[](const size_t index) const noexcept {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
@@ -196,8 +196,8 @@ public:
 	}
 
 	constexpr size_t max_size() const noexcept {
-		return (custom::min)(static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
-			static_cast<size_t>(-1) / sizeof(value_type));
+		return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
+								static_cast<size_t>(-1) / sizeof(value_type));
 	}
 
 	constexpr bool empty() const noexcept {
@@ -235,7 +235,7 @@ public:
 		_data._Last -= len;
 	}
 
-	constexpr void swap(BasicStringView& other) noexcept {
+	constexpr void swap(basic_string_view& other) noexcept {
 		if (_data._First != other._data._First)
 		{
 			custom::swap(_data._First, other._data._First);
@@ -246,39 +246,39 @@ public:
 	constexpr size_t copy(value_type* dest, size_t len, size_t pos = 0) const {
 		CUSTOM_ASSERT(size() >= pos, "Offset longer than total size.");
 		len = _clamp_suffix_size(pos, len);		// max number of elems that can be copied
-		TraitsType::copy(dest, _data._First + pos, len);
+		traits_type::copy(dest, _data._First + pos, len);
 		return len;
 	}
 
-	constexpr BasicStringView substr(const size_t pos = 0, size_t len = npos) const {
-		// return a new BasicStringView moved forward by pos and trimmed to len elements
+	constexpr basic_string_view substr(const size_t pos = 0, size_t len = npos) const {
+		// return a new basic_string_view moved forward by pos and trimmed to len elements
 		CUSTOM_ASSERT(size() >= pos, "Offset longer than total size.");
 		len = _clamp_suffix_size(pos, len);
-		return BasicStringView(_data._First + pos, len);
+		return basic_string_view(_data._First + pos, len);
 	}
 
 	// Compare
-	constexpr int compare(const BasicStringView& other) const noexcept {
+	constexpr int compare(const basic_string_view& other) const noexcept {
 		return _compare_with_cstring(0, size(), other._data._First, 0, other.size());
 	}
 
-	constexpr int compare(const size_t pos, const size_t len, const BasicStringView& other) const {
+	constexpr int compare(const size_t pos, const size_t len, const basic_string_view& other) const {
 		return _compare_with_cstring(pos, len, other._data._First, 0, other.size());
 	}
 
 	constexpr int compare(const size_t pos, const size_t len,
-		const BasicStringView& other,
+		const basic_string_view& other,
 		const size_t subpos, const size_t sublen) const {
 
 		return _compare_with_cstring(pos, len, other._data._First, subpos, sublen);
 	}
 
 	constexpr int compare(const_pointer cstring) const {
-		return _compare_with_cstring(0, size(), cstring, 0, TraitsType::length(cstring));
+		return _compare_with_cstring(0, size(), cstring, 0, traits_type::length(cstring));
 	}
 
 	constexpr int compare(const size_t pos, const size_t len, const_pointer cstring) const {
-		return _compare_with_cstring(pos, len, cstring, 0, TraitsType::length(cstring));
+		return _compare_with_cstring(pos, len, cstring, 0, traits_type::length(cstring));
 	}
 
 	constexpr int compare(const size_t pos, const size_t len,
@@ -289,12 +289,12 @@ public:
 	// END Compare
 
 	// Find
-	constexpr size_t find(const BasicStringView& other, const size_t pos = 0) const noexcept {
+	constexpr size_t find(const basic_string_view& other, const size_t pos = 0) const noexcept {
 		return _find_cstring(other._data._First, pos, other.size());
 	}
 
 	constexpr size_t find(const_pointer cstring, const size_t pos = 0) const noexcept {
-		return _find_cstring(cstring, pos, TraitsType::length(cstring));
+		return _find_cstring(cstring, pos, traits_type::length(cstring));
 	}
 
 	constexpr size_t find(const_pointer cstring, size_t pos, size_t len) const noexcept {
@@ -307,12 +307,12 @@ public:
 	// END Find
 
 	// Rfind function
-	constexpr size_t rfind(const BasicStringView& other, size_t pos = npos) const {
+	constexpr size_t rfind(const basic_string_view& other, size_t pos = npos) const {
 		return _rfind_cstring(other._data._First, pos, other.size());
 	}
 
 	constexpr size_t rfind(const_pointer cstring, size_t pos = npos) const {
-		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
+		return _rfind_cstring(cstring, pos, traits_type::length(cstring));
 	}
 
 	constexpr size_t rfind(const_pointer cstring, size_t pos, size_t len) const {
@@ -325,7 +325,7 @@ public:
 	// end Rfind
 
 	// Contains
-	constexpr bool contains(const BasicStringView& other) const noexcept {
+	constexpr bool contains(const basic_string_view& other) const noexcept {
 		return find(other) != npos;
 	}
 
@@ -339,40 +339,40 @@ public:
 	// END Contains
 
 	// Starts With
-	constexpr bool starts_with(const BasicStringView& other) const noexcept {
+	constexpr bool starts_with(const basic_string_view& other) const noexcept {
 		const size_t otherSize = other.size();
 
 		if (size() < otherSize)
 			return false;
 
-		return TraitsType::compare(_data._First, other._data._First, otherSize) == 0;
+		return traits_type::compare(_data._First, other._data._First, otherSize) == 0;
 	}
 
 	constexpr bool starts_with(const value_type chr) const noexcept {
-		return !empty() && TraitsType::eq(front(), chr);
+		return !empty() && traits_type::eq(front(), chr);
 	}
 
 	constexpr bool starts_with(const_pointer cstring) const noexcept {
-		return starts_with(BasicStringView(cstring));
+		return starts_with(basic_string_view(cstring));
 	}
 	// END Starts With
 
 	// Ends With
-	constexpr bool ends_with(const BasicStringView& other) const noexcept {
+	constexpr bool ends_with(const basic_string_view& other) const noexcept {
 		const size_t otherSize = other.size();
 
 		if (size() < otherSize)
 			return false;
 
-		return TraitsType::compare(_data._Last - otherSize, other._data._First, otherSize) == 0;
+		return traits_type::compare(_data._Last - otherSize, other._data._First, otherSize) == 0;
 	}
 
 	constexpr bool ends_with(const value_type chr) const noexcept {
-		return !empty() && TraitsType::eq(back(), chr);
+		return !empty() && traits_type::eq(back(), chr);
 	}
 
 	constexpr bool ends_with(const_pointer cstring) const noexcept {
-		return ends_with(BasicStringView(cstring));
+		return ends_with(basic_string_view(cstring));
 	}
 	// END Ends With
 
@@ -420,40 +420,40 @@ private:
 	}
 
 	constexpr int _compare_with_cstring(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
-		if (pos + len > size() || subpos + sublen > TraitsType::length(cstring))
+		if (pos + len > size() || subpos + sublen > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
-		return detail::_traits_cstring_compare<TraitsType>(_data._First, pos, len,
+		return detail::_traits_cstring_compare<traits_type>(_data._First, pos, len,
 			cstring, subpos, sublen);
 	}
 
 	constexpr size_t _find_cstring(const_pointer cstring, size_t pos, size_t len) const {
-		if (pos > size() || len > TraitsType::length(cstring))
+		if (pos > size() || len > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
-		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
+		return detail::_traits_cstring_find<traits_type>(_data._First, cstring, pos, len);
 	}
 
 	constexpr size_t _rfind_cstring(const_pointer cstring, size_t pos, size_t len) const {
-		if (len > TraitsType::length(cstring))
+		if (len > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length.");
 
-		return detail::_traits_cstring_rfind<TraitsType>(_data._First, cstring, pos, len);
+		return detail::_traits_cstring_rfind<traits_type>(_data._First, cstring, pos, len);
 	}
-};  // END BasicStringView
+};  // END basic_string_view
 
 
-// BasicStringView binary operators
+// basic_string_view binary operators
 template<class Type, class Traits>
-constexpr bool operator==(const BasicStringView<Type, Traits>& left,
-	const BasicStringView<Type, Traits>& right) {
+constexpr bool operator==(const basic_string_view<Type, Traits>& left,
+	const basic_string_view<Type, Traits>& right) {
 
 	return left.compare(right) == 0;
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr bool operator!=(const BasicStringView<Type, Traits>& left,
-	const BasicStringView<Type, Traits>& right) {
+constexpr bool operator!=(const basic_string_view<Type, Traits>& left,
+	const basic_string_view<Type, Traits>& right) {
 
 	return !(left == right);
 }
@@ -463,12 +463,12 @@ constexpr bool operator!=(const BasicStringView<Type, Traits>& left,
 
 #pragma region BasicString
 template<class Type, class Alloc>
-struct _BasicStringData
+struct _Basic_String_Data
 {
 	using _AllocTraits		= allocator_traits<Alloc>;
 
-	using value_type			= typename _AllocTraits::value_type;
-	using DifferenceType	= typename _AllocTraits::DifferenceType;
+	using value_type		= typename _AllocTraits::value_type;
+	using difference_type	= typename _AllocTraits::difference_type;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
 	using pointer			= typename _AllocTraits::pointer;
@@ -478,76 +478,76 @@ struct _BasicStringData
 	pointer _First			= nullptr;			// Actual container array
 	pointer _Last			= nullptr;			// pointer to end
 	pointer _Final			= nullptr;			// pointer to capacity end
-};	// END _BasicStringData
+};	// END _Basic_String_Data
 
 
 template<class BasicStrData>
-class BasicStringConstIterator
+class _Basic_String_Const_Iterator
 {
 private:
 	using _Data				= BasicStrData;
 
 public:
-    using iterator_category 	= random_access_iterator_tag;
+    using iterator_category	= random_access_iterator_tag;
 	using value_type 		= typename _Data::value_type;
-	using DifferenceType	= typename _Data::DifferenceType;
+	using difference_type	= typename _Data::difference_type;
 	using reference 		= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
-	value_type* _Ptr			= nullptr;
+	value_type* _Ptr		= nullptr;
 	const _Data* _RefData	= nullptr;
 
 public:
 
-	constexpr BasicStringConstIterator() noexcept : _Ptr() { /*Empty*/ }
+	constexpr _Basic_String_Const_Iterator() noexcept : _Ptr() { /*Empty*/ }
 
-	constexpr explicit BasicStringConstIterator(value_type* ptr, const _Data* data) noexcept
+	constexpr explicit _Basic_String_Const_Iterator(value_type* ptr, const _Data* data) noexcept
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
-	constexpr BasicStringConstIterator& operator++() noexcept {
+	constexpr _Basic_String_Const_Iterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator.");
 		++_Ptr;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator++(int) noexcept {
-		BasicStringConstIterator temp = *this;
+	constexpr _Basic_String_Const_Iterator operator++(int) noexcept {
+		_Basic_String_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator+=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_Const_Iterator& operator+=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator.");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator+(const DifferenceType diff) const noexcept {
-		BasicStringConstIterator temp = *this;
+	constexpr _Basic_String_Const_Iterator operator+(const difference_type diff) const noexcept {
+		_Basic_String_Const_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator--() noexcept {
+	constexpr _Basic_String_Const_Iterator& operator--() noexcept {
 		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Ptr;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator--(int) noexcept {
-		BasicStringConstIterator temp = *this;
+	constexpr _Basic_String_Const_Iterator operator--(int) noexcept {
+		_Basic_String_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	constexpr BasicStringConstIterator& operator-=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_Const_Iterator& operator-=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator.");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr BasicStringConstIterator operator-(const DifferenceType diff) const noexcept {
-		BasicStringConstIterator temp = *this;
+	constexpr _Basic_String_Const_Iterator operator-(const difference_type diff) const noexcept {
+		_Basic_String_Const_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
@@ -562,15 +562,15 @@ public:
 		return *_Ptr;
 	}
 
-	constexpr reference operator[](const DifferenceType diff) const noexcept {
+	constexpr reference operator[](const difference_type diff) const noexcept {
         return *(*this + diff);
     }
 
-	constexpr bool operator==(const BasicStringConstIterator& other) const noexcept {
+	constexpr bool operator==(const _Basic_String_Const_Iterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	constexpr bool operator!=(const BasicStringConstIterator& other) const noexcept {
+	constexpr bool operator!=(const _Basic_String_Const_Iterator& other) const noexcept {
 		return !(*this == other);
 	}
 
@@ -588,74 +588,74 @@ public:
 		return _Ptr == _RefData->_Last;
 	}
 
-	friend constexpr void _verify_range(const BasicStringConstIterator& first, const BasicStringConstIterator& last) noexcept {
-		CUSTOM_ASSERT(first._RefData == last._RefData, "BasicString iterators in range are from different containers");
-		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "BasicString iterator range transposed");
+	friend constexpr void _verify_range(const _Basic_String_Const_Iterator& first, const _Basic_String_Const_Iterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "basic_string iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "basic_string iterator range transposed");
 	}
-}; // END BasicStringConstIterator
+}; // END _Basic_String_Const_Iterator
 
 
 template<class BasicStrData>
-class BasicStringIterator : public BasicStringConstIterator<BasicStrData>		// BasicString iterator
+class _Basic_String_Iterator : public _Basic_String_Const_Iterator<BasicStrData>		// basic_string iterator
 {
 private:
-	using _Base				= BasicStringConstIterator<BasicStrData>;
+	using _Base				= _Basic_String_Const_Iterator<BasicStrData>;
 	using _Data				= BasicStrData;
 	
 public:
-    using iterator_category 	= random_access_iterator_tag;
+    using iterator_category	= random_access_iterator_tag;
 	using value_type 		= typename _Data::value_type;
-	using DifferenceType	= typename _Data::DifferenceType;
+	using difference_type	= typename _Data::difference_type;
 	using reference			= typename _Data::reference;
 	using pointer			= typename _Data::pointer;
 
 public:
 
-	constexpr BasicStringIterator() noexcept  = default;
+	constexpr _Basic_String_Iterator() noexcept  = default;
 
-	constexpr explicit BasicStringIterator(value_type* ptr, const _Data* data) noexcept
+	constexpr explicit _Basic_String_Iterator(value_type* ptr, const _Data* data) noexcept
 		: _Base(ptr, data) { /*Empty*/ }
 
-	constexpr BasicStringIterator& operator++() noexcept {
+	constexpr _Basic_String_Iterator& operator++() noexcept {
 		_Base::operator++();
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator++(int) noexcept {
-		BasicStringIterator temp = *this;
+	constexpr _Basic_String_Iterator operator++(int) noexcept {
+		_Basic_String_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator+=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_Iterator& operator+=(const difference_type diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator+(const DifferenceType diff) const noexcept {
-		BasicStringIterator temp = *this;
+	constexpr _Basic_String_Iterator operator+(const difference_type diff) const noexcept {
+		_Basic_String_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator--() noexcept {
+	constexpr _Basic_String_Iterator& operator--() noexcept {
 		_Base::operator--();
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator--(int) noexcept {
-		BasicStringIterator temp = *this;
+	constexpr _Basic_String_Iterator operator--(int) noexcept {
+		_Basic_String_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
 
-	constexpr BasicStringIterator& operator-=(const DifferenceType diff) noexcept {
+	constexpr _Basic_String_Iterator& operator-=(const difference_type diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr BasicStringIterator operator-(const DifferenceType diff) const noexcept {
-		BasicStringIterator temp = *this;
+	constexpr _Basic_String_Iterator operator-(const difference_type diff) const noexcept {
+		_Basic_String_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
@@ -668,42 +668,42 @@ public:
 		return const_cast<reference>(_Base::operator*());
 	}
 
-	constexpr reference operator[](const DifferenceType diff) const noexcept {
+	constexpr reference operator[](const difference_type diff) const noexcept {
         return const_cast<reference>(_Base::operator[](diff));
     }
-}; // END BasicStringIterator
+}; // END _Basic_String_Iterator
 
 
 template<class Type, class Alloc = custom::allocator<Type>, class Traits = custom::char_traits<Type>>
-class BasicString		// null-terminated array of elements
+class basic_string		// null-terminated array of elements
 {
 private:
-	using _Data					= _BasicStringData<Type, Alloc>;
+	using _Data					= _Basic_String_Data<Type, Alloc>;
 	using _AllocTraits			= typename _Data::_AllocTraits;
 
 public:
 	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and Allocator type must be the same!");
-	static_assert(!is_array_v<Type> && IsTrivial_v<Type> && IsStandardLayout_v<Type>,
-					"The character type of BasicString must be a non-array trivial standard-layout type.");
+	static_assert(!is_array_v<Type> && is_trivial_v<Type> && is_standard_layout_v<Type>,
+					"The character type of basic_string must be a non-array trivial standard-layout type.");
 
-	using TraitsType			= Traits;
+	using traits_type				= Traits;
 	using value_type				= typename _Data::value_type;
-	using DifferenceType		= typename _Data::DifferenceType;
-	using reference				= typename _Data::reference;
-	using const_reference		= typename _Data::const_reference;
-	using pointer				= typename _Data::pointer;
-	using const_pointer			= typename _Data::const_pointer;
+	using difference_type			= typename _Data::difference_type;
+	using reference					= typename _Data::reference;
+	using const_reference			= typename _Data::const_reference;
+	using pointer					= typename _Data::pointer;
+	using const_pointer				= typename _Data::const_pointer;
 	using allocator_type			= Alloc;
 
-	using iterator				= BasicStringIterator<_Data>;
-	using const_iterator			= BasicStringConstIterator<_Data>;
-	using reverse_iterator		= custom::reverse_iterator<iterator>;
+	using iterator					= _Basic_String_Iterator<_Data>;
+	using const_iterator			= _Basic_String_Const_Iterator<_Data>;
+	using reverse_iterator			= custom::reverse_iterator<iterator>;
 	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 	template<class StringViewType>
-	using IsStringView = 	enable_if_t<Conjunction_v<
-										IsConvertible<const StringViewType&, BasicStringView<Type, Traits>>,
-										negation<IsConvertible<const StringViewType&, const Type*>>>,
+	using is_string_view =	enable_if_t<conjunction_v<
+											is_convertible<const StringViewType&, basic_string_view<Type, Traits>>,
+											negation<is_convertible<const StringViewType&, const Type*>>>,
 							bool>;
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
@@ -717,41 +717,41 @@ private:
 public:
 	// Constructors
 
-	constexpr BasicString() {
+	constexpr basic_string() {
 		_initialize_from_cstring(nullptr);
 	}
 
-	constexpr BasicString(const_pointer cstring) {
+	constexpr basic_string(const_pointer cstring) {
 		_initialize_from_cstring(cstring);
 	}
 
-	template<class StringViewType, IsStringView<StringViewType> = true>
-	constexpr BasicString(const StringViewType& sv) {
+	template<class StringViewType, is_string_view<StringViewType> = true>
+	constexpr basic_string(const StringViewType& sv) {
 		_initialize_from_cstring(sv.data());
 	}
 
-	constexpr BasicString(const size_t newCapacity) {
+	constexpr basic_string(const size_t newCapacity) {
 		_alloc_empty(newCapacity);
 	}
 
-	constexpr BasicString(const BasicString& other) {
+	constexpr basic_string(const basic_string& other) {
 		_copy(other);
 	}
 
-	constexpr BasicString(BasicString&& other) noexcept {
+	constexpr basic_string(basic_string&& other) noexcept {
 		_move(custom::move(other));
 	}
 
-	constexpr ~BasicString() noexcept {
+	constexpr ~basic_string() noexcept {
 		_clean_up_string();
 	}
 
 public:
 	// Operators
 
-    constexpr operator BasicStringView<value_type, TraitsType>() const noexcept {
-        // return a StringView around *this's character-type sequence
-        return BasicStringView<value_type, TraitsType> {_data._First, size()};
+    constexpr operator basic_string_view<value_type, traits_type>() const noexcept {
+        // return a string_view around *this's character-type sequence
+        return basic_string_view<value_type, traits_type> {_data._First, size()};
     }
 
 	constexpr const_reference operator[](const size_t index) const noexcept{
@@ -764,7 +764,7 @@ public:
 		return _data._First[index];
 	}
 
-	constexpr BasicString& operator=(const BasicString& other) {
+	constexpr basic_string& operator=(const basic_string& other) {
 		if (_data._First != other._data._First)
 		{
 			_clean_up_string();
@@ -774,7 +774,7 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& operator=(BasicString&& other) noexcept {
+	constexpr basic_string& operator=(basic_string&& other) noexcept {
 		if (_data._First != other._data._First)
 		{
 			_clean_up_string();
@@ -784,17 +784,17 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& operator+=(const BasicString& other) {
+	constexpr basic_string& operator+=(const basic_string& other) {
 		append(other);
 		return *this;
 	}
 
-	constexpr BasicString& operator+=(const_pointer cstring) {
+	constexpr basic_string& operator+=(const_pointer cstring) {
 		append(cstring);
 		return *this;
 	}
 
-	constexpr BasicString& operator+=(value_type chr) {
+	constexpr basic_string& operator+=(value_type chr) {
 		push_back(chr);
 		return *this;
 	}
@@ -808,13 +808,13 @@ public:
 
 		size_t newSize		= size();
 		pointer newString 	= _alloc.allocate(newCapacity + 1);
-		(void)TraitsType::copy(newString, _data._First, size());
+		(void)traits_type::copy(newString, _data._First, size());
 		_clean_up_string();
 
 		_data._First 		= newString;
 		_data._Last			= _data._First + newSize;
 		_data._Final 		= _data._First + newCapacity;
-		_data._Last[0] 		= TraitsType::NULLCHR;
+		_data._Last[0] 		= traits_type::NULLCHR;
 	}
 
 	constexpr void shrink_to_fit() {							// Allocate memory with capacity equal to size and copy values there
@@ -824,11 +824,11 @@ public:
 	constexpr void push_back(value_type chr) {
 		_extend_if_full();
 		*(_data._Last++)	= chr;
-		_data._Last[0] 		= TraitsType::NULLCHR;
+		_data._Last[0] 		= traits_type::NULLCHR;
 	}
 
 	constexpr void pop_back() {
-		*(--_data._Last) = TraitsType::NULLCHR;
+		*(--_data._Last) = traits_type::NULLCHR;
 	}
 
 	constexpr size_t size() const noexcept {
@@ -836,7 +836,7 @@ public:
 	}
 
 	constexpr size_t max_size() const noexcept {
-		return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
+		return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_AllocTraits::max_size(_alloc));
 	}
 
@@ -850,7 +850,7 @@ public:
 
 	constexpr void clear() {
 		_data._Last 	= _data._First;
-		_data._First[0] = TraitsType::NULLCHR;
+		_data._First[0] = traits_type::NULLCHR;
 	}
 
 	constexpr const_pointer data() const noexcept {
@@ -899,7 +899,7 @@ public:
 		return _data._Last[-1];
 	}
 
-    constexpr void swap(BasicString& other) noexcept {
+    constexpr void swap(basic_string& other) noexcept {
 		if (_data._First != other._data._First)
 		{
 			custom::swap(_data._First, other._data._First);
@@ -908,67 +908,67 @@ public:
 		}
     }
 
-	constexpr BasicString substr(size_t pos, size_t len) const {					// Create substring from current string
+	constexpr basic_string substr(size_t pos, size_t len) const {					// Create substring from current string
 		if (pos + len > size())
 			throw std::out_of_range("Invalid length or starting position.");
 
-		BasicString sub(len);	// empty string with capacity = len
-		(void)TraitsType::copy(sub._data._First, _data._First + pos, len);
+		basic_string sub(len);	// empty string with capacity = len
+		(void)traits_type::copy(sub._data._First, _data._First + pos, len);
 		sub._data._Last		= sub._data._Final;
-		sub._data._Last[0]	= TraitsType::NULLCHR;
+		sub._data._Last[0]	= traits_type::NULLCHR;
 
 		return sub;
 	}
 
 // Append function overload
-	constexpr BasicString& append(const BasicString& string) {								// Appends a copy of string
+	constexpr basic_string& append(const basic_string& string) {								// Appends a copy of string
 		_insert_from_cstring(size(), string._data._First, 0, string.size());
 		return *this;
 	}
 
-	constexpr BasicString& append(const BasicString& string, size_t subpos, size_t sublen) {	// Appends a copy of a substring of string.
+	constexpr basic_string& append(const basic_string& string, size_t subpos, size_t sublen) {	// Appends a copy of a substring of string.
 		_insert_from_cstring(size(), string._data._First, subpos, sublen);
 		return *this;
 	}
 
-	constexpr BasicString& append(const_pointer cstring) {									// Appends a copy of a c-string.
-		_insert_from_cstring(size(), cstring, 0, TraitsType::length(cstring));
+	constexpr basic_string& append(const_pointer cstring) {									// Appends a copy of a c-string.
+		_insert_from_cstring(size(), cstring, 0, traits_type::length(cstring));
 		return *this;
 	}
 
-	constexpr BasicString& append(const_pointer cstring, size_t nchar) {						// Appends a copy of the first n characters in the c-string
+	constexpr basic_string& append(const_pointer cstring, size_t nchar) {						// Appends a copy of the first n characters in the c-string
 		_insert_from_cstring(size(), cstring, 0, nchar);
 		return *this;
 	}
 
-	constexpr BasicString& append(size_t nchar, value_type chr) {							// Appends n consecutive copies of character c
+	constexpr basic_string& append(size_t nchar, value_type chr) {							// Appends n consecutive copies of character c
 		_insert_char(size(), nchar, chr);
 		return *this;
 	}
 // end Append
 
 // Insert function overload
-	constexpr BasicString& insert(size_t pos, const BasicString& string) {
+	constexpr basic_string& insert(size_t pos, const basic_string& string) {
 		_insert_from_cstring(pos, string._data._First, 0, string.size());
 		return *this;
 	}
 
-	constexpr BasicString& insert(size_t pos, const BasicString& string, size_t subpos, size_t sublen) {
+	constexpr basic_string& insert(size_t pos, const basic_string& string, size_t subpos, size_t sublen) {
 		_insert_from_cstring(pos, string._data._First, subpos, sublen);
 		return *this;	
 	}
 
-	constexpr BasicString& insert(size_t pos, const_pointer cstring) {
-		_insert_from_cstring(pos, cstring, 0, TraitsType::length(cstring));
+	constexpr basic_string& insert(size_t pos, const_pointer cstring) {
+		_insert_from_cstring(pos, cstring, 0, traits_type::length(cstring));
 		return *this;
 	}
 
-	constexpr BasicString& insert(size_t pos, const_pointer cstring, size_t len) {
+	constexpr basic_string& insert(size_t pos, const_pointer cstring, size_t len) {
 		_insert_from_cstring(pos, cstring, 0, len);
 		return *this;
 	}
 
-	constexpr BasicString& insert(size_t pos, size_t nchar, value_type chr) {
+	constexpr basic_string& insert(size_t pos, size_t nchar, value_type chr) {
 		_insert_char(pos, nchar, chr);
 		return *this;
 	}
@@ -990,7 +990,7 @@ public:
 	constexpr iterator insert(const_iterator where, const_iterator first, const_iterator last) {
 		if (where._RefData->_First == first._RefData->_First ||
 			first._RefData->_First != last._RefData->_First)	// Check if pos string != first/last string
-			throw std::domain_error("BasicString provided by first and last must be the same, but different from the one provided by where");
+			throw std::domain_error("basic_string provided by first and last must be the same, but different from the one provided by where");
 
 		size_t pos 				= where.get_index();
 		size_t posFrom 			= first.get_index();
@@ -1003,14 +1003,14 @@ public:
 // end Insert
 
 // Erase function overload
-	constexpr BasicString& erase(size_t pos, size_t len) {
+	constexpr basic_string& erase(size_t pos, size_t len) {
 		_remove_from_cstring(pos, len);
 		return *this;
 	}
 
 	constexpr iterator erase(const_iterator where) {
 		if (where.is_end())
-			throw std::out_of_range("BasicString erase iterator outside range.");
+			throw std::out_of_range("basic_string erase iterator outside range.");
 
 		size_t pos = where.get_index();
 		_remove_from_cstring(pos, 1);
@@ -1020,7 +1020,7 @@ public:
 
 	constexpr iterator erase(const_iterator first, const_iterator last) {
 		if (first.is_end())
-			throw std::out_of_range("BasicString erase iterator outside range.");
+			throw std::out_of_range("basic_string erase iterator outside range.");
 
 		size_t posFrom	= first.get_index();
 		size_t posTo	= last.get_index();
@@ -1031,16 +1031,16 @@ public:
 // end Erase
 
 // Compare function overload
-	constexpr int compare(const BasicString& string) const {
+	constexpr int compare(const basic_string& string) const {
 		return _compare_with_cstring(0, size(), string._data._First, 0, string.size());
 	}
 
-	constexpr int compare(size_t pos, size_t len, const BasicString& string, size_t subpos, size_t sublen) const {
+	constexpr int compare(size_t pos, size_t len, const basic_string& string, size_t subpos, size_t sublen) const {
 		return _compare_with_cstring(pos, len, string._data._First, subpos, sublen);
 	}
 
 	constexpr int compare(const_pointer cstring) const {
-		return _compare_with_cstring(0, size(), cstring, 0, TraitsType::length(cstring));
+		return _compare_with_cstring(0, size(), cstring, 0, traits_type::length(cstring));
 	}
 
 	constexpr int compare(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
@@ -1049,12 +1049,12 @@ public:
 // end Compare
 
 // Find function overload
-	constexpr size_t find(const BasicString& string, size_t pos = 0) const {
+	constexpr size_t find(const basic_string& string, size_t pos = 0) const {
 		return _find_cstring(string._data._First, pos, string.size());
 	}
 
 	constexpr size_t find(const_pointer cstring, size_t pos = 0) const {
-		return _find_cstring(cstring, pos, TraitsType::length(cstring));
+		return _find_cstring(cstring, pos, traits_type::length(cstring));
 	}
 
 	constexpr size_t find(const_pointer cstring, size_t pos, size_t len) const {
@@ -1067,12 +1067,12 @@ public:
 // end Find
 
 // Rfind function overload
-	constexpr size_t rfind(const BasicString& string, size_t pos = npos) const {
+	constexpr size_t rfind(const basic_string& string, size_t pos = npos) const {
 		return _rfind_cstring(string._data._First, pos, string.size());
 	}
 
 	constexpr size_t rfind(const_pointer cstring, size_t pos = npos) const {
-		return _rfind_cstring(cstring, pos, TraitsType::length(cstring));
+		return _rfind_cstring(cstring, pos, traits_type::length(cstring));
 	}
 
 	constexpr size_t rfind(const_pointer cstring, size_t pos, size_t len) const {
@@ -1085,7 +1085,7 @@ public:
 // end Rfind
 
 // Contains
-    constexpr bool contains(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
+    constexpr bool contains(const basic_string_view<value_type, traits_type>& sv) const noexcept {
         return find(sv.data()) != npos;
     }
 
@@ -1099,30 +1099,30 @@ public:
 // END Contains
 
 // Starts With overload
-	constexpr bool starts_with(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(sv);
+	constexpr bool starts_with(const basic_string_view<value_type, traits_type>& sv) const noexcept {
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.starts_with(sv);
     }
 
     constexpr bool starts_with(const value_type chr) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(chr);
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.starts_with(chr);
     }
 
     constexpr bool starts_with(const_pointer cstring) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.starts_with(cstring);
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.starts_with(cstring);
     }
 // END Starts With
 
 // Ends With overload
-	constexpr bool ends_with(const BasicStringView<value_type, TraitsType>& sv) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(sv);
+	constexpr bool ends_with(const basic_string_view<value_type, traits_type>& sv) const noexcept {
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.ends_with(sv);
     }
 
     constexpr bool ends_with(const value_type chr) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(chr);
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.ends_with(chr);
     }
 
     constexpr bool ends_with(const_pointer cstring) const noexcept {
-        return BasicStringView<value_type, TraitsType> {_data._First, size()}.ends_with(cstring);
+        return basic_string_view<value_type, traits_type> {_data._First, size()}.ends_with(cstring);
     }
 // END Ends With
 
@@ -1176,7 +1176,7 @@ private:
 		_data._First	= _alloc.allocate(capacity + 1);
 		_data._Last		= _data._First;
 		_data._Final	= _data._First + capacity;
-		_data._Last[0]	= TraitsType::NULLCHR;
+		_data._Last[0]	= traits_type::NULLCHR;
 	}
 
 	constexpr void _initialize_from_cstring(const_pointer cstring) {
@@ -1184,12 +1184,12 @@ private:
 			_alloc_empty(_DEFAULT_CAPACITY);
 		else
 		{
-			size_t len		= TraitsType::length(cstring);
+			size_t len		= traits_type::length(cstring);
 			_data._First	= _alloc.allocate(len + 1);
 			_data._Last		= _data._First + len;
 			_data._Final	= _data._First + len;
-			(void)TraitsType::copy(_data._First, cstring, len);
-			_data._Last[0] = TraitsType::NULLCHR;
+			(void)traits_type::copy(_data._First, cstring, len);
+			_data._Last[0] = traits_type::NULLCHR;
 		}
 	}
 
@@ -1208,16 +1208,16 @@ private:
 			reserve(capacity() + capacity() / 2 + 1);
 	}
 
-	constexpr void _copy(const BasicString& other) {								// Generic copy function for string
+	constexpr void _copy(const basic_string& other) {								// Generic copy function for string
 		_alloc_empty(other.capacity());
-		(void)TraitsType::copy(_data._First, other._data._First, other.size());
+		(void)traits_type::copy(_data._First, other._data._First, other.size());
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
-		_data._Last[0]	= TraitsType::NULLCHR;
+		_data._Last[0]	= traits_type::NULLCHR;
 	}
 
-	constexpr void _move(BasicString&& other) {										// Generic move function for string
+	constexpr void _move(basic_string&& other) {										// Generic move function for string
 		_data._First	= other._data._First;
 		_data._Last		= other._data._Last;
 		_data._Final	= other._data._Final;
@@ -1226,17 +1226,17 @@ private:
 	}
 
 	constexpr void _insert_from_cstring(size_t pos, const_pointer cstring, size_t subpos, size_t sublen) {
-		if (pos > size() || subpos + sublen > TraitsType::length(cstring))
+		if (pos > size() || subpos + sublen > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
 		size_t newSize = size() + sublen;
 		if (newSize > capacity())
 			reserve(newSize);
 
-		(void)TraitsType::move(_data._First + pos + sublen, _data._First + pos, size() - pos);	// copy last sublen positions to right
-		(void)TraitsType::move(_data._First + pos, cstring + subpos, sublen);					// add substr from cstring between
+		(void)traits_type::move(_data._First + pos + sublen, _data._First + pos, size() - pos);	// copy last sublen positions to right
+		(void)traits_type::move(_data._First + pos, cstring + subpos, sublen);					// add substr from cstring between
 		_data._Last 	= _data._First + newSize;
-		_data._Last[0] 	= TraitsType::NULLCHR;
+		_data._Last[0] 	= traits_type::NULLCHR;
 	}
 
 	constexpr void _insert_char(size_t pos, size_t nchar, value_type chr) {
@@ -1247,94 +1247,94 @@ private:
 		if (newSize > capacity())
 			reserve(newSize);
 
-		(void)TraitsType::move(_data._First + pos + nchar, _data._First + pos, size() - pos);	// copy last nchar positions to right
-		(void)TraitsType::assign(_data._First + pos, nchar, chr);								// add nchar * chr in between
+		(void)traits_type::move(_data._First + pos + nchar, _data._First + pos, size() - pos);	// copy last nchar positions to right
+		(void)traits_type::assign(_data._First + pos, nchar, chr);								// add nchar * chr in between
 		_data._Last 	= _data._First + newSize;
-		_data._Last[0] 	= TraitsType::NULLCHR;
+		_data._Last[0] 	= traits_type::NULLCHR;
 	}
 
 	constexpr void _remove_from_cstring(size_t pos, size_t len) {
 		if (pos + len > size())
 			throw std::out_of_range("Invalid length or starting position.");
 
-		(void)TraitsType::move(_data._First + pos, _data._First + pos + len, size() - pos - len);
+		(void)traits_type::move(_data._First + pos, _data._First + pos + len, size() - pos - len);
 		_data._Last 	= _data._First + size() - len;
-		_data._Last[0] 	= TraitsType::NULLCHR;
+		_data._Last[0] 	= traits_type::NULLCHR;
 	}
 
 	constexpr int _compare_with_cstring(size_t pos, size_t len, const_pointer cstring, size_t subpos, size_t sublen) const {
 		if (pos + len > size() || subpos + sublen > Traits::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
-		return detail::_traits_cstring_compare<TraitsType>(	_data._First, pos, len,
+		return detail::_traits_cstring_compare<traits_type>(	_data._First, pos, len,
 															cstring, subpos, sublen);
 	}
 
 	constexpr size_t _find_cstring(const_pointer cstring, size_t pos, size_t len) const {
-		if (pos > size() || len > TraitsType::length(cstring))
+		if (pos > size() || len > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length or starting position.");
 
-		return detail::_traits_cstring_find<TraitsType>(_data._First, cstring, pos, len);
+		return detail::_traits_cstring_find<traits_type>(_data._First, cstring, pos, len);
 	}
 
 	constexpr size_t _rfind_cstring(const_pointer cstring, size_t pos, size_t len) const {
-		if (len > TraitsType::length(cstring))
+		if (len > traits_type::length(cstring))
 			throw std::out_of_range("Invalid length.");
 
-		return detail::_traits_cstring_rfind<TraitsType>(_data._First, cstring, pos, len);
+		return detail::_traits_cstring_rfind<traits_type>(_data._First, cstring, pos, len);
 	}
-};	// END BasicString
+};	// END basic_string
 
 
-// BasicString binary operators
+// basic_string binary operators
 template<class Type, class Alloc, class Traits>
-constexpr bool operator==(	const BasicString<Type, Alloc, Traits>& left,
-							const BasicString<Type, Alloc, Traits>& right) {
+constexpr bool operator==(	const basic_string<Type, Alloc, Traits>& left,
+							const basic_string<Type, Alloc, Traits>& right) {
 
 	return left.compare(right) == 0;
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr bool operator!=(	const BasicString<Type, Alloc, Traits>& left,
-							const BasicString<Type, Alloc, Traits>& right) {
+constexpr bool operator!=(	const basic_string<Type, Alloc, Traits>& left,
+							const basic_string<Type, Alloc, Traits>& right) {
 
 	return !(left == right);
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
-														const BasicString<Type, Alloc, Traits>& right) {
+constexpr basic_string<Type, Alloc, Traits> operator+(	const basic_string<Type, Alloc, Traits>& left,
+														const basic_string<Type, Alloc, Traits>& right) {
 
 	// create empty string with capacity equal to sum of sizes and append left then right string
-	return BasicString<Type, Alloc, Traits>(left.size() + right.size()).append(left).append(right);
+	return basic_string<Type, Alloc, Traits>(left.size() + right.size()).append(left).append(right);
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
+constexpr basic_string<Type, Alloc, Traits> operator+(	const basic_string<Type, Alloc, Traits>& left,
 														const Type* right) {
 
-	return BasicString<Type, Alloc, Traits>(left.size() + Traits::length(right)).append(left).append(right);
+	return basic_string<Type, Alloc, Traits>(left.size() + Traits::length(right)).append(left).append(right);
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr BasicString<Type, Alloc, Traits> operator+(	const Type* left,
-														const BasicString<Type, Alloc, Traits>& right) {
+constexpr basic_string<Type, Alloc, Traits> operator+(	const Type* left,
+														const basic_string<Type, Alloc, Traits>& right) {
 
-	return BasicString<Type, Alloc, Traits>(Traits::length(left) + right.size()).append(left).append(right);
+	return basic_string<Type, Alloc, Traits>(Traits::length(left) + right.size()).append(left).append(right);
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr BasicString<Type, Alloc, Traits> operator+(	const BasicString<Type, Alloc, Traits>& left,
+constexpr basic_string<Type, Alloc, Traits> operator+(	const basic_string<Type, Alloc, Traits>& left,
 														const Type right) {
 
-	return BasicString<Type, Alloc, Traits>(left.size() + 1).append(left).append(1, right);
+	return basic_string<Type, Alloc, Traits>(left.size() + 1).append(left).append(1, right);
 }
 
 template<class Type, class Alloc, class Traits>
-constexpr BasicString<Type, Alloc, Traits> operator+(	const Type left,
-														const BasicString<Type, Alloc, Traits>& right) {
+constexpr basic_string<Type, Alloc, Traits> operator+(	const Type left,
+														const basic_string<Type, Alloc, Traits>& right) {
 
-	return BasicString<Type, Alloc, Traits>(1 + right.size()).append(1, left).append(right);
+	return basic_string<Type, Alloc, Traits>(1 + right.size()).append(1, left).append(right);
 }
 #pragma endregion BasicString
 

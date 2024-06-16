@@ -1,34 +1,34 @@
 #pragma once
 
 #if defined __GNUG__
-#include "xLock.h"
+#include "x_lock.h"
 
 
 CUSTOM_BEGIN
 
-class SharedMutex   // Adaptor for pthread_rwlock_t (read-write mutex)
+class shared_mutex   // Adaptor for pthread_rwlock_t (read-write mutex)
 {
 public:
     using native_handle_type = pthread_rwlock_t;
 
 private:
-    friend class SharedTimedMutex;
+    friend class shared_timed_mutex;
 
     pthread_rwlock_t _rwMutex;
 
 public:
     // Constructors & Operators
 
-    SharedMutex() {
+    shared_mutex() {
         pthread_rwlock_init(&_rwMutex, nullptr);
     }
 
-    ~SharedMutex() {
+    ~shared_mutex() {
         pthread_rwlock_destroy(&_rwMutex);
     }
 
-    SharedMutex(const SharedMutex&)             = delete;
-    SharedMutex& operator= (const SharedMutex&) = delete;
+    shared_mutex(const shared_mutex&)             = delete;
+    shared_mutex& operator= (const shared_mutex&) = delete;
 
 public:
     // Main functions
@@ -46,7 +46,7 @@ public:
             case EBUSY:
                 return false;
             default:
-                throw std::runtime_error("SharedMutex exclusive lock failed.");
+                throw std::runtime_error("shared_mutex exclusive lock failed.");
         }
     }
 
@@ -68,7 +68,7 @@ public:
             case EBUSY:
                 return false;
             default:
-                throw std::runtime_error("SharedMutex shared lock failed.");
+                throw std::runtime_error("shared_mutex shared lock failed.");
         }
     }
 
@@ -80,13 +80,13 @@ public:
     native_handle_type native_handle() {
         return _rwMutex;
     }
-};  // END SharedMutex
+};  // END shared_mutex
 
 
-class SharedTimedMutex : private SharedMutex
+class shared_timed_mutex : private shared_mutex
 {
 private:
-    using _Base         = SharedMutex;
+    using _Base         = shared_mutex;
     
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
     using _ReqClock     = custom::chrono::steady_clock;
@@ -97,11 +97,11 @@ private:
 public:
     // Constructors & Operators
 
-    SharedTimedMutex()                                      = default;
-    ~SharedTimedMutex()                                     = default;
+    shared_timed_mutex()                                      = default;
+    ~shared_timed_mutex()                                     = default;
 
-    SharedTimedMutex(const SharedTimedMutex&)               = delete;
-    SharedTimedMutex& operator=(const SharedTimedMutex&)    = delete;
+    shared_timed_mutex(const shared_timed_mutex&)               = delete;
+    shared_timed_mutex& operator=(const shared_timed_mutex&)    = delete;
 
 public:
     // Main Functions
@@ -124,8 +124,8 @@ public:
     bool try_lock_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
-        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
-        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - secondsTime);
+        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::seconds>(absoluteTime);
+        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::nanoseconds>(absoluteTime - secondsTime);
         struct timespec ts  =   {
                                     static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
@@ -163,8 +163,8 @@ public:
     bool try_lock_shared_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
-        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::Seconds>(absoluteTime);
-        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::Nanoseconds>(absoluteTime - secondsTime);
+        auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::seconds>(absoluteTime);
+        auto nanoseconds    = custom::chrono::duration_cast<custom::chrono::nanoseconds>(absoluteTime - secondsTime);
         struct timespec ts  =   {
                                     static_cast<std::time_t>(secondsTime.time_since_epoch().count()),
                                     static_cast<long>(nanoseconds.count())
@@ -183,7 +183,7 @@ public:
                                         custom::chrono::ceil<typename _ReqClock::duration>(relativeTime));
     }
 // end Shared
-};  // END SharedTimedMutex
+};  // END shared_timed_mutex
 
 CUSTOM_END
 

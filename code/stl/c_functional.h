@@ -2,7 +2,7 @@
 #include "x_functional.h"
 #include "c_utility.h"
 #include "c_tuple.h"
-#include "cMemory.h"
+#include "c_memory.h"
 
 
 CUSTOM_BEGIN
@@ -671,7 +671,7 @@ public:
     using _Impl         = _CallableInterface<RetType, Args...>;
 
 private:
-    UniquePtr<_Impl> _storage;
+    unique_ptr<_Impl> _storage;
 
 public:
     // Constructors
@@ -888,8 +888,8 @@ private:
 public:
     template<class UnboundTuple>
     static constexpr auto fix(BoundArgType& boundArg, UnboundTuple&& unboundTuple) noexcept
-    -> decltype(_fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<TupleSize_v<UnboundTuple>>{})) {
-        return _fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<TupleSize_v<UnboundTuple>>{});
+    -> decltype(_fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<tuple_size_v<UnboundTuple>>{})) {
+        return _fix_impl(boundArg, custom::move(unboundTuple), make_index_sequence<tuple_size_v<UnboundTuple>>{});
     }
 };
 

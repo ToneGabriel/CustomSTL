@@ -1,5 +1,5 @@
 #pragma once
-// #include "Deque.h"	// can be used as Container in queue/priority_queue
+// #include "deque.h"	// can be used as Container in queue/priority_queue
 #include "c_list.h"
 #include "c_vector.h"
 #include "c_utility.h"
@@ -14,7 +14,7 @@ class queue			// queue template implemented as SequenceContainer wrapper
 // The Container must satisfy the requirements of SequenceContainer.
 // Additionally, it must provide the following functions with the usual semantics:
 // back(), front(), push_back() (... or emplace_back()), pop_front()
-// custom::Deque and custom::list satisfy these requirements
+// custom::deque and custom::list satisfy these requirements
 
 public:
 	using container_type 	= Container;
@@ -126,7 +126,7 @@ class priority_queue		// Priority queue Template implemented as array heap
 // and its iterators must satisfy the requirements of LegacyRandomAccessIterator.
 // Additionally, it must provide the following functions with the usual semantics:
 // front(), push_back() (... or emplace_back()), pop_back()
-// custom::vector and custom::Deque satisfy these requirements
+// custom::vector and custom::deque satisfy these requirements
 
 public:
 	using container_type 	= Container;
@@ -225,8 +225,8 @@ public:
 
 private:
 	// Helpers
-	void _print_graph(const size_t ident, const size_t index, const custom::String& rlFlag) const {
-		custom::String str;
+	void _print_graph(const size_t ident, const size_t index, const custom::string& rlFlag) const {
+		custom::string str;
 		str.append(ident, '\t');
 
 		if (index < size())

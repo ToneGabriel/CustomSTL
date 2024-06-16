@@ -459,8 +459,8 @@ protected:
 private:
 	// Helpers
 
-	void _print_graph(const size_t ident, _NodePtr root, const custom::String& rlFlag) const {
-		custom::String str;
+	void _print_graph(const size_t ident, _NodePtr root, const custom::string& rlFlag) const {
+		custom::string str;
 		str.append(ident, '\t');
 
 		if (!root->_IsNil)

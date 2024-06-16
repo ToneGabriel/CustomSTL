@@ -8,15 +8,15 @@
 CUSTOM_BEGIN
 
 template<class Type, class Alloc>
-struct _DequeData
+struct _Deque_Data
 {
 	using _AllocTraits		= allocator_traits<Alloc>;
 	using _AllocPtr 		= typename _AllocTraits::template rebind_alloc<typename _AllocTraits::pointer>;
     using _AllocPtrTraits 	= allocator_traits<_AllocPtr>;
 	using _MapPtr 			= typename _AllocPtrTraits::pointer;
 
-	using value_type			= typename _AllocTraits::value_type;
-	using DifferenceType 	= typename _AllocTraits::DifferenceType;
+	using value_type		= typename _AllocTraits::value_type;
+	using difference_type	= typename _AllocTraits::difference_type;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
 	using pointer			= typename _AllocTraits::pointer;
@@ -35,15 +35,15 @@ struct _DequeData
 };
 
 template<class DequeData>
-class DequeConstIterator
+class _Deque_Const_Iterator
 {
 private:
 	using _Data				= DequeData;
 
 public:
-    using iterator_category 	= random_access_iterator_tag;
-	using value_type			= typename _Data::value_type;
-	using DifferenceType 	= typename _Data::DifferenceType;
+    using iterator_category	= random_access_iterator_tag;
+	using value_type		= typename _Data::value_type;
+	using difference_type 	= typename _Data::difference_type;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
@@ -52,24 +52,24 @@ public:
 
 public:
 
-	DequeConstIterator() noexcept = default;
+	_Deque_Const_Iterator() noexcept = default;
 
-    explicit DequeConstIterator(size_t offset, const _Data* data) noexcept
+    explicit _Deque_Const_Iterator(size_t offset, const _Data* data) noexcept
 		:_Offset(offset), _RefData(data) { /*Empty*/ }
 
-	DequeConstIterator& operator++() noexcept {
+	_Deque_Const_Iterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Offset < _RefData->_First + _RefData->_Size, "Cannot increment end iterator.");
 		++_Offset;
 		return *this;
 	}
 
-	DequeConstIterator operator++(int) noexcept {
-		DequeConstIterator temp = *this;
+	_Deque_Const_Iterator operator++(int) noexcept {
+		_Deque_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	DequeConstIterator& operator+=(const DifferenceType diff) noexcept {
+	_Deque_Const_Iterator& operator+=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(	_Offset + static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset + static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size, 
 						"Cannot increment end iterator.");
@@ -77,25 +77,25 @@ public:
 		return *this;
 	}
 
-	DequeConstIterator operator+(const DifferenceType diff) const noexcept {
-		DequeConstIterator temp = *this;
+	_Deque_Const_Iterator operator+(const difference_type diff) const noexcept {
+		_Deque_Const_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	DequeConstIterator& operator--() noexcept {
+	_Deque_Const_Iterator& operator--() noexcept {
 		CUSTOM_ASSERT(_Offset > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Offset;
 		return *this;
 	}
 
-	DequeConstIterator operator--(int) noexcept {
-		DequeConstIterator temp = *this;
+	_Deque_Const_Iterator operator--(int) noexcept {
+		_Deque_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	DequeConstIterator& operator-=(const DifferenceType diff) noexcept {
+	_Deque_Const_Iterator& operator-=(const difference_type diff) noexcept {
 		CUSTOM_ASSERT(	_Offset - static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset - static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size,
 						"Cannot decrement begin iterator.");
@@ -103,8 +103,8 @@ public:
 		return *this;
 	}
 
-	DequeConstIterator operator-(const DifferenceType diff) const noexcept {
-		DequeConstIterator temp = *this;
+	_Deque_Const_Iterator operator-(const difference_type diff) const noexcept {
+		_Deque_Const_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
@@ -123,15 +123,15 @@ public:
 		return _RefData->_Map[block][offset];
 	}
 
-	reference operator[](const DifferenceType diff) const noexcept {
+	reference operator[](const difference_type diff) const noexcept {
         return *(*this + diff);
     }
 
-	bool operator==(const DequeConstIterator& other) const noexcept {
+	bool operator==(const _Deque_Const_Iterator& other) const noexcept {
 		return _Offset == other._Offset;
 	}
 
-	bool operator!=(const DequeConstIterator& other) const noexcept {
+	bool operator!=(const _Deque_Const_Iterator& other) const noexcept {
 		return !(*this == other);
 	}
 
@@ -145,73 +145,73 @@ public:
 		return _Offset == _RefData->_First + _RefData->_Size;
 	}
 
-	friend void _verify_range(const DequeConstIterator& first, const DequeConstIterator& last) noexcept {
-		CUSTOM_ASSERT(first._RefData == last._RefData, "Deque iterators in range are from different containers");
-		CUSTOM_ASSERT(first._Offset <= last._Offset, "Deque iterator range transposed");
+	friend void _verify_range(const _Deque_Const_Iterator& first, const _Deque_Const_Iterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "deque iterators in range are from different containers");
+		CUSTOM_ASSERT(first._Offset <= last._Offset, "deque iterator range transposed");
 	}
-}; // END DequeConstIterator
+}; // END _Deque_Const_Iterator
 
 template<class DequeData>
-class DequeIterator : public DequeConstIterator<DequeData>			// Deque iterator
+class _Deque_Iterator : public _Deque_Const_Iterator<DequeData>			// deque iterator
 {
 private:
-	using _Base				= DequeConstIterator<DequeData>;
+	using _Base				= _Deque_Const_Iterator<DequeData>;
 	using _Data				= DequeData;
 
 public:
-    using iterator_category 	= random_access_iterator_tag;
-	using value_type			= typename _Data::value_type;
-	using DifferenceType 	= typename _Data::DifferenceType;
+    using iterator_category	= random_access_iterator_tag;
+	using value_type		= typename _Data::value_type;
+	using difference_type 	= typename _Data::difference_type;
 	using reference			= typename _Data::reference;
 	using pointer			= typename _Data::pointer;
 
 public:
 
-	DequeIterator() noexcept = default;
+	_Deque_Iterator() noexcept = default;
 
-	explicit DequeIterator(size_t offset, const _Data* data) noexcept
+	explicit _Deque_Iterator(size_t offset, const _Data* data) noexcept
 		:_Base(offset, data) { /*Empty*/ }
 
-	DequeIterator& operator++() noexcept {
+	_Deque_Iterator& operator++() noexcept {
 		_Base::operator++();
 		return *this;
 	}
 
-	DequeIterator operator++(int) noexcept {
-		DequeIterator temp = *this;
+	_Deque_Iterator operator++(int) noexcept {
+		_Deque_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	DequeIterator& operator+=(const DifferenceType diff) noexcept {
+	_Deque_Iterator& operator+=(const difference_type diff) noexcept {
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	DequeIterator operator+(const DifferenceType diff) const noexcept {
-		DequeIterator temp = *this;
+	_Deque_Iterator operator+(const difference_type diff) const noexcept {
+		_Deque_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	DequeIterator& operator--() noexcept {
+	_Deque_Iterator& operator--() noexcept {
 		_Base::operator--();
 		return *this;
 	}
 
-	DequeIterator operator--(int) noexcept {
-		DequeIterator temp = *this;
+	_Deque_Iterator operator--(int) noexcept {
+		_Deque_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
 
-	DequeIterator& operator-=(const DifferenceType diff) noexcept {
+	_Deque_Iterator& operator-=(const difference_type diff) noexcept {
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	DequeIterator operator-(const DifferenceType diff) const noexcept {
-		DequeIterator temp = *this;
+	_Deque_Iterator operator-(const difference_type diff) const noexcept {
+		_Deque_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
@@ -224,38 +224,38 @@ public:
 		return const_cast<reference>(_Base::operator*());
 	}
 
-	reference operator[](const DifferenceType diff) const noexcept {
+	reference operator[](const difference_type diff) const noexcept {
         return const_cast<reference>(_Base::operator[](diff));
     }
-}; // END Deque iterator
+}; // END deque iterator
 
 
 template<class Type, class Alloc = custom::allocator<Type>>
-class Deque					// Deque Template implemented as map of blocks
+class deque					// deque Template implemented as map of blocks
 {
 private:
-	using _Data 				= _DequeData<Type, Alloc>;
-	using _AllocTraits			= typename _Data::_AllocTraits;
-	using _AllocPtr 			= typename _Data::_AllocPtr;
-	using _AllocPtrTraits		= typename _Data::_AllocPtrTraits;
-	using _MapPtr				= typename _Data::_MapPtr;
+	using _Data						= _Deque_Data<Type, Alloc>;
+	using _AllocTraits				= typename _Data::_AllocTraits;
+	using _AllocPtr					= typename _Data::_AllocPtr;
+	using _AllocPtrTraits			= typename _Data::_AllocPtrTraits;
+	using _MapPtr					= typename _Data::_MapPtr;
 
 public:
 	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and allocator type must be the same!");
 	static_assert(is_object_v<Type>, "Containers require object type!");
 
-	using value_type 			= typename _Data::value_type;				// Type for stored values
-	using DifferenceType 		= typename _Data::DifferenceType;
-	using reference				= typename _Data::reference;
-	using const_reference		= typename _Data::const_reference;
-	using pointer				= typename _Data::pointer;
-	using const_pointer			= typename _Data::const_pointer;
-	using allocator_type 		= Alloc;									// allocator for block
+	using value_type				= typename _Data::value_type;				// Type for stored values
+	using difference_type			= typename _Data::difference_type;
+	using reference					= typename _Data::reference;
+	using const_reference			= typename _Data::const_reference;
+	using pointer					= typename _Data::pointer;
+	using const_pointer				= typename _Data::const_pointer;
+	using allocator_type			= Alloc;									// allocator for block
 
-	using iterator				= DequeIterator<_Data>;						// iterator type
-	using const_iterator			= DequeConstIterator<_Data>;				// Const iterator type
-	using reverse_iterator 		= custom::reverse_iterator<iterator>;		// reverse_iterator type
-	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;	// Const Reverse iterator type
+	using iterator					= _Deque_Iterator<_Data>;
+	using const_iterator			= _Deque_Const_Iterator<_Data>;
+	using reverse_iterator			= custom::reverse_iterator<iterator>;
+	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 private:
 	_Data _data;
@@ -266,27 +266,27 @@ private:
 public:
 	// Constructors
 
-	Deque() {
+	deque() {
 		_init_map(_DEFAULT_CAPACITY);
 	}
 
-	Deque(const size_t newSize) {
+	deque(const size_t newSize) {
 		resize(newSize);
 	}
 
-	Deque(const size_t newSize, const value_type& copyValue) {
+	deque(const size_t newSize, const value_type& copyValue) {
 		resize(newSize, copyValue);
 	}
 
-	Deque(const Deque& other) {
+	deque(const deque& other) {
 		_copy(other);
 	}
 
-	Deque(Deque&& other) noexcept {
+	deque(deque&& other) noexcept {
 		_move(custom::move(other));
 	}
 
-	~Deque() noexcept {
+	~deque() noexcept {
 		_clean_up_map();
 	}
 
@@ -295,15 +295,15 @@ public:
 
 	const value_type& operator[](const size_t index) const {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
-		return *(begin() + static_cast<DifferenceType>(index));
+		return *(begin() + static_cast<difference_type>(index));
 	}
 
 	value_type& operator[](const size_t index) {
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
-		return *(begin() + static_cast<DifferenceType>(index));
+		return *(begin() + static_cast<difference_type>(index));
 	}
 
-	Deque& operator=(const Deque& other) {
+	deque& operator=(const deque& other) {
 		if (_data._Map != other._data._Map)
 		{
 			_clean_up_map();
@@ -313,7 +313,7 @@ public:
 		return *this;
 	}
 
-	Deque& operator=(Deque&& other) noexcept {
+	deque& operator=(deque&& other) noexcept {
 		if (_data._Map != other._data._Map)
 		{
 			_clean_up_map();
@@ -413,14 +413,14 @@ public:
 	}
 
 	template<class... Args>
-	iterator emplace(const_iterator iterator, Args&&... args) {
-		size_t off = iterator._Offset - _data._First;
+	iterator emplace(const_iterator where, Args&&... args) {
+		size_t off = where._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
 			emplace_front(custom::forward<Args>(args)...);
 			
-			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<difference_type>(off);
 			value_type val 		= custom::move(*begin());
 
 			for (iterator it = begin(); it != current; ++it)
@@ -432,7 +432,7 @@ public:
 		{
 			emplace_back(custom::forward<Args>(args)...);
 
-			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<difference_type>(off);
 			value_type val 		= custom::move(*--end());
 
 			for (iterator it = --end(); it != current; --it)
@@ -441,7 +441,7 @@ public:
 			*current = val;
 		}
 		
-		return begin() + static_cast<DifferenceType>(off);
+		return begin() + static_cast<difference_type>(off);
 	}
 
 	iterator push(const_iterator iterator, const value_type& copyValue) {
@@ -452,15 +452,15 @@ public:
 		return emplace(iterator, custom::move(moveValue));
 	}
 
-	iterator pop(const_iterator iterator) {
-		if (iterator.is_end())
+	iterator pop(const_iterator where) {
+		if (where.is_end())
 			throw std::out_of_range("array pop iterator outside range.");
 			
-		size_t off = iterator._Offset - _data._First;
+		size_t off = where._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
 		{
-			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<difference_type>(off);
 			iterator first 		= begin();
 
 			for (iterator it = current; it != first; --it)
@@ -470,7 +470,7 @@ public:
 		}
 		else							// closer to back
 		{
-			iterator current 	= begin() + static_cast<DifferenceType>(off);
+			iterator current 	= begin() + static_cast<difference_type>(off);
 			iterator last 		= --end();
 
 			for (iterator it = current; it != last; ++it)
@@ -479,7 +479,7 @@ public:
 			pop_back();
 		}
 
-		return begin() + static_cast<DifferenceType>(off);
+		return begin() + static_cast<difference_type>(off);
 	}
 
 	void clear() {
@@ -499,7 +499,7 @@ public:
 	}
 
     size_t max_size() const noexcept {
-        return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
+        return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_AllocTraits::max_size(_alloc));
     }
 
@@ -511,14 +511,14 @@ public:
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
-		return *(begin() + static_cast<DifferenceType>(index));
+		return *(begin() + static_cast<difference_type>(index));
 	}
 
 	reference at(const size_t index) {
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
-		return *(begin() + static_cast<DifferenceType>(index));
+		return *(begin() + static_cast<difference_type>(index));
 	}
 
 	const_reference front() const noexcept {
@@ -637,14 +637,14 @@ private:
 			_reserve(2 * _data._MapCapacity);									// ...with last < first
 	}
 
-	void _copy(const Deque& other) {
+	void _copy(const deque& other) {
 		_init_map(other._data._MapCapacity);
 
 		for (auto& val : other)
 			push_back(val);
 	}
 
-	void _move(Deque&& other) noexcept {
+	void _move(deque&& other) noexcept {
 		_data._Map 			= custom::exchange(other._data._Map, nullptr);
 		_data._MapCapacity 	= custom::exchange(other._data._MapCapacity, 0);
 		_data._Size 		= custom::exchange(other._data._Size, 0);
@@ -676,12 +676,12 @@ private:
 			_data._Map = nullptr;
 		}
 	}
-}; // END Deque Template
+}; // END deque Template
 
 
-// Deque binary operators
+// deque binary operators
 template<class _Type, class _Alloc>
-bool operator==(const Deque<_Type, _Alloc>& left, const Deque<_Type, _Alloc>& right) {
+bool operator==(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right) {
 	if (left.size() != right.size())
 		return false;
 
@@ -689,7 +689,7 @@ bool operator==(const Deque<_Type, _Alloc>& left, const Deque<_Type, _Alloc>& ri
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const Deque<_Type, _Alloc>& left, const Deque<_Type, _Alloc>& right) {
+bool operator!=(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right) {
 	return !(left == right);
 }
 

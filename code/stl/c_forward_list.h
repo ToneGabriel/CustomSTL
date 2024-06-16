@@ -9,7 +9,7 @@
 CUSTOM_BEGIN
 
 template<class Type, class Alloc>
-struct _ForwardListData
+struct _Forward_List_Data
 {
 	// deduce data types and forward them
 	using _AllocTraits		= allocator_traits<Alloc>;
@@ -18,8 +18,8 @@ struct _ForwardListData
 	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::pointer;
 
-	using value_type			= typename _AllocTraits::value_type;
-	using DifferenceType 	= typename _AllocTraits::DifferenceType;
+	using value_type		= typename _AllocTraits::value_type;
+	using difference_type	= typename _AllocTraits::difference_type;
 	using reference			= typename _AllocTraits::reference;
 	using const_reference	= typename _AllocTraits::const_reference;
 	using pointer			= typename _AllocTraits::pointer;
@@ -30,16 +30,16 @@ struct _ForwardListData
 };
 
 template<class ForwardListData>
-class ForwardListConstIterator
+class _Forward_List_Const_Iterator
 {
 private:
 	using _Data				= ForwardListData;
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using iterator_category 	= forward_iterator_tag;
-	using value_type			= typename _Data::value_type;
-	using DifferenceType 	= typename _Data::DifferenceType;
+    using iterator_category	= forward_iterator_tag;
+	using value_type		= typename _Data::value_type;
+	using difference_type 	= typename _Data::difference_type;
 	using reference			= typename _Data::const_reference;
 	using pointer			= typename _Data::const_pointer;
 
@@ -48,19 +48,19 @@ public:
 
 public:
 
-	ForwardListConstIterator() noexcept = default;
+	_Forward_List_Const_Iterator() noexcept = default;
 
-	explicit ForwardListConstIterator(_NodePtr nodePtr, const _Data* data) noexcept
+	explicit _Forward_List_Const_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
-	ForwardListConstIterator& operator++() noexcept {
+	_Forward_List_Const_Iterator& operator++() noexcept {
 		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot increment end iterator.");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
 
-	ForwardListConstIterator operator++(int) noexcept {
-		ForwardListConstIterator temp = *this;
+	_Forward_List_Const_Iterator operator++(int) noexcept {
+		_Forward_List_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
@@ -74,11 +74,11 @@ public:
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const ForwardListConstIterator& other) const noexcept {
+	bool operator==(const _Forward_List_Const_Iterator& other) const noexcept {
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const ForwardListConstIterator& other) const noexcept {
+	bool operator!=(const _Forward_List_Const_Iterator& other) const noexcept {
 		return !(*this == other);
 	}
 
@@ -96,41 +96,41 @@ public:
 		return _Ptr->_Next == nullptr;
 	}
 
-	friend void _verify_range(const ForwardListConstIterator& first, const ForwardListConstIterator& last) noexcept {
-		CUSTOM_ASSERT(first._RefData == last._RefData, "ForwardList iterators in range are from different containers");
+	friend void _verify_range(const _Forward_List_Const_Iterator& first, const _Forward_List_Const_Iterator& last) noexcept {
+		CUSTOM_ASSERT(first._RefData == last._RefData, "forward_list iterators in range are from different containers");
 		// No possible way to determine order.
 	}
-}; // END ForwardListConstIterator
+}; // END _Forward_List_Const_Iterator
 
 template<class ForwardListData>
-class ForwardListIterator : public ForwardListConstIterator<ForwardListData>		// Linked list iterator
+class _Forward_List_Iterator : public _Forward_List_Const_Iterator<ForwardListData>		// Linked list iterator
 {
 private:
-	using _Base				= ForwardListConstIterator<ForwardListData>;
+	using _Base				= _Forward_List_Const_Iterator<ForwardListData>;
 	using _Data 			= ForwardListData;
 	using _NodePtr			= typename _Data::_NodePtr;
 
 public:
-    using iterator_category 	= forward_iterator_tag;
+    using iterator_category	= forward_iterator_tag;
 	using value_type 		= typename _Data::value_type;
-	using DifferenceType 	= typename _Data::DifferenceType;
+	using difference_type 	= typename _Data::difference_type;
 	using reference 		= typename _Data::reference;
 	using pointer 			= typename _Data::pointer;
 
 public:
 
-	ForwardListIterator() noexcept = default;
+	_Forward_List_Iterator() noexcept = default;
 
-	explicit ForwardListIterator(_NodePtr nodePtr, const _Data* data) noexcept
+	explicit _Forward_List_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		: _Base(nodePtr, data) { /*Empty*/ }
 
-	ForwardListIterator& operator++() noexcept {
+	_Forward_List_Iterator& operator++() noexcept {
 		_Base::operator++();
 		return *this;
 	}
 
-	ForwardListIterator operator++(int) noexcept {
-		ForwardListIterator temp = *this;
+	_Forward_List_Iterator operator++(int) noexcept {
+		_Forward_List_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
@@ -142,14 +142,14 @@ public:
 	reference operator*() const noexcept {
 		return const_cast<reference>(_Base::operator*());
 	}
-}; // END ForwardListIterator
+}; // END _Forward_List_Iterator
 
 
 template<class Type, class Alloc = custom::allocator<Type>>
-class ForwardList				// Singly Linked list
+class forward_list				// Singly Linked list
 {
 private:
-	using _Data 				= _ForwardListData<Type, Alloc>;
+	using _Data 				= _Forward_List_Data<Type, Alloc>;
 	using _AllocTraits			= typename _Data::_AllocTraits;
 	using _Node					= typename _Data::_Node;
 	using _AllocNode			= typename _Data::_AllocNode;
@@ -161,15 +161,15 @@ public:
 	static_assert(is_object_v<Type>, "Containers require object type!");
 
 	using value_type 			= typename _Data::value_type;
-	using DifferenceType 		= typename _Data::DifferenceType;
+	using difference_type 		= typename _Data::difference_type;
 	using reference				= typename _Data::reference;
 	using const_reference		= typename _Data::const_reference;
 	using pointer				= typename _Data::pointer;
 	using const_pointer			= typename _Data::const_pointer;
-	using allocator_type			= Alloc;
+	using allocator_type		= Alloc;
 
-	using iterator				= ForwardListIterator<_Data>;				// iterator type
-	using const_iterator			= ForwardListConstIterator<_Data>;			// Const iterator type
+	using iterator				= _Forward_List_Iterator<_Data>;				// iterator type
+	using const_iterator		= _Forward_List_Const_Iterator<_Data>;			// Const iterator type
 
 private:
 	_Data _data;															// Actual container data
@@ -178,23 +178,23 @@ private:
 public:
 	// Constructors
 
-	ForwardList() {
+	forward_list() {
 		_create_head();
 	}
 
-	ForwardList(const size_t newSize, const value_type& value) : ForwardList() {	// Add multiple copies Constructor
+	forward_list(const size_t newSize, const value_type& value) : forward_list() {	// Add multiple copies Constructor
 		_create_until_size(newSize, value);
 	}
 
-	ForwardList(const ForwardList& other) : ForwardList() {
+	forward_list(const forward_list& other) : forward_list() {
 		_copy(other);
 	}
 
-	ForwardList(ForwardList&& other) noexcept : ForwardList() {
+	forward_list(forward_list&& other) noexcept : forward_list() {
 		_move(custom::move(other));
 	}
 
-	~ForwardList() noexcept {
+	~forward_list() noexcept {
 		clear();
 		_free_head();
 	}
@@ -202,7 +202,7 @@ public:
 public:
 	// Operators
 
-	ForwardList& operator=(const ForwardList& other) {
+	forward_list& operator=(const forward_list& other) {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -212,7 +212,7 @@ public:
 		return *this;
 	}
 
-	ForwardList& operator=(ForwardList&& other) noexcept {
+	forward_list& operator=(forward_list&& other) noexcept {
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -292,7 +292,7 @@ public:
 	}
 
 	size_t max_size() const noexcept {
-        return (custom::min)(	static_cast<size_t>((numeric_limits<DifferenceType>::max)()),
+        return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_AllocNodeTraits::max_size(_alloc));
     }
 
@@ -375,17 +375,17 @@ public:
 		return unique(equal_to<>{});
 	}
 
-	void splice_after(const_iterator where, ForwardList& other, const_iterator otherFirst, const_iterator otherLast) {
+	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst, const_iterator otherLast) {
 		// splice (otherFirst, otherLast) AFTER where
 
 		if (where._RefData->_Head == otherFirst._RefData->_Head ||
 			otherFirst._RefData->_Head != otherLast._RefData->_Head)
-			throw std::domain_error("ForwardList provided by otherFirst and otherLast must be the same, but different from the one provided by where");
+			throw std::domain_error("forward_list provided by otherFirst and otherLast must be the same, but different from the one provided by where");
 
 		size_t count = static_cast<size_t>(custom::distance(otherFirst, otherLast) - 1);
 
 		if (max_size() - _data._Size < count)
-			throw std::out_of_range("ForwardList too long");
+			throw std::out_of_range("forward_list too long");
 
 		if (count != 0)		// worth splicing
 		{
@@ -403,20 +403,20 @@ public:
 		}
 	}
 
-	void splice_after(const_iterator where, ForwardList& other, const_iterator otherFirst) {
+	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst) {
 		splice_after(where, other, otherFirst, other.end());
 	}
 
-	void splice_after(const_iterator where, ForwardList& other) {
+	void splice_after(const_iterator where, forward_list& other) {
 		splice_after(where, other, other.before_begin(), other.end());
 	}
 
 	template<class Compare>
-	void merge(ForwardList& other, Compare comp) {
+	void merge(forward_list& other, Compare comp) {
 		// TODO: implement
 	}
 
-	void merge(ForwardList& other) {
+	void merge(forward_list& other) {
 		merge(other, less<>{});
 	}
 
@@ -491,7 +491,7 @@ private:
 		_alloc.deallocate(junkNode, 1);
 	}
 
-	void _copy(const ForwardList& other) {								// Generic copy function for list
+	void _copy(const forward_list& other) {								// Generic copy function for list
 		_NodePtr temp = other._data._Head->_Next;
 		while (_data._Size < other._data._Size)
 		{
@@ -500,7 +500,7 @@ private:
 		}
 	}
 
-	void _move(ForwardList&& other) noexcept {							// Generic move function for list
+	void _move(forward_list&& other) noexcept {							// Generic move function for list
 		custom::swap(_data._Head, other._data._Head);
 		_data._Size = custom::exchange(other._data._Size, 0);
 	}
@@ -532,12 +532,12 @@ private:
 		// close other list
 		otherFirst->_Next 				= otherLast;
 	}
-};	// END ForwardList
+};	// END forward_list
 
 
-// ForwardList binary operators
+// forward_list binary operators
 template<class _Type, class _Alloc>
-bool operator==(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type, _Alloc>& right) {
+bool operator==(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right) {
     if (left.size() != right.size())
 		return false;
 
@@ -545,7 +545,7 @@ bool operator==(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type,
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const ForwardList<_Type, _Alloc>& left, const ForwardList<_Type, _Alloc>& right) {
+bool operator!=(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right) {
 	return !(left == right);
 }
 

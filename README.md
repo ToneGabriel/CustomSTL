@@ -9,6 +9,6 @@ Compilation requirements:
 
 Components not fully operational:
 
-- cMemory.h (Shared/Weak)
-- cAlgorithm.h
-- cForwardList.h operations (splice/sort/merge)
+- c_memory.h (Shared/Weak)
+- c_algorithm.h
+- c_forward_list.h operations (splice/sort/merge)

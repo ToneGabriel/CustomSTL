@@ -3,7 +3,7 @@
 #if defined __GNUG__
 #include "c_utility.h"
 #include "c_tuple.h"
-#include "cMemory.h"
+#include "c_memory.h"
 #include "c_chrono.h"
 
 #include <pthread.h>
@@ -31,7 +31,7 @@ private:
 
     template<class CallableTuple, size_t... Indices>
     static void* _invoke_impl(void* args) noexcept {
-        const UniquePtr<CallableTuple> callable(static_cast<CallableTuple*>(args));
+        const unique_ptr<CallableTuple> callable(static_cast<CallableTuple*>(args));
         CallableTuple& derefCallable = *callable;
         custom::invoke(custom::move(custom::get<Indices>(derefCallable))...);
 

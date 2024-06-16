@@ -11,7 +11,7 @@ class stack				// stack Template implemented as vector wrapper
 // The container must satisfy the requirements of SequenceContainer.
 // Additionally, it must provide the following functions with the usual semantics:
 // back(), push_back() (... or emplace_back()), pop_back()
-// custom::vector, custom::Deque and custom::list satisfy these requirements
+// custom::vector, custom::deque and custom::list satisfy these requirements
 
 public:
 	using container_type	= Container;

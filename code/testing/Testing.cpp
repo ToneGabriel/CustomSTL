@@ -128,7 +128,7 @@ void list_test() {
 }
 
 void forward_list_test() {
-	custom::ForwardList<Test> flist;
+	custom::forward_list<Test> flist;
 	flist.emplace_front(1);
 	flist.emplace_front(2);
 	flist.emplace_front(3);
@@ -138,7 +138,7 @@ void forward_list_test() {
 }
 
 void unordered_map_test() {
-	custom::unordered_map<int, custom::String> map;
+	custom::unordered_map<int, custom::string> map;
 
 	map[10] = "abc";
 	map[11] = "gsa";
@@ -147,7 +147,7 @@ void unordered_map_test() {
 	map[54] = "69";
 	map[1] = "A bv";
 	map.emplace(3, "abc");
-	map.try_emplace(56, custom::String("shmecher"));
+	map.try_emplace(56, custom::string("shmecher"));
 
 	std::cout << map.at(10) << '\n';
 
@@ -158,8 +158,8 @@ void unordered_map_test() {
 }
 
 void unordered_set_test() {
-	custom::unordered_set<custom::String> set;
-	custom::unordered_set<custom::String> set1;
+	custom::unordered_set<custom::string> set;
+	custom::unordered_set<custom::string> set1;
 
 	set.emplace("abc");
 	set.emplace("def");
@@ -210,7 +210,7 @@ void map_test() {
 }
 
 void deque_test() {
-	custom::Deque<int> dq;
+	custom::deque<int> dq;
 	dq.emplace_back(0);
 	dq.emplace_back(1);
 	dq.emplace_back(2);
@@ -295,8 +295,8 @@ void vector_test() {
 }
 
 void string_test() {
-	custom::String s("abcd");
-	custom::String s1("abcd");
+	custom::string s("abcd");
+	custom::string s1("abcd");
 	s.insert(++s.begin(),s1.begin(),--s1.end());
 
 	std::string ss("abcd");
@@ -308,15 +308,15 @@ void string_test() {
 }
 
 void string_view_test() {
-	custom::String str = "cdef";
-	custom::StringView sv1 = "abcdef";
-	custom::StringView sv2(str);
+	custom::string str = "cdef";
+	custom::string_view sv1 = "abcdef";
+	custom::string_view sv2(str);
 	std::cout << sv1.find(sv2, 1) << '\n';
 
 	// =====================================
 	
-	custom::StringView sv3 = "abcd";
-	custom::String str1(sv3);
+	custom::string_view sv3 = "abcd";
+	custom::string str1(sv3);
 	std::cout << str1 << '\n';
 }
 
@@ -341,11 +341,11 @@ void invoke_test() {
 }
 
 void memory_test() {
-	// UniquePtr===============
-	//custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+	// unique_ptr===============
+	//custom::unique_ptr<Test> up = custom::make_unique<Test>(3);
 
-	// SharedPtr===============
-	custom::SharedPtr<Test[]> sharedArray(new Test[5]);
+	// shared_ptr===============
+	custom::shared_ptr<Test[]> sharedArray(new Test[5]);
 
     for (int i = 0; i < 5; ++i)
         sharedArray[i] = i; // Populating the array
@@ -357,31 +357,36 @@ void memory_test() {
 }
 
 void chrono_test() {
-	using namespace std::chrono;
-	using namespace custom::chrono;
-	//using namespace std::chrono_literals;
+	{
+		using namespace std::chrono;
+		//using namespace std::chrono_literals;
 
-	microseconds ms1(100000);
-	time_point<system_clock, microseconds> absoluteTime1(ms1);
+		microseconds ms1(100000);
+		time_point<system_clock, microseconds> absoluteTime1(ms1);
 
-	auto _seconds1 		= time_point_cast<seconds>(absoluteTime1);
-	auto _nanoseconds1 	= duration_cast<nanoseconds>(absoluteTime1 - _seconds1);
+		auto _seconds1 		= time_point_cast<seconds>(absoluteTime1);
+		auto _nanoseconds1 	= duration_cast<nanoseconds>(absoluteTime1 - _seconds1);
 
-	std::cout << absoluteTime1.time_since_epoch().count() << '\n';
-	std::cout << _seconds1.time_since_epoch().count() << '\n';
-	std::cout << _nanoseconds1.count() << '\n';
+		std::cout << absoluteTime1.time_since_epoch().count() << '\n';
+		std::cout << _seconds1.time_since_epoch().count() << '\n';
+		std::cout << _nanoseconds1.count() << '\n';
+	}
 
 	// ================================================================
 
-	Microseconds ms2(100000);
-	time_point<system_clock, Microseconds> absoluteTime2(ms2);
+	{
+		using namespace custom::chrono;
 
-	auto _seconds2 		= time_point_cast<Seconds>(absoluteTime2);
-	auto _nanoseconds2 	= duration_cast<Nanoseconds>(absoluteTime2 - _seconds2);
+		microseconds ms2(100000);
+		time_point<system_clock, microseconds> absoluteTime2(ms2);
 
-	std::cout << absoluteTime2.time_since_epoch().count() << '\n';
-	std::cout << _seconds2.time_since_epoch().count() << '\n';
-	std::cout << _nanoseconds2.count() << '\n';
+		auto _seconds2 		= time_point_cast<seconds>(absoluteTime2);
+		auto _nanoseconds2 	= duration_cast<nanoseconds>(absoluteTime2 - _seconds2);
+
+		std::cout << absoluteTime2.time_since_epoch().count() << '\n';
+		std::cout << _seconds2.time_since_epoch().count() << '\n';
+		std::cout << _nanoseconds2.count() << '\n';
+	}
 }
 
 void complex_test() {
@@ -457,7 +462,7 @@ void bitset_test() {
     std::bitset<8> bs1(str1, 0, str1.size(), 'a', 'B');
 	std::cout << bs1 << '\n' << bs1.count() << '\n';
 
-	custom::String str2 = "aBaaBBaB";
+	custom::string str2 = "aBaaBBaB";
 	custom::bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
 	std::cout << bs2 << '\n' << bs2.count() << '\n';
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "c_bit.h"
 #include "c_limits.h"
-#include "cString.h"
+#include "c_string.h"
 
 
 CUSTOM_BEGIN
@@ -32,8 +32,8 @@ public:
 		: _array{static_cast<type>(_NEED_MASK ? val & _MASK : val)} { /*Empty*/ }
 
     template<class CharType, class Alloc, class Traits>
-    constexpr explicit bitset(  const BasicString<CharType, Alloc, Traits>& string, size_t pos = 0,
-                                size_t count = BasicString<CharType, Alloc, Traits>::npos,
+    constexpr explicit bitset(  const basic_string<CharType, Alloc, Traits>& string, size_t pos = 0,
+                                size_t count = basic_string<CharType, Alloc, Traits>::npos,
                                 CharType placeholder0 = static_cast<CharType>('0'),
                                 CharType placeholder1 = static_cast<CharType>('1')) {   // construct from [pos, pos + count) elements in string
         
@@ -48,11 +48,11 @@ public:
 
     template<class CharType>
     constexpr explicit bitset(  const CharType* cstring,
-                                size_t count = BasicString<CharType>::npos,
+                                size_t count = basic_string<CharType>::npos,
                                 CharType placeholder0 = static_cast<CharType>('0'),
                                 CharType placeholder1 = static_cast<CharType>('1')) {
 
-        if (count == BasicString<CharType>::npos)
+        if (count == basic_string<CharType>::npos)
             count = char_traits<CharType>::length(cstring);
 
         _construct_from_cstring<char_traits<CharType>>(cstring, count, placeholder0, placeholder1);
@@ -235,10 +235,10 @@ public:
     }
 
     template<class CharType = char, class Alloc = custom::allocator<CharType>, class Traits = custom::char_traits<CharType>>
-    constexpr BasicString<CharType, Alloc, Traits> to_string(	const CharType placeholder0 = static_cast<CharType>('0'),
+    constexpr basic_string<CharType, Alloc, Traits> to_string(	const CharType placeholder0 = static_cast<CharType>('0'),
 																const CharType placeholder1 = static_cast<CharType>('1')) const {	// convert bitset to string
         
-		BasicString<CharType, Alloc, Traits> string(Bits);	// create string and reserve Bits capacity
+		basic_string<CharType, Alloc, Traits> string(Bits);	// create string and reserve Bits capacity
 
         for (size_t pos = Bits; 0 < pos; /*Empty*/)
             string.push_back(_get_bit(--pos) ? placeholder1 : placeholder0);

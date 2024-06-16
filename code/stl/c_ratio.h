@@ -121,13 +121,13 @@ private:
     static constexpr intmax_t _gcd = detail::_gcd(Rat1::den, Rat2::den);
 
 public:
-    using type = typename ratio<detail::_safe_add(  _SafeMultiply<Rat1::num, Rat2::den / _gcd>::Value,
-                                                    _SafeMultiply<Rat2::num, Rat1::den / _gcd>::Value),
-                                _SafeMultiply<Rat1::den, Rat2::den / _gcd>::Value>::Type;
+    using type = typename ratio<detail::_safe_add(  _SafeMultiply<Rat1::num, Rat2::den / _gcd>::value,
+                                                    _SafeMultiply<Rat2::num, Rat1::den / _gcd>::value),
+                                _SafeMultiply<Rat1::den, Rat2::den / _gcd>::value>::type;
 };
 
 template<class Rat1, class Rat2>
-using ratio_add = typename _RatioAdd<Rat1, Rat2>::Type;
+using ratio_add = typename _RatioAdd<Rat1, Rat2>::type;
 
 // ratio subtract
 template<class Rat1, class Rat2>
@@ -139,7 +139,7 @@ struct _RatioSubtract
 };
 
 template<class Rat1, class Rat2>
-using ratio_subtract = typename _RatioSubtract<Rat1, Rat2>::Type;
+using ratio_subtract = typename _RatioSubtract<Rat1, Rat2>::type;
 
 // ratio multiply
 template<class Rat1, class Rat2>
@@ -167,14 +167,14 @@ struct _RatioMultiplySfinae   // detect overflow during multiplication
 
 template<class Rat1, class Rat2, bool Sfinae>
 struct _RatioMultiplySfinae<Rat1, Rat2, Sfinae,
-                            void_t< typename _RatioMultiply<Rat1, Rat2>::num::Type,
-                                    typename _RatioMultiply<Rat1, Rat2>::den::Type>>
+                            void_t< typename _RatioMultiply<Rat1, Rat2>::num::type,
+                                    typename _RatioMultiply<Rat1, Rat2>::den::type>>
 {
-    using type = ratio<_RatioMultiply<Rat1, Rat2>::num::Value, _RatioMultiply<Rat1, Rat2>::den::Value>;
+    using type = ratio<_RatioMultiply<Rat1, Rat2>::num::value, _RatioMultiply<Rat1, Rat2>::den::value>;
 };
 
 template<class Rat1, class Rat2>
-using ratio_multiply = typename _RatioMultiplySfinae<Rat1, Rat2, false>::Type;
+using ratio_multiply = typename _RatioMultiplySfinae<Rat1, Rat2, false>::type;
 
 // ratio divide
 template<class Rat1, class Rat2>
@@ -186,7 +186,7 @@ struct _RatioDivide    // divide two ratios
 };
 
 template<class Rat1, class Rat2, bool Sfinae = true>
-using _RatioDivideSfinae = typename _RatioMultiplySfinae<Rat1, typename _RatioDivide<Rat1, Rat2>::_Rat2Inverse, Sfinae>::Type;
+using _RatioDivideSfinae = typename _RatioMultiplySfinae<Rat1, typename _RatioDivide<Rat1, Rat2>::_Rat2Inverse, Sfinae>::type;
 
 template<class Rat1, class Rat2>
 using ratio_divide = _RatioDivideSfinae<Rat1, Rat2, false>;
@@ -199,7 +199,7 @@ struct ratio_equal : bool_constant<Rat1::num == Rat2::num && Rat1::den == Rat2::
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_equal_v = ratio_equal<Rat1, Rat2>::Value;
+constexpr bool ratio_equal_v = ratio_equal<Rat1, Rat2>::value;
 
 // ratio not equal
 template<class Rat1, class Rat2>
@@ -209,7 +209,7 @@ struct ratio_not_equal : bool_constant<!ratio_equal_v<Rat1, Rat2>>
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_not_equal_v = ratio_not_equal<Rat1, Rat2>::Value;
+constexpr bool ratio_not_equal_v = ratio_not_equal<Rat1, Rat2>::value;
 
 // ratio less
 constexpr bool _ratio_less( const int64_t num1, const int64_t den1,
@@ -233,7 +233,7 @@ struct ratio_less : bool_constant<_ratio_less(Rat1::num, Rat1::den, Rat2::num, R
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_less_v = ratio_less<Rat1, Rat2>::Value;
+constexpr bool ratio_less_v = ratio_less<Rat1, Rat2>::value;
 
 // ratio less equal
 template<class Rat1, class Rat2>
@@ -243,17 +243,17 @@ struct ratio_less_equal : bool_constant<!ratio_less_v<Rat2, Rat1>>
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_less_equal_v = ratio_less_equal<Rat1, Rat2>::Value;
+constexpr bool ratio_less_equal_v = ratio_less_equal<Rat1, Rat2>::value;
 
 // ratio greater
 template<class Rat1, class Rat2>
-struct ratio_greater : ratio_less<Rat2, Rat1>::Type
+struct ratio_greater : ratio_less<Rat2, Rat1>::type
 {
     static_assert(is_ratio_v<Rat1> && is_ratio_v<Rat2>, "ratio_greater<R1, R2> requires R1 and R2 to be ratios.");
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_greater_v = ratio_greater<Rat1, Rat2>::Value;
+constexpr bool ratio_greater_v = ratio_greater<Rat1, Rat2>::value;
 
 // ratio greater equal
 template<class Rat1, class Rat2>
@@ -263,7 +263,7 @@ struct ratio_greater_equal : bool_constant<!ratio_less_v<Rat1, Rat2>>
 };
 
 template<class Rat1, class Rat2>
-constexpr bool ratio_greater_equal_v = ratio_greater_equal<Rat1, Rat2>::Value;
+constexpr bool ratio_greater_equal_v = ratio_greater_equal<Rat1, Rat2>::value;
 
 
 // constant ratios
