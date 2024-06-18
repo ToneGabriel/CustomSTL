@@ -50,9 +50,9 @@ public:
         return (sem_trywait(&_semaphore) > 0) ? true : false;
     }
 
-    template<class Clock, class duration,
+    template<class Clock, class Duration,
     enable_if_t<is_same_v<Clock, _ReqClock>, bool> = true>
-    bool try_acquire_until(const custom::chrono::time_point<Clock, duration>& absoluteTime) {
+    bool try_acquire_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::seconds>(absoluteTime);

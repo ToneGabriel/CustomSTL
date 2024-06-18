@@ -13,7 +13,7 @@ struct _Forward_List_Data
 {
 	// deduce data types and forward them
 	using _AllocTraits		= allocator_traits<Alloc>;
-	using _Node				= detail::_ForwardNode<Type>;
+	using _Node				= detail::_Forward_Node<Type>;
 	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
 	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::pointer;

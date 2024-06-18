@@ -164,9 +164,9 @@ private:
 public:
 	// Constructors
 
-	constexpr basic_string_view() noexcept						= default;
+	constexpr basic_string_view() noexcept							= default;
 	constexpr basic_string_view(const basic_string_view&) noexcept	= default;
-	constexpr basic_string_view(std::nullptr_t)					= delete;
+	constexpr basic_string_view(std::nullptr_t)						= delete;
 
 	constexpr basic_string_view(const_pointer cstring) noexcept {
 		_data._First = cstring;
@@ -465,14 +465,14 @@ constexpr bool operator!=(const basic_string_view<Type, Traits>& left,
 template<class Type, class Alloc>
 struct _Basic_String_Data
 {
-	using _AllocTraits		= allocator_traits<Alloc>;
+	using _Alloc_Traits		= allocator_traits<Alloc>;
 
-	using value_type		= typename _AllocTraits::value_type;
-	using difference_type	= typename _AllocTraits::difference_type;
-	using reference			= typename _AllocTraits::reference;
-	using const_reference	= typename _AllocTraits::const_reference;
-	using pointer			= typename _AllocTraits::pointer;
-	using const_pointer		= typename _AllocTraits::const_pointer;
+	using value_type		= typename _Alloc_Traits::value_type;
+	using difference_type	= typename _Alloc_Traits::difference_type;
+	using reference			= typename _Alloc_Traits::reference;
+	using const_reference	= typename _Alloc_Traits::const_reference;
+	using pointer			= typename _Alloc_Traits::pointer;
+	using const_pointer		= typename _Alloc_Traits::const_pointer;
 
 
 	pointer _First			= nullptr;			// Actual container array
@@ -678,11 +678,12 @@ template<class Type, class Alloc = custom::allocator<Type>, class Traits = custo
 class basic_string		// null-terminated array of elements
 {
 private:
-	using _Data					= _Basic_String_Data<Type, Alloc>;
-	using _AllocTraits			= typename _Data::_AllocTraits;
+	using _Data						= _Basic_String_Data<Type, Alloc>;
+	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 
 public:
-	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and Allocator type must be the same!");
+	static_assert(is_same_v<Type, typename Alloc::value_type>,
+					"Object type and Allocator type must be the same!");
 	static_assert(!is_array_v<Type> && is_trivial_v<Type> && is_standard_layout_v<Type>,
 					"The character type of basic_string must be a non-array trivial standard-layout type.");
 
@@ -701,10 +702,10 @@ public:
 	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 	template<class StringViewType>
-	using is_string_view =	enable_if_t<conjunction_v<
-											is_convertible<const StringViewType&, basic_string_view<Type, Traits>>,
-											negation<is_convertible<const StringViewType&, const Type*>>>,
-							bool>;
+	using _Enable_Is_String_View =	enable_if_t<conjunction_v<
+													is_convertible<const StringViewType&, basic_string_view<Type, Traits>>,
+													negation<is_convertible<const StringViewType&, const Type*>>>,
+									bool>;
 
 	static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -725,7 +726,7 @@ public:
 		_initialize_from_cstring(cstring);
 	}
 
-	template<class StringViewType, is_string_view<StringViewType> = true>
+	template<class StringViewType, _Enable_Is_String_View<StringViewType> = true>
 	constexpr basic_string(const StringViewType& sv) {
 		_initialize_from_cstring(sv.data());
 	}
@@ -837,7 +838,7 @@ public:
 
 	constexpr size_t max_size() const noexcept {
 		return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
-								_AllocTraits::max_size(_alloc));
+								_Alloc_Traits::max_size(_alloc));
 	}
 
 	constexpr size_t capacity() const noexcept {

@@ -298,24 +298,24 @@ struct negate<void>
 template<class Signature>
 class function;
 
-class BadFunctionCall : public std::exception // exception thrown when an empty custom::function is called
+class bad_function_call : public std::exception // exception thrown when an empty custom::function is called
 {
 public:
-    BadFunctionCall() noexcept { /*Empty*/ }
+    bad_function_call() noexcept { /*Empty*/ }
 
     const char* what() const noexcept override {
         return "Bad function call.";
     }
-};  // END BadFunctionCall
+};  // END bad_function_call
 
 template<class Callable>
-constexpr bool _TestableCallable_v = disjunction_v<is_pointer<Callable>,
-                                                   is_specialization<Callable, function>,
-                                                   is_member_pointer<Callable>>;
+constexpr bool _Testable_Callable_v = disjunction_v<is_pointer<Callable>,
+                                                    is_specialization<Callable, function>,
+                                                    is_member_pointer<Callable>>;
 
 template<class Callable>
 bool _test_callable(const Callable& obj) noexcept { // determine whether custom::function must store obj
-    if constexpr (_TestableCallable_v<Callable>)
+    if constexpr (_Testable_Callable_v<Callable>)
         return !!obj;   // obj != nullptr;
     else
         return true;
@@ -324,27 +324,27 @@ bool _test_callable(const Callable& obj) noexcept { // determine whether custom:
 
 #if CUSTOM_OPTIMAL_IMPLEMENTATION   // store callable object impl in stack or heap depending on size
 
-static constexpr int _SmallObjectNumPtrs = 6 + 16 / sizeof(void*);
-static constexpr size_t _SpaceSize = (_SmallObjectNumPtrs - 1) * sizeof(void*);
+static constexpr int _Small_Object_Num_Ptrs = 6 + 16 / sizeof(void*);
+static constexpr size_t _Space_Size = (_Small_Object_Num_Ptrs - 1) * sizeof(void*);
 
-template<class _Impl>    // when _CallableImpl wraps an object(big) that has operator()
-static constexpr bool _IsLarge =    sizeof(_Impl) > _SpaceSize ||
+template<class _Impl>    // when _Callable_Impl wraps an object(big) that has operator()
+static constexpr bool _Is_Large =   sizeof(_Impl) > _Space_Size ||
                                     alignof(_Impl) > alignof(max_align_t) ||
-                                    !_Impl::_NothrowMove::value;
+                                    !_Impl::_Nothrow_Move::value;
 
 
-template<class RetType, class... Args>
-class CUSTOM_NOVTABLE_ATTR _CallableInterface
+template<class Ret, class... Args>
+class CUSTOM_NOVTABLE_ATTR _Callable_Interface
 {
 public:
-    _CallableInterface()                                        = default;
-    _CallableInterface(const _CallableInterface&)               = delete;
-    _CallableInterface& operator=(const _CallableInterface&)    = delete;
+    _Callable_Interface()                                       = default;
+    _Callable_Interface(const _Callable_Interface&)             = delete;
+    _Callable_Interface& operator=(const _Callable_Interface&)  = delete;
     // destructor non-virtual due to _delete_this()
 
-    virtual _CallableInterface* _copy(void*) const              = 0;
-    virtual _CallableInterface* _move(void*) noexcept           = 0;
-    virtual RetType _call(Args&&...)                            = 0;
+    virtual _Callable_Interface* _copy(void*) const             = 0;
+    virtual _Callable_Interface* _move(void*) noexcept          = 0;
+    virtual Ret _call(Args&&...)                                = 0;
     virtual const std::type_info& _target_type() const noexcept = 0;
     virtual void _delete_this(bool) noexcept                    = 0;
 
@@ -354,42 +354,42 @@ public:
 
 private:
     virtual const void* _get() const noexcept                   = 0;
-};  // END _CallableInterface
+};  // END _Callable_Interface
 
 
-template<class Callable, class RetType, class... Args>
-class _CallableImpl final : public _CallableInterface<RetType, Args...>
+template<class Callable, class Ret, class... Args>
+class _Callable_Impl final : public _Callable_Interface<Ret, Args...>
 {
 public:
-    using _Base         = _CallableInterface<RetType, Args...>;
-    using _NothrowMove  = is_nothrow_move_constructible<Callable>;
+    using _Base         = _Callable_Interface<Ret, Args...>;
+    using _Nothrow_Move = is_nothrow_move_constructible<Callable>;
 
 private:
     Callable _callable;
 
 public:
     template<class OtherCallable,
-    enable_if_t<!is_same_v<decay_t<OtherCallable>, _CallableImpl>, bool> = true>
-    explicit _CallableImpl(OtherCallable&& val)
+    enable_if_t<!is_same_v<decay_t<OtherCallable>, _Callable_Impl>, bool> = true>
+    explicit _Callable_Impl(OtherCallable&& val)
         : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
 
 private:
     _Base* _copy(void* address) const override {
-        if constexpr (_IsLarge<_CallableImpl>)
-            return new _CallableImpl(_callable);
+        if constexpr (_Is_Large<_Callable_Impl>)
+            return new _Callable_Impl(_callable);
         else
-            return ::new(address) _CallableImpl(_callable);
+            return ::new(address) _Callable_Impl(_callable);
     }
 
     _Base* _move(void* address) noexcept override {
-        if constexpr (_IsLarge<_CallableImpl>)
+        if constexpr (_Is_Large<_Callable_Impl>)
             return nullptr;
         else
-            return ::new(address) _CallableImpl(custom::move(_callable));
+            return ::new(address) _Callable_Impl(custom::move(_callable));
     }
 
-    RetType _call(Args&&... args) override {
-        if constexpr (is_void_v<RetType>)
+    Ret _call(Args&&... args) override {
+        if constexpr (is_void_v<Ret>)
             (void)custom::invoke(_callable, custom::forward<Args>(args)...);
         else
             return custom::invoke(_callable, custom::forward<Args>(args)...);
@@ -404,27 +404,27 @@ private:
     }
 
     void _delete_this(bool dealloc) noexcept override { // destroy self
-        this->~_CallableImpl();
+        this->~_Callable_Impl();
 
         if (dealloc)
-            ::operator delete(this, sizeof(_CallableImpl));
+            ::operator delete(this, sizeof(_Callable_Impl));
     }
-};  // END _CallableImpl
+};  // END _Callable_Impl
 
 
-template<class RetType, class... Args>
-class function<RetType(Args...)>                // wrapper for callable objects
+template<class Ret, class... Args>
+class function<Ret(Args...)>                // wrapper for callable objects
 {
 public:
-    using result_type    = RetType;
-    using _Impl          = _CallableInterface<RetType, Args...>;
+    using result_type    = Ret;
+    using _Impl          = _Callable_Interface<Ret, Args...>;
 
 private:
     union _Storage  // storage for small objects
     {
         max_align_t _Val;                        // for maximum alignment
-        char Pad[_SpaceSize];                   // to permit aliasing
-        _Impl* _Ptrs[_SmallObjectNumPtrs];       // _Ptrs[_SmallObjectNumPtrs - 1] is reserved
+        char Pad[_Space_Size];                   // to permit aliasing
+        _Impl* _Ptrs[_Small_Object_Num_Ptrs];       // _Ptrs[_Small_Object_Num_Ptrs - 1] is reserved
     };
 
     _Storage _storage;
@@ -493,7 +493,7 @@ public:
 
     result_type operator()(Args... args) const {
         if (_empty())
-            throw custom::BadFunctionCall();
+            throw custom::bad_function_call();
 
         return _get_impl()->_call(custom::forward<Args>(args)...);
     }
@@ -564,20 +564,20 @@ private:
         if (!_test_callable(val))   // null member pointer/function pointer/custom::function
             return;                 // already empty
 
-        using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
+        using _OtherImpl = _Callable_Impl<decay_t<Callable>, Ret, Args...>;
 
-        if constexpr (_IsLarge<OtherImpl>)  // dynamically allocate val
-            _set_impl(new OtherImpl(custom::forward<Callable>(val)));
+        if constexpr (_Is_Large<_OtherImpl>)  // dynamically allocate val
+            _set_impl(new _OtherImpl(custom::forward<Callable>(val)));
         else                                // store val in-situ
-            _set_impl(::new(&_storage) OtherImpl(custom::forward<Callable>(val)));
+            _set_impl(::new(&_storage) _OtherImpl(custom::forward<Callable>(val)));
     }
 
     _Impl* _get_impl() const noexcept {
-        return _storage._Ptrs[_SmallObjectNumPtrs - 1];
+        return _storage._Ptrs[_Small_Object_Num_Ptrs - 1];
     }
 
     void _set_impl(_Impl* ptr) noexcept {
-        _storage._Ptrs[_SmallObjectNumPtrs - 1] = ptr;
+        _storage._Ptrs[_Small_Object_Num_Ptrs - 1] = ptr;
     }
 
     bool _empty() const noexcept {
@@ -603,17 +603,17 @@ private:
 
 #else   // CUSTOM_OPTIMAL_IMPLEMENTATION - store callable object impl in heap regardless of size
 
-template<class RetType, class... Args>
-class CUSTOM_NOVTABLE_ATTR _CallableInterface
+template<class Ret, class... Args>
+class CUSTOM_NOVTABLE_ATTR _Callable_Interface
 {
 public:
-    _CallableInterface()                                        = default;
-    _CallableInterface(const _CallableInterface&)               = delete;
-    _CallableInterface& operator=(const _CallableInterface&)    = delete;
+    _Callable_Interface()                                       = default;
+    _Callable_Interface(const _Callable_Interface&)             = delete;
+    _Callable_Interface& operator=(const _Callable_Interface&)  = delete;
 
-    virtual ~_CallableInterface() {}
-    virtual _CallableInterface* _copy() const                   = 0;
-    virtual RetType _call(Args&&...)                            = 0;
+    virtual ~_Callable_Interface() {}
+    virtual _Callable_Interface* _copy() const                  = 0;
+    virtual Ret _call(Args&&...)                                = 0;
     virtual const std::type_info& _target_type() const noexcept = 0;
 
     const void* _target(const std::type_info& info) const noexcept {
@@ -622,32 +622,32 @@ public:
 
 private:
     virtual const void* _get() const noexcept                   = 0;
-};  // END _CallableInterface
+};  // END _Callable_Interface
 
 
-template<class Callable, class RetType, class... Args>
-class _CallableImpl final : public _CallableInterface<RetType, Args...>
+template<class Callable, class Ret, class... Args>
+class _Callable_Impl final : public _Callable_Interface<Ret, Args...>
 {
 private:
-    using _Base = _CallableInterface<RetType, Args...>;
+    using _Base = _Callable_Interface<Ret, Args...>;
 
     Callable _callable;
 
 public:
 
     template<class OtherCallable,
-    enable_if_t<!is_same_v<decay_t<OtherCallable>, _CallableImpl>, bool> = true>
-    explicit _CallableImpl(OtherCallable&& val)
+    enable_if_t<!is_same_v<decay_t<OtherCallable>, _Callable_Impl>, bool> = true>
+    explicit _Callable_Impl(OtherCallable&& val)
         : _callable(custom::forward<OtherCallable>(val)) { /*Empty*/ }
 
 private:
 
     _Base* _copy() const override {
-        return new _CallableImpl(_callable);
+        return new _Callable_Impl(_callable);
     }
 
-    RetType _call(Args&&... args) override {
-        if constexpr (is_void_v<RetType>)
+    Ret _call(Args&&... args) override {
+        if constexpr (is_void_v<Ret>)
             (void)custom::invoke(_callable, custom::forward<Args>(args)...);
         else
             return custom::invoke(_callable, custom::forward<Args>(args)...);
@@ -660,15 +660,15 @@ private:
     const void* _get() const noexcept override {
         return &_callable;
     }
-};  // END _CallableImpl
+};  // END _Callable_Impl
 
 
-template<class RetType, class... Args>
-class function<RetType(Args...)>                // wrapper for callable objects
+template<class Ret, class... Args>
+class function<Ret(Args...)>                // wrapper for callable objects
 {
 public:
-    using result_type   = RetType;
-    using _Impl         = _CallableInterface<RetType, Args...>;
+    using result_type   = Ret;
+    using _Impl         = _Callable_Interface<Ret, Args...>;
 
 private:
     unique_ptr<_Impl> _storage;
@@ -721,7 +721,7 @@ public:
 
     result_type operator()(Args... args) const {
         if (!_storage)
-            throw custom::BadFunctionCall();
+            throw custom::bad_function_call();
 
         return _storage->_call(custom::forward<Args>(args)...);
     }
@@ -761,9 +761,9 @@ private:
         if (!_test_callable(val))   // null member pointer/function pointer/custom::function
             return;                 // already empty
 
-        using OtherImpl = _CallableImpl<decay_t<Callable>, RetType, Args...>;
+        using _OtherImpl = _Callable_Impl<decay_t<Callable>, Ret, Args...>;
 
-        _storage.reset(new OtherImpl(custom::forward<Callable>(val)));
+        _storage.reset(new _OtherImpl(custom::forward<Callable>(val)));
     }
 
     const void* _target(const std::type_info& info) const noexcept {
@@ -853,10 +853,10 @@ template<   class BoundArgType,
             bool = is_specialization_v<remove_cv_t<BoundArgType>, reference_wrapper>,
             bool = is_bind_expression_v<BoundArgType>,
             int  = is_placeholder_v<BoundArgType>>
-struct _BoundArgFixer;
+struct _Bound_Arg_Fixer;
 
 template<class BoundArgType>
-struct _BoundArgFixer<BoundArgType, true, false, 0>         // reference_wrapper fixer
+struct _Bound_Arg_Fixer<BoundArgType, true, false, 0>         // reference_wrapper fixer
 {
     template<class UnboundTuple>
     static constexpr typename BoundArgType::Type& fix(BoundArgType& boundArg, UnboundTuple&&) noexcept {
@@ -866,7 +866,7 @@ struct _BoundArgFixer<BoundArgType, true, false, 0>         // reference_wrapper
 };
 
 template<class BoundArgType>
-struct _BoundArgFixer<BoundArgType, false, false, 0>        // identity fixer
+struct _Bound_Arg_Fixer<BoundArgType, false, false, 0>        // identity fixer
 {
     template<class UnboundTuple>
     static constexpr BoundArgType& fix(BoundArgType& boundArg, UnboundTuple&&) noexcept {
@@ -876,7 +876,7 @@ struct _BoundArgFixer<BoundArgType, false, false, 0>        // identity fixer
 };
 
 template<class BoundArgType>
-struct _BoundArgFixer<BoundArgType, false, true, 0>         // nested bind fixer
+struct _Bound_Arg_Fixer<BoundArgType, false, true, 0>         // nested bind fixer
 {
 private:
     template<class UnboundTuple, size_t... Ix>
@@ -894,7 +894,7 @@ public:
 };
 
 template<class BoundArgType, int Ix>
-struct _BoundArgFixer<BoundArgType, false, false, Ix>      // placeholder fixer
+struct _Bound_Arg_Fixer<BoundArgType, false, false, Ix>      // placeholder fixer
 {
     static_assert(Ix > 0, "invalid is_placeholder value");
 
@@ -908,9 +908,9 @@ struct _BoundArgFixer<BoundArgType, false, false, Ix>      // placeholder fixer
 
 template<class BoundArgType, class UnboundTuple>
 constexpr auto _fix_one_arg(BoundArgType& boundArg, UnboundTuple&& unboundTuple) noexcept
--> decltype(_BoundArgFixer<BoundArgType>::fix(boundArg, custom::move(unboundTuple))) {
+-> decltype(_Bound_Arg_Fixer<BoundArgType>::fix(boundArg, custom::move(unboundTuple))) {
     // translate an argument for bind
-    return _BoundArgFixer<BoundArgType>::fix(boundArg, custom::move(unboundTuple));
+    return _Bound_Arg_Fixer<BoundArgType>::fix(boundArg, custom::move(unboundTuple));
 }
 
 template<class Functor, class BoundTuple, size_t... Ix, class UnboundTuple>

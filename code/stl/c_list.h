@@ -21,7 +21,7 @@ struct _List_Data
 {
 	// deduce data types and forward them
 	using _AllocTraits		= allocator_traits<Alloc>;
-	using _Node				= detail::_DoubleNode<Type>;
+	using _Node				= detail::_Double_Node<Type>;
 	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
 	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
 	using _NodePtr			= typename _AllocNodeTraits::pointer;

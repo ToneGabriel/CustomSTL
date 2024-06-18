@@ -326,7 +326,7 @@ constexpr size_t alignment_of_v = alignment_of<Ty>::value;
 using max_align_t = double;
 
 template<class Ty, size_t Len>
-union _AlignType                // union with size Len bytes and alignment of Ty
+union _Align_Type                // union with size Len bytes and alignment of Ty
 {
     Ty Val;
     char Pad[Len];
@@ -338,13 +338,13 @@ struct _Aligned;                // define type with size Len and alignment Ty
 template<size_t Len, size_t Align, class Ty>
 struct _Aligned<Len, Align, Ty, true>           // class
 {
-    using type = _AlignType<Ty, Len>;
+    using type = _Align_Type<Ty, Len>;
 };
 
 template<size_t Len, size_t Align>
 struct _Aligned<Len, Align, double, false>      // double
 {
-    using type = _AlignType<max_align_t, Len>;
+    using type = _Align_Type<max_align_t, Len>;
 };
 
 template<size_t Len, size_t Align>
@@ -416,27 +416,27 @@ using add_cv_t = typename add_cv<Ty>::type;
 
 // add reference
 template<class Ty, class = void>
-struct _AddReference                    // add reference (non-referenceable type)
+struct _Add_Reference                    // add reference (non-referenceable type)
 {
     using _Lvalue = Ty;
     using _Rvalue = Ty;
 };
 
 template<class Ty>
-struct _AddReference<Ty, void_t<Ty&>>   // (referenceable type)
+struct _Add_Reference<Ty, void_t<Ty&>>   // (referenceable type)
 {
     using _Lvalue = Ty&;
     using _Rvalue = Ty&&;
 };
 
 template<class Ty>
-struct add_lvalue_reference { using type = typename _AddReference<Ty>::_Lvalue; };
+struct add_lvalue_reference { using type = typename _Add_Reference<Ty>::_Lvalue; };
 
 template<class Ty>
 using add_lvalue_reference_t = typename add_lvalue_reference<Ty>::type;
 
 template<class Ty>
-struct add_rvalue_reference { using type = typename _AddReference<Ty>::_Rvalue; };
+struct add_rvalue_reference { using type = typename _Add_Reference<Ty>::_Rvalue; };
 
 template<class Ty>
 using add_rvalue_reference_t = typename add_rvalue_reference<Ty>::type;
@@ -639,7 +639,7 @@ template<class From, class To>
 struct IsConvertible : bool_constant<is_convertible_v<From, To>> {};
 #elif defined __GNUG__
 template<class From, class To>
-struct _IsConvertible
+struct _Is_Convertible
 {
     template<class Ty, class = decltype(static_cast<Ty(*)()>(nullptr))>
     static auto test_returnable(int) -> true_type;
@@ -659,7 +659,7 @@ struct _IsConvertible
 };
 
 template<class From, class To>
-struct is_convertible : public bool_constant<_IsConvertible<From, To>::value> {};
+struct is_convertible : public bool_constant<_Is_Convertible<From, To>::value> {};
 
 template<class From, class To>
 constexpr bool is_convertible_v = is_convertible<From, To>::value;
@@ -701,40 +701,40 @@ struct is_object : bool_constant<is_object_v<Ty>> {};
 
 // is member object pointer
 template<class>
-struct _IsMemberObjectPointer
+struct _Is_Member_Object_Pointer
 {
     static constexpr bool value = false;
 };
 
 template<class Ty1, class Ty2>
-struct _IsMemberObjectPointer<Ty1 Ty2::*>
+struct _Is_Member_Object_Pointer<Ty1 Ty2::*>
 {
     static constexpr bool value = !is_function_v<Ty1>;
     using _Class_Type = Ty2;
 };
 
 template<class Ty>
-constexpr bool is_member_object_pointer_v = _IsMemberObjectPointer<remove_cv_t<Ty>>::value;
+constexpr bool is_member_object_pointer_v = _Is_Member_Object_Pointer<remove_cv_t<Ty>>::value;
 
 template<class Ty>
 struct is_member_object_pointer : bool_constant<is_member_object_pointer_v<Ty>> {};
 
 // is member function pointer
 template<class>
-struct _IsMemberFunctionPointer
+struct _Is_Member_Function_Pointer
 {
     static constexpr bool value = false;
 };
 
 template<class Ty1, class Ty2>
-struct _IsMemberFunctionPointer<Ty1 Ty2::*>
+struct _Is_Member_Function_Pointer<Ty1 Ty2::*>
 {
     static constexpr bool value = is_function_v<Ty1>;
     using _Class_Type = Ty2;
 };
 
 template<class Ty>
-constexpr bool is_member_function_pointer_v = _IsMemberFunctionPointer<remove_cv_t<Ty>>::value;
+constexpr bool is_member_function_pointer_v = _Is_Member_Function_Pointer<remove_cv_t<Ty>>::value;
 
 template<class Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<Ty>> {};
@@ -807,10 +807,10 @@ template<class Ty, class = void>
 struct is_implicitly_default_constructible : false_type {}; // determine whether Ty can be copy-initialized with {}
 
 template<class Ty>
-void _ImplicitlyDefaultConstruct(const Ty&);
+void _Implicitly_Default_Construct(const Ty&);
 
 template<class Ty>
-struct is_implicitly_default_constructible<Ty, void_t<decltype(_ImplicitlyDefaultConstruct<Ty>({}))>> : true_type {};
+struct is_implicitly_default_constructible<Ty, void_t<decltype(_Implicitly_Default_Construct<Ty>({}))>> : true_type {};
 
 template<class Ty>
 constexpr bool is_implicitly_default_constructible_v = is_implicitly_default_constructible<Ty>::value;
@@ -918,7 +918,7 @@ template<class Ty>
 struct is_destructible : BoolConstant<__is_destructible(Ty)> {};
 #elif defined __GNUG__
 template<class Ty>
-struct _IsDestructibleTest
+struct _Is_Destructible_Test
 {
     template<class _Ty, class = decltype(custom::declval<_Ty&>().~_Ty())>
     static auto test_destructible(int) -> true_type;
@@ -932,19 +932,19 @@ struct _IsDestructibleTest
 template<class Ty,
 bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
 bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
-struct _IsDestructible;
+struct _Is_Destructible;
 
 template<class Ty>
-struct _IsDestructible<Ty, false, false> : _IsDestructibleTest<remove_all_extents_t<Ty>>::type {};
+struct _Is_Destructible<Ty, false, false> : _Is_Destructible_Test<remove_all_extents_t<Ty>>::type {};
 
 template<class Ty>
-struct _IsDestructible<Ty, true, false> : false_type {};
+struct _Is_Destructible<Ty, true, false> : false_type {};
 
 template<class Ty>
-struct _IsDestructible<Ty, false, true> : true_type {};
+struct _Is_Destructible<Ty, false, true> : true_type {};
 
 template<class Ty>
-struct is_destructible : _IsDestructible<Ty>::type {};
+struct is_destructible : _Is_Destructible<Ty>::type {};
 #endif  // is destructible
 
 template<class Ty>
@@ -956,7 +956,7 @@ template<class Ty>
 struct is_nothrow_destructible : BoolConstant<__is_nothrow_destructible(Ty)> {};
 #elif defined __GNUG__
 template<class Ty>
-struct _IsNothrowDestructibleTest
+struct _Is_Nothrow_Destructible_Test
 {
     template<class _Ty, class Return = bool_constant<noexcept(custom::declval<_Ty&>().~_Ty())>>
     static auto test_nothrow_destructible(int) -> Return;
@@ -970,19 +970,19 @@ struct _IsNothrowDestructibleTest
 template<class Ty,
 bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
 bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
-struct _IsNothrowDestructible;
+struct _Is_Nothrow_Destructible;
 
 template<class Ty>
-struct _IsNothrowDestructible<Ty, false, false> : _IsNothrowDestructibleTest<remove_all_extents_t<Ty>>::type {};
+struct _Is_Nothrow_Destructible<Ty, false, false> : _Is_Nothrow_Destructible_Test<remove_all_extents_t<Ty>>::type {};
 
 template<class Ty>
-struct _IsNothrowDestructible<Ty, true, false> : false_type {};
+struct _Is_Nothrow_Destructible<Ty, true, false> : false_type {};
 
 template<class Ty>
-struct _IsNothrowDestructible<Ty, false, true> : true_type {};
+struct _Is_Nothrow_Destructible<Ty, false, true> : true_type {};
 
 template<class Ty>
-struct is_nothrow_destructible : _IsNothrowDestructible<Ty>::type {};
+struct is_nothrow_destructible : _Is_Nothrow_Destructible<Ty>::type {};
 #endif  // is nothrow destructible
 
 template<class Ty>
@@ -1004,21 +1004,21 @@ enable_if_t<is_swappable<Ty>::value, bool> = true>
 constexpr void swap(Ty(&)[Size], Ty(&)[Size]) noexcept(is_nothrow_swappable<Ty>::value);
 
 template<class Ty1, class Ty2, class = void>
-struct _IsSwappableWith : false_type {};
+struct _Is_Swappable_With : false_type {};
 
 template<class Ty1, class Ty2>
-struct _IsSwappableWith<Ty1, Ty2,
+struct _Is_Swappable_With<Ty1, Ty2,
 void_t< decltype(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())),
         decltype(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))>> : true_type {};
 
 template<class Ty1, class Ty2>
-struct _IsNothrowSwappableWith
+struct _Is_Nothrow_Swappable_With
 : bool_constant< noexcept(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())) &&
                 noexcept(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))> {};
 
 // is swappable with
 template<class Ty1, class Ty2>
-struct is_swappable_with : _IsSwappableWith<Ty1, Ty2>::type {};
+struct is_swappable_with : _Is_Swappable_With<Ty1, Ty2>::type {};
 
 template<class Ty1, class Ty2>
 constexpr bool is_swappable_with_v = is_swappable_with<Ty1, Ty2>::value;
@@ -1026,21 +1026,21 @@ constexpr bool is_swappable_with_v = is_swappable_with<Ty1, Ty2>::value;
 // is nothrow swappable with
 template<class Ty1, class Ty2>
 struct is_nothrow_swappable_with
-: bool_constant<conjunction_v<_IsSwappableWith<Ty1, Ty2>, _IsNothrowSwappableWith<Ty1, Ty2>>> {};
+: bool_constant<conjunction_v<_Is_Swappable_With<Ty1, Ty2>, _Is_Nothrow_Swappable_With<Ty1, Ty2>>> {};
 
 template<class Ty1, class Ty2>
 constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<Ty1, Ty2>::value;
 
 // is swappable
 template<class Ty>
-struct is_swappable : _IsSwappableWith<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
+struct is_swappable : _Is_Swappable_With<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
 
 template<class Ty>
 constexpr bool is_swappable_v = is_swappable<Ty>::value;
 
 // is nothrow swappable
 template<class Ty>
-struct is_nothrow_swappable : _IsNothrowSwappableWith<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
+struct is_nothrow_swappable : _Is_Nothrow_Swappable_With<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
 
 template<class Ty>
 constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<Ty>::value;
@@ -1064,7 +1064,7 @@ struct is_specialization : bool_constant<is_specialization_v<type, Template>> {}
 
 // is signed/unsigned
 template<class Ty, bool = is_integral_v<Ty>>
-struct _SignChoice
+struct _Sign_Choice
 {
     using _No_cv_t = remove_cv_t<Ty>;
 
@@ -1073,7 +1073,7 @@ struct _SignChoice
 };
 
 template<class Ty>
-struct _SignChoice<Ty, false>
+struct _Sign_Choice<Ty, false>
 {
     // floating-point Ty is signed
     // non-arithmetic Ty is neither signed nor unsigned
@@ -1082,13 +1082,13 @@ struct _SignChoice<Ty, false>
 };
 
 template<class Ty>
-struct is_signed : bool_constant<_SignChoice<Ty>::_Signed> {};
+struct is_signed : bool_constant<_Sign_Choice<Ty>::_Signed> {};
 
 template<class Ty>
 constexpr bool is_signed_v = is_signed<Ty>::value;
 
 template<class Ty>
-struct is_unsigned : bool_constant<_SignChoice<Ty>::_Unsigned> {};
+struct is_unsigned : bool_constant<_Sign_Choice<Ty>::_Unsigned> {};
 
 template<class Ty>
 constexpr bool is_unsigned_v = is_unsigned<Ty>::value;
@@ -1099,24 +1099,24 @@ constexpr bool is_nonbool_integral_v = is_integral_v<Ty> && !is_same_v<remove_cv
 
 // make signed
 template<size_t>
-struct _MakeSignedChoice; // Choose make_signed strategy by type size
+struct _Make_Signed_Choice; // Choose make_signed strategy by type size
 
 template<>
-struct _MakeSignedChoice<1>
+struct _Make_Signed_Choice<1>
 {
     template<class>
     using _Apply = signed char;
 };
 
 template<>
-struct _MakeSignedChoice<2>
+struct _Make_Signed_Choice<2>
 {
     template<class>
     using _Apply = short;
 };
 
 template<>
-struct _MakeSignedChoice<4>
+struct _Make_Signed_Choice<4>
 {
     // assumes LLP64
 
@@ -1132,14 +1132,14 @@ struct _MakeSignedChoice<4>
 };
 
 template<>
-struct _MakeSignedChoice<8>
+struct _Make_Signed_Choice<8>
 {
     template<class>
     using _Apply = long long;
 };
 
 template<class Ty>
-using _MakeSigned = typename _MakeSignedChoice<sizeof(Ty)>::template _Apply<Ty>;   // signed partner to cv-unqualified Ty
+using _Make_Signed = typename _Make_Signed_Choice<sizeof(Ty)>::template _Apply<Ty>;   // signed partner to cv-unqualified Ty
 
 template<class Ty>
 struct make_signed      // signed partner to Ty
@@ -1149,7 +1149,7 @@ struct make_signed      // signed partner to Ty
                     "integral type or enumeration but not a bool type.");
 
     // removes CV from Ty, makes choice of signment, reapplies CV
-    using type = typename remove_cv<Ty>::template _Apply<_MakeSigned>;
+    using type = typename remove_cv<Ty>::template _Apply<_Make_Signed>;
 };
 
 template<class Ty>
@@ -1157,24 +1157,24 @@ using make_signed_t = typename make_signed<Ty>::type;
 
 // make unsigned
 template<size_t>
-struct _MakeUnsignedChoice; // Choose make_unsigned strategy by type size
+struct _Make_Unsigned_Choice; // Choose make_unsigned strategy by type size
 
 template<>
-struct _MakeUnsignedChoice<1>
+struct _Make_Unsigned_Choice<1>
 {
     template<class>
     using _Apply = unsigned char;
 };
 
 template<>
-struct _MakeUnsignedChoice<2>
+struct _Make_Unsigned_Choice<2>
 {
     template<class>
     using _Apply = unsigned short;
 };
 
 template<>
-struct _MakeUnsignedChoice<4>
+struct _Make_Unsigned_Choice<4>
 {
     // assumes LLP64
 
@@ -1190,14 +1190,14 @@ struct _MakeUnsignedChoice<4>
 };
 
 template<>
-struct _MakeUnsignedChoice<8>
+struct _Make_Unsigned_Choice<8>
 {
     template<class>
     using _Apply = unsigned long long;
 };
 
 template<class Ty>
-using _MakeUnsigned = typename _MakeUnsignedChoice<sizeof(Ty)>::template _Apply<Ty>;    // unsigned partner to cv-unqualified Ty
+using _Make_Unsigned = typename _Make_Unsigned_Choice<sizeof(Ty)>::template _Apply<Ty>;    // unsigned partner to cv-unqualified Ty
 
 template<class Ty>
 struct make_unsigned    // unsigned partner to Ty
@@ -1207,7 +1207,7 @@ struct make_unsigned    // unsigned partner to Ty
                     "integral type or enumeration but not a bool type.");
 
     // removes CV from Ty, makes choice of unsignment, reapplies CV
-    using type = typename remove_cv<Ty>::template _Apply<_MakeUnsigned>;
+    using type = typename remove_cv<Ty>::template _Apply<_Make_Unsigned>;
 };
 
 template<class Ty>
@@ -1222,12 +1222,12 @@ struct decay
     // using Ty2   = typename _Select<is_function_v<Ty1>>::template _Apply<add_pointer<Ty1>, remove_cv<Ty1>>;
     // using type  = typename _Select<is_array_v<Ty1>>::template _Apply<add_pointer<RemoveExtent_t<Ty1>>, Ty2>::type;
 
-    using _No_Ref_T = remove_reference_t<Ty>;
-    using type      = conditional_t<is_array_v<_No_Ref_T>,
-                                        add_pointer_t<remove_extent_t<_No_Ref_T>>,
-                                        conditional_t<is_function_v<_No_Ref_T>,
-                                                            add_pointer_t<_No_Ref_T>,
-                                                            remove_cv_t<_No_Ref_T>>>;
+    using _No_ref_t = remove_reference_t<Ty>;
+    using type      = conditional_t<is_array_v<_No_ref_t>,
+                                        add_pointer_t<remove_extent_t<_No_ref_t>>,
+                                        conditional_t<is_function_v<_No_ref_t>,
+                                                            add_pointer_t<_No_ref_t>,
+                                                            remove_cv_t<_No_ref_t>>>;
 };
 
 template<class Ty>
@@ -1259,22 +1259,22 @@ template<class Ty>
 struct common_type<Ty> : common_type<Ty, Ty> {};  // 1 type
 
 template<class Ty1, class Ty2, class Decayed1 = decay_t<Ty1>, class Decayed2 = decay_t<Ty2>>
-struct _CommonType2 : common_type<Decayed1, Decayed2> {};
+struct _Common_Type2 : common_type<Decayed1, Decayed2> {};
 
 template<class Ty1, class Ty2>
-struct _CommonType2<Ty1, Ty2, Ty1, Ty2> : decay_conditional_result<Ty1, Ty2> {};
+struct _Common_Type2<Ty1, Ty2, Ty1, Ty2> : decay_conditional_result<Ty1, Ty2> {};
 
 template<class Ty1, class Ty2>
-struct common_type<Ty1, Ty2> : _CommonType2<Ty1, Ty2> {};   // 2 types
+struct common_type<Ty1, Ty2> : _Common_Type2<Ty1, Ty2> {};   // 2 types
 
 template<class AlwaysVoid, class Ty1, class Ty2, class... _Rest>
-struct _CommonType3 {};
+struct _Common_Type3 {};
 
 template<class Ty1, class Ty2, class... _Rest>
-struct _CommonType3<void_t<common_type_t<Ty1, Ty2>>, Ty1, Ty2, _Rest...> : common_type<common_type_t<Ty1, Ty2>, _Rest...> {};
+struct _Common_Type3<void_t<common_type_t<Ty1, Ty2>>, Ty1, Ty2, _Rest...> : common_type<common_type_t<Ty1, Ty2>, _Rest...> {};
 
 template<class Ty1, class Ty2, class... _Rest>
-struct common_type<Ty1, Ty2, _Rest...> : _CommonType3<void, Ty1, Ty2, _Rest...> {}; // 3+ types
+struct common_type<Ty1, Ty2, _Rest...> : _Common_Type3<void, Ty1, Ty2, _Rest...> {}; // 3+ types
 
 template<class Ty>
 Ty _fake_copy_init(Ty) noexcept;

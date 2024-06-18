@@ -42,7 +42,7 @@ struct less<basic_string_view<Type, Traits>>		// used by map, set
 
 template<class Type, class Traits>
 struct hash<basic_string_view<Type, Traits>>
-: _BaseHashEnabler<basic_string_view<Type, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
+: _Base_Hash_Enabler<basic_string_view<Type, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
 {
 	static size_t compute_hash(const basic_string_view<Type, Traits>& key) noexcept {
 		return detail::_hash_array_representation(key.data(), key.size());

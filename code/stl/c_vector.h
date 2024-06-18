@@ -10,14 +10,14 @@ CUSTOM_BEGIN
 template<class Type, class Alloc>
 struct _Vector_Data
 {
-	using _AllocTraits		= allocator_traits<Alloc>;
+	using _Alloc_Traits		= allocator_traits<Alloc>;
 
-	using value_type		= typename _AllocTraits::value_type;
-	using difference_type	= typename _AllocTraits::difference_type;
-	using reference			= typename _AllocTraits::reference;
-	using const_reference	= typename _AllocTraits::const_reference;
-	using pointer			= typename _AllocTraits::pointer;
-	using const_pointer		= typename _AllocTraits::const_pointer;
+	using value_type		= typename _Alloc_Traits::value_type;
+	using difference_type	= typename _Alloc_Traits::difference_type;
+	using reference			= typename _Alloc_Traits::reference;
+	using const_reference	= typename _Alloc_Traits::const_reference;
+	using pointer			= typename _Alloc_Traits::pointer;
+	using const_pointer		= typename _Alloc_Traits::const_pointer;
 
 	pointer _First			= nullptr;			// Actual container array
 	pointer _Last			= nullptr;			// pointer to end
@@ -221,7 +221,7 @@ class vector			// vector Template
 {
 private:
 	using _Data						= _Vector_Data<Type, Alloc>;					// Members that are modified
-	using _AllocTraits				= typename _Data::_AllocTraits;
+	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 
 public:
 	static_assert(is_same_v<Type, typename Alloc::value_type>, "Object type and allocator type must be the same!");
@@ -318,7 +318,7 @@ public:
 		size_t newSize			= size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_AllocTraits::construct(_alloc, &newArray[i], custom::move(_data._First[i]));
+			_Alloc_Traits::construct(_alloc, &newArray[i], custom::move(_data._First[i]));
 
 		_clean_up_array();
 		_data._First	= newArray;
@@ -380,7 +380,7 @@ public:
 	template<class... Args>
 	constexpr void emplace_back(Args&&... args) {								// Construct object using arguments (Args) and add it to the tail
 		_extend_if_full();
-		_AllocTraits::construct(_alloc, _data._Last++, custom::forward<Args>(args)...);
+		_Alloc_Traits::construct(_alloc, _data._Last++, custom::forward<Args>(args)...);
 	}
 
 	constexpr void push_back(const value_type& copyValue) {						// Construct object using reference and add it to the tail
@@ -393,7 +393,7 @@ public:
 
 	constexpr void pop_back() {													// Remove last component
 		if (!empty())
-			_AllocTraits::destroy(_alloc, --_data._Last);
+			_Alloc_Traits::destroy(_alloc, --_data._Last);
 	}
 
 	template<class... Args>
@@ -404,8 +404,8 @@ public:
 		for (size_t i = size() - 1; i > index; --i)
 			_data._First[i] = custom::move(_data._First[i - 1]);
 
-		_AllocTraits::destroy(_alloc, _data._First + index);
-		_AllocTraits::construct(_alloc, _data._First + index, custom::forward<Args>(args)...);
+		_Alloc_Traits::destroy(_alloc, _data._First + index);
+		_Alloc_Traits::construct(_alloc, _data._First + index, custom::forward<Args>(args)...);
 
 		return iterator(_data._First + index, &_data);
 	}
@@ -442,7 +442,7 @@ public:
 
 	constexpr size_t max_size() const noexcept {
 		return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
-								_AllocTraits::max_size(_alloc));
+								_Alloc_Traits::max_size(_alloc));
 	}
 
 	constexpr bool empty() const noexcept {										// Check if array is empty
@@ -539,7 +539,7 @@ private:
 		size_t newSize	= other.size();
 
 		for (size_t i = 0; i < newSize; ++i)
-			_AllocTraits::construct(_alloc, &_data._First[i], other._data._First[i]);
+			_Alloc_Traits::construct(_alloc, &_data._First[i], other._data._First[i]);
 
 		_data._Last		= _data._First + other.size();
 		_data._Final	= _data._First + other.capacity();
@@ -553,17 +553,17 @@ private:
 
 	constexpr void _construct_range(value_type* const address, const size_t length) {
 		for (size_t i = 0; i < length; ++i)
-			_AllocTraits::construct(_alloc, address + i);
+			_Alloc_Traits::construct(_alloc, address + i);
 	}
 
 	constexpr void _construct_range(value_type* const address, const size_t length, const value_type& value) {
 		for (size_t i = 0; i < length; ++i)
-			_AllocTraits::construct(_alloc, address + i, value);
+			_Alloc_Traits::construct(_alloc, address + i, value);
 	}
 
 	constexpr void _destroy_range(value_type* address, const size_t length) {
 		for (size_t i = 0; i < length; ++i)
-			_AllocTraits::destroy(_alloc, address + i);
+			_Alloc_Traits::destroy(_alloc, address + i);
 	}
 
 	constexpr void _extend_if_full() {											// Reserve 50% more capacity when full

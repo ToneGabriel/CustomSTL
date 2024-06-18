@@ -42,12 +42,12 @@ constexpr intmax_t _safe_add(const intmax_t first, const intmax_t second) noexce
     return first + second;
 }
 
-struct _BigUint128
+struct _Big_Uint128
 {
     uint64_t Upper;
     uint64_t Lower;
 
-    constexpr bool operator<(const _BigUint128 other) const noexcept {
+    constexpr bool operator<(const _Big_Uint128 other) const noexcept {
         if (Upper != other.Upper)
             return Upper < other.Upper;
 
@@ -56,7 +56,7 @@ struct _BigUint128
 };
 
 // multiply two 64-bit integers into a 128-bit integer, Knuth's algorithm M
-constexpr _BigUint128 _big_multiply(const uint64_t left, const uint64_t right) noexcept {
+constexpr _Big_Uint128 _big_multiply(const uint64_t left, const uint64_t right) noexcept {
     const uint64_t leftLow      = left & 0xFFFF'FFFFULL;
     const uint64_t leftHigh     = left >> 32;
     const uint64_t rightLow     = right & 0xFFFF'FFFFULL;
@@ -103,17 +103,17 @@ constexpr bool is_ratio_v<ratio<Rat1, Rat2>> = true;
 // safe multiply
 template<intmax_t first, intmax_t second, bool Sfinae = false,
 bool Good = detail::_abs(first) <= INTMAX_MAX / (second == 0 ? 1 : detail::_abs(second))>
-struct _SafeMultiply : integral_constant<intmax_t, first * second> {}; // computes first * second without overflow
+struct _Safe_Multiply : integral_constant<intmax_t, first * second> {}; // computes first * second without overflow
 
 template<intmax_t first, intmax_t second, bool Sfinae>
-struct _SafeMultiply<first, second, Sfinae, false>
+struct _Safe_Multiply<first, second, Sfinae, false>
 {
     static_assert(Sfinae, "integer arithmetic overflow");   // first * second would overflow
 };
 
 // ratio add
 template<class Rat1, class Rat2>
-struct _RatioAdd
+struct _Ratio_Add
 {
     static_assert(is_ratio_v<Rat1> && is_ratio_v<Rat2>, "ratio_add<R1, R2> requires R1 and R2 to be ratios.");
 
@@ -121,17 +121,17 @@ private:
     static constexpr intmax_t _gcd = detail::_gcd(Rat1::den, Rat2::den);
 
 public:
-    using type = typename ratio<detail::_safe_add(  _SafeMultiply<Rat1::num, Rat2::den / _gcd>::value,
-                                                    _SafeMultiply<Rat2::num, Rat1::den / _gcd>::value),
-                                _SafeMultiply<Rat1::den, Rat2::den / _gcd>::value>::type;
+    using type = typename ratio<detail::_safe_add(  _Safe_Multiply<Rat1::num, Rat2::den / _gcd>::value,
+                                                    _Safe_Multiply<Rat2::num, Rat1::den / _gcd>::value),
+                                _Safe_Multiply<Rat1::den, Rat2::den / _gcd>::value>::type;
 };
 
 template<class Rat1, class Rat2>
-using ratio_add = typename _RatioAdd<Rat1, Rat2>::type;
+using ratio_add = typename _Ratio_Add<Rat1, Rat2>::type;
 
 // ratio subtract
 template<class Rat1, class Rat2>
-struct _RatioSubtract
+struct _Ratio_Subtract
 {
     static_assert(is_ratio_v<Rat1> && is_ratio_v<Rat2>, "ratio_subtract<R1, R2> requires R1 and R2 to be ratios.");
 
@@ -139,11 +139,11 @@ struct _RatioSubtract
 };
 
 template<class Rat1, class Rat2>
-using ratio_subtract = typename _RatioSubtract<Rat1, Rat2>::type;
+using ratio_subtract = typename _Ratio_Subtract<Rat1, Rat2>::type;
 
 // ratio multiply
 template<class Rat1, class Rat2>
-struct _RatioMultiply  // multiply two ratios
+struct _Ratio_Multiply  // multiply two ratios
 {
     static_assert(is_ratio_v<Rat1> && is_ratio_v<Rat2>, "ratio_multiply<R1, R2> requires R1 and R2 to be ratios.");
 
@@ -152,33 +152,33 @@ private:
     static constexpr intmax_t _gcd2 = detail::_gcd(Rat2::num, Rat1::den);
 
 public:
-    using num = _SafeMultiply<  Rat1::num / _gcd1,
+    using num = _Safe_Multiply< Rat1::num / _gcd1,
                                 Rat2::num / _gcd2, true>;
 
-    using den = _SafeMultiply<  Rat1::den / _gcd2,
+    using den = _Safe_Multiply< Rat1::den / _gcd2,
                                 Rat2::den / _gcd1, true>;
 };
 
 template<class Rat1, class Rat2, bool Sfinae = true, class = void>
-struct _RatioMultiplySfinae   // detect overflow during multiplication
+struct _Ratio_Multiply_Sfinae   // detect overflow during multiplication
 {
     static_assert(Sfinae, "integer arithmetic overflow");
 };
 
 template<class Rat1, class Rat2, bool Sfinae>
-struct _RatioMultiplySfinae<Rat1, Rat2, Sfinae,
-                            void_t< typename _RatioMultiply<Rat1, Rat2>::num::type,
-                                    typename _RatioMultiply<Rat1, Rat2>::den::type>>
+struct _Ratio_Multiply_Sfinae<Rat1, Rat2, Sfinae,
+                            void_t< typename _Ratio_Multiply<Rat1, Rat2>::num::type,
+                                    typename _Ratio_Multiply<Rat1, Rat2>::den::type>>
 {
-    using type = ratio<_RatioMultiply<Rat1, Rat2>::num::value, _RatioMultiply<Rat1, Rat2>::den::value>;
+    using type = ratio<_Ratio_Multiply<Rat1, Rat2>::num::value, _Ratio_Multiply<Rat1, Rat2>::den::value>;
 };
 
 template<class Rat1, class Rat2>
-using ratio_multiply = typename _RatioMultiplySfinae<Rat1, Rat2, false>::type;
+using ratio_multiply = typename _Ratio_Multiply_Sfinae<Rat1, Rat2, false>::type;
 
 // ratio divide
 template<class Rat1, class Rat2>
-struct _RatioDivide    // divide two ratios
+struct _Ratio_Divide    // divide two ratios
 {
     static_assert(is_ratio_v<Rat1> && is_ratio_v<Rat2>, "ratio_divide<R1, R2> requires R1 and R2 to be ratios.");
 
@@ -186,10 +186,10 @@ struct _RatioDivide    // divide two ratios
 };
 
 template<class Rat1, class Rat2, bool Sfinae = true>
-using _RatioDivideSfinae = typename _RatioMultiplySfinae<Rat1, typename _RatioDivide<Rat1, Rat2>::_Rat2Inverse, Sfinae>::type;
+using _Ratio_Divide_Sfinae = typename _Ratio_Multiply_Sfinae<Rat1, typename _Ratio_Divide<Rat1, Rat2>::_Rat2Inverse, Sfinae>::type;
 
 template<class Rat1, class Rat2>
-using ratio_divide = _RatioDivideSfinae<Rat1, Rat2, false>;
+using ratio_divide = _Ratio_Divide_Sfinae<Rat1, Rat2, false>;
 
 // ratio equal
 template<class Rat1, class Rat2>

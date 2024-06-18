@@ -19,35 +19,35 @@ template<class Traits>
 class _Hash_Table
 {
 protected:
-	using _IterList				= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
-	using _AllocNode			= typename _IterList::_AllocNode;
-	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
-	using _NodePtr 				= typename _IterList::_NodePtr;
+	using _Iter_List			= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
+	using _Alloc_Node			= typename _Iter_List::_Alloc_Node;
+	using _Alloc_Node_Traits	= typename _Iter_List::_Alloc_Node_Traits;
+	using _NodePtr 				= typename _Iter_List::_NodePtr;
 	using _Bucket 				= pair<size_t, _NodePtr>;
-	using _HashArray			= vector<_Bucket>;						// vector of pairs
+	using _Hash_Vector			= vector<_Bucket>;						// vector of pairs
 
-	using key_type           	= typename Traits::key_type;				// Type of Key
-    using mapped_type        	= typename Traits::mapped_type;			// Type of Mapped _Value
+	using key_type           	= typename Traits::key_type;
+    using mapped_type        	= typename Traits::mapped_type;
     using hasher            	= typename Traits::hasher;				// hash struct
 	using key_compare			= typename Traits::key_compare;
 	
-	using value_type			= typename _IterList::value_type;		// Type of values stored in container
-	using difference_type		= typename _IterList::difference_type;
-	using reference 			= typename _IterList::reference;
-	using const_reference 		= typename _IterList::const_reference;
-	using pointer 				= typename _IterList::pointer;
-	using const_pointer			= typename _IterList::const_pointer;
-	using allocator_type 		= typename _IterList::allocator_type;
+	using value_type			= typename _Iter_List::value_type;		// Type of values stored in container
+	using difference_type		= typename _Iter_List::difference_type;
+	using reference 			= typename _Iter_List::reference;
+	using const_reference 		= typename _Iter_List::const_reference;
+	using pointer 				= typename _Iter_List::pointer;
+	using const_pointer			= typename _Iter_List::const_pointer;
+	using allocator_type 		= typename _Iter_List::allocator_type;
 
-	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to list iterator)
-	using const_iterator		= typename _IterList::const_iterator;
+	using iterator				= typename _Iter_List::iterator;			// iterator for this container (identical to list iterator)
+	using const_iterator		= typename _Iter_List::const_iterator;
 
 protected:
 	hasher _hash;														// Used for initial(non-compressed) hash value
 	key_compare _compare;												// Used for comparison between keys
-	_IterList _elems;													// Used to iterate through container
-	_HashArray _buckets;												// Used to map elems from _IterList
-	_AllocNode _alloc;													// Used to allocate nodes
+	_Iter_List _elems;													// Used to iterate through container
+	_Hash_Vector _buckets;												// Used to map elems from _Iter_List
+	_Alloc_Node _alloc;													// Used to allocate nodes
 
 	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;					// The maximum load factor admitted before rehashing
 	static constexpr size_t _DEFAULT_BUCKETS	= 8;					// Default number of buckets
@@ -100,13 +100,13 @@ public:
     template<class... Args>
 	iterator emplace(Args&&... args) {
 		_NodePtr newNode 		= _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
 		iterator it 			= find(newKey);
 
 		if (it != end())	// Destroy newly-created Node if key exists
 		{
-			_AllocNodeTraits::destroy(_alloc, &(newNode->_Value));
+			_Alloc_Node_Traits::destroy(_alloc, &(newNode->_Value));
 			_alloc.deallocate(newNode, 1);
 			return it;
 		}
@@ -212,7 +212,7 @@ public:
 		}
 	}
 
-	size_t bucket_count() const {									// Get _HashArray size
+	size_t bucket_count() const {									// Get _Hash_Vector size
 		return _buckets.size();
 	}
 
@@ -292,7 +292,7 @@ protected:
 		else
 		{
 			_NodePtr newNode = _alloc.allocate(1);
-			_AllocNodeTraits::construct(
+			_Alloc_Node_Traits::construct(
 										_alloc,
 										&(newNode->_Value),
 										custom::piecewise_construct,
@@ -388,37 +388,37 @@ template<class Traits>
 class _Hash_Table
 {
 protected:
-	using _IterList				= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
-	using _AllocNode			= typename _IterList::_AllocNode;
-	using _AllocNodeTraits		= typename _IterList::_AllocNodeTraits;
-	using _NodePtr 				= typename _IterList::_NodePtr;
-	using _Bucket				= list<_NodePtr>;						// list of Node* (as _Value) from Iteration list
-	using _HashArray			= vector<_Bucket>;						// vector of lists of Node*
-	using _BucketIterator		= typename _Bucket::iterator;			// iterator for Buckets
-	using _ConstBucketIterator 	= typename _Bucket::const_iterator;
+	using _Iter_List				= list<typename Traits::value_type, typename Traits::allocator_type>;		// list of value_type used for iteration
+	using _Alloc_Node				= typename _Iter_List::_Alloc_Node;
+	using _Alloc_Node_Traits		= typename _Iter_List::_Alloc_Node_Traits;
+	using _NodePtr					= typename _Iter_List::_NodePtr;
+	using _Bucket					= list<_NodePtr>;						// list of Node* (as _Value) from Iteration list
+	using _Hash_Vector				= vector<_Bucket>;						// vector of lists of Node*
+	using _Bucket_Iterator			= typename _Bucket::iterator;
+	using _Const_Bucket_Iterator	= typename _Bucket::const_iterator;
 
-    using key_type           	= typename Traits::key_type;				// Type of Key
-    using mapped_type        	= typename Traits::mapped_type;			// Type of Mapped _Value
-    using hasher            	= typename Traits::hasher;				// hash struct
-	using key_compare			= typename Traits::key_compare;
+    using key_type					= typename Traits::key_type;
+    using mapped_type				= typename Traits::mapped_type;
+    using hasher					= typename Traits::hasher;				// hash struct
+	using key_compare				= typename Traits::key_compare;
 	
-	using value_type			= typename _IterList::value_type;		// Type of values stored in container
-	using difference_type		= typename _IterList::difference_type;
-	using reference 			= typename _IterList::reference;
-	using const_reference 		= typename _IterList::const_reference;
-	using pointer 				= typename _IterList::pointer;
-	using const_pointer			= typename _IterList::const_pointer;
-	using allocator_type 		= typename _IterList::allocator_type;
+	using value_type				= typename _Iter_List::value_type;		// Type of values stored in container
+	using difference_type			= typename _Iter_List::difference_type;
+	using reference					= typename _Iter_List::reference;
+	using const_reference			= typename _Iter_List::const_reference;
+	using pointer					= typename _Iter_List::pointer;
+	using const_pointer				= typename _Iter_List::const_pointer;
+	using allocator_type			= typename _Iter_List::allocator_type;
 
-	using iterator				= typename _IterList::iterator;			// iterator for this container (identical to list iterator)
-	using const_iterator		= typename _IterList::const_iterator;
+	using iterator					= typename _Iter_List::iterator;			// iterator for this container (identical to list iterator)
+	using const_iterator			= typename _Iter_List::const_iterator;
 
 protected:
 	hasher _hash;														// Used for initial(non-compressed) hash value
 	key_compare _compare;												// Used for comparison between keys
-	_IterList _elems;													// Used to iterate through container
-	_HashArray _buckets;												// Used to map elems from _IterList
-	_AllocNode _alloc;
+	_Iter_List _elems;													// Used to iterate through container
+	_Hash_Vector _buckets;												// Used to map elems from _Iter_List
+	_Alloc_Node _alloc;
 
 	static constexpr float _TABLE_LOAD_FACTOR	= 0.75;					// The maximum load factor admitted before rehashing
 	static constexpr size_t _DEFAULT_BUCKETS	= 8;					// Default number of buckets
@@ -471,13 +471,13 @@ public:
     template<class... Args>
 	iterator emplace(Args&&... args) {
 		_NodePtr newNode 		= _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
 		iterator it 			= find(newKey);
 
 		if (it != end())	// Destroy newly-created Node if key exists
 		{
-			_AllocNodeTraits::destroy(_alloc, &(newNode->_Value));
+			_Alloc_Node_Traits::destroy(_alloc, &(newNode->_Value));
 			_alloc.deallocate(newNode, 1);
 			return it;
 		}
@@ -492,7 +492,7 @@ public:
 
 	iterator erase(const key_type& key) {
 		size_t index 		= bucket(key);
-		_BucketIterator it 	= _find_in_array(key);
+		_Bucket_Iterator it 	= _find_in_array(key);
 
 		if (it == _buckets[index].end())
 			return end();
@@ -510,7 +510,7 @@ public:
 	}
 
 	iterator find(const key_type& key) {
-		_BucketIterator it = _find_in_array(key);
+		_Bucket_Iterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
@@ -518,7 +518,7 @@ public:
 	}
 
 	const_iterator find(const key_type& key) const {
-		_ConstBucketIterator it = _find_in_array(key);
+		_Const_Bucket_Iterator it = _find_in_array(key);
 		if (it == _buckets[bucket(key)].end())
 			return end();
 
@@ -546,7 +546,7 @@ public:
 			val.clear();			
 	}
 
-	size_t bucket_count() const {									// Get _HashArray size
+	size_t bucket_count() const {									// Get _Hash_Vector size
 		return _buckets.size();
 	}
 
@@ -620,7 +620,7 @@ protected:
 		else
 		{
 			_NodePtr newNode = _alloc.allocate(1);
-			_AllocNodeTraits::construct(
+			_Alloc_Node_Traits::construct(
 										_alloc,
 										&(newNode->_Value),
 										custom::piecewise_construct,
@@ -637,7 +637,7 @@ protected:
 	}
 
 	const mapped_type& _at(const key_type& key) const {				// Access _Value at key with check
-		_ConstBucketIterator it = _find_in_array(key);
+		_Const_Bucket_Iterator it = _find_in_array(key);
 		
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key.");
@@ -646,7 +646,7 @@ protected:
 	}
 
 	mapped_type& _at(const key_type& key) {
-		_BucketIterator it = _find_in_array(key);
+		_Bucket_Iterator it = _find_in_array(key);
 
 		if (it == _buckets[bucket(key)].end())
 			throw std::out_of_range("Invalid key.");
@@ -657,9 +657,9 @@ protected:
 private:
 	// Helpers
 
-	_BucketIterator _find_in_array(const key_type& key) {
+	_Bucket_Iterator _find_in_array(const key_type& key) {
 		_Bucket& currentBucket 	= _buckets[bucket(key)];
-		_BucketIterator it 		= currentBucket.begin();
+		_Bucket_Iterator it		= currentBucket.begin();
 
 		while (it != currentBucket.end() && !_compare(Traits::extract_key((*it)->_Value), key))
 			++it;
@@ -667,9 +667,9 @@ private:
 		return it;
 	}
 
-	_ConstBucketIterator _find_in_array(const key_type& key) const {		// Get iterator from bucket with key
-		const _Bucket& currentBucket = _buckets[bucket(key)];
-		_ConstBucketIterator it 		= currentBucket.begin();
+	_Const_Bucket_Iterator _find_in_array(const key_type& key) const {		// Get iterator from bucket with key
+		const _Bucket& currentBucket 	= _buckets[bucket(key)];
+		_Const_Bucket_Iterator it		= currentBucket.begin();
 
 		while (it != currentBucket.end() && !_compare(Traits::extract_key((*it)->_Value), key))
 			++it;

@@ -46,7 +46,7 @@ public:
 
     template<class _Rep, class _Period,
     enable_if_t< is_floating_point_v<rep> ||
-                (_RatioDivideSfinae<_Period, period>::den == 1 && !is_floating_point_v<_Rep>), bool> = true>
+                (_Ratio_Divide_Sfinae<_Period, period>::den == 1 && !is_floating_point_v<_Rep>), bool> = true>
     constexpr duration(const duration<_Rep, _Period>& other) noexcept(is_arithmetic_v<rep> && is_arithmetic_v<_Rep>)
         : _rep(custom::chrono::duration_cast<duration>(other).count()) { /*Empty*/ }
 
@@ -248,24 +248,24 @@ template<class ToDur, class Rep, class Period, enable_if_t<is_duration_v<ToDur>,
 constexpr ToDur duration_cast(const duration<Rep, Period>& duration)
 noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
 
-    using ToDurRep  = typename ToDur::rep;
-    using RatioType = ratio_divide<Period, typename ToDur::period>;
-    using RepType   = common_type_t<ToDurRep, Rep, intmax_t>;
+    using _ToDurRep  = typename ToDur::rep;
+    using _RatioType = ratio_divide<Period, typename ToDur::period>;
+    using _RepType   = common_type_t<_ToDurRep, Rep, intmax_t>;
 
     // avoid multiplications and divisions where possible (last return is the complete cast)
-    if (RatioType::den == 1)
+    if (_RatioType::den == 1)
     {
-        if (RatioType::num == 1)
-            return static_cast<ToDur>(static_cast<ToDurRep>(duration.count()));
+        if (_RatioType::num == 1)
+            return static_cast<ToDur>(static_cast<_ToDurRep>(duration.count()));
         else
-            return static_cast<ToDur>(static_cast<ToDurRep>(static_cast<RepType>(duration.count()) * static_cast<RepType>(RatioType::num)));
+            return static_cast<ToDur>(static_cast<_ToDurRep>(static_cast<_RepType>(duration.count()) * static_cast<_RepType>(_RatioType::num)));
     }
     else
     {
-        if (RatioType::num == 1)
-            return static_cast<ToDur>(static_cast<ToDurRep>(static_cast<RepType>(duration.count()) / static_cast<RepType>(RatioType::den)));
+        if (_RatioType::num == 1)
+            return static_cast<ToDur>(static_cast<_ToDurRep>(static_cast<_RepType>(duration.count()) / static_cast<_RepType>(_RatioType::den)));
         else
-            return static_cast<ToDur>(static_cast<ToDurRep>(static_cast<RepType>(duration.count()) * static_cast<RepType>(RatioType::num) / static_cast<RepType>(RatioType::den)));
+            return static_cast<ToDur>(static_cast<_ToDurRep>(static_cast<_RepType>(duration.count()) * static_cast<_RepType>(_RatioType::num) / static_cast<_RepType>(_RatioType::den)));
     }
 }
 
@@ -561,10 +561,10 @@ struct system_clock     // wraps GetSystemTimePreciseAsFileTime
 // steady clock
 struct steady_clock     // wraps QueryPerformanceCounter
 {
-    using period    = custom::nano;
-    using rep       = long long;
-    using duration  = custom::chrono::duration<rep, period>;
-    using time_point = custom::chrono::time_point<steady_clock>;
+    using period        = custom::nano;
+    using rep           = long long;
+    using duration      = custom::chrono::duration<rep, period>;
+    using time_point    = custom::chrono::time_point<steady_clock>;
 
     static constexpr bool is_steady = true;
 

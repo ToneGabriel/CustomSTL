@@ -7,58 +7,58 @@ CUSTOM_BEGIN
 CUSTOM_DETAIL_BEGIN
 
 template<class Type>
-struct _ForwardNode			// Struct that holds data and references to next struct
+struct _Forward_Node			// Struct that holds data and references to next struct
 {
 	using value_type = Type;
 
 	value_type _Value;
-	_ForwardNode* _Next = nullptr;
+	_Forward_Node* _Next = nullptr;
 
-	_ForwardNode()									= default;
-	~_ForwardNode() 								= default;
-	_ForwardNode(const _ForwardNode&)				= delete;
-	_ForwardNode& operator=(const _ForwardNode&)	= delete;
+	_Forward_Node()									= default;
+	~_Forward_Node() 								= default;
+	_Forward_Node(const _Forward_Node&)				= delete;
+	_Forward_Node& operator=(const _Forward_Node&)	= delete;
 
-	_ForwardNode(const value_type& copyVal)
+	_Forward_Node(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_ForwardNode(value_type&& moveVal)
+	_Forward_Node(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>
-	_ForwardNode(Args&&... args)
+	_Forward_Node(Args&&... args)
 		:_Value(custom::forward<Args>(args)...) { /*Empty*/ }
-}; // END _ForwardNode
+}; // END _Forward_Node
 
 
 template<class Type>
-struct _DoubleNode			// Struct that holds data and references to next and previous struct
+struct _Double_Node			// Struct that holds data and references to next and previous struct
 {
 	using value_type = Type;
 
 	value_type _Value;
-	_DoubleNode* _Previous 	= nullptr;
-	_DoubleNode* _Next 		= nullptr;
+	_Double_Node* _Previous 	= nullptr;
+	_Double_Node* _Next 		= nullptr;
 
-	_DoubleNode()								= default;
-	~_DoubleNode() 								= default;
-	_DoubleNode(const _DoubleNode&)				= delete;
-	_DoubleNode& operator=(const _DoubleNode&)	= delete;
+	_Double_Node()									= default;
+	~_Double_Node() 								= default;
+	_Double_Node(const _Double_Node&)				= delete;
+	_Double_Node& operator=(const _Double_Node&)	= delete;
 
-	_DoubleNode(const value_type& copyVal)
+	_Double_Node(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_DoubleNode(value_type&& moveVal)
+	_Double_Node(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>
-	_DoubleNode(Args&&... args)
+	_Double_Node(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
-}; // END _DoubleNode
+}; // END _Double_Node
 
 
 template<class Type>
-struct _TreeNode			// Used in _Search_Tree
+struct _Tree_Node			// Used in _Search_Tree
 {
 	using value_type = Type;
 	
@@ -69,25 +69,25 @@ struct _TreeNode			// Used in _Search_Tree
 	};
 
 	value_type _Value;
-	_TreeNode* _Parent 	= nullptr;
-	_TreeNode* _Left 	= nullptr;
-	_TreeNode* _Right 	= nullptr;
+	_Tree_Node* _Parent	= nullptr;
+	_Tree_Node* _Left 	= nullptr;
+	_Tree_Node* _Right 	= nullptr;
 	bool _IsNil 		= false;			// True for Head only
 	Colors _Color 		= Colors::Red;		// Used for balancing
 
-	_TreeNode()								= default;
-	~_TreeNode() 							= default;
-	_TreeNode(const _TreeNode&)				= delete;
-	_TreeNode& operator=(const _TreeNode&)	= delete;
+	_Tree_Node()								= default;
+	~_Tree_Node()								= default;
+	_Tree_Node(const _Tree_Node&)				= delete;
+	_Tree_Node& operator=(const _Tree_Node&)	= delete;
 
-	_TreeNode(const value_type& copyVal)
+	_Tree_Node(const value_type& copyVal)
 		:_Value(copyVal) { /*Empty*/ }
 
-	_TreeNode(value_type&& moveVal)
+	_Tree_Node(value_type&& moveVal)
 		:_Value(custom::move(moveVal)) { /*Empty*/ }
 
 	template<class... Args>
-	_TreeNode(Args&&... args)
+	_Tree_Node(Args&&... args)
 		: _Value(custom::forward<Args>(args)...) { /*Empty*/ }
 
 	bool is_leaf() const {

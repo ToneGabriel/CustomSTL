@@ -26,27 +26,26 @@ struct _Tree_Node_ID 			// Indicator for child placement
 template<class Traits>
 struct _Search_Tree_Data
 {
-	using key_type			= typename Traits::key_type;				// Type of Key
-    using mapped_type		= typename Traits::mapped_type;			// Type of Mapped _Value
-	using key_compare		= typename Traits::key_compare;
-	using value_type		= typename Traits::value_type;			// Type of values stored in container
-	using allocator_type 	= typename Traits::allocator_type;
+	using key_type				= typename Traits::key_type;
+    using mapped_type			= typename Traits::mapped_type;
+	using key_compare			= typename Traits::key_compare;
+	using value_type			= typename Traits::value_type;
+	using allocator_type		= typename Traits::allocator_type;
 	
-	using _AllocTraits		= allocator_traits<allocator_type>;
-	using _Node				= detail::_TreeNode<value_type>;
-	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
-	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
-	using _NodePtr			= typename _AllocNodeTraits::pointer;
+	using _Alloc_Traits			= allocator_traits<allocator_type>;
+	using _Node					= detail::_Tree_Node<value_type>;
+	using _Alloc_Node			= typename _Alloc_Traits::template rebind_alloc<_Node>;
+	using _Alloc_Node_Traits	= allocator_traits<_Alloc_Node>;
+	using _NodePtr				= typename _Alloc_Node_Traits::pointer;
 
-	using difference_type	= typename _AllocTraits::difference_type;
-	using reference 		= typename _AllocTraits::reference;
-	using const_reference 	= typename _AllocTraits::const_reference;
-	using pointer 			= typename _AllocTraits::pointer;
-	using const_pointer		= typename _AllocTraits::const_pointer;
+	using difference_type		= typename _Alloc_Traits::difference_type;
+	using reference				= typename _Alloc_Traits::reference;
+	using const_reference		= typename _Alloc_Traits::const_reference;
+	using pointer				= typename _Alloc_Traits::pointer;
+	using const_pointer			= typename _Alloc_Traits::const_pointer;
 
-
-	size_t _Size 			= 0;									// Number of Nodes held
-	_NodePtr _Head 			= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
+	size_t _Size				= 0;									// Number of Nodes held
+	_NodePtr _Head				= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
 
 	_NodePtr leftmost(_NodePtr node) const {						// return leftmost node in subtree at node
 		while (!node->_Left->_IsNil)
@@ -61,7 +60,7 @@ struct _Search_Tree_Data
 
 		return node;
 	}
-};
+};	// END _Search_Tree_Data
 
 template<class SearchTreeData>
 class _Search_Tree_Const_Iterator
@@ -224,10 +223,10 @@ class _Search_Tree			// _Search_Tree Template implemented as Red-Black Tree
 {
 private:
 	using _Data						= _Search_Tree_Data<Traits>;
-	using _AllocTraits				= typename _Data::_AllocTraits;
+	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 	using _Node						= typename _Data::_Node;
-	using _AllocNode				= typename _Data::_AllocNode;
-	using _AllocNodeTraits			= typename _Data::_AllocNodeTraits;
+	using _Alloc_Node				= typename _Data::_Alloc_Node;
+	using _Alloc_Node_Traits		= typename _Data::_Alloc_Node_Traits;
 	using _NodePtr					= typename _Data::_NodePtr;
 	
 protected:
@@ -249,7 +248,7 @@ protected:
 
 protected:
 	_Data _data;
-	_AllocNode _alloc;
+	_Alloc_Node _alloc;
     key_compare _less;			// Used for comparison
 
 protected:
@@ -361,7 +360,7 @@ public:
 
 	size_t max_size() const noexcept {
 		return (custom::min)(static_cast<size_t>((	numeric_limits<difference_type>::max)()),
-													_AllocNodeTraits::max_size(_alloc));
+													_Alloc_Node_Traits::max_size(_alloc));
 	}
 
 	bool empty() const noexcept {
@@ -518,7 +517,7 @@ private:
 			return _data._Head;
 
 		_NodePtr newNode = _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), subroot->_Value);
+		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), subroot->_Value);
 
 		newNode->_IsNil		= false;
 		newNode->_Color		= subroot->_Color;
@@ -849,7 +848,7 @@ private:
 	template<class... Args>
 	_NodePtr _create_common_node(Args&&... args) {
 		_NodePtr newNode 	= _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		newNode->_Parent	= _data._Head;
 		newNode->_Left		= _data._Head;
 		newNode->_Right		= _data._Head;
@@ -863,7 +862,7 @@ private:
 		oldNode->_Parent	= nullptr;
 		oldNode->_Left		= nullptr;
 		oldNode->_Right		= nullptr;
-		_AllocNodeTraits::destroy(_alloc, &(oldNode->_Value));
+		_Alloc_Node_Traits::destroy(_alloc, &(oldNode->_Value));
 		_alloc.deallocate(oldNode, 1);
 	}
 
