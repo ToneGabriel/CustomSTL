@@ -65,19 +65,19 @@ int Test::test_function(int x) {
 
 
 void print_sequence_test() {
-	print_sequence(custom::IntegerSequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
-	print_sequence(custom::MakeIntegerSequence<int, 20>{});
-	print_sequence(custom::MakeIndexSequence<10>{});
-	print_sequence(custom::IndexSequenceFor<float, std::iostream, char>{});
+	print_sequence(custom::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
+	print_sequence(custom::make_integer_sequence<int, 20>{});
+	print_sequence(custom::make_index_sequence<10>{});
+	print_sequence(custom::index_sequence_for<float, std::iostream, char>{});
 }
 
 void piecewise_pair_test() {
-	 custom::Pair<int, Test> p(
-		 custom::PiecewiseConstruct,
+	 custom::pair<int, Test> p(
+		 custom::piecewise_construct,
 		 custom::forward_as_tuple(3),
 		 custom::forward_as_tuple(3));
 
-	std::cout << p.First << ' ' << p.Second << '\n';
+	std::cout << p.first << ' ' << p.second << '\n';
 }
 
 void tuple_test() {
@@ -92,8 +92,8 @@ void tuple_test() {
 	std::cout << "\n\n";
 
 	{
-		custom::Tuple<int, Test> tuple1(3, Test(3));
-		custom::Tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
+		custom::tuple<int, Test> tuple1(3, Test(3));
+		custom::tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
 		auto tuple3 = custom::tuple_cat(custom::move(tuple1), custom::move(tuple2));
 		std::cout << custom::get<4>(tuple3) << '\n';
 		std::cout << custom::get<1>(tuple1) << '\n';
@@ -101,8 +101,8 @@ void tuple_test() {
 }
 
 void list_test() {
-	custom::List<Test> list;
-	custom::List<Test> list1;
+	custom::list<Test> list;
+	custom::list<Test> list1;
 
 	list.emplace_back(15);
 	list.emplace_back(8);
@@ -128,7 +128,7 @@ void list_test() {
 }
 
 void forward_list_test() {
-	custom::ForwardList<Test> flist;
+	custom::forward_list<Test> flist;
 	flist.emplace_front(1);
 	flist.emplace_front(2);
 	flist.emplace_front(3);
@@ -138,7 +138,7 @@ void forward_list_test() {
 }
 
 void unordered_map_test() {
-	custom::UnorderedMap<int, custom::String> map;
+	custom::unordered_map<int, custom::string> map;
 
 	map[10] = "abc";
 	map[11] = "gsa";
@@ -147,19 +147,19 @@ void unordered_map_test() {
 	map[54] = "69";
 	map[1] = "A bv";
 	map.emplace(3, "abc");
-	map.try_emplace(56, custom::String("shmecher"));
+	map.try_emplace(56, custom::string("shmecher"));
 
 	std::cout << map.at(10) << '\n';
 
 	map.print_details();
 	std::cout << '\n';
 	for (auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
+		std::cout << val.first << ' ' << val.second << '\n';
 }
 
 void unordered_set_test() {
-	custom::UnorderedSet<custom::String> set;
-	custom::UnorderedSet<custom::String> set1;
+	custom::unordered_set<custom::string> set;
+	custom::unordered_set<custom::string> set1;
 
 	set.emplace("abc");
 	set.emplace("def");
@@ -172,7 +172,7 @@ void unordered_set_test() {
 }
 
 void map_test() {
-	custom::Map<int, int> map;
+	custom::map<int, int> map;
 
 	map.emplace(5, 5);
 	map.emplace(0, 0);
@@ -200,17 +200,17 @@ void map_test() {
 	std::cout << "Map before erase\n";
 	map.print_details();
 
-	std::cout << "Current elem= " << (*map.erase(10)).First << '\n';
+	std::cout << "Current elem= " << (*map.erase(10)).first << '\n';
 
 	std::cout << "Map after erase\n";
 	map.print_details();
 
 	for (auto& val : map)
-		std::cout << val.First << ' ' << val.Second << '\n';
+		std::cout << val.first << ' ' << val.second << '\n';
 }
 
 void deque_test() {
-	custom::Deque<int> dq;
+	custom::deque<int> dq;
 	dq.emplace_back(0);
 	dq.emplace_back(1);
 	dq.emplace_back(2);
@@ -230,7 +230,7 @@ void deque_test() {
 }
 
 void queue_test() {
-	custom::Queue<Test> q;
+	custom::queue<Test> q;
 
 	for (size_t i = 0; i < 50; ++i)
 		q.emplace(i);
@@ -243,7 +243,7 @@ void queue_test() {
 }
 
 void priority_queue_test() {
-	custom::PriorityQueue<int> pq;
+	custom::priority_queue<int> pq;
 
 	pq.emplace(0);
 	pq.emplace(5);
@@ -265,7 +265,7 @@ void priority_queue_test() {
 }
 
 void stack_test() {
-	custom::Stack<int> s;
+	custom::stack<int> s;
 
 	s.push(0);
 	s.push(3);
@@ -280,12 +280,12 @@ void stack_test() {
 }
 
 void vector_test() {
-	custom::Vector<int> v;
+	custom::vector<int> v;
 	v.emplace_back(0);
 	v.emplace_back(1);
 	v.emplace_back(2);
 
-	custom::Vector<int> v1(v);
+	custom::vector<int> v1(v);
 
 
 	for (auto& val : v1)
@@ -295,8 +295,8 @@ void vector_test() {
 }
 
 void string_test() {
-	custom::String s("abcd");
-	custom::String s1("abcd");
+	custom::string s("abcd");
+	custom::string s1("abcd");
 	s.insert(++s.begin(),s1.begin(),--s1.end());
 
 	std::string ss("abcd");
@@ -308,20 +308,20 @@ void string_test() {
 }
 
 void string_view_test() {
-	custom::String str = "cdef";
-	custom::StringView sv1 = "abcdef";
-	custom::StringView sv2(str);
+	custom::string str = "cdef";
+	custom::string_view sv1 = "abcdef";
+	custom::string_view sv2(str);
 	std::cout << sv1.find(sv2, 1) << '\n';
 
 	// =====================================
 	
-	custom::StringView sv3 = "abcd";
-	custom::String str1(sv3);
+	custom::string_view sv3 = "abcd";
+	custom::string str1(sv3);
 	std::cout << str1 << '\n';
 }
 
 void array_test() {
-	custom::Array<Test, 5> arr;
+	custom::array<Test, 5> arr;
 	arr.fill(Test(3));
 
 	for (auto& val : arr)
@@ -329,8 +329,8 @@ void array_test() {
 }
 
 void function_test() {
-	custom::Function<void()> fct1(unordered_map_test);
-	custom::Function<void()> fct2(Test{});
+	custom::function<void()> fct1(unordered_map_test);
+	custom::function<void()> fct2(Test{});
 	fct1.swap(fct2);
 	fct1();
 }
@@ -341,11 +341,11 @@ void invoke_test() {
 }
 
 void memory_test() {
-	// UniquePtr===============
-	//custom::UniquePtr<Test> up = custom::make_unique<Test>(3);
+	// unique_ptr===============
+	//custom::unique_ptr<Test> up = custom::make_unique<Test>(3);
 
-	// SharedPtr===============
-	custom::SharedPtr<Test[]> sharedArray(new Test[5]);
+	// shared_ptr===============
+	custom::shared_ptr<Test[]> sharedArray(new Test[5]);
 
     for (int i = 0; i < 5; ++i)
         sharedArray[i] = i; // Populating the array
@@ -357,31 +357,36 @@ void memory_test() {
 }
 
 void chrono_test() {
-	using namespace std::chrono;
-	using namespace custom::chrono;
-	//using namespace std::chrono_literals;
+	{
+		using namespace std::chrono;
+		//using namespace std::chrono_literals;
 
-	microseconds ms1(100000);
-	time_point<system_clock, microseconds> absoluteTime1(ms1);
+		microseconds ms1(100000);
+		time_point<system_clock, microseconds> absoluteTime1(ms1);
 
-	auto _seconds1 		= time_point_cast<seconds>(absoluteTime1);
-	auto _nanoseconds1 	= duration_cast<nanoseconds>(absoluteTime1 - _seconds1);
+		auto _seconds1 		= time_point_cast<seconds>(absoluteTime1);
+		auto _nanoseconds1 	= duration_cast<nanoseconds>(absoluteTime1 - _seconds1);
 
-	std::cout << absoluteTime1.time_since_epoch().count() << '\n';
-	std::cout << _seconds1.time_since_epoch().count() << '\n';
-	std::cout << _nanoseconds1.count() << '\n';
+		std::cout << absoluteTime1.time_since_epoch().count() << '\n';
+		std::cout << _seconds1.time_since_epoch().count() << '\n';
+		std::cout << _nanoseconds1.count() << '\n';
+	}
 
 	// ================================================================
 
-	Microseconds ms2(100000);
-	TimePoint<SystemClock, Microseconds> absoluteTime2(ms2);
+	{
+		using namespace custom::chrono;
 
-	auto _seconds2 		= time_point_cast<Seconds>(absoluteTime2);
-	auto _nanoseconds2 	= duration_cast<Nanoseconds>(absoluteTime2 - _seconds2);
+		microseconds ms2(100000);
+		time_point<system_clock, microseconds> absoluteTime2(ms2);
 
-	std::cout << absoluteTime2.time_since_epoch().count() << '\n';
-	std::cout << _seconds2.time_since_epoch().count() << '\n';
-	std::cout << _nanoseconds2.count() << '\n';
+		auto _seconds2 		= time_point_cast<seconds>(absoluteTime2);
+		auto _nanoseconds2 	= duration_cast<nanoseconds>(absoluteTime2 - _seconds2);
+
+		std::cout << absoluteTime2.time_since_epoch().count() << '\n';
+		std::cout << _seconds2.time_since_epoch().count() << '\n';
+		std::cout << _nanoseconds2.count() << '\n';
+	}
 }
 
 void complex_test() {
@@ -419,7 +424,7 @@ void complex_test() {
 
 	std::cout << "======================\n";
 
-	custom::Complex<float> cf1(3.5, 8.0);
+	custom::complex<float> cf1(3.5, 8.0);
 
 	std::cout << "number= " << cf1.real() << '\n' << cf1.imag() << '\n';
 	std::cout << "abs= " 	<< custom::abs(cf1) << '\n';
@@ -457,8 +462,8 @@ void bitset_test() {
     std::bitset<8> bs1(str1, 0, str1.size(), 'a', 'B');
 	std::cout << bs1 << '\n' << bs1.count() << '\n';
 
-	custom::String str2 = "aBaaBBaB";
-	custom::Bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
+	custom::string str2 = "aBaaBBaB";
+	custom::bitset<8> bs2(str2, 0, str2.size(), 'a', 'B');
 	std::cout << bs2 << '\n' << bs2.count() << '\n';
 }
 

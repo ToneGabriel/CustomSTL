@@ -14,13 +14,13 @@ TEST_BOOST_BEGIN
 
 struct _Employee
 {
-    custom::Mutex _Mutex;
-    custom::String _ID;
-    custom::Vector<custom::String> _LunchPartners;
+    custom::mutex _Mutex;
+    custom::string _ID;
+    custom::vector<custom::string> _LunchPartners;
     
-    _Employee(custom::String id) : _ID(id) { /*Empty*/ }
+    _Employee(custom::string id) : _ID(id) { /*Empty*/ }
 
-    custom::String output() const;
+    custom::string output() const;
 
     static void send_mail(_Employee&, _Employee&);
     static void assign_lunch_partner(_Employee& e1, _Employee& e2);
