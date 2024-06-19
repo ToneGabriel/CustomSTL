@@ -10,7 +10,7 @@ CUSTOM_DETAIL_BEGIN
 
 // char traits implementation
 template<class Type, class Integer>
-struct _CharTraits
+struct _Char_Traits
 {
 	using char_type	= Type;
 	using int_type	= Integer;
@@ -98,10 +98,10 @@ struct _CharTraits
 };
 
 template<class Type>
-struct _WCharTraits : _CharTraits<Type, unsigned short>	// for char16_t, wchar_t
+struct _WChar_Traits : _Char_Traits<Type, unsigned short>	// for char16_t, wchar_t
 {
 private:
-	using _Base = _CharTraits<Type, unsigned short>;
+	using _Base = _Char_Traits<Type, unsigned short>;
 
 public:
 	using char_type	= typename _Base::char_type;
@@ -169,23 +169,23 @@ CUSTOM_DETAIL_END
 
 // char traits specialization
 template<class Type>
-struct char_traits : detail::_CharTraits<Type, long> {};
+struct char_traits : detail::_Char_Traits<Type, long> {};
 
 template<>
-struct char_traits<char> : detail::_CharTraits<char, int> {};
+struct char_traits<char> : detail::_Char_Traits<char, int> {};
 
 template<>
-struct char_traits<wchar_t> : detail::_WCharTraits<wchar_t> {};
+struct char_traits<wchar_t> : detail::_WChar_Traits<wchar_t> {};
 
 template<>
-struct char_traits<char16_t> : detail::_WCharTraits<char16_t> {};
+struct char_traits<char16_t> : detail::_WChar_Traits<char16_t> {};
 
 template<>
-struct char_traits<char32_t> : detail::_CharTraits<char32_t, unsigned int> {};
+struct char_traits<char32_t> : detail::_Char_Traits<char32_t, unsigned int> {};
 
 #ifdef __cpp_char8_t
 template<>
-struct char_traits<char8_t> : detail::_CharTraits<char8_t, unsigned int> {};
+struct char_traits<char8_t> : detail::_Char_Traits<char8_t, unsigned int> {};
 #endif
 
 

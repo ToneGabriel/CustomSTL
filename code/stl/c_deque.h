@@ -10,27 +10,27 @@ CUSTOM_BEGIN
 template<class Type, class Alloc>
 struct _Deque_Data
 {
-	using _AllocTraits		= allocator_traits<Alloc>;
-	using _AllocPtr 		= typename _AllocTraits::template rebind_alloc<typename _AllocTraits::pointer>;
-    using _AllocPtrTraits 	= allocator_traits<_AllocPtr>;
-	using _MapPtr 			= typename _AllocPtrTraits::pointer;
+	using _Alloc_Traits		= allocator_traits<Alloc>;
+	using _AllocPtr 		= typename _Alloc_Traits::template rebind_alloc<typename _Alloc_Traits::pointer>;
+    using _AllocPtr_Traits	= allocator_traits<_AllocPtr>;
+	using _MapPtr 			= typename _AllocPtr_Traits::pointer;
 
-	using value_type		= typename _AllocTraits::value_type;
-	using difference_type	= typename _AllocTraits::difference_type;
-	using reference			= typename _AllocTraits::reference;
-	using const_reference	= typename _AllocTraits::const_reference;
-	using pointer			= typename _AllocTraits::pointer;
-	using const_pointer		= typename _AllocTraits::const_pointer;
+	using value_type		= typename _Alloc_Traits::value_type;
+	using difference_type	= typename _Alloc_Traits::difference_type;
+	using reference			= typename _Alloc_Traits::reference;
+	using const_reference	= typename _Alloc_Traits::const_reference;
+	using pointer			= typename _Alloc_Traits::pointer;
+	using const_pointer		= typename _Alloc_Traits::const_pointer;
 
 	_MapPtr _Map 			= nullptr;
 	size_t _MapCapacity 	= 0;
 	size_t _First 			= 0;
 	size_t _Size 			= 0;
 
-	static constexpr size_t BLOCK_SIZE = 4;
+	static constexpr size_t _BLOCK_SIZE = 4;
 
 	size_t get_block(const size_t offset) const noexcept {
-		return (offset / BLOCK_SIZE) % _MapCapacity;
+		return (offset / _BLOCK_SIZE) % _MapCapacity;
     }
 };
 
@@ -119,7 +119,7 @@ public:
 						"Cannot dereference end iterator.");
 
 		size_t block	= _RefData->get_block(_Offset);
-		size_t offset	= _Offset % _RefData->BLOCK_SIZE;
+		size_t offset	= _Offset % _RefData->_BLOCK_SIZE;
 		return _RefData->_Map[block][offset];
 	}
 
@@ -235,9 +235,9 @@ class deque					// deque Template implemented as map of blocks
 {
 private:
 	using _Data						= _Deque_Data<Type, Alloc>;
-	using _AllocTraits				= typename _Data::_AllocTraits;
+	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 	using _AllocPtr					= typename _Data::_AllocPtr;
-	using _AllocPtrTraits			= typename _Data::_AllocPtrTraits;
+	using _AllocPtr_Traits			= typename _Data::_AllocPtr_Traits;
 	using _MapPtr					= typename _Data::_MapPtr;
 
 public:
@@ -350,9 +350,9 @@ public:
 		size_t block		= _data.get_block(backOffset);
 
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
+			_data._Map[block] = _alloc.allocate(_data._BLOCK_SIZE);
 
-		_AllocTraits::construct(_alloc, _data._Map[block] + backOffset % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
+		_Alloc_Traits::construct(_alloc, _data._Map[block] + backOffset % _data._BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -370,7 +370,7 @@ public:
 			size_t backOffset	= _data._First + _data._Size - 1;
 			size_t block		= _data.get_block(backOffset);
 
-			_AllocTraits::destroy(_alloc, _data._Map[block] + backOffset % _data.BLOCK_SIZE);
+			_Alloc_Traits::destroy(_alloc, _data._Map[block] + backOffset % _data._BLOCK_SIZE);
 			if (--_data._Size == 0)
 				_data._First = 0;
 		}
@@ -381,13 +381,13 @@ public:
 		_extend_if_full();
 
 		if (_data._First == 0)
-			_data._First = _data._MapCapacity * _data.BLOCK_SIZE;
+			_data._First = _data._MapCapacity * _data._BLOCK_SIZE;
 
 		size_t block = _data.get_block(--_data._First);
 		if (_data._Map[block] == nullptr)
-			_data._Map[block] = _alloc.allocate(_data.BLOCK_SIZE);
+			_data._Map[block] = _alloc.allocate(_data._BLOCK_SIZE);
 
-		_AllocTraits::construct(_alloc, _data._Map[block] + _data._First % _data.BLOCK_SIZE, custom::forward<Args>(args)...);
+		_Alloc_Traits::construct(_alloc, _data._Map[block] + _data._First % _data._BLOCK_SIZE, custom::forward<Args>(args)...);
 		++_data._Size;
 	}
 
@@ -404,7 +404,7 @@ public:
 		{
 			size_t block = _data.get_block(_data._First);
 
-			_AllocTraits::destroy(_alloc, _data._Map[block] + _data._First % _data.BLOCK_SIZE);
+			_Alloc_Traits::destroy(_alloc, _data._Map[block] + _data._First % _data._BLOCK_SIZE);
 			if (--_data._Size == 0)
 				_data._First = 0;
 			else
@@ -489,7 +489,7 @@ public:
 		for (size_t i = 0; i < _data._MapCapacity; ++i)
 			if (_data._Map[i] != nullptr)
 			{
-				_alloc.deallocate(_data._Map[i], _data.BLOCK_SIZE);
+				_alloc.deallocate(_data._Map[i], _data._BLOCK_SIZE);
 				_data._Map[i] = nullptr;
 			}
 	}
@@ -500,7 +500,7 @@ public:
 
     size_t max_size() const noexcept {
         return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
-								_AllocTraits::max_size(_alloc));
+								_Alloc_Traits::max_size(_alloc));
     }
 
 	bool empty() const noexcept {
@@ -553,7 +553,7 @@ public:
 				std::cout << "NULL\n";
 			else
 			{
-				for (size_t j = 0; j < _data.BLOCK_SIZE; ++j)
+				for (size_t j = 0; j < _data._BLOCK_SIZE; ++j)
 					std::cout << _data._Map[i][j] << ' ';
 				std::cout << '\n';
 			}
@@ -600,7 +600,7 @@ private:
 
 	void _reserve(const size_t newMapCapacity) {
 		size_t newSize			= _data._Size;
-		size_t newFirst			= _data._First % _data.BLOCK_SIZE;
+		size_t newFirst			= _data._First % _data._BLOCK_SIZE;
 		_MapPtr newMap 			= _create_empty_map(newMapCapacity);
 		size_t firstBlock		= _data.get_block(_data._First);					// block to find first elem
 		size_t lastBlock		= _data.get_block(_data._First + _data._Size - 1);	// block to find last elem (always != firstBlock)
@@ -633,7 +633,7 @@ private:
 	void _extend_if_full() {												
 		if (_data._Map == nullptr)												// after custom::move()
 			_init_map(_DEFAULT_CAPACITY);
-		else if (_data._Size >= (_data._MapCapacity - 1) * _data.BLOCK_SIZE)	// ensure first and last elem are not in the same block...
+		else if (_data._Size >= (_data._MapCapacity - 1) * _data._BLOCK_SIZE)	// ensure first and last elem are not in the same block...
 			_reserve(2 * _data._MapCapacity);									// ...with last < first
 	}
 

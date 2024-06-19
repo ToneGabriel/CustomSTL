@@ -83,21 +83,21 @@ struct _Temporary_Owner_Del
 #pragma endregion Temporay Owner
 
 
-#pragma region UniquePtr
+#pragma region unique_ptr
 
 // Helpers
 template<class Ty, class DeleterNoref, class = void>
-struct _GetDeleterPointerType { using type = Ty*; };
+struct _Get_Deleter_Pointer_Type { using type = Ty*; };
 
 template<class Ty, class DeleterNoref>
-struct _GetDeleterPointerType<Ty, DeleterNoref, void_t<typename DeleterNoref::pointer>>
+struct _Get_Deleter_Pointer_Type<Ty, DeleterNoref, void_t<typename DeleterNoref::pointer>>
 {
     // the "custom" deleter must have public pointer alias (it's accessed here)
     using type = typename DeleterNoref::pointer;
 };
 
 template<class Deleter>
-using _UniquePtrEnableDefault_t = enable_if_t<conjunction_v<
+using _Unique_Ptr_Enable_Default_t = enable_if_t<conjunction_v<
                                                 negation<is_pointer<Deleter>>,
                                                 is_default_constructible<Deleter>>, bool>;
 
@@ -108,7 +108,7 @@ class unique_ptr                                             // non-copyable poi
 public:
     using element_type  = Type;
     using deleter_type  = Deleter;
-    using pointer       = typename _GetDeleterPointerType<Type, remove_reference_t<Deleter>>::type;
+    using pointer       = typename _Get_Deleter_Pointer_Type<Type, remove_reference_t<Deleter>>::type;
 
 private:
     pointer _ptr        = nullptr;
@@ -118,15 +118,15 @@ public:
     // Constructors
 
     template<class Del = Deleter,
-    _UniquePtrEnableDefault_t<Del> = true>
+    _Unique_Ptr_Enable_Default_t<Del> = true>
     constexpr unique_ptr() noexcept { /*Empty*/ }
 
     template<class Del = Deleter,
-    _UniquePtrEnableDefault_t<Del> = true>
+    _Unique_Ptr_Enable_Default_t<Del> = true>
     constexpr unique_ptr(std::nullptr_t) noexcept { /*Empty*/ }
 
     template<class Del = Deleter,
-    _UniquePtrEnableDefault_t<Del> = true>
+    _Unique_Ptr_Enable_Default_t<Del> = true>
     constexpr explicit unique_ptr(pointer ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
@@ -250,22 +250,22 @@ class unique_ptr<Type[], Deleter>                            // non-copyable poi
 public:
     using element_type   = Type;
     using deleter_type   = Deleter;
-    using pointer       = typename _GetDeleterPointerType<Type, remove_reference_t<Deleter>>::type;
+    using pointer       = typename _Get_Deleter_Pointer_Type<Type, remove_reference_t<Deleter>>::type;
 
     template<class Ty, class IsNullptr = is_same<Ty, std::nullptr_t>>
-    using _EnableConstructorAndReset =  enable_if_t<disjunction_v<
-                                                    is_same<Ty, pointer>,
-                                                    IsNullptr,
-                                                    conjunction<
-                                                        is_same<pointer, element_type*>,
-                                                        is_pointer<Ty>,
-                                                        is_convertible<remove_pointer_t<Ty>(*)[], element_type(*)[]>>>,
-                                        bool>;
+    using _Enable_Constructor_And_Reset =  enable_if_t<disjunction_v<
+                                                        is_same<Ty, pointer>,
+                                                        IsNullptr,
+                                                        conjunction<
+                                                            is_same<pointer, element_type*>,
+                                                            is_pointer<Ty>,
+                                                            is_convertible<remove_pointer_t<Ty>(*)[], element_type(*)[]>>>,
+                                            bool>;
 
     template<class Ty, class Del, class More,
     class UPPointer         = typename unique_ptr<Ty, Del>::pointer,
     class UPElementType     = typename unique_ptr<Ty, Del>::element_type>
-    using _EnableConversion =   enable_if_t<conjunction_v<
+    using _Enable_Conversion =  enable_if_t<conjunction_v<
                                                 is_array<Ty>,
                                                 is_same<pointer, element_type*>,
                                                 is_same<UPPointer, UPElementType*>,
@@ -281,18 +281,18 @@ public:
     // Constructors
 
     template<class Del = Deleter,
-    _UniquePtrEnableDefault_t<Del> = true>
+    _Unique_Ptr_Enable_Default_t<Del> = true>
     constexpr unique_ptr() noexcept { /*Empty*/ }
 
     template<class Ty, class Del = Deleter,
-    _UniquePtrEnableDefault_t<Del> = true,
-    _EnableConstructorAndReset<Ty> = true>
+    _Unique_Ptr_Enable_Default_t<Del> = true,
+    _Enable_Constructor_And_Reset<Ty> = true>
     constexpr explicit unique_ptr(Ty ptr) noexcept
         : _ptr(ptr) { /*Empty*/ }
 
     template<class Ty, class Del = Deleter, 
     enable_if_t<is_copy_constructible_v<Del>, bool> = true,
-    _EnableConstructorAndReset<Ty> = true>
+    _Enable_Constructor_And_Reset<Ty> = true>
     constexpr unique_ptr(Ty ptr, const Deleter& del) noexcept
         : _ptr(ptr), _deleter(del) { /*Empty*/ }
 
@@ -300,7 +300,7 @@ public:
     enable_if_t<conjunction_v<
                     negation<is_reference<Del>>,
                     is_move_constructible<Del>>, bool> = true,
-    _EnableConstructorAndReset<Ty> = true>
+    _Enable_Constructor_And_Reset<Ty> = true>
     constexpr unique_ptr(Ty ptr, Deleter&& del) noexcept
         : _ptr(ptr), _deleter(custom::move(del)) { /*Empty*/ }
 
@@ -331,7 +331,7 @@ public:
     }
 
     template<class Ty, class Del,
-    _EnableConversion<Ty, Del, is_assignable<Deleter&, Del>> = true>
+    _Enable_Conversion<Ty, Del, is_assignable<Deleter&, Del>> = true>
     constexpr unique_ptr& operator=(unique_ptr<Ty, Del>&& other) noexcept {
         reset(other.release());
         _deleter = custom::forward<Del>(other._deleter);
@@ -380,7 +380,7 @@ public:
         return custom::exchange(_ptr, nullptr);
     }
 
-    template<class Ty, _EnableConstructorAndReset<Ty, false_type> = true>            // false_type (don't allow nullptr ???)
+    template<class Ty, _Enable_Constructor_And_Reset<Ty, false_type> = true>            // false_type (don't allow nullptr ???)
     constexpr void reset(Ty ptr) noexcept {                                         // Replaces the managed object and deletes old
         pointer old = custom::exchange(_ptr, ptr);
 
@@ -440,55 +440,55 @@ class weak_ptr;
 
 // Shared/Weak Ptr helpers
 template<class Ty, class = void>
-struct _CanScalarDelete : false_type {};
+struct _Can_Scalar_Delete : false_type {};
 
 template<class Ty>
-struct _CanScalarDelete<Ty, void_t<decltype(delete custom::declval<Ty*>())>> : true_type {};
+struct _Can_Scalar_Delete<Ty, void_t<decltype(delete custom::declval<Ty*>())>> : true_type {};
 
 template<class Ty, class = void>
-struct _CanArrayDelete : false_type {};
+struct _Can_Array_Delete : false_type {};
 
 template<class Ty>
-struct _CanArrayDelete<Ty, void_t<decltype(delete[] custom::declval<Ty*>())>> : true_type {};
+struct _Can_Array_Delete<Ty, void_t<decltype(delete[] custom::declval<Ty*>())>> : true_type {};
 
 template<class Func, class Arg, class = void>
-struct _CanCallFunctionObject : false_type {};
+struct _Can_Call_Function_Object : false_type {};
 
 template<class Func, class Arg>
-struct _CanCallFunctionObject<Func, Arg, void_t<decltype(custom::declval<Func>()(custom::declval<Arg>()))>> : true_type {};
+struct _Can_Call_Function_Object<Func, Arg, void_t<decltype(custom::declval<Func>()(custom::declval<Arg>()))>> : true_type {};
 
 template<class Ty1, class Ty2>
-struct _SharedPtrConvertible : is_convertible<Ty1*, Ty2*>::type {};
+struct _Shared_Ptr_Convertible : is_convertible<Ty1*, Ty2*>::type {};
 
 template<class Ty1, class Ty2>
-struct _SharedPtrConvertible<Ty1, Ty2[]> : is_convertible<Ty1(*)[], Ty2(*)[]>::type {};
+struct _Shared_Ptr_Convertible<Ty1, Ty2[]> : is_convertible<Ty1(*)[], Ty2(*)[]>::type {};
 
 template<class Ty1, class Ty2, size_t Nx>
-struct _SharedPtrConvertible<Ty1, Ty2[Nx]> : is_convertible<Ty1(*)[Nx], Ty2(*)[Nx]>::type {};
+struct _Shared_Ptr_Convertible<Ty1, Ty2[Nx]> : is_convertible<Ty1(*)[Nx], Ty2(*)[Nx]>::type {};
 
 // a pointer type Ty1* is said to be compatible with a pointer type Ty2*
 // when either Ty1* is convertible to Ty2*
 // or Ty1 is U[N] and Ty2 is cv U[].
 template<class Ty1, class Ty2>
-struct _SharedPtrCompatible : is_convertible<Ty1*, Ty2*>::type {};
+struct _Shared_Ptr_Compatible : is_convertible<Ty1*, Ty2*>::type {};
 
 template<class Ty, size_t Nx>
-struct _SharedPtrCompatible<Ty[Nx], Ty[]> : true_type {};
+struct _Shared_Ptr_Compatible<Ty[Nx], Ty[]> : true_type {};
 
 template<class Ty, size_t Nx>
-struct _SharedPtrCompatible<Ty[Nx], const Ty[]> : true_type {};
+struct _Shared_Ptr_Compatible<Ty[Nx], const Ty[]> : true_type {};
 
 template<class Ty, size_t Nx>
-struct _SharedPtrCompatible<Ty[Nx], volatile Ty[]> : true_type {};
+struct _Shared_Ptr_Compatible<Ty[Nx], volatile Ty[]> : true_type {};
 
 template<class Ty, size_t Nx>
-struct _SharedPtrCompatible<Ty[Nx], const volatile Ty[]> : true_type {};
+struct _Shared_Ptr_Compatible<Ty[Nx], const volatile Ty[]> : true_type {};
 
 template<class Ty, class = void>
-struct _CanEnableShared : false_type {}; // detect unambiguous and accessible inheritance from enable_shared_from_this
+struct _Can_Enable_Shared : false_type {}; // detect unambiguous and accessible inheritance from enable_shared_from_this
 
 template<class Ty>
-struct _CanEnableShared<Ty, void_t<typename Ty::_Esft_t>>
+struct _Can_Enable_Shared<Ty, void_t<typename Ty::_Esft_t>>
     : is_convertible<remove_cv_t<Ty>*, typename Ty::_Esft_t*>::type {};
 
 
@@ -806,8 +806,8 @@ public:
 
     template<class Ty,
     enable_if_t<conjunction_v<
-                    conditional_t<is_array_v<Type>, _CanArrayDelete<Ty>, _CanScalarDelete<Ty>>,
-                    _SharedPtrConvertible<Ty, Type>>,
+                    conditional_t<is_array_v<Type>, _Can_Array_Delete<Ty>, _Can_Scalar_Delete<Ty>>,
+                    _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     explicit shared_ptr(Ty* ptr) {              // construct shared_ptr object that owns ptr
         if constexpr (is_array_v<Type>)
@@ -819,8 +819,8 @@ public:
     template<class Ty, class Del,
     enable_if_t<conjunction_v<
                     is_move_constructible<Del>, 
-                    _CanCallFunctionObject<Del&, Ty*&>,
-                    _SharedPtrConvertible<Ty, Type>>,
+                    _Can_Call_Function_Object<Del&, Ty*&>,
+                    _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     shared_ptr(Ty* ptr, Del del) {               // construct with ptr, deleter
         _set_pointer_default(ptr, custom::move(del));
@@ -829,7 +829,7 @@ public:
     template<class Del,
     enable_if_t<conjunction_v<
                     is_move_constructible<Del>, 
-                    _CanCallFunctionObject<Del&, std::nullptr_t&>>, 
+                    _Can_Call_Function_Object<Del&, std::nullptr_t&>>, 
     bool> = true>
     shared_ptr(std::nullptr_t, Del del) {        // construct with nullptr, deleter
         _set_pointer_default(nullptr, custom::move(del));
@@ -838,8 +838,8 @@ public:
     template<class Ty, class Del, class Alloc,
     enable_if_t<conjunction_v<
                         is_move_constructible<Del>,
-                        _CanCallFunctionObject<Del&, Ty*&>,
-                        _SharedPtrConvertible<Ty, Type>>,
+                        _Can_Call_Function_Object<Del&, Ty*&>,
+                        _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     shared_ptr(Ty* ptr, Del del, Alloc alloc) { // construct with ptr, deleter, allocator
         _set_pointer_alloc(ptr, custom::move(del), alloc);
@@ -848,7 +848,7 @@ public:
     template<class Del, class Alloc,
     enable_if_t<conjunction_v<
                         is_move_constructible<Del>,
-                        _CanCallFunctionObject<Del&, std::nullptr_t&>>,
+                        _Can_Call_Function_Object<Del&, std::nullptr_t&>>,
     bool> = true>
     shared_ptr(std::nullptr_t, Del del, Alloc alloc) { // construct with nullptr, deleter, allocator
         _set_pointer_alloc(nullptr, custom::move(del), alloc);
@@ -858,7 +858,7 @@ public:
         this->_copy_construct(other);
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     shared_ptr(const shared_ptr<Ty>& other) noexcept {
         this->_copy_construct(other);
     }
@@ -872,7 +872,7 @@ public:
         this->_move_construct(custom::move(other));
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     shared_ptr(shared_ptr<Ty>&& other) noexcept {
         this->_move_construct(custom::move(other));
     }
@@ -882,7 +882,7 @@ public:
         this->_alias_move_construct(custom::move(other), ptr);
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     explicit shared_ptr(const weak_ptr<Ty>& other) {                      // construct shared_ptr object that owns resource *other
         if (!this->_construct_from_weak(other))
             throw std::runtime_error("Bad weak ptr.");
@@ -890,7 +890,7 @@ public:
 
     template<class Ty, class Del,
     enable_if_t<conjunction_v<
-                    _SharedPtrCompatible<Ty, Type>,
+                    _Shared_Ptr_Compatible<Ty, Type>,
                     is_convertible<typename unique_ptr<Ty, Del>::pointer, element_type*>>,
     bool> = true>
     shared_ptr(unique_ptr<Ty, Del>&& unique) {
@@ -921,7 +921,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     shared_ptr& operator=(const shared_ptr<Ty>& other) noexcept {
         shared_ptr(other).swap(*this);
         return *this;
@@ -932,7 +932,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     shared_ptr& operator=(shared_ptr<Ty>&& other) noexcept {
         shared_ptr(custom::move(other)).swap(*this);
         return *this;
@@ -940,7 +940,7 @@ public:
 
     template<class Ty, class Del,
     enable_if_t<conjunction_v<
-                    _SharedPtrCompatible<Ty, Type>,
+                    _Shared_Ptr_Compatible<Ty, Type>,
                     is_convertible<typename unique_ptr<Ty, Del>::pointer, element_type*>>,
     bool> = true>
     shared_ptr& operator=(unique_ptr<Ty, Del>&& unique) { // move from unique_ptr
@@ -976,8 +976,8 @@ public:
 
     template<class Ty,
     enable_if_t<conjunction_v<
-                    conditional_t<is_array_v<Type>, _CanArrayDelete<Ty>, _CanScalarDelete<Ty>>,
-                    _SharedPtrConvertible<Ty, Type>>,
+                    conditional_t<is_array_v<Type>, _Can_Array_Delete<Ty>, _Can_Scalar_Delete<Ty>>,
+                    _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     void reset(Ty* ptr) {               // release, take ownership of ptr
         shared_ptr(ptr).swap(*this);
@@ -986,8 +986,8 @@ public:
     template<class Ty, class Del,
     enable_if_t<conjunction_v<
                     is_move_constructible<Del>, 
-                    _CanCallFunctionObject<Del&, Ty*&>,
-                    _SharedPtrConvertible<Ty, Type>>,
+                    _Can_Call_Function_Object<Del&, Ty*&>,
+                    _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     void reset(Ty* ptr, Del del) {      // release, take ownership of ptr, with deleter
         shared_ptr(ptr, del).swap(*this);
@@ -996,8 +996,8 @@ public:
     template<class Ty, class Del, class Alloc,
     enable_if_t<conjunction_v<
                     is_move_constructible<Del>, 
-                    _CanCallFunctionObject<Del&, Ty*&>,
-                    _SharedPtrConvertible<Ty, Type>>,
+                    _Can_Call_Function_Object<Del&, Ty*&>,
+                    _Shared_Ptr_Convertible<Ty, Type>>,
     bool> = true>
     void reset(Ty* ptr, Del del, Alloc alloc) {      // release, take ownership of ptr, with deleter and allocator alloc
         shared_ptr(ptr, del, alloc).swap(*this);
@@ -1042,7 +1042,7 @@ private:
         if constexpr (conjunction_v<
                             negation<is_array<Type>>,
                             negation<is_volatile<Ty>>,
-                            _CanEnableShared<Ty>>)
+                            _Can_Enable_Shared<Ty>>)
             if (ptr && ptr->_wptr.expired()) 
                 ptr->_wptr = shared_ptr<remove_cv_t<Ty>>(*this, const_cast<remove_cv_t<Ty>*>(ptr));
     }
@@ -1103,7 +1103,7 @@ public:
         this->_weak_construct(other); // same type, no conversion
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     weak_ptr(const shared_ptr<Ty>& other) noexcept {
         this->_weak_construct(other); // shared_ptr keeps resource alive during conversion
     }
@@ -1124,7 +1124,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     weak_ptr& operator=(const weak_ptr<Ty>& other) noexcept {
         weak_ptr(other).swap(*this);
         return *this;
@@ -1135,13 +1135,13 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     weak_ptr& operator=(weak_ptr<Ty>&& other) noexcept {
         weak_ptr(custom::move(other)).swap(*this);
         return *this;
     }
 
-    template<class Ty, enable_if_t<_SharedPtrCompatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
     weak_ptr& operator=(const shared_ptr<Ty>& other) noexcept {
         weak_ptr(other).swap(*this);
         return *this;

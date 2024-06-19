@@ -12,10 +12,10 @@ struct random_access_iterator_tag   : bidirectional_iterator_tag {};
 
 // normal iterator traits helpers
 template<class iterator, class = void>
-struct _IteratorTraits {};
+struct _Iterator_Traits {};
 
 template<class iterator>
-struct _IteratorTraits<iterator, void_t<    typename iterator::iterator_category,
+struct _Iterator_Traits<iterator, void_t<   typename iterator::iterator_category,
                                             typename iterator::value_type,
                                             typename iterator::difference_type,
                                             typename iterator::pointer,
@@ -30,7 +30,7 @@ struct _IteratorTraits<iterator, void_t<    typename iterator::iterator_category
 
 // pointer iterator traits helpers
 template<class Type, bool = is_object_v<Type>>
-struct _IteratorTraitsPtr
+struct _Iterator_Traits_Ptr
 {
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<Type>;
@@ -40,14 +40,14 @@ struct _IteratorTraitsPtr
 };
 
 template<class Type>
-struct _IteratorTraitsPtr<Type, false> {};
+struct _Iterator_Traits_Ptr<Type, false> {};
 
 // iterator traits
 template<class iterator>
-struct iterator_traits : _IteratorTraits<iterator> {};
+struct iterator_traits : _Iterator_Traits<iterator> {};
 
 template<class Type>
-struct iterator_traits<Type*> : _IteratorTraitsPtr<Type> {};
+struct iterator_traits<Type*> : _Iterator_Traits_Ptr<Type> {};
 
 // is iterator
 template<class Iter, class = void>

@@ -4,23 +4,23 @@
 
 CUSTOM_BEGIN
 
-#pragma region BackInsertIterator
+#pragma region back_insert_iterator
 // helpers
 template<class Container, class = void>
-constexpr bool _HasPushBackFunctionMember_v = false;
+constexpr bool _Has_Push_Back_Function_Member_v = false;
 
 template<class Container>
-constexpr bool _HasPushBackFunctionMember_v<Container,
+constexpr bool _Has_Push_Back_Function_Member_v<Container,
 void_t< typename Container::value_type,
         decltype(custom::declval<Container>().push_back(custom::declval<typename Container::value_type>())),
         decltype(custom::declval<Container>().push_back(custom::move(custom::declval<typename Container::value_type>())))>> = true;
 
 template<class Container>
-class BackInsertIterator
+class back_insert_iterator
 {
 public:
-    static_assert(_HasPushBackFunctionMember_v<Container>,
-                    "BackInsertIterator require a container with push_back function member!");
+    static_assert(_Has_Push_Back_Function_Member_v<Container>,
+                    "back_insert_iterator require a container with push_back function member!");
 
     using container_type    = Container;
     using iterator_category = output_iterator_tag;
@@ -34,55 +34,55 @@ protected:
 
 public:
 
-    constexpr explicit BackInsertIterator(Container& cont) noexcept
+    constexpr explicit back_insert_iterator(Container& cont) noexcept
         : _container(&cont) { /*Empty*/ }
 
-    constexpr BackInsertIterator& operator=(const typename Container::value_type& val) {
+    constexpr back_insert_iterator& operator=(const typename Container::value_type& val) {
         _container->push_back(val);
         return *this;
     }
 
-    constexpr BackInsertIterator& operator=(typename Container::value_type&& val) {
+    constexpr back_insert_iterator& operator=(typename Container::value_type&& val) {
         _container->push_back(custom::move(val));
         return *this;
     }
 
-    constexpr BackInsertIterator& operator*() noexcept {
+    constexpr back_insert_iterator& operator*() noexcept {
         return *this;
     }
 
-    constexpr BackInsertIterator& operator++() noexcept {
+    constexpr back_insert_iterator& operator++() noexcept {
         return *this;
     }
 
-    constexpr BackInsertIterator operator++(int) noexcept {
+    constexpr back_insert_iterator operator++(int) noexcept {
         return *this;
     }
 };
 
 template<class Container>
-constexpr BackInsertIterator<Container> back_inserter(Container& cont) noexcept {
-    return BackInsertIterator<Container>(cont);
+constexpr back_insert_iterator<Container> back_inserter(Container& cont) noexcept {
+    return back_insert_iterator<Container>(cont);
 }
-#pragma endregion BackInsertIterator
+#pragma endregion back_insert_iterator
 
-#pragma region FrontInsertIterator
+#pragma region front_insert_iterator
 // helpers
 template<class Container, class = void>
-constexpr bool _HasPushFrontFunctionMember_v = false;
+constexpr bool _Has_Push_Front_Function_Member_v = false;
 
 template<class Container>
-constexpr bool _HasPushFrontFunctionMember_v<Container,
+constexpr bool _Has_Push_Front_Function_Member_v<Container,
 void_t< typename Container::value_type,
         decltype(custom::declval<Container>().push_front(custom::declval<typename Container::value_type>())),
         decltype(custom::declval<Container>().push_front(custom::move(custom::declval<typename Container::value_type>())))>> = true;
 
 template<class Container>
-class FrontInsertIterator
+class front_insert_iterator
 {
 public:
-    static_assert(_HasPushFrontFunctionMember_v<Container>,
-                    "FrontInsertIterator require a container with push_front function member!");
+    static_assert(_Has_Push_Front_Function_Member_v<Container>,
+                    "front_insert_iterator require a container with push_front function member!");
 
     using container_type    = Container;
     using iterator_category = output_iterator_tag;
@@ -96,45 +96,45 @@ protected:
 
 public:
 
-    constexpr explicit FrontInsertIterator(Container& cont) noexcept
+    constexpr explicit front_insert_iterator(Container& cont) noexcept
         : _container(&cont) { /*Empty*/ }
 
-    constexpr FrontInsertIterator& operator=(const typename Container::value_type& val) {
+    constexpr front_insert_iterator& operator=(const typename Container::value_type& val) {
         _container->push_front(val);
         return *this;
     }
 
-    constexpr FrontInsertIterator& operator=(typename Container::value_type&& val) {
+    constexpr front_insert_iterator& operator=(typename Container::value_type&& val) {
         _container->push_front(custom::move(val));
         return *this;
     }
 
-    constexpr FrontInsertIterator& operator*() noexcept {
+    constexpr front_insert_iterator& operator*() noexcept {
         return *this;
     }
 
-    constexpr FrontInsertIterator& operator++() noexcept {
+    constexpr front_insert_iterator& operator++() noexcept {
         return *this;
     }
 
-    constexpr FrontInsertIterator operator++(int) noexcept {
+    constexpr front_insert_iterator operator++(int) noexcept {
         return *this;
     }
 };
 
 template<class Container>
-constexpr FrontInsertIterator<Container> front_inserter(Container& cont) noexcept {
-    return FrontInsertIterator<Container>(cont);
+constexpr front_insert_iterator<Container> front_inserter(Container& cont) noexcept {
+    return front_insert_iterator<Container>(cont);
 }
-#pragma endregion FrontInsertIterator
+#pragma endregion front_insert_iterator
 
-#pragma region InsertIterator
+#pragma region insert_iterator
 // helpers
 template<class Container, class = void>
-constexpr bool _HasInsertFunctionMember_v = false;
+constexpr bool _Has_Insert_Function_Member_v = false;
 
 template<class Container>
-constexpr bool _HasInsertFunctionMember_v<Container,
+constexpr bool _Has_Insert_Function_Member_v<Container,
 void_t< typename Container::value_type,
         typename Container::iterator,
         decltype(custom::declval<Container>().insert(   custom::declval<typename Container::iterator>(),
@@ -143,11 +143,11 @@ void_t< typename Container::value_type,
                                                         custom::move(custom::declval<typename Container::value_type>())))>> = true;
 
 template<class Container>
-class InsertIterator
+class insert_iterator
 {
 public:
-    static_assert(_HasInsertFunctionMember_v<Container>,
-                    "InsertIterator require a container with insert function member!");
+    static_assert(_Has_Insert_Function_Member_v<Container>,
+                    "insert_iterator require a container with insert function member!");
 
     using container_type    = Container;
     using iterator_type     = typename Container::iterator;
@@ -163,47 +163,47 @@ protected:
 
 public:
 
-    constexpr InsertIterator(Container& cont, iterator_type iter)
+    constexpr insert_iterator(Container& cont, iterator_type iter)
         : _container(&cont), iter(iter) { /*Empty*/ }
 
-    constexpr InsertIterator& operator=(const typename Container::value_type& val) {
+    constexpr insert_iterator& operator=(const typename Container::value_type& val) {
         iter = _container->insert(iter, val);
         ++iter;
         return *this;
     }
 
-    constexpr InsertIterator& operator=(typename Container::value_type&& val) {
+    constexpr insert_iterator& operator=(typename Container::value_type&& val) {
         iter = _container->insert(iter, custom::move(val));
         ++iter;
         return *this;
     }
 
-    constexpr InsertIterator& operator*() {
+    constexpr insert_iterator& operator*() {
         return *this;
     }
 
-    constexpr InsertIterator& operator++() {
+    constexpr insert_iterator& operator++() {
         return *this;
     }
 
-    constexpr InsertIterator& operator++(int) {
+    constexpr insert_iterator& operator++(int) {
         return *this;
     }
 };
 
 template<class Container>
-constexpr InsertIterator<Container> inserter(Container& cont, typename Container::iterator iter) {
-    return InsertIterator<Container>(cont, iter);
+constexpr insert_iterator<Container> inserter(Container& cont, typename Container::iterator iter) {
+    return insert_iterator<Container>(cont, iter);
 }
-#pragma endregion InsertIterator
+#pragma endregion insert_iterator
 
-#pragma region ReverseIterator
+#pragma region reverse_iterator
 // helpers for reverse_iterator operator->()
 template<class iterator, class pointer, bool = is_pointer_v<remove_cv_ref_t<iterator>>>
-constexpr bool _HasNothrowOperatorArrow_v = is_nothrow_convertible_v<iterator, pointer>;
+constexpr bool _Has_Nothrow_Operator_Arrow_v = is_nothrow_convertible_v<iterator, pointer>;
 
 template<class iterator, class pointer>
-constexpr bool _HasNothrowOperatorArrow_v<iterator, pointer, false> =
+constexpr bool _Has_Nothrow_Operator_Arrow_v<iterator, pointer, false> =
 noexcept(_fake_copy_init<pointer>(custom::declval<iterator>().operator->()));
 
 template<class iterator>
@@ -260,7 +260,7 @@ public:
     constexpr pointer operator->() const
     noexcept(   is_nothrow_copy_constructible_v<iterator_type> &&
                 noexcept(--(custom::declval<iterator_type&>())) &&
-                _HasNothrowOperatorArrow_v<iterator_type&, pointer>) {
+                _Has_Nothrow_Operator_Arrow_v<iterator_type&, pointer>) {
 
         iterator_type temp = Current;
         --temp;
@@ -306,7 +306,7 @@ constexpr reverse_iterator<iterator> make_reverse_iterator(iterator base)
 noexcept(is_nothrow_copy_constructible_v<iterator>) {
     return reverse_iterator<iterator>(base);
 }
-#pragma endregion ReverseIterator
+#pragma endregion reverse_iterator
 
 #pragma region Iterator Functions
 template<class InputIt>

@@ -23,8 +23,8 @@ public:
     using native_handle_type  = pthread_t;
 
 private:
-    using Invoker           = void*(*)(void*);
-    pthread_t _thread       = 0;
+    using _Invoker      = void*(*)(void*);
+    pthread_t _thread   = 0;
 
 private:
     // Core functions
@@ -39,8 +39,8 @@ private:
     }
 
     template<class CallableTuple, size_t... Indices>
-    static constexpr Invoker _get_invoke_impl(index_sequence<Indices...>) noexcept {
-        return reinterpret_cast<Invoker>(_invoke_impl<CallableTuple, Indices...>);
+    static constexpr _Invoker _get_invoke_impl(index_sequence<Indices...>) noexcept {
+        return reinterpret_cast<_Invoker>(_invoke_impl<CallableTuple, Indices...>);
     }
 
 public:
@@ -53,10 +53,10 @@ public:
     enable_if_t<!is_same_v<decay_t<Functor>, thread>, bool> = true>
     explicit thread(Functor&& func, Args&&... args) {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
-        using CallableTuple = tuple<decay_t<Functor>, decay_t<Args>...>;
+        using _CallableTuple = tuple<decay_t<Functor>, decay_t<Args>...>;
 
-        Invoker invoker = _get_invoke_impl<CallableTuple>(make_index_sequence<1 + sizeof...(Args)>{});
-        auto callable   = custom::make_unique<CallableTuple>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+        _Invoker invoker    = _get_invoke_impl<_CallableTuple>(make_index_sequence<1 + sizeof...(Args)>{});
+        auto callable       = custom::make_unique<_CallableTuple>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 
         if (pthread_create(&_thread, nullptr, invoker, callable.get()) == 0)
             (void)callable.release();     // ownership transferred to the thread

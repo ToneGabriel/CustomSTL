@@ -43,26 +43,26 @@ struct tuple_size<const volatile _EnableTupleSize<_Tuple>> : public tuple_size<_
 
 // tuple constructible
 template<bool SameSize, class _Tuple, class... Args>
-constexpr bool _TupleConstructible_v = false;
+constexpr bool _Tuple_Constructible_v = false;
 
 template<class... Types, class... Args>						// Each type component from tuple (tuple<Types...>) is constructible with the corresponding argument (copy/move obj)
-constexpr bool _TupleConstructible_v<true, tuple<Types...>, Args...> = conjunction_v<is_constructible<Types, Args>...>;
+constexpr bool _Tuple_Constructible_v<true, tuple<Types...>, Args...> = conjunction_v<is_constructible<Types, Args>...>;
 
 template<class _Tuple, class... Args>						// Check tuple size with given construction arguments then above
-constexpr bool tuple_constructible_v = _TupleConstructible_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
+constexpr bool tuple_constructible_v = _Tuple_Constructible_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
 
 template<class _Tuple, class... Args>
 struct tuple_constructible : bool_constant<tuple_constructible_v<_Tuple, Args...>> {};
 
 // tuple assignable
 template<bool SameSize, class _Tuple, class... Args>
-constexpr bool _TupleAssignable_v = false;
+constexpr bool _Tuple_Assignable_v = false;
 
 template<class... Types, class... Args>
-constexpr bool _TupleAssignable_v<true, tuple<Types...>, Args...> = conjunction_v<is_assignable<Types&, Args>...>; // note Types& instead of Types
+constexpr bool _Tuple_Assignable_v<true, tuple<Types...>, Args...> = conjunction_v<is_assignable<Types&, Args>...>; // note Types& instead of Types
 
 template<class _Tuple, class... Args>
-constexpr bool tuple_assignable_v = _TupleAssignable_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
+constexpr bool tuple_assignable_v = _Tuple_Assignable_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
 
 template<class _Tuple, class... Args>
 struct tuple_assignable : bool_constant<tuple_assignable_v<_Tuple, Args...>> {};

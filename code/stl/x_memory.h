@@ -13,188 +13,189 @@ struct pointer_traits;
 #pragma region Helpers
 // get first parameter in template
 template<class Ty>
-struct _GetFirstParameter;
+struct _Get_First_Parameter;
 
 template<template<class, class...> class Ty, class first, class... Rest>
-struct _GetFirstParameter<Ty<first, Rest...>>                 // given Ty<first, Rest...>, extract first
+struct _Get_First_Parameter<Ty<first, Rest...>>                 // given Ty<first, Rest...>, extract first
 {
     using type = first;
 };
 
 // replace first parameter in template
 template<class NewFirst, class Ty>
-struct _ReplaceFirstParameter;
+struct _Replace_First_Parameter;
 
 template<class NewFirst, template<class, class...> class Ty, class first, class... Rest>
-struct _ReplaceFirstParameter<NewFirst, Ty<first, Rest...>>   // given Ty<first, Rest...>, replace first
+struct _Replace_First_Parameter<NewFirst, Ty<first, Rest...>>   // given Ty<first, Rest...>, replace first
 {
     using type = Ty<NewFirst, Rest...>;
 };
 
 // get reference type
 template<class Ty, class = void>
-struct _GetReferenceType
+struct _Get_Reference_Type
 {
     using type = typename Ty::value_type&;
 };
 
 template<class Ty>
-struct _GetReferenceType<Ty, void_t<typename Ty::reference>>
+struct _Get_Reference_Type<Ty, void_t<typename Ty::reference>>
 {
     using type = typename Ty::reference;
 };
 
 // get const reference type
 template<class Ty, class = void>
-struct _GetConstReferenceType
+struct _Get_Const_Reference_Type
 {
     using type = const typename Ty::value_type&;
 };
 
 template<class Ty>
-struct _GetConstReferenceType<Ty, void_t<typename Ty::const_reference>>
+struct _Get_Const_Reference_Type<Ty, void_t<typename Ty::const_reference>>
 {
     using type = typename Ty::const_reference;
 };
 
 // get pointer type
 template<class Ty, class = void>
-struct _GetPointerType
+struct _Get_Pointer_Type
 {
     using type = typename Ty::value_type*;
 };
 
 template<class Ty>
-struct _GetPointerType<Ty, void_t<typename Ty::pointer>>
+struct _Get_Pointer_Type<Ty, void_t<typename Ty::pointer>>
 {
     using type = typename Ty::pointer;
 };
 
+// get const pointer type
+template<class Ty, class = void>
+struct _Get_Const_Pointer_Type
+{
+    using type = typename pointer_traits<typename _Get_Pointer_Type<Ty>::type>::template rebind<const typename Ty::value_type>;
+};
+
+template<class Ty>
+struct _Get_Const_Pointer_Type<Ty, void_t<typename Ty::const_pointer>>
+{
+    using type = typename Ty::const_pointer;
+};
+
 // get ptr difference type
 template<class Ty, class = void>
-struct _GetPtrDifferenceType
+struct _Get_Ptr_Difference_Type
 {
     using type = ptrdiff_t;
 };
 
 template<class Ty>
-struct _GetPtrDifferenceType<Ty, void_t<typename Ty::difference_type>>
+struct _Get_Ptr_Difference_Type<Ty, void_t<typename Ty::difference_type>>
 {
     using type = typename Ty::difference_type;
 };
 
 // get difference type
 template<class Ty, class = void>
-struct _GetDifferenceType
+struct _Get_Difference_Type
 {
-    using type = typename pointer_traits<typename _GetPointerType<Ty>::type>::difference_type;
+    using type = typename pointer_traits<typename _Get_Pointer_Type<Ty>::type>::difference_type;
 };
 
 template<class Ty>
-struct _GetDifferenceType<Ty, void_t<typename Ty::difference_type>>
+struct _Get_Difference_Type<Ty, void_t<typename Ty::difference_type>>
 {
     using type = typename Ty::difference_type;
 };
 
-// get const pointer type
-template<class Ty, class = void>
-struct _GetConstPointerType
-{
-    using type = typename pointer_traits<typename _GetPointerType<Ty>::type>::template rebind<const typename Ty::value_type>;
-};
-
-template<class Ty>
-struct _GetConstPointerType<Ty, void_t<typename Ty::const_pointer>>
-{
-    using type = typename Ty::const_pointer;
-};
-
 // get void pointer type
 template<class Ty, class = void>
-struct _GetVoidPointerType
+struct _Get_Void_Pointer_Type
 {
-    using type = typename pointer_traits<typename _GetPointerType<Ty>::type>::template rebind<void>;
+    using type = typename pointer_traits<typename _Get_Pointer_Type<Ty>::type>::template rebind<void>;
 };
 
 template<class Ty>
-struct _GetVoidPointerType<Ty, void_t<typename Ty::void_pointer>>
+struct _Get_Void_Pointer_Type<Ty, void_t<typename Ty::void_pointer>>
 {
     using type = typename Ty::void_pointer;
 };
 
 // get const void pointer type
 template<class Ty, class = void>
-struct _GetConstVoidPointerType
+struct _Get_Const_Void_Pointer_Type
 {
-    using type = typename pointer_traits<typename _GetPointerType<Ty>::type>::template rebind<const void>;
+    using type = typename pointer_traits<typename _Get_Pointer_Type<Ty>::type>::template rebind<const void>;
 };
 
 template<class Ty>
-struct _GetConstVoidPointerType<Ty, void_t<typename Ty::const_void_pointer>>
+struct _Get_Const_Void_Pointer_Type<Ty, void_t<typename Ty::const_void_pointer>>
 {
     using type = typename Ty::const_void_pointer;
 };
 
 // get propagate on container copy
 template<class Ty, class = void>
-struct _GetPropagateOnContainerCopy
+struct _Get_Propagate_On_Container_Copy
 {
     using type = false_type;
 };
 
 template<class Ty>
-struct _GetPropagateOnContainerCopy<Ty, void_t<typename Ty::propagate_on_container_copy_assignment>>
+struct _Get_Propagate_On_Container_Copy<Ty, void_t<typename Ty::propagate_on_container_copy_assignment>>
 {
     using type = typename Ty::propagate_on_container_copy_assignment;
 };
 
 // get propagate on container move
 template<class Ty, class = void>
-struct _GetPropagateOnContainerMove
+struct _Get_Propagate_On_Container_Move
 {
     using type = false_type;
 };
 
 template<class Ty>
-struct _GetPropagateOnContainerMove<Ty, void_t<typename Ty::propagate_on_container_move_assignment>>
+struct _Get_Propagate_On_Container_Move<Ty, void_t<typename Ty::propagate_on_container_move_assignment>>
 {
     using type = typename Ty::propagate_on_container_move_assignment;
 };
 
 // get propagate on container swap
 template<class Ty, class = void>
-struct _GetPropagateOnContainerSwap {
+struct _Get_Propagate_On_Container_Swap
+{
     using type = false_type;
 };
 
 template<class Ty>
-struct _GetPropagateOnContainerSwap<Ty, void_t<typename Ty::propagate_on_container_swap>>
+struct _Get_Propagate_On_Container_Swap<Ty, void_t<typename Ty::propagate_on_container_swap>>
 {
     using type = typename Ty::propagate_on_container_swap;
 };
 
 // get is always equal
 template<class Ty, class = void>
-struct _GetIsAlwaysEqual
+struct _Get_Is_Always_Equal
 {
     using type = is_empty<Ty>;
 };
 
 template<class Ty>
-struct _GetIsAlwaysEqual<Ty, void_t<typename Ty::is_always_equal>>
+struct _Get_Is_Always_Equal<Ty, void_t<typename Ty::is_always_equal>>
 {
     using type = typename Ty::is_always_equal;
 };
 
 // get rebind type
 template<class Ty, class Other, class = void>
-struct _GetRebindType
+struct _Get_Rebind_Type
 {
-    using type = typename _ReplaceFirstParameter<Other, Ty>::type;
+    using type = typename _Replace_First_Parameter<Other, Ty>::type;
 };
 
 template<class Ty, class Other>
-struct _GetRebindType<Ty, Other, void_t<typename Ty::template rebind<Other>>>
+struct _Get_Rebind_Type<Ty, Other, void_t<typename Ty::template rebind<Other>>>
 {
     using type = typename Ty::template rebind<Other>;
 };
@@ -474,34 +475,34 @@ constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
 
 #pragma region Pointer
 template<class Type, class Elem>
-struct _PointerTraitsBase
+struct _Pointer_Traits_Base
 {
     using pointer           = Type;
     using element_type      = Elem;
-    using difference_type   = typename _GetPtrDifferenceType<Type>::type;
+    using difference_type   = typename _Get_Ptr_Difference_Type<Type>::type;
 
     template<class Other>
-    using rebind            = typename _GetRebindType<Type, Other>::type;
+    using rebind            = typename _Get_Rebind_Type<Type, Other>::type;
 
     static constexpr pointer pointer_to(element_type& val)
     noexcept(noexcept(element_type::pointer_to(val))) {
         return element_type::pointer_to(val);
     }
-};  // END _PointerTraitsBase
+};  // END _Pointer_Traits_Base
 
 template<class, class = void, class = void>
-struct _PointerTraitsElemChoice {};
+struct _Pointer_Traits_Elem_Choice {};
 
 template<class Ty, class Dummy>
-struct _PointerTraitsElemChoice<Ty, Dummy, void_t<typename _GetFirstParameter<Ty>::type>>
-: _PointerTraitsBase<Ty, typename _GetFirstParameter<Ty>::type> {};
+struct _Pointer_Traits_Elem_Choice<Ty, Dummy, void_t<typename _Get_First_Parameter<Ty>::type>>
+: _Pointer_Traits_Base<Ty, typename _Get_First_Parameter<Ty>::type> {};
 
 template<class Ty>
-struct _PointerTraitsElemChoice<Ty, void_t<typename Ty::element_type>, void>
-: _PointerTraitsBase<Ty, typename Ty::element_type> {};
+struct _Pointer_Traits_Elem_Choice<Ty, void_t<typename Ty::element_type>, void>
+: _Pointer_Traits_Base<Ty, typename Ty::element_type> {};
 
 template<class Ty>
-struct pointer_traits : _PointerTraitsElemChoice<Ty> {};
+struct pointer_traits : _Pointer_Traits_Elem_Choice<Ty> {};
 
 
 template<class Type>
@@ -563,33 +564,33 @@ public:
 
 // check construct/destruct existence
 template<class Alloc, class Ty, class = void>
-struct _HasConstructMemberFunction : false_type {};
+struct _Has_Construct_Member_Function : false_type {};
 
 template<class Alloc, class Ty>
-struct _HasConstructMemberFunction<Alloc, Ty,
+struct _Has_Construct_Member_Function<Alloc, Ty,
 void_t<decltype(custom::declval<Alloc>().construct(custom::declval<Ty*>()))>> : true_type {};
 
 template<class Alloc, class Ty, class = void>
-struct _HasDestroyMemberFunction : false_type {};
+struct _Has_Destroy_Member_Function : false_type {};
 
 template<class Alloc, class Ty>
-struct _HasDestroyMemberFunction<Alloc, Ty,
+struct _Has_Destroy_Member_Function<Alloc, Ty,
 void_t<decltype(custom::declval<Alloc>().destroy(custom::declval<Ty*>()))>> : true_type {};
 
 // check max_size existence
 template<class Alloc, class = void>
-struct _HasMaxSizeMemberFunction : false_type {};
+struct _Has_Max_Size_Member_Function : false_type {};
 
 template<class Alloc>
-struct _HasMaxSizeMemberFunction<Alloc,
+struct _Has_Max_Size_Member_Function<Alloc,
 void_t<decltype(custom::declval<Alloc>().max_size())>> : true_type {};
 
 // check select_on_container_copy_construction existence
 template<class Alloc, class = void>
-struct _HasSelectOnContainerCopyConstructionMemberFunction : false_type {};
+struct _Has_Select_On_Container_Copy_Construction_Member_Function : false_type {};
 
 template<class Alloc>
-struct _HasSelectOnContainerCopyConstructionMemberFunction<Alloc,
+struct _Has_Select_On_Container_Copy_Construction_Member_Function<Alloc,
 void_t<decltype(custom::declval<Alloc>().select_on_container_copy_construction())>> : true_type {};
 
 
@@ -598,21 +599,21 @@ struct allocator_traits						// allocator_traits any
 {
     using allocator_type        = Alloc;
     using value_type            = typename Alloc::value_type;
-    using difference_type       = typename _GetDifferenceType<Alloc>::type;
-    using reference             = typename _GetReferenceType<Alloc>::type;
-    using const_reference       = typename _GetConstReferenceType<Alloc>::type;
-    using pointer               = typename _GetPointerType<Alloc>::type;
-    using const_pointer         = typename _GetConstPointerType<Alloc>::type;
-    using void_pointer          = typename _GetVoidPointerType<Alloc>::type;
-    using const_void_pointer    = typename _GetConstVoidPointerType<Alloc>::type;
+    using difference_type       = typename _Get_Difference_Type<Alloc>::type;
+    using reference             = typename _Get_Reference_Type<Alloc>::type;
+    using const_reference       = typename _Get_Const_Reference_Type<Alloc>::type;
+    using pointer               = typename _Get_Pointer_Type<Alloc>::type;
+    using const_pointer         = typename _Get_Const_Pointer_Type<Alloc>::type;
+    using void_pointer          = typename _Get_Void_Pointer_Type<Alloc>::type;
+    using const_void_pointer    = typename _Get_Const_Void_Pointer_Type<Alloc>::type;
 
-    using propagate_on_container_copy_assignment    = typename _GetPropagateOnContainerCopy<Alloc>::type;
-    using propagate_on_container_move_assignment    = typename _GetPropagateOnContainerMove<Alloc>::type;
-    using propagate_on_container_swap               = typename _GetPropagateOnContainerSwap<Alloc>::type;
-    using is_always_equal                           = typename _GetIsAlwaysEqual<Alloc>::type;
+    using propagate_on_container_copy_assignment    = typename _Get_Propagate_On_Container_Copy<Alloc>::type;
+    using propagate_on_container_move_assignment    = typename _Get_Propagate_On_Container_Move<Alloc>::type;
+    using propagate_on_container_swap               = typename _Get_Propagate_On_Container_Swap<Alloc>::type;
+    using is_always_equal                           = typename _Get_Is_Always_Equal<Alloc>::type;
 
     template<class Other>
-    using rebind_alloc  = typename _GetRebindType<Alloc, Other>::type;  // always uses _ReplaceFirstParameter
+    using rebind_alloc  = typename _Get_Rebind_Type<Alloc, Other>::type;  // always uses _Replace_First_Parameter
 
     template<class Other>
     using rebind_traits = allocator_traits<rebind_alloc<Other>>;
@@ -627,7 +628,7 @@ struct allocator_traits						// allocator_traits any
 
     template<class _Type, class... Args>
     static constexpr void construct(allocator_type& al, _Type* const address, Args&&... args) {
-        if constexpr (_HasConstructMemberFunction<allocator_type, _Type>::Value)
+        if constexpr (_Has_Construct_Member_Function<allocator_type, _Type>::Value)
             al.construct(address, custom::forward<Args>(args)...);
         else
             custom::construct_at(address, custom::forward<Args>(args)...);
@@ -635,21 +636,21 @@ struct allocator_traits						// allocator_traits any
 
     template<class _Type>
     static constexpr void destroy(allocator_type& al, _Type* const address) {
-        if constexpr (_HasDestroyMemberFunction<allocator_type, _Type>::Value)
+        if constexpr (_Has_Destroy_Member_Function<allocator_type, _Type>::Value)
             al.destroy(address);
         else
             custom::destroy_at(address);
     }
 
     static constexpr size_t max_size(const allocator_type& al) noexcept {
-        if constexpr (_HasMaxSizeMemberFunction<allocator_type>::Value)
+        if constexpr (_Has_Max_Size_Member_Function<allocator_type>::Value)
             return al.max_size();
 
         return static_cast<size_t>(-1) / sizeof(value_type);
     }
 
     static constexpr allocator_type select_on_container_copy_construction(const allocator_type& al) {
-        if constexpr (_HasSelectOnContainerCopyConstructionMemberFunction<allocator_type>::Value)
+        if constexpr (_Has_Select_On_Container_Copy_Construction_Member_Function<allocator_type>::Value)
             return al.select_on_container_copy_construction();
 
         return al;

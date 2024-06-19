@@ -12,21 +12,21 @@ template<class Type, class Alloc>
 struct _Forward_List_Data
 {
 	// deduce data types and forward them
-	using _AllocTraits		= allocator_traits<Alloc>;
-	using _Node				= detail::_Forward_Node<Type>;
-	using _AllocNode		= typename _AllocTraits::template rebind_alloc<_Node>;
-	using _AllocNodeTraits	= allocator_traits<_AllocNode>;
-	using _NodePtr			= typename _AllocNodeTraits::pointer;
+	using _Alloc_Traits			= allocator_traits<Alloc>;
+	using _Node					= detail::_Forward_Node<Type>;
+	using _Alloc_Node			= typename _Alloc_Traits::template rebind_alloc<_Node>;
+	using _Alloc_Node_Traits	= allocator_traits<_Alloc_Node>;
+	using _NodePtr				= typename _Alloc_Node_Traits::pointer;
 
-	using value_type		= typename _AllocTraits::value_type;
-	using difference_type	= typename _AllocTraits::difference_type;
-	using reference			= typename _AllocTraits::reference;
-	using const_reference	= typename _AllocTraits::const_reference;
-	using pointer			= typename _AllocTraits::pointer;
-	using const_pointer		= typename _AllocTraits::const_pointer;
+	using value_type			= typename _Alloc_Traits::value_type;
+	using difference_type		= typename _Alloc_Traits::difference_type;
+	using reference				= typename _Alloc_Traits::reference;
+	using const_reference		= typename _Alloc_Traits::const_reference;
+	using pointer				= typename _Alloc_Traits::pointer;
+	using const_pointer			= typename _Alloc_Traits::const_pointer;
 
-	size_t _Size			= 0;									// Number of Nodes held
-	_NodePtr _Head 			= nullptr;								// Head of list
+	size_t _Size				= 0;									// Number of Nodes held
+	_NodePtr _Head				= nullptr;								// Head of list
 };
 
 template<class ForwardListData>
@@ -150,10 +150,10 @@ class forward_list				// Singly Linked list
 {
 private:
 	using _Data 				= _Forward_List_Data<Type, Alloc>;
-	using _AllocTraits			= typename _Data::_AllocTraits;
+	using _Alloc_Traits			= typename _Data::_Alloc_Traits;
 	using _Node					= typename _Data::_Node;
-	using _AllocNode			= typename _Data::_AllocNode;
-	using _AllocNodeTraits		= typename _Data::_AllocNodeTraits;
+	using _Alloc_Node			= typename _Data::_Alloc_Node;
+	using _Alloc_Node_Traits	= typename _Data::_Alloc_Node_Traits;
 	using _NodePtr				= typename _Data::_NodePtr;
 
 public:
@@ -173,7 +173,7 @@ public:
 
 private:
 	_Data _data;															// Actual container data
-	_AllocNode _alloc;														// allocator for nodes
+	_Alloc_Node _alloc;														// allocator for nodes
 
 public:
 	// Constructors
@@ -293,7 +293,7 @@ public:
 
 	size_t max_size() const noexcept {
         return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
-								_AllocNodeTraits::max_size(_alloc));
+								_Alloc_Node_Traits::max_size(_alloc));
     }
 
 	bool empty() const noexcept {
@@ -472,7 +472,7 @@ private:
 	_NodePtr _create_common_node(Args&&... args) {
 		// don't increase size here
 		_NodePtr newNode = _alloc.allocate(1);
-		_AllocNodeTraits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
+		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		return newNode;
 	}
 
@@ -487,7 +487,7 @@ private:
 		afterNode->_Next 	= junkNode->_Next;
 		--_data._Size;
 
-		_AllocNodeTraits::destroy(_alloc, &(junkNode->_Value));
+		_Alloc_Node_Traits::destroy(_alloc, &(junkNode->_Value));
 		_alloc.deallocate(junkNode, 1);
 	}
 
