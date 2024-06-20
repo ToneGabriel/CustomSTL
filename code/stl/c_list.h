@@ -218,6 +218,11 @@ public:
 		_create_until_size(newSize, value);
 	}
 
+	list(std::initializer_list<value_type> list) {
+		for (const auto& val : list)
+			push_back(val);
+	}
+
 	list(const list& other) : list() {
 		_copy(other);
 	}
@@ -314,17 +319,17 @@ public:
 		return iterator(newNode, &_data);
 	}
 
-	iterator push(const_iterator where, const value_type& copyValue) {		// Construct object using reference and add it BEFORE the where position
+	iterator insert(const_iterator where, const value_type& copyValue) {		// Construct object using reference and add it BEFORE the where position
 		return emplace(where, copyValue);
 	}
 
-	iterator push(const_iterator where, value_type&& moveValue) {			// Construct object using temporary and add it BEFORE the where position
+	iterator insert(const_iterator where, value_type&& moveValue) {			// Construct object using temporary and add it BEFORE the where position
 		return emplace(where, custom::move(moveValue));
 	}
 
-	iterator pop(const_iterator where) {									// Remove component at where position
+	iterator erase(const_iterator where) {									// Remove component at where position
 		if (where.is_end())
-			throw std::out_of_range("Cannot pop end iterator.");
+			throw std::out_of_range("Cannot erase end iterator.");
 
 		_NodePtr temp 			= where._Ptr;
 		iterator prevIterator 	= iterator(temp->_Previous, &_data);

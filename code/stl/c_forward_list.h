@@ -186,6 +186,11 @@ public:
 		_create_until_size(newSize, value);
 	}
 
+	forward_list(std::initializer_list<value_type> list) : forward_list() {
+		for (const auto& val : list)
+			push_back(val);
+	}
+
 	forward_list(const forward_list& other) : forward_list() {
 		_copy(other);
 	}
@@ -266,9 +271,9 @@ public:
 		return iterator(newNode, &_data);
 	}
 
-	iterator pop_after(const_iterator where) {						// Remove component after where position
+	iterator erase_after(const_iterator where) {						// Remove component after where position
 		if (where.is_end() || where.is_last_valid())
-			throw std::out_of_range("Cannot pop after end iterator.");
+			throw std::out_of_range("Cannot erase after end iterator.");
 
 		_NodePtr temp 			= where._Ptr;
 		iterator nextIterator 	= iterator(temp->_Next, &_data);

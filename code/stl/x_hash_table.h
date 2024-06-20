@@ -137,21 +137,21 @@ public:
 		--_buckets[index].first;
 		
 		// Remove value from iteration list and return next Node iterator
-		return _elems.pop(it);
+		return _elems.erase(it);
 	}
 
-	iterator erase(iterator iterator) {
-		if (iterator == end())
+	iterator erase(iterator where) {
+		if (where == end())
 			throw std::out_of_range("erase iterator outside range.");
 
-		return erase(Traits::extract_key(*iterator));
+		return erase(Traits::extract_key(*where));
 	}
 	
-	iterator erase(const_iterator iterator) {
-		if (iterator == end())
+	iterator erase(const_iterator where) {
+		if (where == end())
 			throw std::out_of_range("erase iterator outside range.");
 
-		return erase(Traits::extract_key(*iterator));
+		return erase(Traits::extract_key(*where));
 	}
 
 	iterator find(const key_type& key) {
@@ -434,6 +434,12 @@ protected:
 		rehash((noBuckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : noBuckets);
 	}
 
+	_Hash_Table(std::initializer_list<value_type> list) {
+		rehash(list.size());
+		for (const auto& val : list)
+			emplace(val);
+	}
+
 	_Hash_Table(const _Hash_Table& other)
 		: _elems(other._elems), _buckets(other._buckets) { /*Empty*/ }
 
@@ -498,15 +504,15 @@ public:
 			return end();
 
 		_NodePtr nodeToErase = (*it);
-		_buckets[index].pop(it);									// Remove reference hashtable
-		return _elems.pop(iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
+		_buckets[index].erase(it);									// Remove reference hashtable
+		return _elems.erase(iterator(nodeToErase, &_elems._data));	// Remove value from iteration list and return next Node iterator
 	}
 
-	iterator erase(const_iterator iterator) {
-		if (iterator == end())
+	iterator erase(const_iterator where) {
+		if (where == end())
 			throw std::out_of_range("Map erase iterator outside range.");
 
-		return erase(iterator._Ptr->_Value);
+		return erase(where._Ptr->_Value);
 	}
 
 	iterator find(const key_type& key) {
