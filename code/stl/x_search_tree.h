@@ -258,6 +258,11 @@ protected:
 		_create_head();
 	}
 
+	_Search_Tree(std::initializer_list<value_type> list) : _Search_Tree() {
+		for (const auto& val : list)
+			emplace(val);
+	}
+
 	_Search_Tree(const _Search_Tree& other) : _Search_Tree() {
 		_copy(other);
 	}
@@ -324,18 +329,18 @@ public:
 		return nextIterator;
 	}
 
-	iterator erase(const_iterator iterator) {
-		if (iterator == end())
+	iterator erase(const_iterator where) {
+		if (where == end())
 			throw std::out_of_range("map erase iterator outside range.");
 
-		return erase(Traits::extract_key(iterator._Ptr->_Value));
+		return erase(Traits::extract_key(where._Ptr->_Value));
 	}
 
-	iterator erase(iterator iterator) {
-		if (iterator == end())
+	iterator erase(iterator where) {
+		if (where == end())
 			throw std::out_of_range("map erase iterator outside range.");
 
-		return erase(Traits::extract_key(iterator._Ptr->_Value));
+		return erase(Traits::extract_key(where._Ptr->_Value));
 	}
 
 	const_iterator find (const key_type& key) const {

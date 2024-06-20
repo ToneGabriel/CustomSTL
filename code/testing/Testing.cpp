@@ -219,8 +219,8 @@ void deque_test() {
 	auto it = dq.emplace(dq.end() - 1, 11);
 	it = dq.emplace(it, 12);
 
-	it = dq.pop(dq.begin());
-	it = dq.pop(it);
+	it = dq.erase(dq.begin());
+	it = dq.erase(it);
 
 	for (auto& val : dq)
 		std::cout << val << ' ';

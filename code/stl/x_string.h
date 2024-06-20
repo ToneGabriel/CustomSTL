@@ -735,6 +735,12 @@ public:
 		_alloc_empty(newCapacity);
 	}
 
+	constexpr basic_string(std::initializer_list<value_type> list) {
+		_alloc_empty(list.size());
+		for (const auto& val : list)
+			push_back(val);
+	}
+
 	constexpr basic_string(const basic_string& other) {
 		_copy(other);
 	}

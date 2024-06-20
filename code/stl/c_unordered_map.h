@@ -64,6 +64,9 @@ public:
 	unordered_map(const size_t buckets)
 		:_Base(buckets) { /*Empty*/ }
 
+	unordered_map(std::initializer_list<value_type> list)
+		:_Base(list) { /*Empty*/ }
+
 	unordered_map(const unordered_map& other)
 		:_Base(other) { /*Empty*/ }
 

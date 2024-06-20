@@ -57,6 +57,9 @@ public:
 	map()
 		:_Base() { /*Empty*/ }
 
+	map(std::initializer_list<value_type> list)
+		:_Base(list) { /*Empty*/ }
+
 	map(const map& other)
 		:_Base(other) { /*Empty*/ }
 

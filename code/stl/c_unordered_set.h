@@ -64,6 +64,9 @@ public:
 	unordered_set(const size_t buckets)
 		:_Base(buckets) { /*Empty*/ }
 
+	unordered_set(std::initializer_list<value_type> list)
+		:_Base(list) { /*Empty*/ }
+
 	unordered_set(const unordered_set& other)
 		:_Base(other) { /*Empty*/ }
 

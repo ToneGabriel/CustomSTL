@@ -278,6 +278,11 @@ public:
 		resize(newSize, copyValue);
 	}
 
+	deque(std::initializer_list<value_type> list) {
+		for (const auto& val : list)
+			push_back(val);
+	}
+
 	deque(const deque& other) {
 		_copy(other);
 	}
@@ -444,17 +449,17 @@ public:
 		return begin() + static_cast<difference_type>(off);
 	}
 
-	iterator push(const_iterator iterator, const value_type& copyValue) {
-		return emplace(iterator, copyValue);
+	iterator insert(const_iterator where, const value_type& copyValue) {
+		return emplace(where, copyValue);
 	}
 
-	iterator push(const_iterator iterator, value_type&& moveValue) {
-		return emplace(iterator, custom::move(moveValue));
+	iterator insert(const_iterator where, value_type&& moveValue) {
+		return emplace(where, custom::move(moveValue));
 	}
 
-	iterator pop(const_iterator where) {
+	iterator erase(const_iterator where) {
 		if (where.is_end())
-			throw std::out_of_range("array pop iterator outside range.");
+			throw std::out_of_range("array erase iterator outside range.");
 			
 		size_t off = where._Offset - _data._First;
 

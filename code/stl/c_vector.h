@@ -262,6 +262,12 @@ public:
 		realloc(newCapacity, copyValue);
 	}
 
+	constexpr vector(std::initializer_list<value_type> list) {
+		reserve(list.size());
+		for (const auto& val : list)
+			push_back(val);
+	}
+
 	constexpr vector(const vector& other) {									// Copy Constructor
 		_copy(other);
 	}
@@ -397,8 +403,8 @@ public:
 	}
 
 	template<class... Args>
-	constexpr iterator emplace(const_iterator iterator, Args&&... args) {		// Emplace object at iterator position with given arguments
-		size_t index = iterator.get_index();	// Don't check end()
+	constexpr iterator emplace(const_iterator where, Args&&... args) {		// Emplace object at where position with given arguments
+		size_t index = where.get_index();	// Don't check end()
 		emplace_back();
 
 		for (size_t i = size() - 1; i > index; --i)
@@ -410,19 +416,19 @@ public:
 		return iterator(_data._First + index, &_data);
 	}
 
-	constexpr iterator push(const_iterator iterator, const value_type& copyValue) {		// Push copy object at iterator position
-		return emplace(iterator, copyValue);
+	constexpr iterator insert(const_iterator where, const value_type& copyValue) {		// Push copy object at iterator position
+		return emplace(where, copyValue);
 	}
 
-	constexpr iterator push(const_iterator iterator, value_type&& moveValue) {			// Push temporary object at iterator position
-		return emplace(iterator, custom::move(moveValue));
+	constexpr iterator insert(const_iterator where, value_type&& moveValue) {			// Push temporary object at iterator position
+		return emplace(where, custom::move(moveValue));
 	}
 
-	constexpr iterator pop(const_iterator iterator) {									// Remove component at iterator position
-		if (iterator.is_end())
-			throw std::out_of_range("vector pop iterator outside range.");
+	constexpr iterator erase(const_iterator where) {									// Remove component at iterator position
+		if (where.is_end())
+			throw std::out_of_range("vector erase iterator outside range.");
 
-		size_t index = iterator.get_index();
+		size_t index = where.get_index();
 		size_t beforeLast = size() - 1;
 
 		for (size_t i = index; i < beforeLast; ++i)

@@ -57,6 +57,9 @@ public:
 	set()
 		:_Base() { /*Empty*/ }
 
+	set(std::initializer_list<value_type> list)
+		:_Base(list) { /*Empty*/ }
+
 	set(const set& other)
 		: _Base(other) { /*Empty*/ }
 
