@@ -322,7 +322,12 @@ public:
 	}
 
 	iterator erase(const key_type& key) {
-		_NodePtr nodeToErase 	= _find_in_tree(key);
+		iterator it = find(key);
+
+		if (it == end())
+			return it;
+
+		_NodePtr nodeToErase 	= it._Ptr;
 		iterator nextIterator 	= ++iterator(nodeToErase, &_data);
 		_destroy(nodeToErase);
 
@@ -344,19 +349,11 @@ public:
 	}
 
 	const_iterator find (const key_type& key) const {
-		_NodePtr foundNode = _find_in_tree(key);
-		if (foundNode != nullptr)
-			return const_iterator(foundNode, &_data);
-
-		return end();
+		return const_iterator(_find_in_tree(key), &_data);
 	}
 
 	iterator find(const key_type& key) {
-		_NodePtr foundNode = _find_in_tree(key);
-		if (foundNode != nullptr)
-			return iterator(foundNode, &_data);
-
-		return end();
+		return iterator(_find_in_tree(key), &_data);
 	}
 
 	size_t size() const noexcept {
@@ -558,7 +555,7 @@ private:
 	}
 
 	_NodePtr _find_in_tree(const key_type& key) const {
-		_NodePtr found = nullptr;
+		_NodePtr found = _data._Head;
 
 		for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
 		{
