@@ -628,7 +628,7 @@ struct allocator_traits						// allocator_traits any
 
     template<class _Type, class... Args>
     static constexpr void construct(allocator_type& al, _Type* const address, Args&&... args) {
-        if constexpr (_Has_Construct_Member_Function<allocator_type, _Type>::Value)
+        if constexpr (_Has_Construct_Member_Function<allocator_type, _Type>::value)
             al.construct(address, custom::forward<Args>(args)...);
         else
             custom::construct_at(address, custom::forward<Args>(args)...);
@@ -636,21 +636,21 @@ struct allocator_traits						// allocator_traits any
 
     template<class _Type>
     static constexpr void destroy(allocator_type& al, _Type* const address) {
-        if constexpr (_Has_Destroy_Member_Function<allocator_type, _Type>::Value)
+        if constexpr (_Has_Destroy_Member_Function<allocator_type, _Type>::value)
             al.destroy(address);
         else
             custom::destroy_at(address);
     }
 
     static constexpr size_t max_size(const allocator_type& al) noexcept {
-        if constexpr (_Has_Max_Size_Member_Function<allocator_type>::Value)
+        if constexpr (_Has_Max_Size_Member_Function<allocator_type>::value)
             return al.max_size();
 
         return static_cast<size_t>(-1) / sizeof(value_type);
     }
 
     static constexpr allocator_type select_on_container_copy_construction(const allocator_type& al) {
-        if constexpr (_Has_Select_On_Container_Copy_Construction_Member_Function<allocator_type>::Value)
+        if constexpr (_Has_Select_On_Container_Copy_Construction_Member_Function<allocator_type>::value)
             return al.select_on_container_copy_construction();
 
         return al;

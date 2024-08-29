@@ -120,21 +120,21 @@ constexpr auto invoke(Callable&& func, Type&& arg1, Args&&... args) noexcept
 
 // is_invocable
 template<class Callable, class AlwaysVoid, class... Args>
-struct _Is_Invocable : custom::false_type {};
+struct _Is_Invocable : false_type {};
 
 template<class Callable, class... Args>
 struct _Is_Invocable<Callable,
-custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : custom::true_type {};
+custom::void_t<decltype(custom::declval<Callable>()(custom::declval<Args>()...))>, Args...> : true_type {};
 
 template<class Callable, class... Args>
 struct is_invocable : _Is_Invocable<Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Callable, class... Args>
-constexpr bool is_invocable_v = is_invocable<Callable, Args...>::Value;
+constexpr bool is_invocable_v = is_invocable<Callable, Args...>::value;
 
 // is_invocable_ret
 template<class Ret, class Callable, class AlwaysVoid, class... Args>
-struct _Is_Invocable_Ret : custom::false_type {};
+struct _Is_Invocable_Ret : false_type {};
 
 template<class Ret, class Callable, class... Args>
 struct _Is_Invocable_Ret<Ret, Callable,
@@ -145,11 +145,11 @@ template<class Ret, class Callable, class... Args>
 struct is_invocable_ret : _Is_Invocable_Ret<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Ret, class Callable, class... Args>
-constexpr bool is_invocable_ret_v = is_invocable_ret<Ret, Callable, Args...>::Value;
+constexpr bool is_invocable_ret_v = is_invocable_ret<Ret, Callable, Args...>::value;
 
 // is_nothrow_invocable
 template<class Callable, class AlwaysVoid, class... Args>
-struct _Is_Nothrow_Invocable : custom::false_type {};
+struct _Is_Nothrow_Invocable : false_type {};
 
 template<class Callable, class... Args>
 struct _Is_Nothrow_Invocable<Callable,
@@ -160,11 +160,11 @@ template<class Callable, class... Args>
 struct is_nothrow_invocable : _Is_Nothrow_Invocable<Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Callable, class... Args>
-constexpr bool is_nothrow_invocable_v = is_nothrow_invocable<Callable, Args...>::Value;
+constexpr bool is_nothrow_invocable_v = is_nothrow_invocable<Callable, Args...>::value;
 
 // is_nothrow_invocable_ret
 template<class Ret, class Callable, class AlwaysVoid, class... Args>
-struct _Is_Nothrow_Invocable_Ret : custom::false_type {};
+struct _Is_Nothrow_Invocable_Ret : false_type {};
 
 template<class Ret, class Callable, class... Args>
 struct _Is_Nothrow_Invocable_Ret<Ret, Callable,
@@ -176,7 +176,7 @@ template<class Ret, class Callable, class... Args>
 struct is_nothrow_invocable_ret : _Is_Nothrow_Invocable_Ret<Ret, Callable, /*AlwaysVoid*/ void, Args...> {};
 
 template<class Ret, class Callable, class... Args>
-constexpr bool is_nothrow_invocable_ret_v = is_nothrow_invocable_ret<Ret, Callable, Args...>::Value;
+constexpr bool is_nothrow_invocable_ret_v = is_nothrow_invocable_ret<Ret, Callable, Args...>::value;
 
 #pragma endregion invoke
 

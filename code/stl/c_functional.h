@@ -812,13 +812,13 @@ template<int num>
 struct is_placeholder<placeholder<num>> : integral_constant<int, num> {}; // placeholder is ok
 
 template<class Ty>
-struct is_placeholder<const Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<const Ty> : is_placeholder<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct is_placeholder<volatile Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<volatile Ty> : is_placeholder<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct is_placeholder<const volatile Ty> : is_placeholder<Ty>::Type {}; // ignore cv-qualifiers
+struct is_placeholder<const volatile Ty> : is_placeholder<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
 constexpr int is_placeholder_v = is_placeholder<Ty>::value;
@@ -834,13 +834,13 @@ template<class Functor, class... Args>
 struct is_bind_expression<binder<Functor, Args...>> : true_type {}; // binder is a bind expression
 
 template<class Ty>
-struct is_bind_expression<const Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<const Ty> : is_bind_expression<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct is_bind_expression<volatile Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<volatile Ty> : is_bind_expression<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
-struct is_bind_expression<const volatile Ty> : is_bind_expression<Ty>::Type {}; // ignore cv-qualifiers
+struct is_bind_expression<const volatile Ty> : is_bind_expression<Ty>::type {}; // ignore cv-qualifiers
 
 template<class Ty>
 constexpr bool is_bind_expression_v = is_bind_expression<Ty>::value;
@@ -859,7 +859,7 @@ template<class BoundArgType>
 struct _Bound_Arg_Fixer<BoundArgType, true, false, 0>         // reference_wrapper fixer
 {
     template<class UnboundTuple>
-    static constexpr typename BoundArgType::Type& fix(BoundArgType& boundArg, UnboundTuple&&) noexcept {
+    static constexpr typename BoundArgType::type& fix(BoundArgType& boundArg, UnboundTuple&&) noexcept {
         // unwrap a reference_wrapper
         return boundArg.get();
     }

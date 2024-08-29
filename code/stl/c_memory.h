@@ -858,7 +858,7 @@ public:
         this->_copy_construct(other);
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     shared_ptr(const shared_ptr<Ty>& other) noexcept {
         this->_copy_construct(other);
     }
@@ -872,7 +872,7 @@ public:
         this->_move_construct(custom::move(other));
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     shared_ptr(shared_ptr<Ty>&& other) noexcept {
         this->_move_construct(custom::move(other));
     }
@@ -882,7 +882,7 @@ public:
         this->_alias_move_construct(custom::move(other), ptr);
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     explicit shared_ptr(const weak_ptr<Ty>& other) {                      // construct shared_ptr object that owns resource *other
         if (!this->_construct_from_weak(other))
             throw std::runtime_error("Bad weak ptr.");
@@ -921,7 +921,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     shared_ptr& operator=(const shared_ptr<Ty>& other) noexcept {
         shared_ptr(other).swap(*this);
         return *this;
@@ -932,7 +932,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     shared_ptr& operator=(shared_ptr<Ty>&& other) noexcept {
         shared_ptr(custom::move(other)).swap(*this);
         return *this;
@@ -1103,7 +1103,7 @@ public:
         this->_weak_construct(other); // same type, no conversion
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     weak_ptr(const shared_ptr<Ty>& other) noexcept {
         this->_weak_construct(other); // shared_ptr keeps resource alive during conversion
     }
@@ -1124,7 +1124,7 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     weak_ptr& operator=(const weak_ptr<Ty>& other) noexcept {
         weak_ptr(other).swap(*this);
         return *this;
@@ -1135,13 +1135,13 @@ public:
         return *this;
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     weak_ptr& operator=(weak_ptr<Ty>&& other) noexcept {
         weak_ptr(custom::move(other)).swap(*this);
         return *this;
     }
 
-    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::Value, bool> = true>
+    template<class Ty, enable_if_t<_Shared_Ptr_Compatible<Ty, Type>::value, bool> = true>
     weak_ptr& operator=(const shared_ptr<Ty>& other) noexcept {
         weak_ptr(other).swap(*this);
         return *this;

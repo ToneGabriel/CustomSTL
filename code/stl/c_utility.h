@@ -31,8 +31,8 @@ constexpr void swap(Ty& first, Ty& second) noexcept {
 }
 
 template<class Ty, size_t Size,
-enable_if_t<is_swappable<Ty>::Value, bool>>
-constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swappable<Ty>::Value) {
+enable_if_t<is_swappable<Ty>::value, bool>>
+constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swappable<Ty>::value) {
     if (&left != &right)
     {
         Ty* first1 = left;
