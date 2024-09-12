@@ -4,6 +4,7 @@
 
 int main()
 {
+	"Hello";
 	// ========= Common Tests =========
 	//test::map_test();
 	//test::priority_queue_test();
