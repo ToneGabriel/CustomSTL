@@ -34,23 +34,38 @@ void _lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&..
     // regardless of whether their results are actually used.
     // This guarantees that the critical operations performed are executed as intended.
 
-    int ignored[] = {((static_cast<int>(Indices) == target ? (void)locks.lock() : void()), 0)...};
+#define _FOLD_EXPRESSION (static_cast<int>(Indices) == target ? (void)locks.lock() : void())
+
+    int ignored[] = {(_FOLD_EXPRESSION, 0)...};
     (void)ignored; // suppress warning for unused variable
+
+#undef _FOLD_EXPRESSION
 }
 
 template<size_t... Indices, class... Locks>
 bool _try_lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&... locks) { // try to lock locks[target]
     bool result;
-    int ignored[] = {((static_cast<int>(Indices) == target ? (void)(result = locks.try_lock()) : void()), 0)...};
+
+#define _FOLD_EXPRESSION (static_cast<int>(Indices) == target ? (void)(result = locks.try_lock()) : void())
+
+    int ignored[] = {(_FOLD_EXPRESSION, 0)...};
     (void)ignored;
+
+#undef _FOLD_EXPRESSION
+
     return result;
 }
 
 template<size_t... Indices, class... Locks>
 void _unlock_locks_range(const int first, const int last, index_sequence<Indices...>, Locks&... locks) noexcept {
     // unlock locks in locks[first, last)
-    int ignored[] = {((first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void()), 0)...};
+
+#define _FOLD_EXPRESSION (first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void())
+
+    int ignored[] = {(_FOLD_EXPRESSION, 0)...};
     (void)ignored;
+
+#undef _FOLD_EXPRESSION
 }
 
 template<class... Locks>
