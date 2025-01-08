@@ -133,7 +133,7 @@ constexpr ForwardIt1 search(ForwardIt1 first, ForwardIt1 last,
     for(;; ++first)
     {
         ForwardIt1 it = first;
-        for (ForwardIt2 seqIt = seqFirst; /* Empty */ ; ++it, ++seqIt)
+        for (ForwardIt2 seqIt = seqFirst; /*Empty*/ ; ++it, ++seqIt)
         {
             if (seqIt == seqLast)
                 return first;

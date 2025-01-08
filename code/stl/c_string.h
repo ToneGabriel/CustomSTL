@@ -68,7 +68,7 @@ struct less<basic_string<Type, Alloc, Traits>>		// used by map, set
 
 template<class Type, class Alloc, class Traits>
 struct hash<basic_string<Type, Alloc, Traits>>
-: _Base_Hash_Enabler<basic_string<Type, Alloc, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
+: detail::_Base_Hash_Enabler<basic_string<Type, Alloc, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
 {
 	static size_t compute_hash(const basic_string<Type, Alloc, Traits>& key) noexcept {
 		return detail::_hash_array_representation(key.c_str(), key.size());
