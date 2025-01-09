@@ -141,7 +141,7 @@ public:
 	bool _equals(const tuple&) const {
         return true;
     }
-};
+};	// END tuple<>
 
 
 template<class This, class... Rest>
@@ -278,7 +278,7 @@ public:
     bool _equals(const tuple<OtherTypes...>& other) const {
         return _ThisVal == other._ThisVal && _Base::_equals(other._get_rest());
     }
-};
+};	// END tuple<This, Rest...>
 
 template<class... Types1, class... Types2>
 constexpr bool operator==(const tuple<Types1...>& left, const tuple<Types2...>& right) {

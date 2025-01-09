@@ -96,7 +96,7 @@ struct _Invoker<Callable, Type, NoCVRef_t, false, false>    // non-member functi
 
 template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, true, false>     // pointer to member function
-: conditional_t<is_base_of_v<typename _Is_Member_Function_Pointer<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
+: conditional_t<is_base_of_v<typename detail::_Is_Member_Function_Pointer_Impl<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
                 _Invoker_PMF_Object,
                 conditional_t<  is_specialization_v<remove_cv_ref_t<Type>, reference_wrapper>,
                                 _Invoker_PMF_Refwrap,
@@ -104,7 +104,7 @@ struct _Invoker<Callable, Type, NoCVRef_t, true, false>     // pointer to member
 
 template<class Callable, class Type, class NoCVRef_t>
 struct _Invoker<Callable, Type, NoCVRef_t, false, true>     // pointer to member data
-: conditional_t<is_base_of_v<typename _Is_Member_Object_Pointer<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
+: conditional_t<is_base_of_v<typename detail::_Is_Member_Object_Pointer_Impl<NoCVRef_t>::_Class_Type, remove_reference_t<Type>>,
                 _Invoker_PMD_Object,
                 conditional_t<  is_specialization_v<remove_cv_ref_t<Type>, reference_wrapper>,
                                 _Invoker_PMD_Refwrap,
