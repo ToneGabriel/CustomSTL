@@ -203,7 +203,7 @@ struct add_rvalue_reference;
 template<class Ty>
 using add_rvalue_reference_t = typename add_rvalue_reference<Ty>::type;
 
-template<class Ty, class = void>
+template<class Ty, class AlwaysVoid = void>
 struct add_pointer;
 
 template<class Ty>
@@ -215,12 +215,396 @@ struct extent;  // determine extent of dimension Ix of array Ty
 template<class Ty, unsigned int Ix = 0>
 constexpr size_t extent_v = extent<Ty, Ix>::value;
 
+template<class Ty>  // remove array extent
+struct remove_extent;
+
+template<class Ty>
+using remove_extent_t = typename remove_extent<Ty>::type;
+
+template<class Ty>
+struct remove_all_extents;
+
+template<class Ty>
+using remove_all_extents_t = typename remove_all_extents<Ty>::type;
+
+template<class Ty>
+struct is_array;
+
+template<class Ty>
+constexpr bool is_array_v = is_array<Ty>::value;
+
+template<class Ty>
+struct is_bounded_array;
+
+template<class Ty>
+constexpr bool is_bounded_array_v = is_bounded_array<Ty>::value;
+
+template<class Ty>
+struct is_unbounded_array;
+
+template<class Ty>
+constexpr bool is_unbounded_array_v = is_unbounded_array<Ty>::value;
+
+template<class Ty>
+struct is_lvalue_reference;
+
+template<class Ty>
+constexpr bool is_lvalue_reference_v = is_lvalue_reference<Ty>::value;
+
+template<class Ty>
+struct is_rvalue_reference;
+
+template<class Ty>
+constexpr bool is_rvalue_reference_v = is_rvalue_reference<Ty>::value;
+
+template<class Ty>
+struct is_reference;
+
+template<class Ty>
+constexpr bool is_reference_v = is_reference<Ty>::value;
+
+template<class Ty>
+struct is_pointer;
+
+template<class Ty>
+constexpr bool is_pointer_v = is_pointer<Ty>::value;
+
+template<class Ty>
+struct is_enum;
+
+template<class Ty>
+constexpr bool is_enum_v = is_enum<Ty>::value;
+
+template<class Ty>
+struct is_union;
+
+template<class Ty>
+constexpr bool is_union_v = is_union<Ty>::value;
+
+template<class Ty>
+struct is_trivial;
+
+template<class Ty>
+constexpr bool is_trivial_v = is_trivial<Ty>::value;
+
+template<class Ty>
+struct is_trivially_copyable;
+
+template<class Ty>
+constexpr bool is_trivially_copyable_v = is_trivially_copyable<Ty>::value;
+
+// TODO: check trivial type traits
+
+template<class Ty>
+struct is_standard_layout;
+
+template<class Ty>
+constexpr bool is_standard_layout_v = is_standard_layout<Ty>::value;
+
+template<class Ty>
+struct is_pod;  // plain old data
+
+template<class Ty>
+constexpr bool is_pod_v = is_pod<Ty>::value;
+
+template<class Ty>
+struct is_class;
+
+template<class Ty>
+constexpr bool is_class_v = is_class<Ty>::value;
+
+template<class From, class To>
+struct is_convertible;
+
+template<class From, class To>
+constexpr bool is_convertible_v = is_convertible<From, To>::value;
+
+template<class Ty>
+struct is_const;
+
+template<class Ty>
+constexpr bool is_const_v = is_const<Ty>::value;
+
+template<class Ty>
+struct is_volatile;
+
+template<class Ty>
+constexpr bool is_volatile_v = is_volatile<Ty>::value;
+
+template<class Ty>
+struct is_function;
+
+template<class Ty>
+constexpr bool is_function_v = is_function<Ty>::value;
+
+template<class Ty>
+struct is_object;
+
+template<class Ty>
+constexpr bool is_object_v = is_object<Ty>::value;
+
+template<class Ty>
+struct is_member_object_pointer;
+
+template<class Ty>
+constexpr bool is_member_object_pointer_v = is_member_object_pointer<Ty>::value;
+
+template<class Ty>
+struct is_member_function_pointer;
+
+template<class Ty>
+constexpr bool is_member_function_pointer_v = is_member_function_pointer<Ty>::value;
+
+template<class Ty>
+struct is_member_pointer;
+
+template<class Ty>
+constexpr bool is_member_pointer_v = is_member_pointer<Ty>::value;
+
+template<class Ty>
+struct is_null_pointer;
+
+template<class Ty>
+constexpr bool is_null_pointer_v = is_null_pointer<Ty>::value;
+
+template<class Ty>
+struct is_scalar;
+
+template<class Ty>
+constexpr bool is_scalar_v = is_scalar<Ty>::value;
+
+template<class Ty>
+struct is_empty;
+
+template<class Ty>
+constexpr bool is_empty_v = is_empty<Ty>::value;
+
+template<class Ty>
+struct is_polymorphic;
+
+template<class Ty>
+constexpr bool is_polymorphic_v = is_polymorphic<Ty>::value;
+
+template<class Ty>
+struct is_abstract;
+
+template<class Ty>
+constexpr bool is_abstract_v = is_abstract<Ty>::value;
+
+template<class Ty>
+struct is_final;
+
+template<class Ty>
+constexpr bool is_final_v = is_final<Ty>::value;
+
+template<class Ty, class... Args>
+struct is_constructible;
+
+template<class Ty, class... Args>
+constexpr bool is_constructible_v = is_constructible<Ty, Args...>::value;
+
+template<class Ty>
+struct is_default_constructible;
+
+template<class Ty>
+constexpr bool is_default_constructible_v = is_default_constructible<Ty>::value;
+
+template<class Ty, class AlwaysVoid = void>
+struct is_implicitly_default_constructible;
+
+template<class Ty>
+constexpr bool is_implicitly_default_constructible_v = is_implicitly_default_constructible<Ty>::value;
+
+template<class Ty>
+struct is_copy_constructible;
+
+template<class Ty>
+constexpr bool is_copy_constructible_v = is_copy_constructible<Ty>::value;
+
+template<class Ty>
+struct is_move_constructible;
+
+template<class Ty>
+constexpr bool is_move_constructible_v = is_move_constructible<Ty>::value;
+
+template<class Ty, class... Args>
+struct is_nothrow_constructible;
+
+template<class Ty, class... Args>
+constexpr bool is_nothrow_constructible_v = is_nothrow_constructible<Ty, Args...>::value;
+
+template<class Ty>
+struct is_nothrow_default_constructible;
+
+template<class Ty>
+constexpr bool is_nothrow_default_constructible_v = is_nothrow_default_constructible<Ty>::value;
+
+template<class Ty>
+struct is_nothrow_copy_constructible;
+
+template<class Ty>
+constexpr bool is_nothrow_copy_constructible_v = is_nothrow_copy_constructible<Ty>::value;
+
+template<class Ty>
+struct is_nothrow_move_constructible;
+
+template<class Ty>
+constexpr bool is_nothrow_move_constructible_v = is_nothrow_move_constructible<Ty>::value;
+
+template<class To, class From>
+struct is_assignable;
+
+template<class To, class From>
+constexpr bool is_assignable_v = is_assignable<To, From>::value;
+
+template<class Ty>
+struct is_copy_assignable;
+
+template<class Ty>
+constexpr bool is_copy_assignable_v = is_copy_assignable<Ty>::value;
+
+template<class Ty>
+struct is_move_assignable;
+
+template<class Ty>
+constexpr bool is_move_assignable_v = is_move_assignable<Ty>::value;
+
+template<class To, class From>
+struct is_nothrow_assignable;
+
+template<class To, class From>
+constexpr bool is_nothrow_assignable_v = is_nothrow_assignable<To, From>::value;
+
+template<class Ty>
+struct is_nothrow_copy_assignable;
+
+template<class Ty>
+constexpr bool is_nothrow_copy_assignable_v = is_nothrow_copy_assignable<Ty>::value;
+
+template<class Ty>
+struct is_nothrow_move_assignable;
+
+template<class Ty>
+constexpr bool is_nothrow_move_assignable_v = is_nothrow_move_assignable<Ty>::value;
+
+template<class From, class To>
+struct is_nothrow_convertible;
+
+template<class From, class To>
+constexpr bool is_nothrow_convertible_v = is_nothrow_convertible<From, To>::value;
+
+template<class Ty>
+struct is_destructible;
+
+template<class Ty>
+constexpr bool is_destructible_v = is_destructible<Ty>::value;
+
+template<class Ty>
+struct is_nothrow_destructible;
+
+template<class Ty>
+constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<Ty>::value;
+
+template<class Ty1, class Ty2>
+struct is_swappable_with;
+
+template<class Ty1, class Ty2>
+constexpr bool is_swappable_with_v = is_swappable_with<Ty1, Ty2>::value;
+
+template<class Ty1, class Ty2>
+struct is_nothrow_swappable_with;
+
+template<class Ty1, class Ty2>
+constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<Ty1, Ty2>::value;
+
+template<class Ty>
+struct is_swappable;
+
+template<class Ty>
+constexpr bool is_swappable_v = is_swappable<Ty>::value;
+
+template<class Ty>
+struct is_nothrow_swappable;
+
+template<class Ty>
+constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<Ty>::value;
+
+template<class Ty,
+enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_move_assignable_v<Ty>, bool> = true>
+constexpr void swap(Ty&, Ty&) noexcept;
+
+template<class Ty, size_t Size,
+enable_if_t<is_swappable_v<Ty>, bool> = true>
+constexpr void swap(Ty(&)[Size], Ty(&)[Size]) noexcept(is_nothrow_swappable_v<Ty>);
+
+template<class Base, class Derived>
+struct is_base_of;
+
+template<class Base, class Derived>
+constexpr bool is_base_of_v = is_base_of<Base, Derived>::value;
+
+template<class Type, template<class...> class Template>
+struct is_specialization;   // true if and only if Type is a specialization of Template
+
+template<class Type, template<class...> class Template>
+constexpr bool is_specialization_v = is_specialization<Type, Template>::value;
+
+template<class Ty>
+struct is_signed;
+
+template<class Ty>
+constexpr bool is_signed_v = is_signed<Ty>::value;
+
+template<class Ty>
+struct is_unsigned;
+
+template<class Ty>
+constexpr bool is_unsigned_v = is_unsigned<Ty>::value;
+
+template<class Ty>
+struct is_nonbool_integral;
+
+template<class Ty>
+constexpr bool is_nonbool_integral_v = is_nonbool_integral<Ty>::value;
+
+template<class Ty>
+struct make_signed;
+
+template<class Ty>
+using make_signed_t = typename make_signed<Ty>::type;
+
+template<class Ty>
+struct make_unsigned;
+
+template<class Ty>
+using make_unsigned_t = typename make_unsigned<Ty>::type;
+
+/// @brief Performs the type conversions equivalent to the ones performed when passing function arguments by value
+template<class Ty>
+struct decay;
+
+template<class Ty>
+using decay_t = typename decay<Ty>::type;
+
+template<class... Ty>
+struct common_type;
+
+template<class... Ty>
+using common_type_t = typename common_type<Ty...>::type;
+
 #pragma endregion declarations
 
 constexpr inline bool is_constant_evaluated() noexcept
 {
     return __builtin_is_constant_evaluated();
 }
+
+template<class Ty>
+Ty _fake_copy_init(Ty) noexcept;
+// _fake_copy_init<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
 template<class Ty, Ty Val>
 struct integral_constant
@@ -529,7 +913,6 @@ struct extent<Ty[Nx], Ix> : extent<Ty, Ix - 1> {}; // Recurse to the next dimens
 template<class Ty, unsigned int Ix>
 struct extent<Ty[], Ix> : extent<Ty, Ix - 1> {}; // Recurse for unknown-size arrays
 
-#pragma region remove_extent/remove_all_extents
 template<class Ty>                              // remove array extent
 struct remove_extent { using type = Ty; };
 
@@ -538,9 +921,6 @@ struct remove_extent<Ty[Size]> { using type = Ty; };
 
 template<class Ty>
 struct remove_extent<Ty[]> { using type = Ty; };
-
-template<class Ty>
-using remove_extent_t = typename remove_extent<Ty>::type;
 
 template<class Ty>
 struct remove_all_extents { using type = Ty; };
@@ -552,155 +932,82 @@ template<class Ty>
 struct remove_all_extents<Ty[]> { using type = typename remove_all_extents<Ty>::type; };
 
 template<class Ty>
-using remove_all_extents_t = typename remove_all_extents<Ty>::type;
-#pragma endregion remove_extent/remove_all_extents
-
-#pragma region is_array
-template<class>                                 // determine whether type argument is an array
-constexpr bool is_array_v = false;
+struct is_array : false_type {};
 
 template<class Ty, size_t Size>
-constexpr bool is_array_v<Ty[Size]> = true;
+struct is_array<Ty[Size]> : true_type {};
 
 template<class Ty>
-constexpr bool is_array_v<Ty[]> = true;
+struct is_array<Ty[]> : true_type {};
 
 template<class Ty>
-struct is_array : bool_constant<is_array_v<Ty>> {};
-#pragma endregion is_array
-
-#pragma region is_bounded_array
-template<class>
-constexpr bool is_bounded_array_v = false;
+struct is_bounded_array : false_type {};
 
 template<class Ty, size_t Nx>
-constexpr bool is_bounded_array_v<Ty[Nx]> = true;
+struct is_bounded_array<Ty[Nx]> : true_type {};
 
 template<class Ty>
-struct is_bounded_array : bool_constant<is_bounded_array_v<Ty>> {};
-#pragma endregion is_bounded_array
-
-#pragma region is_unbounded_array
-template<class>
-constexpr bool is_unbounded_array_v = false;
+struct is_unbounded_array : false_type {};
 
 template<class Ty>
-constexpr bool is_unbounded_array_v<Ty[]> = true;
+struct is_unbounded_array<Ty[]> : true_type {};
 
 template<class Ty>
-struct is_unbounded_array : bool_constant<is_unbounded_array_v<Ty>> {};
-#pragma endregion is_unbounded_array
-
-#pragma region is_lvalue_reference
-template<class>                                 // determine whether type argument is an lvalue reference
-constexpr bool is_lvalue_reference_v = false;
+struct is_lvalue_reference : false_type {};
 
 template<class Ty>
-constexpr bool is_lvalue_reference_v<Ty&> = true;
+struct is_lvalue_reference<Ty&> : true_type {};
 
 template<class Ty>
-struct is_lvalue_reference : bool_constant<is_lvalue_reference_v<Ty>> {};
-#pragma endregion is_lvalue_reference
-
-#pragma region is_rvalue_reference
-template<class>                                 // determine whether type argument is an rvalue reference
-constexpr bool is_rvalue_reference_v = false;
+struct is_rvalue_reference : false_type {};
 
 template<class Ty>
-constexpr bool is_rvalue_reference_v<Ty&&> = true;
+struct is_rvalue_reference<Ty&&> : true_type {};
 
 template<class Ty>
-struct is_rvalue_reference : bool_constant<is_rvalue_reference_v<Ty>> {};
-#pragma endregion is_rvalue_reference
-
-#pragma region is_reference
-template<class>                                 // determine whether type argument is a reference
-constexpr bool is_reference_v = false;
+struct is_reference : false_type {};
 
 template<class Ty>
-constexpr bool is_reference_v<Ty&> = true;
+struct is_reference<Ty&> : true_type {};
 
 template<class Ty>
-constexpr bool is_reference_v<Ty&&> = true;
+struct is_reference<Ty&&> : true_type {};
 
 template<class Ty>
-struct is_reference : bool_constant<is_reference_v<Ty>> {};
-#pragma endregion is_reference
-
-#pragma region is_pointer
-template<class>                                 // determine whether Ty is a pointer
-constexpr bool is_pointer_v = false;
+struct is_pointer : false_type {};
 
 template<class Ty>
-constexpr bool is_pointer_v<Ty*> = true;
+struct is_pointer<Ty*> : true_type {};
 
 template<class Ty>
-constexpr bool is_pointer_v<Ty* const> = true;
+struct is_pointer<Ty* const> : true_type {};
 
 template<class Ty>
-constexpr bool is_pointer_v<Ty* volatile> = true;
+struct is_pointer<Ty* volatile> : true_type {};
 
 template<class Ty>
-constexpr bool is_pointer_v<Ty* const volatile> = true;
+struct is_pointer<Ty* const volatile> : true_type {};
 
-template<class Ty>
-struct is_pointer : bool_constant<is_pointer_v<Ty>> {};
-#pragma endregion is_pointer
-
-#pragma region is_enum
 template<class Ty>
 struct is_enum : bool_constant<__is_enum(Ty)> {};
 
 template<class Ty>
-constexpr bool is_enum_v = is_enum<Ty>::value;
-#pragma endregion is_enum
-
-#pragma region is_union
-template<class Ty>
 struct is_union : bool_constant<__is_union(Ty)> {};
 
 template<class Ty>
-constexpr bool is_union_v = is_union<Ty>::value;
-#pragma endregion is_union
-
-#pragma region is_trivial/is_trivially_copyable
-template<class Ty>
 struct is_trivial : bool_constant<__is_trivially_constructible(Ty) && __is_trivially_copyable(Ty)> {};
-
-template<class Ty>
-constexpr bool is_trivial_v = is_trivial<Ty>::value;
 
 template<class Ty>
 struct is_trivially_copyable : bool_constant<__is_trivially_copyable(Ty)> {};
 
 template<class Ty>
-constexpr bool is_trivially_copyable_v = is_trivially_copyable<Ty>::value;
-#pragma endregion is_trivial/is_trivially_copyable
-
-#pragma region is_standard_layout
-template<class Ty>
 struct is_standard_layout : bool_constant<__is_standard_layout(Ty)> {};
 
 template<class Ty>
-constexpr bool is_standard_layout_v = is_standard_layout<Ty>::value;
-#pragma endregion is_standard_layout
-
-#pragma region is_pod (Plain Old Data)
-template<class Ty>
 struct is_pod : bool_constant<is_standard_layout_v<Ty> && is_trivial_v<Ty>> {};
-//bool_constant<__is_pod(Ty)> {};
 
-template<class Ty>
-constexpr bool is_pod_v = is_pod<Ty>::value;
-#pragma endregion is_pod
-
-#pragma region is_class
 template<class Ty>
 struct is_class : bool_constant<__is_class(Ty)> {};
-
-template<class Ty>
-constexpr bool is_class_v = is_class<Ty>::value;
-#pragma endregion is_class
 
 #pragma region is_convertible
 CUSTOM_DETAIL_BEGIN
@@ -734,48 +1041,25 @@ CUSTOM_DETAIL_END
 
 template<class From, class To>
 struct is_convertible : public bool_constant<detail::_Is_Convertible_Impl<From, To>::value> {};
-
-template<class From, class To>
-constexpr bool is_convertible_v = is_convertible<From, To>::value;
 #pragma endregion is_convertible
 
-#pragma region is_const
-template<class>                                 // determine whether type argument is const qualified
-constexpr bool is_const_v = false;
+template<class Ty>
+struct is_const : false_type {};
 
 template<class Ty>
-constexpr bool is_const_v<const Ty> = true;
+struct is_const<const Ty> : true_type {};
 
 template<class Ty>
-struct is_const : bool_constant<is_const_v<Ty>> {};
-#pragma endregion is_const
-
-#pragma region is_volatile
-template<class>
-constexpr bool is_volatile_v = false;            // determine whether type argument is volatile qualified
+struct is_volatile : false_type {};
 
 template<class Ty>
-constexpr bool is_volatile_v<volatile Ty> = true;
+struct is_volatile<volatile Ty> : true_type {};
 
-template<class Ty>
-struct is_volatile : bool_constant<is_volatile_v<Ty>> {};
-#pragma endregion is_volatile
+template<class Ty>  // only function types and reference types can't be const qualified
+struct is_function : bool_constant<!is_const_v<const Ty> && !is_reference_v<Ty>> {};
 
-#pragma region is_function
-template<class Ty>                              // only function types and reference types can't be const qualified
-constexpr bool is_function_v = !is_const_v<const Ty> && !is_reference_v<Ty>;
-
-template<class Ty>
-struct is_function : bool_constant<is_function_v<Ty>> {};
-#pragma endregion is_function
-
-#pragma region is_object
-template<class Ty>                            // only function types and reference types can't be const qualified
-constexpr bool is_object_v = is_const_v<const Ty> && !is_void_v<Ty>;
-
-template<class Ty>
-struct is_object : bool_constant<is_object_v<Ty>> {};
-#pragma endregion is_object
+template<class Ty>  // only function types and reference types can't be const qualified
+struct is_object : bool_constant<is_const_v<const Ty> && !is_void_v<Ty>> {};
 
 #pragma region is_member_object_pointer
 CUSTOM_DETAIL_BEGIN
@@ -797,16 +1081,13 @@ struct _Is_Member_Object_Pointer_Impl<Ty1 Ty2::*>
 CUSTOM_DETAIL_END
 
 template<class Ty>
-constexpr bool is_member_object_pointer_v = detail::_Is_Member_Object_Pointer_Impl<remove_cv_t<Ty>>::value;
+struct is_member_object_pointer : detail::_Is_Member_Object_Pointer_Impl<remove_cv_t<Ty>> {};
 
-template<class Ty>
-struct is_member_object_pointer : bool_constant<is_member_object_pointer_v<Ty>> {};
 #pragma endregion is_member_object_pointer
 
 #pragma region is_member_function_pointer
 CUSTOM_DETAIL_BEGIN
 
-// is member function pointer impl
 template<class>
 struct _Is_Member_Function_Pointer_Impl
 {
@@ -823,83 +1104,36 @@ struct _Is_Member_Function_Pointer_Impl<Ty1 Ty2::*>
 CUSTOM_DETAIL_END
 
 template<class Ty>
-constexpr bool is_member_function_pointer_v = detail::_Is_Member_Function_Pointer_Impl<remove_cv_t<Ty>>::value;
+struct is_member_function_pointer : detail::_Is_Member_Function_Pointer_Impl<remove_cv_t<Ty>> {};
 
-template<class Ty>
-struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<Ty>> {};
 #pragma endregion is_member_function_pointer
 
-#pragma region is_member_pointer
 template<class Ty>
-constexpr bool is_member_pointer_v = is_member_object_pointer_v<Ty> || is_member_function_pointer_v<Ty>;
+struct is_member_pointer : bool_constant<is_member_object_pointer_v<Ty> || is_member_function_pointer_v<Ty>> {};
 
 template<class Ty>
-struct is_member_pointer : bool_constant<is_member_pointer_v<Ty>> {};
-#pragma endregion is_member_pointer
-
-#pragma region is_null_pointer
-template<class Ty>
-constexpr bool is_null_pointer_v = is_same_v<remove_cv_t<Ty>, std::nullptr_t>;
+struct is_null_pointer : is_same<remove_cv_t<Ty>, std::nullptr_t> {};
 
 template<class Ty>
-struct is_null_pointer : bool_constant<is_null_pointer_v<Ty>> {};
-#pragma endregion is_null_pointer
+struct is_scalar : bool_constant<is_arithmetic_v<Ty> || is_enum_v<Ty> || is_pointer_v<Ty> || is_member_pointer_v<Ty> || is_null_pointer_v<Ty>> {};
 
-#pragma region is_scalar
-template<class Ty>
-constexpr bool is_scalar_v = is_arithmetic_v<Ty> || is_enum_v<Ty> || is_pointer_v<Ty> || is_member_pointer_v<Ty> || is_null_pointer_v<Ty>;
-
-template<class Ty>
-struct is_scalar : bool_constant<is_scalar_v<Ty>> {};
-#pragma endregion is_scalar
-
-#pragma region is_empty
 template<class Ty>
 struct is_empty : bool_constant<__is_empty(Ty)> {};
 
 template<class Ty>
-constexpr bool is_empty_v = is_empty<Ty>::value;
-#pragma endregion is_empty
-
-#pragma region is_polymorphic
-template<class Ty>
 struct is_polymorphic : bool_constant<__is_polymorphic(Ty)> {};
 
-template<class Ty>
-constexpr bool is_polymorphic_v = is_polymorphic<Ty>::value;
-#pragma endregion is_polymorphic
-
-#pragma region is_abstract
 template<class Ty>
 struct is_abstract : bool_constant<__is_abstract(Ty)> {};
 
 template<class Ty>
-constexpr bool is_abstract_v = is_abstract<Ty>::value;
-#pragma endregion is_abstract
-
-#pragma region is_final
-template<class Ty>
 struct is_final : bool_constant<__is_final(Ty)> {};
 
-template<class Ty>
-constexpr bool is_final_v = is_final<Ty>::value;
-#pragma endregion is_final
-
-#pragma region is_constructible
 template<class Ty, class... Args>
 struct is_constructible : bool_constant<__is_constructible(Ty, Args...)> {};
 
-template<class Ty, class... Args>
-constexpr bool is_constructible_v = is_constructible<Ty, Args...>::value;
-#pragma endregion is_constructible
-
-#pragma region is_default_constructible
 template<class Ty>
 struct is_default_constructible : bool_constant<__is_constructible(Ty)> {};
-
-template<class Ty>
-constexpr bool is_default_constructible_v = is_default_constructible<Ty>::value;
-#pragma endregion is_default_constructible
 
 #pragma region is_implicitly_default_constructible
 CUSTOM_DETAIL_BEGIN
@@ -909,124 +1143,65 @@ void _Implicitly_Default_Construct(const Ty&);
 
 CUSTOM_DETAIL_END
 
-template<class Ty, class = void>
+template<class Ty, class AlwaysVoid>
 struct is_implicitly_default_constructible : false_type {}; // determine whether Ty can be copy-initialized with {}
 
 template<class Ty>
 struct is_implicitly_default_constructible<Ty, void_t<decltype(detail::_Implicitly_Default_Construct<Ty>({}))>> : true_type {};
-
-template<class Ty>
-constexpr bool is_implicitly_default_constructible_v = is_implicitly_default_constructible<Ty>::value;
 #pragma endregion is_implicitly_default_constructible
 
-#pragma region is_copy_constructible
 template<class Ty>
 struct is_copy_constructible : bool_constant<__is_constructible(Ty, add_lvalue_reference_t<const Ty>)> {};
 
 template<class Ty>
-constexpr bool is_copy_constructible_v = is_copy_constructible<Ty>::value;
-#pragma endregion is_copy_constructible
-
-#pragma region is_move_constructible
-template<class Ty>
 struct is_move_constructible : bool_constant<__is_constructible(Ty, Ty)> {};
 
-template<class Ty>
-constexpr bool is_move_constructible_v = is_move_constructible<Ty>::value;
-#pragma endregion is_move_constructible
-
-#pragma region is_nothrow_constructible
 template<class Ty, class... Args>
 struct is_nothrow_constructible : bool_constant<__is_nothrow_constructible(Ty, Args...)> {};
 
-template<class Ty, class... Args>
-constexpr bool is_nothrow_constructible_v = is_nothrow_constructible<Ty, Args...>::value;
-#pragma endregion is_nothrow_constructible
-
-#pragma region is_nothrow_default_constructible
 template<class Ty>
 struct is_nothrow_default_constructible : bool_constant<__is_nothrow_constructible(Ty)> {};
 
 template<class Ty>
-constexpr bool is_nothrow_default_constructible_v = is_nothrow_default_constructible<Ty>::value;
-#pragma endregion is_nothrow_default_constructible
-
-#pragma region is_nothrow_copy_constructible
-template<class Ty>
 struct is_nothrow_copy_constructible : bool_constant<__is_nothrow_constructible(Ty, add_lvalue_reference_t<const Ty>)> {};
 
 template<class Ty>
-constexpr bool is_nothrow_copy_constructible_v = is_nothrow_copy_constructible<Ty>::value;
-#pragma endregion is_nothrow_copy_constructible
-
-#pragma region is_nothrow_move_constructible
-template<class Ty>
 struct is_nothrow_move_constructible : bool_constant<__is_nothrow_constructible(Ty, Ty)> {};
 
-template<class Ty>
-constexpr bool is_nothrow_move_constructible_v = is_nothrow_move_constructible<Ty>::value;
-#pragma endregion is_nothrow_move_constructible
-
-#pragma region is_assignable
 template<class To, class From>
 struct is_assignable : bool_constant<__is_assignable(To, From)> {};
 
-template<class To, class From>
-constexpr bool is_assignable_v = is_assignable<To, From>::value;
-#pragma endregion is_assignable
-
-#pragma region is_copy_assignable
 template<class Ty>
 struct is_copy_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<Ty>, add_lvalue_reference_t<const Ty>)> {};
 
 template<class Ty>
-constexpr bool is_copy_assignable_v = is_copy_assignable<Ty>::value;
-#pragma endregion is_copy_assignable
-
-#pragma region is_move_assignable
-template<class Ty>
 struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<Ty>, Ty)> {};
 
-template<class Ty>
-constexpr bool is_move_assignable_v = is_move_assignable<Ty>::value;
-#pragma endregion is_move_assignable
-
-#pragma region is_nothrow_assignable
 template<class To, class From>
 struct is_nothrow_assignable : bool_constant<__is_nothrow_assignable(To, From)> {};
 
-template<class To, class From>
-constexpr bool is_nothrow_assignable_v = is_nothrow_assignable<To, From>::value;
-#pragma endregion is_nothrow_assignable
-
-#pragma region is_nothrow_copy_assignable
 template<class Ty>
 struct is_nothrow_copy_assignable : bool_constant<__is_nothrow_assignable(add_lvalue_reference_t<Ty>, add_lvalue_reference_t<const Ty>)> {};
 
 template<class Ty>
-constexpr bool is_nothrow_copy_assignable_v = is_nothrow_copy_assignable<Ty>::value;
-#pragma endregion is_nothrow_copy_assignable
-
-#pragma region is_nothrow_move_assignable
-template<class Ty>
 struct is_nothrow_move_assignable : bool_constant<__is_nothrow_assignable(add_lvalue_reference_t<Ty>, Ty)> {};
 
-template<class Ty>
-constexpr bool is_nothrow_move_assignable_v = is_nothrow_move_assignable<Ty>::value;
-#pragma endregion is_nothrow_move_assignable
-
 #pragma region is_nothrow_convertible
+CUSTOM_DETAIL_BEGIN
+
 template<class From, class To, bool = is_convertible_v<From, To>, bool = is_void_v<To>>
-constexpr bool is_nothrow_convertible_v = noexcept(_fake_copy_init<To>(custom::declval<From>()));
+struct _Is_Nothrow_Convertible_Impl : bool_constant<noexcept(_fake_copy_init<To>(custom::declval<From>()))> {};
 
 template<class From, class To, bool IsVoidResult>
-constexpr bool is_nothrow_convertible_v<From, To, false, IsVoidResult> = false;
+struct _Is_Nothrow_Convertible_Impl<From, To, false, IsVoidResult> : false_type {};
 
 template<class From, class To>
-constexpr bool is_nothrow_convertible_v<From, To, true, true> = true;
+struct _Is_Nothrow_Convertible_Impl<From, To, true, true> : true_type {};
+
+CUSTOM_DETAIL_END
 
 template<class From, class To>
-struct is_nothrow_convertible : bool_constant<is_nothrow_convertible_v<From, To>> {};
+struct is_nothrow_convertible : detail::_Is_Nothrow_Convertible_Impl<From, To> {};
 #pragma endregion is_nothrow_convertible
 
 #pragma region is_destructible
@@ -1067,9 +1242,6 @@ CUSTOM_DETAIL_END
 
 template<class Ty>
 struct is_destructible : detail::_Is_Destructible_Impl<Ty>::type {};
-
-template<class Ty>
-constexpr bool is_destructible_v = is_destructible<Ty>::value;
 #pragma endregion is_destructible
 
 #pragma region is_nothrow_destructible
@@ -1110,26 +1282,9 @@ CUSTOM_DETAIL_END
 
 template<class Ty>
 struct is_nothrow_destructible : detail::_Is_Nothrow_Destructible_Impl<Ty>::type {};
-
-template<class Ty>
-constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<Ty>::value;
 #pragma endregion is_nothrow_destructible
 
 #pragma region is_swappable_with/is_nothrow_swappable_with
-template<class Ty>
-struct is_swappable;
-
-template<class Ty>
-struct is_nothrow_swappable;
-
-template<class Ty,
-enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_move_assignable_v<Ty>, bool> = true>
-constexpr void swap(Ty&, Ty&) noexcept;
-
-template<class Ty, size_t Size,
-enable_if_t<is_swappable<Ty>::value, bool> = true>
-constexpr void swap(Ty(&)[Size], Ty(&)[Size]) noexcept(is_nothrow_swappable<Ty>::value);
-
 CUSTOM_DETAIL_BEGIN
 
 template<class Ty1, class Ty2, class = void>
@@ -1151,51 +1306,25 @@ template<class Ty1, class Ty2>
 struct is_swappable_with : detail::_Is_Swappable_With_Impl<Ty1, Ty2>::type {};
 
 template<class Ty1, class Ty2>
-constexpr bool is_swappable_with_v = is_swappable_with<Ty1, Ty2>::value;
-
-template<class Ty1, class Ty2>
 struct is_nothrow_swappable_with : bool_constant<conjunction_v<
                                                     detail::_Is_Swappable_With_Impl<Ty1, Ty2>,
                                                     detail::_Is_Nothrow_Swappable_With_Impl<Ty1, Ty2>>> {};
-
-template<class Ty1, class Ty2>
-constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<Ty1, Ty2>::value;
 #pragma endregion is_swappable_with/is_nothrow_swappable_with
 
-#pragma region is_swappable
 template<class Ty>
 struct is_swappable : detail::_Is_Swappable_With_Impl<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
 
 template<class Ty>
-constexpr bool is_swappable_v = is_swappable<Ty>::value;
-#pragma endregion is_swappable
-
-#pragma region is_nothrow_swappable
-template<class Ty>
 struct is_nothrow_swappable : detail::_Is_Nothrow_Swappable_With_Impl<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
 
-template<class Ty>
-constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<Ty>::value;
-#pragma endregion is_nothrow_swappable
-
-#pragma region is_base_of
 template<class Base, class Derived>
 struct is_base_of : bool_constant<__is_base_of(Base, Derived)> {};
 
-template<class Base, class Derived>
-constexpr bool is_base_of_v = is_base_of<Base, Derived>::value;
-#pragma endregion is_base_of
-
-#pragma region is_specialization
-template<class type, template<class...> class Template>
-constexpr bool is_specialization_v = false; // true if and only if type is a specialization of Template
+template<class Type, template<class...> class Template>
+struct is_specialization : false_type {};   // true if and only if Type is a specialization of Template
 
 template<template<class...> class Template, class... Types>
-constexpr bool is_specialization_v<Template<Types...>, Template> = true;
-
-template<class type, template<class...> class Template>
-struct is_specialization : bool_constant<is_specialization_v<type, Template>> {};
-#pragma endregion is_specialization
+struct is_specialization<Template<Types...>, Template> : true_type {};
 
 #pragma region is_signed/is_unsigned
 CUSTOM_DETAIL_BEGIN
@@ -1224,19 +1353,11 @@ template<class Ty>
 struct is_signed : bool_constant<detail::_Sign_Choice<Ty>::_Signed> {};
 
 template<class Ty>
-constexpr bool is_signed_v = is_signed<Ty>::value;
-
-template<class Ty>
 struct is_unsigned : bool_constant<detail::_Sign_Choice<Ty>::_Unsigned> {};
-
-template<class Ty>
-constexpr bool is_unsigned_v = is_unsigned<Ty>::value;
 #pragma endregion is_signed/is_unsigned
 
-#pragma region is_nonbool_integral_v
 template<class Ty>
-constexpr bool is_nonbool_integral_v = is_integral_v<Ty> && !is_same_v<remove_cv_t<Ty>, bool>;
-#pragma endregion is_nonbool_integral_v
+struct is_nonbool_integral : bool_constant<is_integral_v<Ty> && !is_same_v<remove_cv_t<Ty>, bool>> {};
 
 #pragma region make_signed
 CUSTOM_DETAIL_BEGIN
@@ -1262,7 +1383,6 @@ template<>
 struct _Make_Signed_Choice<4>
 {
     // assumes LLP64
-
     template<class Ty>
     using _Apply = conditional_t<   is_same_v<Ty, long> || is_same_v<Ty, unsigned long>,
                                     long,
@@ -1291,9 +1411,6 @@ struct make_signed      // signed partner to Ty
     // removes CV from Ty, makes choice of signment, reapplies CV
     using type = typename remove_cv<Ty>::template _Apply<detail::_Make_Signed>;
 };
-
-template<class Ty>
-using make_signed_t = typename make_signed<Ty>::type;
 #pragma endregion make_signed
 
 #pragma region make_unsigned
@@ -1349,9 +1466,6 @@ struct make_unsigned    // unsigned partner to Ty
     // removes CV from Ty, makes choice of unsignment, reapplies CV
     using type = typename remove_cv<Ty>::template _Apply<detail::_Make_Unsigned>;
 };
-
-template<class Ty>
-using make_unsigned_t = typename make_unsigned<Ty>::type;
 #pragma endregion make_unsigned
 
 #pragma region decay
@@ -1369,9 +1483,6 @@ public:
                                                         add_pointer_t<_No_ref_t>,
                                                         remove_cv_t<_No_ref_t>>>;
 };
-
-template<class Ty>
-using decay_t = typename decay<Ty>::type;
 #pragma endregion decay
 
 #pragma region common_type
@@ -1396,12 +1507,6 @@ struct _Common_Type2_Impl<Ty1, Ty2, Ty1, Ty2> : _Decay_Conditional_Result<Ty1, T
 
 CUSTOM_DETAIL_END
 
-template<class... Ty>
-struct common_type;
-
-template<class... Ty>
-using common_type_t = typename common_type<Ty...>::type;
-
 template<>
 struct common_type<> {};    // 0 types
 
@@ -1414,12 +1519,5 @@ struct common_type<Ty1, Ty2> : detail::_Common_Type2_Impl<Ty1, Ty2> {};  // 2 ty
 template<class Ty1, class Ty2, class... Rest>
 struct common_type<Ty1, Ty2, Rest...> : common_type<common_type_t<Ty1, Ty2>, Rest...> {};   // 3+ types
 #pragma endregion common_type
-
-template<class Ty>
-Ty _fake_copy_init(Ty) noexcept;
-// _fake_copy_init<T>(E):
-// (1) has type T [decay_t<decltype((E))> if T is deduced],
-// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
-// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
 CUSTOM_END
