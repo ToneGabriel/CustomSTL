@@ -4,14 +4,224 @@
 
 CUSTOM_BEGIN
 
-#pragma region is_constant_evaluated
+#pragma region declarations/types/values
+
+template<class Ty, Ty Val>
+struct integral_constant;
+
+template<bool Val>
+using bool_constant = integral_constant<bool, Val>;
+
+using true_type  = bool_constant<true>;
+using false_type = bool_constant<false>;
+
+template<class Ty>
+struct type_identity;
+
+template<class Ty>
+using type_identity_t = typename type_identity<Ty>::type;
+
+template<bool Test, class Ty = void>
+struct enable_if;
+
+template<bool Test, class Ty = void>
+using enable_if_t = typename enable_if<Test, Ty>::type;
+
+template<bool Test, class Ty1, class Ty2>   // Choose Ty1 if Test is true, and Ty2 otherwise
+struct conditional;
+
+template<bool Test, class Ty1, class Ty2>
+using conditional_t = typename conditional<Test, Ty1, Ty2>::type;
+
+template<class Trait>
+struct negation;
+
+template<class Trait>
+constexpr bool negation_v = negation<Trait>::value;
+
+template<class... Traits>
+struct conjunction;
+
+template<class... Traits>
+constexpr bool conjunction_v = conjunction<Traits...>::value;
+
+template<class... Traits>
+struct disjunction;
+
+template<class... Traits>
+constexpr bool disjunction_v = disjunction<Traits...>::value;
+
+template<class Ty>  // remove top-level const qualifier
+struct remove_const;
+
+template<class Ty>
+using remove_const_t = typename remove_const<Ty>::type;
+
+template<class Ty>  // remove top-level volatile qualifier
+struct remove_volatile;
+
+template<class Ty>
+using remove_volatile_t = typename remove_volatile<Ty>::type;
+
+template<class Ty>  // remove top-level const and volatile qualifiers
+struct remove_cv;
+
+template<class Ty>
+using remove_cv_t = typename remove_cv<Ty>::type;
+
+template<class Ty>
+struct remove_cv_ref;
+
+template<class Ty>
+using remove_cv_ref_t = typename remove_cv_ref<Ty>::type;
+
+template<class Ty>
+struct remove_reference;
+
+template<class Ty>
+using remove_reference_t = typename remove_reference<Ty>::type;
+
+template<class Ty>
+struct remove_pointer;
+
+template<class Ty>
+using remove_pointer_t = typename remove_pointer<Ty>::type;
+
+template<class Ty1, class Ty2>
+struct is_same;
+
+template<class Ty1, class Ty2>
+constexpr bool is_same_v = is_same<Ty1, Ty2>::value;
+
+template<class Ty, class... Types>  // true if Ty is in Types
+struct is_any_of;
+
+template<class Ty, class... Types>
+constexpr bool is_any_of_v = is_any_of<Ty, Types...>::value;
+
+template<class Ty>
+struct is_integral;
+
+template<class Ty>
+constexpr bool is_integral_v = is_integral<Ty>::value;
+
+template<class Ty>
+struct is_unsigned_integer;
+
+template<class Ty>
+constexpr bool is_unsigned_integer_v = is_unsigned_integer<Ty>::value;
+
+template<class Ty>
+struct is_char;
+
+template<class Ty>
+constexpr bool is_char_v = is_char<Ty>::value;
+
+template<class Ty>
+struct is_floating_point;
+
+template<class Ty>
+constexpr bool is_floating_point_v = is_floating_point<Ty>::value;
+
+template<class Ty>
+struct is_arithmetic;
+
+template<class Ty>
+constexpr bool is_arithmetic_v = is_arithmetic<Ty>::value;
+
+template<class Ty, Ty... Vals>
+struct integer_sequence;
+
+template<size_t... Vals>
+using index_sequence = integer_sequence<size_t, Vals...>;
+
+template<class Ty, Ty Size>
+#if defined _MSC_VER
+using make_integer_sequence = __make_integer_seq<integer_sequence, Ty, Size>;
+#elif defined __GNUG__
+using make_integer_sequence = integer_sequence<Ty, __integer_pack(Size)...>;
+#else
+#error No "make_integer_sequence" implementation
+#endif  // make_integer_sequence
+
+template<size_t Size>
+using make_index_sequence = make_integer_sequence<size_t, Size>;
+
+template<class... Types>
+using index_sequence_for = make_index_sequence<sizeof...(Types)>;
+
+template<class Ty>
+struct alignment_of;
+
+template<class Ty>
+constexpr size_t alignment_of_v = alignment_of<Ty>::value;
+
+using max_align_t = double;
+
+template<size_t Len, size_t Align = alignof(max_align_t)>
+struct aligned_storage; // define type with size Len and alignment Align
+
+template<size_t Len, size_t Align = alignof(max_align_t)>
+using aligned_storage_t = typename aligned_storage<Len, Align>::type;
+
+template<class Ty>
+struct is_void;
+
+template<class Ty>
+constexpr bool is_void_v = is_void<Ty>::value;
+
+template<class... Types>
+using void_t = void;
+
+template<class Ty>
+struct add_const;
+
+template<class Ty>
+using add_const_t = typename add_const<Ty>::type;
+
+template<class Ty>
+struct add_volatile;
+
+template<class Ty>
+using add_volatile_t = typename add_volatile<Ty>::type;
+
+template<class Ty>
+struct add_cv;
+
+template<class Ty>
+using add_cv_t = typename add_cv<Ty>::type;
+
+template<class Ty>
+struct add_lvalue_reference;
+
+template<class Ty>
+using add_lvalue_reference_t = typename add_lvalue_reference<Ty>::type;
+
+template<class Ty>
+struct add_rvalue_reference;
+
+template<class Ty>
+using add_rvalue_reference_t = typename add_rvalue_reference<Ty>::type;
+
+template<class Ty, class = void>
+struct add_pointer;
+
+template<class Ty>
+using add_pointer_t = typename add_pointer<Ty>::type;
+
+template<class Ty, unsigned int Ix = 0>
+struct extent;  // determine extent of dimension Ix of array Ty
+
+template<class Ty, unsigned int Ix = 0>
+constexpr size_t extent_v = extent<Ty, Ix>::value;
+
+#pragma endregion declarations
+
 constexpr inline bool is_constant_evaluated() noexcept
 {
     return __builtin_is_constant_evaluated();
 }
-#pragma endregion is_constant_evaluated
 
-#pragma region integral_constant
 template<class Ty, Ty Val>
 struct integral_constant
 {
@@ -24,55 +234,25 @@ struct integral_constant
 
     constexpr value_type operator()() const noexcept { return value; }
 };
-#pragma endregion integral_constant
 
-#pragma region bool_constant
-template<bool Val>
-using bool_constant = integral_constant<bool, Val>;
-
-using true_type  = bool_constant<true>;
-using false_type = bool_constant<false>;
-#pragma endregion bool_constant
-
-#pragma region type_identity
 template<class Ty>
 struct type_identity { using type = Ty; };
 
+template<bool Test, class Ty>
+struct enable_if {};
+
 template<class Ty>
-using type_identity_t = typename type_identity<Ty>::type;
-#pragma endregion type_identity
-
-#pragma region enable_if
-template<bool Test, class Ty = void>
-struct enable_if {};                             // no member "type" when !Test
-
-template<class Ty>                              // type is Ty for Test
 struct enable_if<true, Ty> { using type = Ty; };
 
-template<bool Test, class Ty = void>
-using enable_if_t = typename enable_if<Test, Ty>::type;
-#pragma endregion enable_if
-
-#pragma region conditional
 template<bool Test, class Ty1, class Ty2>       // Choose Ty1 if Test is true, and Ty2 otherwise
 struct conditional { using type = Ty1; };
 
 template<class Ty1, class Ty2>
 struct conditional<false, Ty1, Ty2> { using type = Ty2; };
 
-template<bool Test, class Ty1, class Ty2>
-using conditional_t = typename conditional<Test, Ty1, Ty2>::type;
-#pragma endregion conditional
-
-#pragma region negation
 template<class Trait>
 struct negation : bool_constant<!static_cast<bool>(Trait::value)> {}; // The negated result of Trait
 
-template<class Trait>
-constexpr bool negation_v = negation<Trait>::value;
-#pragma endregion negation
-
-#pragma region conjunction
 template<class... Traits>
 struct conjunction : true_type {};
  
@@ -84,11 +264,6 @@ struct conjunction<First, Rest...>
 : conditional_t<static_cast<bool>(First::value), conjunction<Rest...>, First> {};
 
 template<class... Traits>
-constexpr bool conjunction_v = conjunction<Traits...>::value;
-#pragma endregion conjunction
-
-#pragma region disjunction
-template<class... Traits>
 struct disjunction : false_type {};
  
 template<class First>
@@ -98,22 +273,12 @@ template<class First, class... Rest>
 struct disjunction<First, Rest...>
 : conditional_t<static_cast<bool>(First::value), First, disjunction<Rest...>> {};
 
-template<class... Traits>
-constexpr bool disjunction_v = disjunction<Traits...>::value;
-#pragma endregion disjunction
-
-#pragma region remove_const
-template<class Ty>                                  // remove top-level const qualifier
+template<class Ty>
 struct remove_const { using type = Ty; };
 
 template<class Ty>
 struct remove_const<const Ty> { using type = Ty; };
 
-template<class Ty>
-using remove_const_t = typename remove_const<Ty>::type;
-#pragma endregion remove_const
-
-#pragma region remove_volatile
 template<class Ty>                                  // remove top-level volatile qualifier
 struct remove_volatile { using type = Ty; };
 
@@ -121,18 +286,13 @@ template<class Ty>
 struct remove_volatile<volatile Ty> { using type = Ty; };
 
 template<class Ty>
-using remove_volatile_t = typename remove_volatile<Ty>::type;
-#pragma endregion remove_volatile
-
-#pragma region remove_cv
-template<class Ty>
-struct remove_cv                                     // remove top-level const and volatile qualifiers
+struct remove_cv
 {
     using type = Ty;
 
     template<template<class> class Fn>
-    using _Apply = Fn<Ty>;                          // apply cv-qualifiers from the class template argument to Fn<Ty>
-                                                    // used to reapply cv-qualifiers after removing them for another purpose
+    using _Apply = Fn<Ty>;  // apply cv-qualifiers from the class template argument to Fn<Ty>
+                            // used to reapply cv-qualifiers after removing them for another purpose
 };
 
 template<class Ty>
@@ -163,11 +323,6 @@ struct remove_cv<const volatile Ty>
 };
 
 template<class Ty>
-using remove_cv_t = typename remove_cv<Ty>::type;
-#pragma endregion remove_cv
-
-#pragma region remove_cv_ref
-template<class Ty>
 struct remove_cv_ref : remove_cv<Ty> {};
 
 template<class Ty>
@@ -177,11 +332,6 @@ template<class Ty>
 struct remove_cv_ref<Ty&&> : remove_cv<Ty> {};
 
 template<class Ty>
-using remove_cv_ref_t = typename remove_cv_ref<Ty>::type;
-#pragma endregion remove_cv_ref
-
-#pragma region remove_reference
-template<class Ty>
 struct remove_reference { using type = Ty; };
 
 template<class Ty>
@@ -190,11 +340,6 @@ struct remove_reference<Ty&> { using type = Ty; };
 template<class Ty>
 struct remove_reference<Ty&&> { using type = Ty; };
 
-template<class Ty>
-using remove_reference_t = typename remove_reference<Ty>::type;
-#pragma endregion remove_reference
-
-#pragma region remove_pointer
 template<class Ty>
 struct remove_pointer { using type = Ty; };
 
@@ -210,77 +355,38 @@ struct remove_pointer<Ty* volatile> { using type = Ty; };
 template<class Ty>
 struct remove_pointer<Ty* const volatile> { using type = Ty; };
 
-template<class Ty>
-using remove_pointer_t = typename remove_pointer<Ty>::type;
-#pragma endregion remove_pointer
-
-#pragma region is_same
-template<class, class>                          // determine whether arguments are the same type
-constexpr bool is_same_v = false;
-
-template<class Ty>
-constexpr bool is_same_v<Ty, Ty> = true;
-
 template<class Ty1, class Ty2>
-struct is_same : bool_constant<is_same_v<Ty1, Ty2>> {};
-#pragma endregion is_same
+struct is_same : false_type {};
 
-#pragma region is_any_of
-template<class Ty, class... Types>              // true if Ty is in Types
-constexpr bool is_any_of_v = disjunction_v<is_same<Ty, Types>...>;
+template<class Ty1>
+struct is_same<Ty1, Ty1> : true_type {};
+
+template<class Ty, class... Types>  // true if Ty is in Types
+struct is_any_of : disjunction<is_same<Ty, Types>...> {};
 
 template<class Ty>
-struct is_any_of : bool_constant<is_any_of_v<Ty>> {};
-#pragma endregion is_any_of
-
-#pragma region is_integral
-template<class Ty>
-constexpr bool is_integral_v = is_any_of_v<remove_cv_t<Ty>, bool, char, signed char, unsigned char,
+struct is_integral : is_any_of<remove_cv_t<Ty>, bool, char, signed char, unsigned char,
 wchar_t,
 #ifdef __cpp_char8_t
 char8_t,
 #endif
-char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
+char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long> {};
 
 template<class Ty>
-struct is_integral : bool_constant<is_integral_v<Ty>> {};
-#pragma endregion is_integral
-
-#pragma region is_unsigned_integer
-template<class Ty>
-constexpr bool is_unsigned_integer_v = is_any_of_v<remove_cv_t<Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+struct is_unsigned_integer : is_any_of<remove_cv_t<Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long> {};
 
 template<class Ty>
-struct is_unsigned_integer : bool_constant<is_unsigned_integer_v<Ty>> {};
-#pragma endregion is_unsigned_integer
-
-#pragma region is_char
-template<class Ty>
-constexpr bool is_char_v = is_any_of_v<Ty, char, wchar_t,
+struct is_char : is_any_of<remove_cv_t<Ty>, char, wchar_t,
 #ifdef __cpp_char8_t
 char8_t,
 #endif
-char16_t, char32_t>;
+char16_t, char32_t> {};
 
 template<class Ty>
-struct is_char : bool_constant<is_char_v<Ty>> {};
-#pragma endregion is_char
-
-#pragma region is_floating_point
-template<class Ty>
-constexpr bool is_floating_point_v = is_any_of_v<remove_cv_t<Ty>, float, double, long double>;
+struct is_floating_point : is_any_of<remove_cv_t<Ty>, float, double, long double> {};
 
 template<class Ty>
-struct is_floating_point : bool_constant<is_floating_point_v<Ty>> {};
-#pragma endregion is_floating_point
-
-#pragma region is_arithmetic
-template<class Ty>
-constexpr bool is_arithmetic_v = is_integral_v<Ty> || is_floating_point_v<Ty>;
-
-template<class Ty>
-struct is_arithmetic : bool_constant<is_arithmetic_v<Ty>> {};
-#pragma endregion is_arithmetic
+struct is_arithmetic : disjunction<is_integral<Ty>, is_floating_point<Ty>> {};
 
 #pragma region always_false
 // false value attached to a dependent name (for static_assert)
@@ -288,7 +394,6 @@ template<class>
 constexpr bool always_false = false;
 #pragma endregion always_false
 
-#pragma region integer_sequence/index_sequence
 template<class Ty, Ty... Vals>
 struct integer_sequence
 {
@@ -296,35 +401,9 @@ struct integer_sequence
     static constexpr size_t size() noexcept { return sizeof...(Vals); }
 };
 
-template<size_t... Vals>
-using index_sequence = integer_sequence<size_t, Vals...>;
-
-template<class Ty, Ty Size>
-#if defined _MSC_VER
-using make_integer_sequence = __make_integer_seq<integer_sequence, Ty, Size>;
-#elif defined __GNUG__
-using make_integer_sequence = integer_sequence<Ty, __integer_pack(Size)...>;
-#else
-#error No "make_integer_sequence" implementation
-#endif  // make_integer_sequence
-
-template<size_t Size>
-using make_index_sequence = make_integer_sequence<size_t, Size>;
-
-template<class... Types>
-using index_sequence_for = make_index_sequence<sizeof...(Types)>;
-#pragma endregion integer_sequence/index_sequence
-
 #pragma region alignment
-// alignment of
 template<class Ty>
 struct alignment_of : integral_constant<size_t, alignof(Ty)> {}; // determine alignment of Ty
-
-template<class Ty>
-constexpr size_t alignment_of_v = alignment_of<Ty>::value;
-
-// align storage helpers
-using max_align_t = double;
 
 CUSTOM_DETAIL_BEGIN
 
@@ -377,53 +456,26 @@ struct _Aligned_Storage_Impl<Len, Align, char, false>        // char
 
 CUSTOM_DETAIL_END
 
-// aligned_storage
-template<size_t Len, size_t Align = alignof(max_align_t)>
-struct aligned_storage  // define type with size Len and alignment Align
+template<size_t Len, size_t Align>
+struct aligned_storage
 {
     using _Next = char;
     static constexpr bool Fits = Align <= alignof(_Next);
     using type = typename detail::_Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
 };
-
-template<size_t Len, size_t Align = alignof(max_align_t)>
-using aligned_storage_t = typename aligned_storage<Len, Align>::type;
 #pragma endregion alignment
 
-#pragma region is_void
 template<class Ty>
-constexpr bool is_void_v = is_same_v<remove_cv_t<Ty>, void>;
+struct is_void : is_same<remove_cv_t<Ty>, void> {};
 
-template<class Ty>
-struct is_void : bool_constant<is_void_v<Ty>> {};
-
-template<class... Types>
-using void_t = void;
-#pragma endregion is_void
-
-#pragma region add_const
 template<class Ty>
 struct add_const { using type = const Ty; };
 
 template<class Ty>
-using add_const_t = typename add_const<Ty>::type;
-#pragma endregion add_const
-
-#pragma region add_volatile
-template<class Ty>
 struct add_volatile { using type = volatile Ty; };
 
 template<class Ty>
-using add_volatile_t = typename add_volatile<Ty>::type;
-#pragma endregion add_volatile
-
-#pragma region add_cv
-template<class Ty>
 struct add_cv { using type = const volatile Ty; };
-
-template<class Ty>
-using add_cv_t = typename add_cv<Ty>::type;
-#pragma endregion add_cv
 
 #pragma region add_lvalue_reference/add_rvalue_reference
 CUSTOM_DETAIL_BEGIN
@@ -449,13 +501,7 @@ template<class Ty>
 struct add_lvalue_reference { using type = typename detail::_Add_Reference_Impl<Ty>::_Lvalue; };
 
 template<class Ty>
-using add_lvalue_reference_t = typename add_lvalue_reference<Ty>::type;
-
-template<class Ty>
 struct add_rvalue_reference { using type = typename detail::_Add_Reference_Impl<Ty>::_Rvalue; };
-
-template<class Ty>
-using add_rvalue_reference_t = typename add_rvalue_reference<Ty>::type;
 
 // declval (ex: used in decltype)
 template<class Ty>
@@ -465,33 +511,23 @@ add_rvalue_reference_t<Ty> declval() noexcept
 }
 #pragma endregion add_lvalue_reference/add_rvalue_reference
 
-#pragma region add_pointer
-template<class Ty, class = void>                // add pointer (pointer type cannot be formed)
+template<class Ty, class AlwaysVoid>    // add pointer (pointer type cannot be formed)
 struct add_pointer { using type = Ty; };
 
-template<class Ty>                              // (pointer type can be formed)
+template<class Ty>                      // (pointer type can be formed)
 struct add_pointer<Ty, void_t<remove_reference_t<Ty>*>> { using type = remove_reference_t<Ty>*; };
 
-template<class Ty>
-using add_pointer_t = typename add_pointer<Ty>::type;
-#pragma endregion add_pointer
-
-#pragma region extent
-template<class Ty, unsigned int Ix = 0>
-constexpr size_t extent_v = 0;                  // determine extent of dimension Ix of array Ty
+template<class Ty, unsigned int Ix>
+struct extent : std::integral_constant<size_t, 0> {}; // Default case: extent is 0
 
 template<class Ty, size_t Nx>
-constexpr size_t extent_v<Ty[Nx], 0> = Nx;
+struct extent<Ty[Nx], 0> : std::integral_constant<size_t, Nx> {}; // First dimension extent
 
 template<class Ty, unsigned int Ix, size_t Nx>
-constexpr size_t extent_v<Ty[Nx], Ix> = extent_v<Ty, Ix - 1>;
+struct extent<Ty[Nx], Ix> : extent<Ty, Ix - 1> {}; // Recurse to the next dimension
 
 template<class Ty, unsigned int Ix>
-constexpr size_t extent_v<Ty[], Ix> = extent_v<Ty, Ix - 1>;
-
-template<class Ty, unsigned int Ix = 0>
-struct extent : integral_constant<size_t, extent_v<Ty, Ix>> {};
-#pragma endregion extent
+struct extent<Ty[], Ix> : extent<Ty, Ix - 1> {}; // Recurse for unknown-size arrays
 
 #pragma region remove_extent/remove_all_extents
 template<class Ty>                              // remove array extent
