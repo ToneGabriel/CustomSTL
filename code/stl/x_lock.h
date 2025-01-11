@@ -20,8 +20,10 @@ class condition_variable_any;
 
 CUSTOM_DETAIL_BEGIN     // lock impl
 
+// lock locks[target]
 template<size_t... Indices, class... Locks>
-void _lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&... locks) { // lock locks[target]
+void _lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&... locks)
+{
     // ((static_cast<int>(Indices) == target ? (void)locks.lock() : void()), ...);
     
     // Without the array initializer, the fold expression could potentially be optimized away
@@ -42,8 +44,10 @@ void _lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&..
 #undef _FOLD_EXPRESSION
 }
 
+// try to lock locks[target]
 template<size_t... Indices, class... Locks>
-bool _try_lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&... locks) { // try to lock locks[target]
+bool _try_lock_one_from_locks(const int target, index_sequence<Indices...>, Locks&... locks)
+{
     bool result;
 
 #define _FOLD_EXPRESSION (static_cast<int>(Indices) == target ? (void)(result = locks.try_lock()) : void())
@@ -56,10 +60,10 @@ bool _try_lock_one_from_locks(const int target, index_sequence<Indices...>, Lock
     return result;
 }
 
+// unlock locks in locks[first, last)
 template<size_t... Indices, class... Locks>
-void _unlock_locks_range(const int first, const int last, index_sequence<Indices...>, Locks&... locks) noexcept {
-    // unlock locks in locks[first, last)
-
+void _unlock_locks_range(const int first, const int last, index_sequence<Indices...>, Locks&... locks) noexcept
+{
 #define _FOLD_EXPRESSION (first <= static_cast<int>(Indices) && static_cast<int>(Indices) < last ? (void)locks.unlock() : void())
 
     int ignored[] = {(_FOLD_EXPRESSION, 0)...};
@@ -69,7 +73,8 @@ void _unlock_locks_range(const int first, const int last, index_sequence<Indices
 }
 
 template<class... Locks>
-int _try_lock_range(const int first, const int last, Locks&... locks) {
+int _try_lock_range(const int first, const int last, Locks&... locks)
+{
     using Indices = index_sequence_for<Locks...>;
 
     int next = first;   // initialized here because of catch
@@ -94,8 +99,10 @@ int _try_lock_range(const int first, const int last, Locks&... locks) {
 CUSTOM_DETAIL_END   // lock impl
 
 
+// lock multiple locks, without deadlock
 template<class... Locks>
-void lock(Locks&... locks) {    // lock multiple locks, without deadlock
+void lock(Locks&... locks)
+{
     using Indices = index_sequence_for<Locks...>;
 
     // hardLockIndex stores the position of the last failed lock (-1 is ok)
@@ -144,7 +151,8 @@ void lock(Locks&... locks) {    // lock multiple locks, without deadlock
 }
 
 template<class... Locks>
-int try_lock(Locks&... locks) {
+int try_lock(Locks&... locks)
+{
     // try to lock multiple locks
     // -1 on success, or ​0​-based index value of the object that failed to lock.
     return detail::_try_lock_range(0, sizeof...(Locks), locks...);
@@ -173,13 +181,15 @@ private:
 public:
     // Constructors & Operators
 
-    explicit lock_guard(mutex_type& mtx) : _mutex(mtx) {
+    explicit lock_guard(mutex_type& mtx) : _mutex(mtx)
+    {
         _mutex.lock();
     }
 
     lock_guard(mutex_type& mtx, adopt_lock_t) : _mutex(mtx) { /*Empty*/ } // construct but don't lock
 
-    ~lock_guard() {
+    ~lock_guard()
+    {
         _mutex.unlock();
     }
     
@@ -200,11 +210,13 @@ private:
 public:
     // Constructors & Operators
 
-    explicit unlock_guard(mutex_type& mtx) : _mutex(mtx) {
+    explicit unlock_guard(mutex_type& mtx) : _mutex(mtx)
+    {
         _mutex.unlock();
     }
 
-    ~unlock_guard() {
+    ~unlock_guard()
+    {
         // relock mutex or terminate()
         // condition_variable_any wait functions are required to terminate if
         // the mutex cannot be relocked;
@@ -229,37 +241,41 @@ private:
 public:
     // Constructors
 
-    unique_lock()                    = default;
-    unique_lock(const unique_lock&)   = delete;
+    unique_lock()                   = default;
+    unique_lock(const unique_lock&) = delete;
 
-    unique_lock(mutex_type& mtx) : _ownedMutex(&mtx), _owns(false) {                              // construct and lock
+    // construct and lock
+    unique_lock(mutex_type& mtx) : _ownedMutex(&mtx), _owns(false)
+    {
         _ownedMutex->lock();
         _owns = true;
     }
 
-    unique_lock(mutex_type& mtx, adopt_lock_t)                                                     // construct and assume already locked
+    unique_lock(mutex_type& mtx, adopt_lock_t)  // construct and assume already locked
         : _ownedMutex(&mtx), _owns(true) { /*Empty*/ }
 
-    unique_lock(mutex_type& mtx, defer_lock_t) noexcept                                            // construct but don't lock
+    unique_lock(mutex_type& mtx, defer_lock_t) noexcept // construct but don't lock
         : _ownedMutex(&mtx), _owns(false) { /*Empty*/ }
 
-    unique_lock(mutex_type& mtx, try_to_lock_t)                                                     // construct and try to lock
+    unique_lock(mutex_type& mtx, try_to_lock_t) // construct and try to lock
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock()) { /*Empty*/ }
 
     template<class Rep, class Period>
-    unique_lock(mutex_type& mtx, const custom::chrono::duration<Rep, Period>& relativeTime)          // construct and lock with timeout
+    unique_lock(mutex_type& mtx, const custom::chrono::duration<Rep, Period>& relativeTime) // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_for(relativeTime)) { /*Empty*/ }
 
     template<class Clock, class Duration>
-    unique_lock(mutex_type& mtx, const custom::chrono::time_point<Clock, Duration>& absoluteTime)    // construct and lock with timeout
+    unique_lock(mutex_type& mtx, const custom::chrono::time_point<Clock, Duration>& absoluteTime)   // construct and lock with timeout
         : _ownedMutex(&mtx), _owns(_ownedMutex->try_lock_until(absoluteTime)) { /*Empty*/ }
 
-    unique_lock(unique_lock&& other) noexcept : _ownedMutex(other._ownedMutex), _owns(other._owns) {
+    unique_lock(unique_lock&& other) noexcept : _ownedMutex(other._ownedMutex), _owns(other._owns)
+    {
         other._ownedMutex   = nullptr;
         other._owns         = false;
     }
 
-    ~unique_lock() {
+    ~unique_lock()
+    {
         if (_owns)
             _ownedMutex->unlock();
     }
@@ -269,7 +285,8 @@ public:
 
     unique_lock& operator=(const unique_lock&) = delete;
 
-    unique_lock& operator=(unique_lock&& other) {
+    unique_lock& operator=(unique_lock&& other)
+    {
         if (_ownedMutex != other._ownedMutex)
         {
             if (_owns)
@@ -282,40 +299,46 @@ public:
         return *this;
     }
 
-    explicit operator bool() const noexcept {
+    explicit operator bool() const noexcept
+    {
         return _owns;
     }
 
 public:
     // Main functions
 
-    void lock() {
+    void lock()
+    {
         _validate();
         _ownedMutex->lock();
         _owns = true;
     }
 
-    bool try_lock() {
+    bool try_lock()
+    {
         _validate();
         _owns = _ownedMutex->try_lock();
         return _owns;
     }
 
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime)
+    {
         _validate();
         _owns = _ownedMutex->try_lock_for(relativeTime);
         return _owns;
     }
 
     template<class Clock, class Duration>
-    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
+    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime)
+    {
         _validate();
         _owns = _ownedMutex->try_lock_until(absoluteTime);
         return _owns;
     }
 
-    void unlock() {
+    void unlock()
+    {
         if (_ownedMutex == nullptr || _owns == false)
             throw std::logic_error("No mutex owned.");
 
@@ -323,7 +346,8 @@ public:
         _owns = false;
     }
 
-    mutex_type* release() {
+    mutex_type* release()
+    {
         mutex_type* temp = _ownedMutex;
         _ownedMutex     = nullptr;
         _owns           = false;
@@ -331,18 +355,22 @@ public:
         return temp;
     }
 
-    mutex_type* mutex() const noexcept{
+    mutex_type* mutex() const noexcept
+    {
         return _ownedMutex;
     }
 
-    bool owns_lock() const {
+    bool owns_lock() const
+    {
         return _owns;
     }
 
 private:
     // Helpers
 
-    void _validate() const {        // check if mutex can be locked
+    // check if mutex can be locked
+    void _validate() const
+    {
         if (_ownedMutex == nullptr)
             throw std::logic_error("No mutex owned.");
 
@@ -379,34 +407,38 @@ public:
     shared_lock()                   = default;
     shared_lock(const shared_lock&) = delete;
 
-    shared_lock(mutex_type& mtx) : _ownedSMutex(&mtx), _owns(false) {                              // construct and lock
+    // construct and lock
+    shared_lock(mutex_type& mtx) : _ownedSMutex(&mtx), _owns(false)
+    {
         _ownedSMutex->lock_shared();
         _owns = true;
     }
 
-    shared_lock(mutex_type& mtx, adopt_lock_t)                                                     // construct and assume already locked
+    shared_lock(mutex_type& mtx, adopt_lock_t)  // construct and assume already locked
         : _ownedSMutex(&mtx), _owns(true) { /*Empty*/ }
 
-    shared_lock(mutex_type& mtx, defer_lock_t) noexcept                                            // construct but don't lock
+    shared_lock(mutex_type& mtx, defer_lock_t) noexcept // construct but don't lock
         : _ownedSMutex(&mtx), _owns(false) { /*Empty*/ }
 
-    shared_lock(mutex_type& mtx, try_to_lock_t)                                                     // construct and try to lock
+    shared_lock(mutex_type& mtx, try_to_lock_t) // construct and try to lock
         : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared()) { /*Empty*/ }
 
     template<class Rep, class Period>
-    shared_lock(mutex_type& mtx, const custom::chrono::duration<Rep, Period>& relativeTime)          // construct and lock with timeout
+    shared_lock(mutex_type& mtx, const custom::chrono::duration<Rep, Period>& relativeTime) // construct and lock with timeout
         : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared_for(relativeTime)) { /*Empty*/ }
 
     template<class Clock, class Duration>
-    shared_lock(mutex_type& mtx, const custom::chrono::time_point<Clock, Duration>& absoluteTime)    // construct and lock with timeout
+    shared_lock(mutex_type& mtx, const custom::chrono::time_point<Clock, Duration>& absoluteTime)   // construct and lock with timeout
         : _ownedSMutex(&mtx), _owns(_ownedSMutex->try_lock_shared_until(absoluteTime)) { /*Empty*/ }
 
-    shared_lock(shared_lock&& other) noexcept : _ownedSMutex(other._ownedSMutex), _owns(other._owns) {
+    shared_lock(shared_lock&& other) noexcept : _ownedSMutex(other._ownedSMutex), _owns(other._owns)
+    {
         other._ownedSMutex  = nullptr;
         other._owns         = false;
     }
 
-    ~shared_lock() {
+    ~shared_lock()
+    {
         if (_owns)
             _ownedSMutex->unlock_shared();
     }
@@ -416,7 +448,8 @@ public:
 
     shared_lock& operator=(const shared_lock&) = delete;
 
-    shared_lock& operator=(shared_lock&& other) {
+    shared_lock& operator=(shared_lock&& other)
+    {
         if (_ownedSMutex != other._ownedSMutex)
         {
             if (_owns)
@@ -429,40 +462,46 @@ public:
         return *this;
     }
 
-    explicit operator bool() const noexcept {
+    explicit operator bool() const noexcept
+    {
         return _owns;
     }
 
 public:
     // Main functions
 
-    void lock() {
+    void lock()
+    {
         _validate();
         _ownedSMutex->lock_shared();
         _owns = true;
     }
 
-    bool try_lock() {
+    bool try_lock()
+    {
         _validate();
         _owns = _ownedSMutex->try_lock_shared();
         return _owns;
     }
 
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime)
+    {
         _validate();
         _owns = _ownedSMutex->try_lock_shared_for(relativeTime);
         return _owns;
     }
 
     template<class Clock, class Duration>
-    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
+    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime)
+    {
         _validate();
         _owns = _ownedSMutex->try_lock_shared_until(absoluteTime);
         return _owns;
     }
 
-    void unlock() {
+    void unlock()
+    {
         if (_ownedSMutex == nullptr || _owns == false)
             throw std::logic_error("No mutex owned.");
 
@@ -470,7 +509,8 @@ public:
         _owns = false;
     }
 
-    mutex_type* release() {
+    mutex_type* release()
+    {
         mutex_type* temp = _ownedSMutex;
         _ownedSMutex    = nullptr;
         _owns           = false;
@@ -478,18 +518,22 @@ public:
         return temp;
     }
 
-    mutex_type* mutex() const noexcept{
+    mutex_type* mutex() const noexcept
+    {
         return _ownedSMutex;
     }
 
-    bool owns_lock() const {
+    bool owns_lock() const
+    {
         return _owns;
     }
 
 private:
     // Helpers
 
-    void _validate() const {        // check if mutex can be locked
+    // check if mutex can be locked
+    void _validate() const
+    {
         if (_ownedSMutex == nullptr)
             throw std::logic_error("No mutex owned.");
 
@@ -508,15 +552,18 @@ private:
 public:
     // Constructors & Operators
 
-    explicit scoped_lock(Mutexes&... mtxes): _ownedMutexes(mtxes...) { // construct and lock
+    explicit scoped_lock(Mutexes&... mtxes): _ownedMutexes(mtxes...)    // construct and lock
+    {
         custom::lock(mtxes...);
     }
 
     explicit scoped_lock(adopt_lock_t, Mutexes&... mtxes)
         : _ownedMutexes(mtxes...) { /*Empty*/ } // construct but don't lock
 
-    ~scoped_lock() {
-        auto reverseUnlock = [](Mutexes&... mtxes) {
+    ~scoped_lock()
+    {
+        auto reverseUnlock = [](Mutexes&... mtxes)
+        {
             // (args, ...) left folding   = first -> last
             // (..., args) right folding  = last -> first
 
@@ -528,7 +575,7 @@ public:
 
     scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
-}; // END scoped_lock multiple
+}; // END scoped_lock
 
 
 template<class Mtx>
@@ -543,14 +590,16 @@ private:
 public:
     // Constructors & Operators
 
-    explicit scoped_lock(mutex_type& mtx) : _ownedMutex(mtx) { // construct and lock
+    explicit scoped_lock(mutex_type& mtx) : _ownedMutex(mtx)    // construct and lock
+    {
         _ownedMutex.lock();
     }
 
     explicit scoped_lock(adopt_lock_t, mutex_type& mtx)
         : _ownedMutex(mtx) { /*Empty*/ } // construct but don't lock
 
-    ~scoped_lock() {
+    ~scoped_lock()
+    {
         _ownedMutex.unlock();
     }
 

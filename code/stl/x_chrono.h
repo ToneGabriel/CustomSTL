@@ -54,18 +54,21 @@ CUSTOM_DETAIL_END
 template<class Rep>
 struct duration_values  // gets arithmetic properties of a type
 {
-    static constexpr Rep zero() noexcept {      // get zero value
+    static constexpr Rep zero() noexcept
+    {
         return Rep(0);
     }
 
-    static constexpr Rep (min)() noexcept {     // get smallest value
+    static constexpr Rep (min)() noexcept
+    {
         return numeric_limits<Rep>::lowest();
     }
 
-    static constexpr Rep (max)() noexcept {     // get largest value
+    static constexpr Rep (max)() noexcept
+    {
         return (numeric_limits<Rep>::max)();
     }
-};
+};  // END duration_values
 
 
 // is clock

@@ -6,25 +6,29 @@ CUSTOM_BEGIN
 
 // move
 template<class Ty>
-constexpr remove_reference_t<Ty>&& move(Ty&& val) noexcept { 
+constexpr remove_reference_t<Ty>&& move(Ty&& val) noexcept
+{ 
     return static_cast<remove_reference_t<Ty>&&>(val);
 }
 
 // forward
 template<class Ty>
-constexpr Ty&& forward(remove_reference_t<Ty>& val) noexcept {
+constexpr Ty&& forward(remove_reference_t<Ty>& val) noexcept
+{
     return static_cast<Ty&&>(val);
 }
 
 template<class Ty>
-constexpr Ty&& forward(remove_reference_t<Ty>&& val) noexcept {
+constexpr Ty&& forward(remove_reference_t<Ty>&& val) noexcept
+{
     static_assert(!is_lvalue_reference_v<Ty>, "bad forward call");
     return static_cast<Ty&&>(val);
 }
 
 template<class Ty,
 enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_move_assignable_v<Ty>, bool>>
-constexpr void swap(Ty& first, Ty& second) noexcept {
+constexpr void swap(Ty& first, Ty& second) noexcept
+{
     Ty temp = custom::move(first);
     first   = custom::move(second);
     second  = custom::move(temp);
@@ -32,7 +36,8 @@ constexpr void swap(Ty& first, Ty& second) noexcept {
 
 template<class Ty, size_t Size,
 enable_if_t<is_swappable<Ty>::value, bool>>
-constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swappable<Ty>::value) {
+constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swappable<Ty>::value)
+{
     if (&left != &right)
     {
         Ty* first1 = left;
@@ -46,7 +51,8 @@ constexpr void swap(Ty(&left)[Size], Ty(&right)[Size]) noexcept(is_nothrow_swapp
 
 template<class Ty, class Other = Ty,
 enable_if_t<is_nothrow_move_constructible_v<Ty> && is_nothrow_assignable_v<Ty&, Other>, bool> = true>
-constexpr Ty exchange(Ty& val, Other&& newVal) noexcept {
+constexpr Ty exchange(Ty& val, Other&& newVal) noexcept
+{
     // assign newVal to val, return previous val
     Ty old  = custom::move(val);
     val     = custom::move(newVal);

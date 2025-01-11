@@ -13,7 +13,7 @@
 #define CUSTOM_DETAIL_BEGIN namespace detail {  // used to hide detailed implementations
 #define CUSTOM_DETAIL_END }
 
-#define CUSTOM_ASSERT(Expr, Msg) custom::__Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
+#define CUSTOM_ASSERT(Expr, Msg) custom::detail::__Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 
 #define CUSTOM_RERAISE throw    // used to terminate in a catch block
 
@@ -37,7 +37,6 @@
 CUSTOM_BEGIN
 
 CUSTOM_DETAIL_BEGIN // create the "detail" namespace inside "custom" namespace
-CUSTOM_DETAIL_END
 
 inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
     if (!expr)
@@ -48,5 +47,7 @@ inline void __Assert(bool expr, const char* msg, const char* exprStr, const char
         ::abort();
     }
 }
+
+CUSTOM_DETAIL_END
 
 CUSTOM_END

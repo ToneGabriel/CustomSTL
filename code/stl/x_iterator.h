@@ -10,6 +10,8 @@ struct forward_iterator_tag         : input_iterator_tag {};
 struct bidirectional_iterator_tag   : forward_iterator_tag {};
 struct random_access_iterator_tag   : bidirectional_iterator_tag {};
 
+CUSTOM_DETAIL_BEGIN
+
 // normal iterator traits helpers
 template<class iterator, class = void>
 struct _Iterator_Traits {};
@@ -42,12 +44,14 @@ struct _Iterator_Traits_Ptr
 template<class Type>
 struct _Iterator_Traits_Ptr<Type, false> {};
 
+CUSTOM_DETAIL_END
+
 // iterator traits
 template<class iterator>
-struct iterator_traits : _Iterator_Traits<iterator> {};
+struct iterator_traits : detail::_Iterator_Traits<iterator> {};
 
 template<class Type>
-struct iterator_traits<Type*> : _Iterator_Traits_Ptr<Type> {};
+struct iterator_traits<Type*> :  detail::_Iterator_Traits_Ptr<Type> {};
 
 // is iterator
 template<class Iter, class = void>
@@ -79,23 +83,27 @@ constexpr bool is_bidirectional_iterator_v = is_convertible_v<typename iterator_
 template<class Iter>
 constexpr bool is_random_access_iterator_v = is_convertible_v<typename iterator_traits<Iter>::iterator_category, random_access_iterator_tag>;
 
+CUSTOM_DETAIL_BEGIN
 
 // helpers
 template<class Type>
-constexpr void _verify_range(const Type* const first, const Type* const last) noexcept {
+constexpr void _verify_range(const Type* const first, const Type* const last) noexcept
+{
     // ALL containers have this function implemented as friend in their iterators
     // This is a specialization for raw pointers
     CUSTOM_ASSERT(first <= last, "Transposed pointer range.");
 }
 
 template<class Iter1, class Iter2>
-constexpr void _verify_iteration_range(const Iter1& first, const Iter2& last) {
+constexpr void _verify_iteration_range(const Iter1& first, const Iter2& last)
+{
     // check that [first, last) forms an iterator range
     _verify_range(first, last);
 }
 
 template<class OtherIter, class InputIt, class BinaryPredicate>
-constexpr void _verify_iteration_order(InputIt first, InputIt last, BinaryPredicate&& pred) {
+constexpr void _verify_iteration_order(InputIt first, InputIt last, BinaryPredicate&& pred)
+{
     // test if range is ordered by predicate
     // and the value types match for the 2 iterator types
 
@@ -111,7 +119,8 @@ constexpr void _verify_iteration_order(InputIt first, InputIt last, BinaryPredic
 template<class BinaryPredicate, class Type1, class Type2,
 enable_if_t<is_same_v<remove_cv_ref_t<Type1>, remove_cv_ref_t<Type2>>, bool> = true>
 constexpr bool _verify_predicate_order(BinaryPredicate&& pred, Type1&& left, Type2&& right)
-noexcept(noexcept(pred(left, right)) && noexcept(pred(right, left))) {
+noexcept(noexcept(pred(left, right)) && noexcept(pred(right, left)))
+{
     // test if pred is strict weak ordering
     // when the arguments are the cv-same-type
 
@@ -122,5 +131,7 @@ noexcept(noexcept(pred(left, right)) && noexcept(pred(right, left))) {
 
     return res;
 }
+
+CUSTOM_DETAIL_END
 
 CUSTOM_END

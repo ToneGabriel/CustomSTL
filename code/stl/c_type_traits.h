@@ -6,14 +6,31 @@ CUSTOM_BEGIN
 
 #pragma region declarations/types/values
 
+/**
+ * @note Defined here due to dependecies in detail::
+ */
 template<class Ty, Ty Val>
-struct integral_constant;
+struct integral_constant
+{
+    using value_type    = Ty;
+    using type          = integral_constant;
+
+    static constexpr value_type value = Val;
+
+    constexpr operator value_type() const noexcept { return value; }
+
+    constexpr value_type operator()() const noexcept { return value; }
+};
 
 template<bool Val>
 using bool_constant = integral_constant<bool, Val>;
 
 using true_type  = bool_constant<true>;
 using false_type = bool_constant<false>;
+
+// false value attached to a dependent name (for static_assert)
+template<class>
+constexpr bool always_false_v = false;
 
 template<class Ty>
 struct type_identity;
@@ -592,32 +609,348 @@ struct common_type;
 template<class... Ty>
 using common_type_t = typename common_type<Ty...>::type;
 
-#pragma endregion declarations
-
 constexpr inline bool is_constant_evaluated() noexcept
 {
     return __builtin_is_constant_evaluated();
 }
 
 template<class Ty>
-Ty _fake_copy_init(Ty) noexcept;
-// _fake_copy_init<T>(E):
+add_rvalue_reference_t<Ty> declval() noexcept
+{
+    static_assert(always_false_v<Ty>, "declval not allowed in an evaluated context");
+}
+
+#pragma endregion declarations
+
+
+#pragma region helpers
+
+CUSTOM_DETAIL_BEGIN
+
+template<class Ty>
+Ty _Fake_Copy_Init(Ty) noexcept;
+// _Fake_Copy_Init<T>(E):
 // (1) has type T [decay_t<decltype((E))> if T is deduced],
 // (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
-template<class Ty, Ty Val>
-struct integral_constant
+template<class Ty>
+void _Implicitly_Default_Construct(const Ty&);
+
+// aligned_storage helpers
+template<class Ty, size_t Len>
+union _Align_Type   // union with size Len bytes and alignment of Ty
 {
-    using value_type    = Ty;
-    using type          = integral_constant;
-
-    static constexpr value_type value = Val;
-
-    constexpr operator value_type() const noexcept { return value; }
-
-    constexpr value_type operator()() const noexcept { return value; }
+    Ty Val;
+    char Pad[Len];
 };
+
+template<size_t Len, size_t Align, class Ty, bool Ok>
+struct _Aligned_Storage_Impl;   // define type with size Len and alignment Ty
+
+template<size_t Len, size_t Align, class Ty>
+struct _Aligned_Storage_Impl<Len, Align, Ty, true>           // class
+{
+    using type = _Align_Type<Ty, Len>;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned_Storage_Impl<Len, Align, double, false>      // double
+{
+    using type = _Align_Type<max_align_t, Len>;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned_Storage_Impl<Len, Align, int, false>         // int
+{
+    using _Next = double;
+    static constexpr bool Fits = Align <= alignof(_Next);
+    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned_Storage_Impl<Len, Align, short, false>       // short
+{
+    using _Next = int;
+    static constexpr bool Fits = Align <= alignof(_Next);
+    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
+};
+
+template<size_t Len, size_t Align>
+struct _Aligned_Storage_Impl<Len, Align, char, false>        // char
+{
+    using _Next = short;
+    static constexpr bool Fits = Align <= alignof(_Next);
+    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
+};
+
+// add reference impl
+template<class Ty, class = void>
+struct _Add_Reference_Impl  // add reference (non-referenceable type)
+{
+    using _Lvalue = Ty;
+    using _Rvalue = Ty;
+};
+
+template<class Ty>
+struct _Add_Reference_Impl<Ty, void_t<Ty&>> // (referenceable type)
+{
+    using _Lvalue = Ty&;
+    using _Rvalue = Ty&&;
+};
+
+#if defined _MSC_VER
+template<class From, class To>
+struct _Is_Convertible_Impl : bool_constant<__is_convertible_to(From, To)> {};
+#elif defined __GNUG__
+template<class From, class To>
+struct _Is_Convertible_Impl
+{
+    template<class Ty, class = decltype(static_cast<Ty(*)()>(nullptr))>
+    static auto test_returnable(int) -> true_type;
+
+    template<class>
+    static auto test_returnable(...) -> false_type;
+
+    template<class _From, class _To, class = decltype(custom::declval<void(&)(_To)>()(custom::declval<_From>()))>
+    static auto test_implicitly_convertible(int) -> true_type;
+
+    template<class, class>
+    static auto test_implicitly_convertible(...) -> false_type;
+
+    static constexpr bool value = 
+    ((decltype(test_returnable<To>(0))::value && decltype(test_implicitly_convertible<From, To>(0))::value) ||
+    (is_void_v<From> && is_void_v<To>));
+};  // END _Is_Convertible_Impl
+#endif  // is_convertible helpers
+
+// is member object pointer impl
+template<class>
+struct _Is_Member_Object_Pointer_Impl
+{
+    static constexpr bool value = false;
+};
+
+template<class Ty1, class Ty2>
+struct _Is_Member_Object_Pointer_Impl<Ty1 Ty2::*>
+{
+    static constexpr bool value = !is_function_v<Ty1>;
+    using _Class_Type = Ty2;
+};
+
+template<class>
+struct _Is_Member_Function_Pointer_Impl
+{
+    static constexpr bool value = false;
+};
+
+template<class Ty1, class Ty2>
+struct _Is_Member_Function_Pointer_Impl<Ty1 Ty2::*>
+{
+    static constexpr bool value = is_function_v<Ty1>;
+    using _Class_Type = Ty2;
+};
+
+template<class From, class To, bool = is_convertible_v<From, To>, bool = is_void_v<To>>
+struct _Is_Nothrow_Convertible_Impl : bool_constant<noexcept(_Fake_Copy_Init<To>(custom::declval<From>()))> {};
+
+template<class From, class To, bool IsVoidResult>
+struct _Is_Nothrow_Convertible_Impl<From, To, false, IsVoidResult> : false_type {};
+
+template<class From, class To>
+struct _Is_Nothrow_Convertible_Impl<From, To, true, true> : true_type {};
+
+#if defined _MSC_VER
+template<class Ty>
+struct _Is_Destructible_Impl : bool_constant<__is_destructible(Ty)> {};
+#elif defined __GNUG__
+template<class Ty>
+struct _Is_Destructible_Test
+{
+    template<class _Ty, class = decltype(custom::declval<_Ty&>().~_Ty())>
+    static auto test_destructible(int) -> true_type;
+
+    template<class>
+    static auto test_destructible(...) -> false_type;
+
+    using type = decltype(test_destructible<Ty>(0));
+};
+
+template<class Ty,
+bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
+bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
+struct _Is_Destructible_Impl;
+
+template<class Ty>
+struct _Is_Destructible_Impl<Ty, false, false> : _Is_Destructible_Test<remove_all_extents_t<Ty>>::type {};
+
+template<class Ty>
+struct _Is_Destructible_Impl<Ty, true, false> : false_type {};
+
+template<class Ty>
+struct _Is_Destructible_Impl<Ty, false, true> : true_type {};
+#endif  // _Is_Destructible_Impl
+
+#if defined _MSC_VER
+template<class Ty>
+struct _Is_Nothrow_Destructible_Impl : bool_constant<__is_nothrow_destructible(Ty)> {};
+#elif defined __GNUG__
+template<class Ty>
+struct _Is_Nothrow_Destructible_Test
+{
+    template<class _Ty, class Return = bool_constant<noexcept(custom::declval<_Ty&>().~_Ty())>>
+    static auto test_nothrow_destructible(int) -> Return;
+
+    template<class>
+    static auto test_nothrow_destructible(...) -> false_type;
+
+    using type = decltype(test_nothrow_destructible<Ty>(0));
+};
+
+template<class Ty,
+bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
+bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
+struct _Is_Nothrow_Destructible_Impl;
+
+template<class Ty>
+struct _Is_Nothrow_Destructible_Impl<Ty, false, false> : _Is_Nothrow_Destructible_Test<remove_all_extents_t<Ty>>::type {};
+
+template<class Ty>
+struct _Is_Nothrow_Destructible_Impl<Ty, true, false> : false_type {};
+
+template<class Ty>
+struct _Is_Nothrow_Destructible_Impl<Ty, false, true> : true_type {};
+#endif  // _Is_Nothrow_Destructible_Impl
+
+template<class Ty1, class Ty2, class = void>
+struct _Is_Swappable_With_Impl : false_type {};
+
+template<class Ty1, class Ty2>
+struct _Is_Swappable_With_Impl<Ty1, Ty2,
+void_t< decltype(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())),
+        decltype(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))>> : true_type {};
+
+template<class Ty1, class Ty2>
+struct _Is_Nothrow_Swappable_With_Impl
+: bool_constant<noexcept(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())) &&
+                noexcept(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))> {};
+
+template<class Ty, bool = is_integral_v<Ty>>
+struct _Sign_Choice
+{
+    using _No_cv_t = remove_cv_t<Ty>;
+
+    static constexpr bool _Signed   = static_cast<_No_cv_t>(-1) < static_cast<_No_cv_t>(0);
+    static constexpr bool _Unsigned = !_Signed;
+};
+
+template<class Ty>
+struct _Sign_Choice<Ty, false>
+{
+    // floating-point Ty is signed
+    // non-arithmetic Ty is neither signed nor unsigned
+    static constexpr bool _Signed   = is_floating_point_v<Ty>;
+    static constexpr bool _Unsigned = false;
+};
+
+template<size_t>
+struct _Make_Signed_Choice; // Choose make_signed strategy by type size
+
+template<>
+struct _Make_Signed_Choice<1>
+{
+    template<class>
+    using _Apply = signed char;
+};
+
+template<>
+struct _Make_Signed_Choice<2>
+{
+    template<class>
+    using _Apply = short;
+};
+
+template<>
+struct _Make_Signed_Choice<4>
+{
+    // assumes LLP64
+    template<class Ty>
+    using _Apply = conditional_t<   is_same_v<Ty, long> || is_same_v<Ty, unsigned long>,
+                                    long,
+                                    int>;
+};
+
+template<>
+struct _Make_Signed_Choice<8>
+{
+    template<class>
+    using _Apply = long long;
+};
+
+template<class Ty>
+using _Make_Signed = typename _Make_Signed_Choice<sizeof(Ty)>::template _Apply<Ty>;
+
+template<size_t>
+struct _Make_Unsigned_Choice; // Choose make_unsigned strategy by type size
+
+template<>
+struct _Make_Unsigned_Choice<1>
+{
+    template<class>
+    using _Apply = unsigned char;
+};
+
+template<>
+struct _Make_Unsigned_Choice<2>
+{
+    template<class>
+    using _Apply = unsigned short;
+};
+
+template<>
+struct _Make_Unsigned_Choice<4>
+{
+    // assumes LLP64
+
+    template<class Ty>
+    using _Apply = conditional_t<   is_same_v<Ty, long> || is_same_v<Ty, unsigned long>,
+                                    unsigned long,
+                                    unsigned int>;
+};
+
+template<>
+struct _Make_Unsigned_Choice<8>
+{
+    template<class>
+    using _Apply = unsigned long long;
+};
+
+template<class Ty>
+using _Make_Unsigned = typename _Make_Unsigned_Choice<sizeof(Ty)>::template _Apply<Ty>;
+
+// this decides if Ty1 and Ty2 are compatible and the result is the implicit conversion type
+template<class Ty1, class Ty2>
+using _Conditional_Result_t = decltype(true /*or false*/ ? custom::declval<Ty1>() : custom::declval<Ty2>());
+
+template<class, class, class = void>
+struct _Decay_Conditional_Result {};
+
+template<class Ty1, class Ty2>
+struct _Decay_Conditional_Result<Ty1, Ty2, void_t<_Conditional_Result_t<Ty1, Ty2>>> : decay<_Conditional_Result_t<Ty1, Ty2>> {};
+
+// apply decay for Ty1 and Ty2 recursively until the decayed type is the same as original
+template<class Ty1, class Ty2, class Decayed1 = decay_t<Ty1>, class Decayed2 = decay_t<Ty2>>
+struct _Common_Type2_Impl : _Common_Type2_Impl<Decayed1, Decayed2> {};
+
+template<class Ty1, class Ty2>
+struct _Common_Type2_Impl<Ty1, Ty2, Ty1, Ty2> : _Decay_Conditional_Result<Ty1, Ty2> {};
+
+CUSTOM_DETAIL_END
+
+#pragma endregion helpers
+
+
+#pragma region definitions
 
 template<class Ty>
 struct type_identity { using type = Ty; };
@@ -772,12 +1105,6 @@ struct is_floating_point : is_any_of<remove_cv_t<Ty>, float, double, long double
 template<class Ty>
 struct is_arithmetic : disjunction<is_integral<Ty>, is_floating_point<Ty>> {};
 
-#pragma region always_false
-// false value attached to a dependent name (for static_assert)
-template<class>
-constexpr bool always_false = false;
-#pragma endregion always_false
-
 template<class Ty, Ty... Vals>
 struct integer_sequence
 {
@@ -785,60 +1112,8 @@ struct integer_sequence
     static constexpr size_t size() noexcept { return sizeof...(Vals); }
 };
 
-#pragma region alignment
 template<class Ty>
 struct alignment_of : integral_constant<size_t, alignof(Ty)> {}; // determine alignment of Ty
-
-CUSTOM_DETAIL_BEGIN
-
-// aligned_storage helpers
-template<class Ty, size_t Len>
-union _Align_Type   // union with size Len bytes and alignment of Ty
-{
-    Ty Val;
-    char Pad[Len];
-};
-
-template<size_t Len, size_t Align, class Ty, bool Ok>
-struct _Aligned_Storage_Impl;   // define type with size Len and alignment Ty
-
-template<size_t Len, size_t Align, class Ty>
-struct _Aligned_Storage_Impl<Len, Align, Ty, true>           // class
-{
-    using type = _Align_Type<Ty, Len>;
-};
-
-template<size_t Len, size_t Align>
-struct _Aligned_Storage_Impl<Len, Align, double, false>      // double
-{
-    using type = _Align_Type<max_align_t, Len>;
-};
-
-template<size_t Len, size_t Align>
-struct _Aligned_Storage_Impl<Len, Align, int, false>         // int
-{
-    using _Next = double;
-    static constexpr bool Fits = Align <= alignof(_Next);
-    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
-};
-
-template<size_t Len, size_t Align>
-struct _Aligned_Storage_Impl<Len, Align, short, false>       // short
-{
-    using _Next = int;
-    static constexpr bool Fits = Align <= alignof(_Next);
-    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
-};
-
-template<size_t Len, size_t Align>
-struct _Aligned_Storage_Impl<Len, Align, char, false>        // char
-{
-    using _Next = short;
-    static constexpr bool Fits = Align <= alignof(_Next);
-    using type = typename _Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
-};
-
-CUSTOM_DETAIL_END
 
 template<size_t Len, size_t Align>
 struct aligned_storage
@@ -847,7 +1122,6 @@ struct aligned_storage
     static constexpr bool Fits = Align <= alignof(_Next);
     using type = typename detail::_Aligned_Storage_Impl<Len, Align, _Next, Fits>::type;
 };
-#pragma endregion alignment
 
 template<class Ty>
 struct is_void : is_same<remove_cv_t<Ty>, void> {};
@@ -861,39 +1135,11 @@ struct add_volatile { using type = volatile Ty; };
 template<class Ty>
 struct add_cv { using type = const volatile Ty; };
 
-#pragma region add_lvalue_reference/add_rvalue_reference
-CUSTOM_DETAIL_BEGIN
-
-// add reference impl
-template<class Ty, class = void>
-struct _Add_Reference_Impl  // add reference (non-referenceable type)
-{
-    using _Lvalue = Ty;
-    using _Rvalue = Ty;
-};
-
-template<class Ty>
-struct _Add_Reference_Impl<Ty, void_t<Ty&>> // (referenceable type)
-{
-    using _Lvalue = Ty&;
-    using _Rvalue = Ty&&;
-};
-
-CUSTOM_DETAIL_END
-
 template<class Ty>
 struct add_lvalue_reference { using type = typename detail::_Add_Reference_Impl<Ty>::_Lvalue; };
 
 template<class Ty>
 struct add_rvalue_reference { using type = typename detail::_Add_Reference_Impl<Ty>::_Rvalue; };
-
-// declval (ex: used in decltype)
-template<class Ty>
-add_rvalue_reference_t<Ty> declval() noexcept
-{
-    static_assert(always_false<Ty>, "declval not allowed in an evaluated context");
-}
-#pragma endregion add_lvalue_reference/add_rvalue_reference
 
 template<class Ty, class AlwaysVoid>    // add pointer (pointer type cannot be formed)
 struct add_pointer { using type = Ty; };
@@ -1009,39 +1255,8 @@ struct is_pod : bool_constant<is_standard_layout_v<Ty> && is_trivial_v<Ty>> {};
 template<class Ty>
 struct is_class : bool_constant<__is_class(Ty)> {};
 
-#pragma region is_convertible
-CUSTOM_DETAIL_BEGIN
-
-#if defined _MSC_VER
-template<class From, class To>
-struct _Is_Convertible_Impl : bool_constant<__is_convertible_to(From, To)> {};
-#elif defined __GNUG__
-template<class From, class To>
-struct _Is_Convertible_Impl
-{
-    template<class Ty, class = decltype(static_cast<Ty(*)()>(nullptr))>
-    static auto test_returnable(int) -> true_type;
-
-    template<class>
-    static auto test_returnable(...) -> false_type;
-
-    template<class _From, class _To, class = decltype(custom::declval<void(&)(_To)>()(custom::declval<_From>()))>
-    static auto test_implicitly_convertible(int) -> true_type;
-
-    template<class, class>
-    static auto test_implicitly_convertible(...) -> false_type;
-
-    static constexpr bool value = 
-    ((decltype(test_returnable<To>(0))::value && decltype(test_implicitly_convertible<From, To>(0))::value) ||
-    (is_void_v<From> && is_void_v<To>));
-};  // END _Is_Convertible_Impl
-#endif  // is_convertible helpers
-
-CUSTOM_DETAIL_END
-
 template<class From, class To>
 struct is_convertible : public bool_constant<detail::_Is_Convertible_Impl<From, To>::value> {};
-#pragma endregion is_convertible
 
 template<class Ty>
 struct is_const : false_type {};
@@ -1061,52 +1276,11 @@ struct is_function : bool_constant<!is_const_v<const Ty> && !is_reference_v<Ty>>
 template<class Ty>  // only function types and reference types can't be const qualified
 struct is_object : bool_constant<is_const_v<const Ty> && !is_void_v<Ty>> {};
 
-#pragma region is_member_object_pointer
-CUSTOM_DETAIL_BEGIN
-
-// is member object pointer impl
-template<class>
-struct _Is_Member_Object_Pointer_Impl
-{
-    static constexpr bool value = false;
-};
-
-template<class Ty1, class Ty2>
-struct _Is_Member_Object_Pointer_Impl<Ty1 Ty2::*>
-{
-    static constexpr bool value = !is_function_v<Ty1>;
-    using _Class_Type = Ty2;
-};
-
-CUSTOM_DETAIL_END
-
 template<class Ty>
 struct is_member_object_pointer : detail::_Is_Member_Object_Pointer_Impl<remove_cv_t<Ty>> {};
 
-#pragma endregion is_member_object_pointer
-
-#pragma region is_member_function_pointer
-CUSTOM_DETAIL_BEGIN
-
-template<class>
-struct _Is_Member_Function_Pointer_Impl
-{
-    static constexpr bool value = false;
-};
-
-template<class Ty1, class Ty2>
-struct _Is_Member_Function_Pointer_Impl<Ty1 Ty2::*>
-{
-    static constexpr bool value = is_function_v<Ty1>;
-    using _Class_Type = Ty2;
-};
-
-CUSTOM_DETAIL_END
-
 template<class Ty>
 struct is_member_function_pointer : detail::_Is_Member_Function_Pointer_Impl<remove_cv_t<Ty>> {};
-
-#pragma endregion is_member_function_pointer
 
 template<class Ty>
 struct is_member_pointer : bool_constant<is_member_object_pointer_v<Ty> || is_member_function_pointer_v<Ty>> {};
@@ -1135,20 +1309,11 @@ struct is_constructible : bool_constant<__is_constructible(Ty, Args...)> {};
 template<class Ty>
 struct is_default_constructible : bool_constant<__is_constructible(Ty)> {};
 
-#pragma region is_implicitly_default_constructible
-CUSTOM_DETAIL_BEGIN
-
-template<class Ty>
-void _Implicitly_Default_Construct(const Ty&);
-
-CUSTOM_DETAIL_END
-
 template<class Ty, class AlwaysVoid>
 struct is_implicitly_default_constructible : false_type {}; // determine whether Ty can be copy-initialized with {}
 
 template<class Ty>
 struct is_implicitly_default_constructible<Ty, void_t<decltype(detail::_Implicitly_Default_Construct<Ty>({}))>> : true_type {};
-#pragma endregion is_implicitly_default_constructible
 
 template<class Ty>
 struct is_copy_constructible : bool_constant<__is_constructible(Ty, add_lvalue_reference_t<const Ty>)> {};
@@ -1186,121 +1351,14 @@ struct is_nothrow_copy_assignable : bool_constant<__is_nothrow_assignable(add_lv
 template<class Ty>
 struct is_nothrow_move_assignable : bool_constant<__is_nothrow_assignable(add_lvalue_reference_t<Ty>, Ty)> {};
 
-#pragma region is_nothrow_convertible
-CUSTOM_DETAIL_BEGIN
-
-template<class From, class To, bool = is_convertible_v<From, To>, bool = is_void_v<To>>
-struct _Is_Nothrow_Convertible_Impl : bool_constant<noexcept(_fake_copy_init<To>(custom::declval<From>()))> {};
-
-template<class From, class To, bool IsVoidResult>
-struct _Is_Nothrow_Convertible_Impl<From, To, false, IsVoidResult> : false_type {};
-
-template<class From, class To>
-struct _Is_Nothrow_Convertible_Impl<From, To, true, true> : true_type {};
-
-CUSTOM_DETAIL_END
-
 template<class From, class To>
 struct is_nothrow_convertible : detail::_Is_Nothrow_Convertible_Impl<From, To> {};
-#pragma endregion is_nothrow_convertible
-
-#pragma region is_destructible
-CUSTOM_DETAIL_BEGIN
-
-#if defined _MSC_VER
-template<class Ty>
-struct _Is_Destructible_Impl : bool_constant<__is_destructible(Ty)> {};
-#elif defined __GNUG__
-template<class Ty>
-struct _Is_Destructible_Test
-{
-    template<class _Ty, class = decltype(custom::declval<_Ty&>().~_Ty())>
-    static auto test_destructible(int) -> true_type;
-
-    template<class>
-    static auto test_destructible(...) -> false_type;
-
-    using type = decltype(test_destructible<Ty>(0));
-};
-
-template<class Ty,
-bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
-bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
-struct _Is_Destructible_Impl;
-
-template<class Ty>
-struct _Is_Destructible_Impl<Ty, false, false> : _Is_Destructible_Test<remove_all_extents_t<Ty>>::type {};
-
-template<class Ty>
-struct _Is_Destructible_Impl<Ty, true, false> : false_type {};
-
-template<class Ty>
-struct _Is_Destructible_Impl<Ty, false, true> : true_type {};
-#endif  // _Is_Destructible_Impl
-
-CUSTOM_DETAIL_END
 
 template<class Ty>
 struct is_destructible : detail::_Is_Destructible_Impl<Ty>::type {};
-#pragma endregion is_destructible
-
-#pragma region is_nothrow_destructible
-CUSTOM_DETAIL_BEGIN
-
-#if defined _MSC_VER
-template<class Ty>
-struct _Is_Nothrow_Destructible_Impl : bool_constant<__is_nothrow_destructible(Ty)> {};
-#elif defined __GNUG__
-template<class Ty>
-struct _Is_Nothrow_Destructible_Test
-{
-    template<class _Ty, class Return = bool_constant<noexcept(custom::declval<_Ty&>().~_Ty())>>
-    static auto test_nothrow_destructible(int) -> Return;
-
-    template<class>
-    static auto test_nothrow_destructible(...) -> false_type;
-
-    using type = decltype(test_nothrow_destructible<Ty>(0));
-};
-
-template<class Ty,
-bool = (is_void_v<Ty> || is_unbounded_array_v<Ty> || is_function_v<Ty>),
-bool = (is_reference_v<Ty> || is_scalar_v<Ty>)>
-struct _Is_Nothrow_Destructible_Impl;
-
-template<class Ty>
-struct _Is_Nothrow_Destructible_Impl<Ty, false, false> : _Is_Nothrow_Destructible_Test<remove_all_extents_t<Ty>>::type {};
-
-template<class Ty>
-struct _Is_Nothrow_Destructible_Impl<Ty, true, false> : false_type {};
-
-template<class Ty>
-struct _Is_Nothrow_Destructible_Impl<Ty, false, true> : true_type {};
-#endif  // is nothrow destructible
-
-CUSTOM_DETAIL_END
 
 template<class Ty>
 struct is_nothrow_destructible : detail::_Is_Nothrow_Destructible_Impl<Ty>::type {};
-#pragma endregion is_nothrow_destructible
-
-#pragma region is_swappable_with/is_nothrow_swappable_with
-CUSTOM_DETAIL_BEGIN
-
-template<class Ty1, class Ty2, class = void>
-struct _Is_Swappable_With_Impl : false_type {};
-
-template<class Ty1, class Ty2>
-struct _Is_Swappable_With_Impl<Ty1, Ty2,
-void_t< decltype(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())),
-        decltype(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))>> : true_type {};
-
-template<class Ty1, class Ty2>
-struct _Is_Nothrow_Swappable_With_Impl
-: bool_constant<noexcept(custom::swap(custom::declval<Ty1>(), custom::declval<Ty2>())) &&
-                noexcept(custom::swap(custom::declval<Ty2>(), custom::declval<Ty1>()))> {};
-
-CUSTOM_DETAIL_END
 
 template<class Ty1, class Ty2>
 struct is_swappable_with : detail::_Is_Swappable_With_Impl<Ty1, Ty2>::type {};
@@ -1309,7 +1367,6 @@ template<class Ty1, class Ty2>
 struct is_nothrow_swappable_with : bool_constant<conjunction_v<
                                                     detail::_Is_Swappable_With_Impl<Ty1, Ty2>,
                                                     detail::_Is_Nothrow_Swappable_With_Impl<Ty1, Ty2>>> {};
-#pragma endregion is_swappable_with/is_nothrow_swappable_with
 
 template<class Ty>
 struct is_swappable : detail::_Is_Swappable_With_Impl<add_lvalue_reference_t<Ty>, add_lvalue_reference_t<Ty>>::type {};
@@ -1326,80 +1383,14 @@ struct is_specialization : false_type {};   // true if and only if Type is a spe
 template<template<class...> class Template, class... Types>
 struct is_specialization<Template<Types...>, Template> : true_type {};
 
-#pragma region is_signed/is_unsigned
-CUSTOM_DETAIL_BEGIN
-
-template<class Ty, bool = is_integral_v<Ty>>
-struct _Sign_Choice
-{
-    using _No_cv_t = remove_cv_t<Ty>;
-
-    static constexpr bool _Signed   = static_cast<_No_cv_t>(-1) < static_cast<_No_cv_t>(0);
-    static constexpr bool _Unsigned = !_Signed;
-};
-
-template<class Ty>
-struct _Sign_Choice<Ty, false>
-{
-    // floating-point Ty is signed
-    // non-arithmetic Ty is neither signed nor unsigned
-    static constexpr bool _Signed   = is_floating_point_v<Ty>;
-    static constexpr bool _Unsigned = false;
-};
-
-CUSTOM_DETAIL_END
-
 template<class Ty>
 struct is_signed : bool_constant<detail::_Sign_Choice<Ty>::_Signed> {};
 
 template<class Ty>
 struct is_unsigned : bool_constant<detail::_Sign_Choice<Ty>::_Unsigned> {};
-#pragma endregion is_signed/is_unsigned
 
 template<class Ty>
 struct is_nonbool_integral : bool_constant<is_integral_v<Ty> && !is_same_v<remove_cv_t<Ty>, bool>> {};
-
-#pragma region make_signed
-CUSTOM_DETAIL_BEGIN
-
-template<size_t>
-struct _Make_Signed_Choice; // Choose make_signed strategy by type size
-
-template<>
-struct _Make_Signed_Choice<1>
-{
-    template<class>
-    using _Apply = signed char;
-};
-
-template<>
-struct _Make_Signed_Choice<2>
-{
-    template<class>
-    using _Apply = short;
-};
-
-template<>
-struct _Make_Signed_Choice<4>
-{
-    // assumes LLP64
-    template<class Ty>
-    using _Apply = conditional_t<   is_same_v<Ty, long> || is_same_v<Ty, unsigned long>,
-                                    long,
-                                    int>;
-};
-
-template<>
-struct _Make_Signed_Choice<8>
-{
-    template<class>
-    using _Apply = long long;
-};
-
-template<class Ty>
-using _Make_Signed = typename _Make_Signed_Choice<sizeof(Ty)>::template _Apply<Ty>;   // signed partner to cv-unqualified Ty
-
-CUSTOM_DETAIL_END
 
 template<class Ty>
 struct make_signed      // signed partner to Ty
@@ -1411,50 +1402,6 @@ struct make_signed      // signed partner to Ty
     // removes CV from Ty, makes choice of signment, reapplies CV
     using type = typename remove_cv<Ty>::template _Apply<detail::_Make_Signed>;
 };
-#pragma endregion make_signed
-
-#pragma region make_unsigned
-CUSTOM_DETAIL_BEGIN
-
-template<size_t>
-struct _Make_Unsigned_Choice; // Choose make_unsigned strategy by type size
-
-template<>
-struct _Make_Unsigned_Choice<1>
-{
-    template<class>
-    using _Apply = unsigned char;
-};
-
-template<>
-struct _Make_Unsigned_Choice<2>
-{
-    template<class>
-    using _Apply = unsigned short;
-};
-
-template<>
-struct _Make_Unsigned_Choice<4>
-{
-    // assumes LLP64
-
-    template<class Ty>
-    using _Apply = conditional_t<   is_same_v<Ty, long> || is_same_v<Ty, unsigned long>,
-                                    unsigned long,
-                                    unsigned int>;
-};
-
-template<>
-struct _Make_Unsigned_Choice<8>
-{
-    template<class>
-    using _Apply = unsigned long long;
-};
-
-template<class Ty>
-using _Make_Unsigned = typename _Make_Unsigned_Choice<sizeof(Ty)>::template _Apply<Ty>;    // unsigned partner to cv-unqualified Ty
-
-CUSTOM_DETAIL_END
 
 template<class Ty>
 struct make_unsigned    // unsigned partner to Ty
@@ -1466,9 +1413,7 @@ struct make_unsigned    // unsigned partner to Ty
     // removes CV from Ty, makes choice of unsignment, reapplies CV
     using type = typename remove_cv<Ty>::template _Apply<detail::_Make_Unsigned>;
 };
-#pragma endregion make_unsigned
 
-#pragma region decay
 /// @brief Performs the type conversions equivalent to the ones performed when passing function arguments by value
 template<class Ty>
 struct decay
@@ -1483,29 +1428,6 @@ public:
                                                         add_pointer_t<_No_ref_t>,
                                                         remove_cv_t<_No_ref_t>>>;
 };
-#pragma endregion decay
-
-#pragma region common_type
-CUSTOM_DETAIL_BEGIN
-
-// this decides if Ty1 and Ty2 are compatible and the result is the implicit conversion type
-template<class Ty1, class Ty2>
-using _Conditional_Result_t = decltype(true /*or false*/ ? custom::declval<Ty1>() : custom::declval<Ty2>());
-
-template<class, class, class = void>
-struct _Decay_Conditional_Result {};
-
-template<class Ty1, class Ty2>
-struct _Decay_Conditional_Result<Ty1, Ty2, void_t<_Conditional_Result_t<Ty1, Ty2>>> : decay<_Conditional_Result_t<Ty1, Ty2>> {};
-
-// apply decay for Ty1 and Ty2 recursively until the decayed type is the same as original
-template<class Ty1, class Ty2, class Decayed1 = decay_t<Ty1>, class Decayed2 = decay_t<Ty2>>
-struct _Common_Type2_Impl : _Common_Type2_Impl<Decayed1, Decayed2> {};
-
-template<class Ty1, class Ty2>
-struct _Common_Type2_Impl<Ty1, Ty2, Ty1, Ty2> : _Decay_Conditional_Result<Ty1, Ty2> {};
-
-CUSTOM_DETAIL_END
 
 template<>
 struct common_type<> {};    // 0 types
@@ -1518,6 +1440,7 @@ struct common_type<Ty1, Ty2> : detail::_Common_Type2_Impl<Ty1, Ty2> {};  // 2 ty
 
 template<class Ty1, class Ty2, class... Rest>
 struct common_type<Ty1, Ty2, Rest...> : common_type<common_type_t<Ty1, Ty2>, Rest...> {};   // 3+ types
-#pragma endregion common_type
+
+#pragma endregion definitions
 
 CUSTOM_END

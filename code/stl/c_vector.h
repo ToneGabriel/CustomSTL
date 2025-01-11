@@ -7,6 +7,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Type, class Alloc>
 struct _Vector_Data
 {
@@ -22,7 +24,7 @@ struct _Vector_Data
 	pointer _First			= nullptr;			// Actual container array
 	pointer _Last			= nullptr;			// pointer to end
 	pointer _Final			= nullptr;			// pointer to capacity end
-};
+};	// END _Vector_Data
 
 template<class VecData>
 class _Vector_Const_Iterator
@@ -47,91 +49,109 @@ public:
 	constexpr explicit _Vector_Const_Iterator(value_type* ptr, const _Data* data) noexcept
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
-	constexpr _Vector_Const_Iterator& operator++() noexcept {
+	constexpr _Vector_Const_Iterator& operator++() noexcept
+	{
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot increment end iterator.");
 		++_Ptr;
 		return *this;
 	}
 
-	constexpr _Vector_Const_Iterator operator++(int) noexcept {
+	constexpr _Vector_Const_Iterator operator++(int) noexcept
+	{
 		_Vector_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	constexpr _Vector_Const_Iterator& operator+=(const difference_type diff) noexcept {
+	constexpr _Vector_Const_Iterator& operator+=(const difference_type diff) noexcept
+	{
 		CUSTOM_ASSERT(_Ptr + diff <= _RefData->_Last, "Cannot increment end iterator.");
 		_Ptr += diff;
 		return *this;
 	}
 
-	constexpr _Vector_Const_Iterator operator+(const difference_type diff) const noexcept {
+	constexpr _Vector_Const_Iterator operator+(const difference_type diff) const noexcept
+	{
 		_Vector_Const_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	constexpr _Vector_Const_Iterator& operator--() noexcept {
+	constexpr _Vector_Const_Iterator& operator--() noexcept
+	{
 		CUSTOM_ASSERT(_Ptr > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Ptr;
 		return *this;
 	}
 
-	constexpr _Vector_Const_Iterator operator--(int) noexcept {
+	constexpr _Vector_Const_Iterator operator--(int) noexcept
+	{
 		_Vector_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	constexpr _Vector_Const_Iterator& operator-=(const difference_type diff) noexcept {
+	constexpr _Vector_Const_Iterator& operator-=(const difference_type diff) noexcept
+	{
 		CUSTOM_ASSERT(_Ptr - diff >= _RefData->_First, "Cannot decrement begin iterator.");
 		_Ptr -= diff;
 		return *this;
 	}
 
-	constexpr _Vector_Const_Iterator operator-(const difference_type diff) const noexcept {
+	constexpr _Vector_Const_Iterator operator-(const difference_type diff) const noexcept
+	{
 		_Vector_Const_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	constexpr pointer operator->() const noexcept {
+	constexpr pointer operator->() const noexcept
+	{
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot access end iterator.");
 		return _Ptr;
 	}
 
-	constexpr reference operator*() const noexcept {
+	constexpr reference operator*() const noexcept
+	{
 		CUSTOM_ASSERT(_Ptr < _RefData->_Last, "Cannot dereference end iterator.");
 		return *_Ptr;
 	}
 
-    constexpr reference operator[](const difference_type diff) const noexcept {
+    constexpr reference operator[](const difference_type diff) const noexcept
+	{
         return *(*this + diff);
     }
 
-	constexpr bool operator==(const _Vector_Const_Iterator& other) const noexcept {
+	constexpr bool operator==(const _Vector_Const_Iterator& other) const noexcept
+	{
 		return _Ptr == other._Ptr;
 	}
 
-	constexpr bool operator!=(const _Vector_Const_Iterator& other) const noexcept {
+	constexpr bool operator!=(const _Vector_Const_Iterator& other) const noexcept
+	{
 		return !(*this == other);
 	}
 
 public:
 
-	constexpr size_t get_index() const noexcept {					// Get the position for the element in array from iterator
+	// Get the position for the element in array from iterator
+	constexpr size_t get_index() const noexcept
+	{
 		return static_cast<size_t>(_Ptr - _RefData->_First);
 	}
 
-	constexpr bool is_begin() const noexcept {
+	constexpr bool is_begin() const noexcept
+	{
 		return _Ptr == _RefData->_First;
 	}
 
-	constexpr bool is_end() const noexcept {
+	constexpr bool is_end() const noexcept
+	{
 		return _Ptr == _RefData->_Last;
 	}
 
-	friend constexpr void _verify_range(const _Vector_Const_Iterator& first, const _Vector_Const_Iterator& last) noexcept {
+	friend constexpr void _verify_range(const _Vector_Const_Iterator& first, const _Vector_Const_Iterator& last) noexcept
+	{
 		CUSTOM_ASSERT(first._RefData == last._RefData, "vector iterators in range are from different containers");
 		CUSTOM_ASSERT(first._Ptr <= last._Ptr, "vector iterator range transposed");
 	}
@@ -158,69 +178,82 @@ public:
 	constexpr explicit _Vector_Iterator(value_type* ptr, const _Data* data) noexcept
 		:_Base(ptr, data) { /*Empty*/ }
 
-	constexpr _Vector_Iterator& operator++() noexcept {
+	constexpr _Vector_Iterator& operator++() noexcept
+	{
 		_Base::operator++();
 		return *this;
 	}
 
-	constexpr _Vector_Iterator operator++(int) noexcept {
+	constexpr _Vector_Iterator operator++(int) noexcept
+	{
 		_Vector_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	constexpr _Vector_Iterator& operator+=(const difference_type diff) noexcept {
+	constexpr _Vector_Iterator& operator+=(const difference_type diff) noexcept
+	{
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	constexpr _Vector_Iterator operator+(const difference_type diff) const noexcept {
+	constexpr _Vector_Iterator operator+(const difference_type diff) const noexcept
+	{
 		_Vector_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	constexpr _Vector_Iterator& operator--() noexcept {
+	constexpr _Vector_Iterator& operator--() noexcept
+	{
 		_Base::operator--();
 		return *this;
 	}
 
-	constexpr _Vector_Iterator operator--(int) noexcept {
+	constexpr _Vector_Iterator operator--(int) noexcept
+	{
 		_Vector_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
 
-	constexpr _Vector_Iterator& operator-=(const difference_type diff) noexcept {
+	constexpr _Vector_Iterator& operator-=(const difference_type diff) noexcept
+	{
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	constexpr _Vector_Iterator operator-(const difference_type diff) const noexcept {
+	constexpr _Vector_Iterator operator-(const difference_type diff) const noexcept
+	{
 		_Vector_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	constexpr pointer operator->() const noexcept {
+	constexpr pointer operator->() const noexcept
+	{
 		return const_cast<pointer>(_Base::operator->());
 	}
 
-	constexpr reference operator*() const noexcept {
+	constexpr reference operator*() const noexcept
+	{
 		return const_cast<reference>(_Base::operator*());
 	}
 
-    constexpr reference operator[](const difference_type diff) const noexcept {
+    constexpr reference operator[](const difference_type diff) const noexcept
+	{
         return const_cast<reference>(_Base::operator[](diff));
     }
 }; // END _Vector_Iterator
+
+CUSTOM_DETAIL_END
 
 
 template<class Type, class Alloc = custom::allocator<Type>>
 class vector			// vector Template
 {
 private:
-	using _Data						= _Vector_Data<Type, Alloc>;					// Members that are modified
+	using _Data						= detail::_Vector_Data<Type, Alloc>;		// Members that are modified
 	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 
 public:
@@ -235,65 +268,75 @@ public:
 	using const_pointer				= typename _Data::const_pointer;
 	using allocator_type			= Alloc;
 	
-	using iterator					= _Vector_Iterator<_Data>;
-	using const_iterator			= _Vector_Const_Iterator<_Data>;
+	using iterator					= detail::_Vector_Iterator<_Data>;
+	using const_iterator			= detail::_Vector_Const_Iterator<_Data>;
 	using reverse_iterator			= custom::reverse_iterator<iterator>;
 	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 private:
-	_Data _data;															// Actual container data
-	allocator_type _alloc;													// allocator
+	_Data _data;
+	allocator_type _alloc;
 	
 	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
 public:
 	// Constructors
 
-	constexpr vector() {													// Default Constructor
+	constexpr vector()
+	{
 		reserve(_DEFAULT_CAPACITY);
 	}
 
-	constexpr vector(const size_t newCapacity) {							// Add multiple default copies Constructor
+	constexpr vector(const size_t newCapacity)								// Add multiple default copies Constructor
+	{
 		realloc(newCapacity);
 	}
 
 	constexpr vector(	const size_t newCapacity,
-						const value_type& copyValue) {						// Add multiple copies Constructor
+						const value_type& copyValue)						// Add multiple copies Constructor
+	{
 		realloc(newCapacity, copyValue);
 	}
 
-	constexpr vector(std::initializer_list<value_type> list) {
+	constexpr vector(std::initializer_list<value_type> list)
+	{
 		reserve(list.size());
 		for (const auto& val : list)
 			push_back(val);
 	}
 
-	constexpr vector(const vector& other) {									// Copy Constructor
+	constexpr vector(const vector& other)
+	{
 		_copy(other);
 	}
 
-	constexpr vector(vector&& other) noexcept {								// Move Constructor
+	constexpr vector(vector&& other) noexcept
+	{
 		_move(custom::move(other));
 	}
 
-	constexpr ~vector() noexcept {											// Destructor
+	constexpr ~vector() noexcept
+	{
 		_clean_up_array();
 	}
 
 public:
 	// Operators
 
-	constexpr const_reference operator[](const size_t index) const noexcept {	// Acces object at index (read only)
+	constexpr const_reference operator[](const size_t index) const noexcept
+	{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
-	constexpr reference operator[](const size_t index) noexcept {				// Acces object at index
+	constexpr reference operator[](const size_t index) noexcept
+	{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return _data._First[index];
 	}
 
-	constexpr vector& operator=(const vector& other) {							// Assign operator using reference
+	constexpr vector& operator=(const vector& other)
+	{
 		if (_data._First != other._data._First)
 		{
 			_clean_up_array();
@@ -303,7 +346,8 @@ public:
 		return *this;
 	}
 
-	constexpr vector& operator=(vector&& other) noexcept {						// Assign operator using temporary
+	constexpr vector& operator=(vector&& other) noexcept
+	{
 		if (_data._First != other._data._First)
 		{
 			_clean_up_array();
@@ -316,7 +360,9 @@ public:
 public:
 	// Main functions
 
-	constexpr void reserve(const size_t newCapacity) {							// Allocate memory and move values if needed
+	// Allocate memory and move values if needed
+	constexpr void reserve(const size_t newCapacity)
+	{
 		if (newCapacity < size())
 			_data._Last = _data._First + newCapacity;
 
@@ -332,11 +378,15 @@ public:
 		_data._Final	= _data._First + newCapacity;
 	}
 
-	constexpr void shrink_to_fit() {											// Allocate memory with capacity equal to size and move values there
+	// Allocate memory with capacity equal to size and move values there
+	constexpr void shrink_to_fit()
+	{
 		reserve(size());
 	}
 
-	constexpr void realloc(const size_t newCapacity) {							// Allocate memory and populate it with default values (delete old)
+	// Allocate memory and populate it with default values (delete old)
+	constexpr void realloc(const size_t newCapacity)
+	{
 		_clean_up_array();
 
 		_data._First	= _alloc.allocate(newCapacity);
@@ -345,8 +395,10 @@ public:
 		_construct_range(_data._First, newCapacity);
 	}
 
+	// Allocate memory and populate it with given reference (delete old)
 	constexpr void realloc(	const size_t newCapacity,
-							const value_type& copyValue) {						// Allocate memory and populate it with given reference (delete old)
+							const value_type& copyValue)
+	{
 		_clean_up_array();
 
 		_data._First	= _alloc.allocate(newCapacity);
@@ -355,7 +407,9 @@ public:
 		_construct_range(_data._First, newCapacity, copyValue);
 	}
 	
-	constexpr void resize(const size_t newSize) {								// Change size and Construct/Destruct objects with default value if needed
+	// Change size and Construct/Destruct objects with default value if needed
+	constexpr void resize(const size_t newSize)
+	{
 		if (newSize < size())
 			_destroy_range(_data._First + newSize, size() - newSize);
 		else
@@ -369,7 +423,9 @@ public:
 		_data._Last = _data._First + newSize;
 	}
 
-	constexpr void resize(const size_t newSize, const value_type& copyValue) {	// Change size and Construct/Destruct objects with given reference if needed
+	// Change size and Construct/Destruct objects with given reference if needed
+	constexpr void resize(const size_t newSize, const value_type& copyValue)
+	{
 		if (newSize < size())
 			_destroy_range(_data._First + newSize, size() - newSize);
 		else
@@ -383,27 +439,37 @@ public:
 		_data._Last = _data._First + newSize;
 	}
 
+	// Construct object using arguments (Args) and add it to the tail
 	template<class... Args>
-	constexpr void emplace_back(Args&&... args) {								// Construct object using arguments (Args) and add it to the tail
+	constexpr void emplace_back(Args&&... args)
+	{
 		_extend_if_full();
 		_Alloc_Traits::construct(_alloc, _data._Last++, custom::forward<Args>(args)...);
 	}
 
-	constexpr void push_back(const value_type& copyValue) {						// Construct object using reference and add it to the tail
+	// Construct object using reference and add it to the tail
+	constexpr void push_back(const value_type& copyValue)
+	{
 		emplace_back(copyValue);
 	}
 
-	constexpr void push_back(value_type&& moveValue) {							// Construct object using temporary and add it to the tail
+	// Construct object using temporary and add it to the tail
+	constexpr void push_back(value_type&& moveValue)
+	{
 		emplace_back(custom::move(moveValue));
 	}
 
-	constexpr void pop_back() {													// Remove last component
+	// Remove last component
+	constexpr void pop_back()
+	{
 		if (!empty())
 			_Alloc_Traits::destroy(_alloc, --_data._Last);
 	}
 
+	// Emplace object at where position with given arguments
 	template<class... Args>
-	constexpr iterator emplace(const_iterator where, Args&&... args) {		// Emplace object at where position with given arguments
+	constexpr iterator emplace(const_iterator where, Args&&... args)
+	{
 		size_t index = where.get_index();	// Don't check end()
 		emplace_back();
 
@@ -416,15 +482,21 @@ public:
 		return iterator(_data._First + index, &_data);
 	}
 
-	constexpr iterator insert(const_iterator where, const value_type& copyValue) {		// Push copy object at iterator position
+	// Push copy object at iterator position
+	constexpr iterator insert(const_iterator where, const value_type& copyValue)
+	{
 		return emplace(where, copyValue);
 	}
 
-	constexpr iterator insert(const_iterator where, value_type&& moveValue) {			// Push temporary object at iterator position
+	// Push temporary object at iterator position
+	constexpr iterator insert(const_iterator where, value_type&& moveValue)
+	{
 		return emplace(where, custom::move(moveValue));
 	}
 
-	constexpr iterator erase(const_iterator where) {									// Remove component at iterator position
+	// Remove component at iterator position
+	constexpr iterator erase(const_iterator where)
+	{
 		if (where.is_end())
 			throw std::out_of_range("vector erase iterator outside range.");
 
@@ -438,109 +510,135 @@ public:
 		return iterator(_data._First + index, &_data);
 	}
 
-	constexpr size_t capacity() const noexcept {								// Get capacity
+	constexpr size_t capacity() const noexcept
+	{
 		return static_cast<size_t>(_data._Final - _data._First);
 	}
 
-	constexpr size_t size() const noexcept {									// Get size
+	constexpr size_t size() const noexcept
+	{
 		return static_cast<size_t>(_data._Last - _data._First);
 	}
 
-	constexpr size_t max_size() const noexcept {
+	constexpr size_t max_size() const noexcept
+	{
 		return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_Alloc_Traits::max_size(_alloc));
 	}
 
-	constexpr bool empty() const noexcept {										// Check if array is empty
+	// Check if array is empty
+	constexpr bool empty() const noexcept
+	{
 		return (_data._First == _data._Last);
 	}
 	
-	constexpr void clear() {													// Remove ALL components but keep memory
+	// Remove ALL components but keep memory
+	constexpr void clear()
+	{
 		_destroy_range(_data._First, size());
 		_data._Last = _data._First;
 	}
 
-	constexpr const_reference at(const size_t index) const {						// Acces object at index with check (read only)
+	// Acces object at index with check (read only)
+	constexpr const_reference at(const size_t index) const
+	{
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
-	constexpr reference at(const size_t index) {								// Acces object at index with check
+	// Acces object at index with check
+	constexpr reference at(const size_t index)
+	{
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return _data._First[index];
 	}
 
-	constexpr const_reference front() const noexcept {
+	constexpr const_reference front() const noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
-	constexpr reference front() noexcept {										// Get the value of the first component
+	constexpr reference front() noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._First[0];
 	}
 
-	constexpr const_reference back() const noexcept {
+	constexpr const_reference back() const noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 
-	constexpr reference back() noexcept {										// Get the value of the last component
+	constexpr reference back() noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Last[-1];
 	}
 
-	constexpr const_reference data() const noexcept  {
+	constexpr const_reference data() const noexcept
+	{
 		return _data._First;
 	}
 
-	constexpr reference data() noexcept {
+	constexpr reference data() noexcept
+	{
 		return _data._First;
 	}
 
 public:
 	// iterator specific functions
 
-	constexpr iterator begin() noexcept {
+	constexpr iterator begin() noexcept
+	{
 		return iterator(_data._First, &_data);
 	}
 
-	constexpr const_iterator begin() const noexcept {
+	constexpr const_iterator begin() const noexcept
+	{
 		return const_iterator(_data._First, &_data);
 	}
 
-	constexpr reverse_iterator rbegin() noexcept {
+	constexpr reverse_iterator rbegin() noexcept
+	{
 		return reverse_iterator(end());
 	}
 
-	constexpr const_reverse_iterator rbegin() const noexcept {
+	constexpr const_reverse_iterator rbegin() const noexcept
+	{
 		return const_reverse_iterator(end());
 	}
 
-	constexpr iterator end() noexcept {
+	constexpr iterator end() noexcept
+	{
 		return iterator(_data._Last, &_data);
 	}
 
-	constexpr const_iterator end() const noexcept {
+	constexpr const_iterator end() const noexcept
+	{
 		return const_iterator(_data._Last, &_data);
 	}
 
-	constexpr reverse_iterator rend() noexcept {
+	constexpr reverse_iterator rend() noexcept
+	{
 		return reverse_iterator(begin());
 	}
 
-	constexpr const_reverse_iterator rend() const noexcept {
+	constexpr const_reverse_iterator rend() const noexcept
+	{
 		return const_reverse_iterator(begin());
 	}
 
 private:
 	// Helpers
 
-	constexpr void _copy(const vector& other) {									// Generic copy function for vector
+	constexpr void _copy(const vector& other)
+	{
 		_data._First	= _alloc.allocate(other.capacity());
 		size_t newSize	= other.size();
 
@@ -551,33 +649,41 @@ private:
 		_data._Final	= _data._First + other.capacity();
 	}
 
-	constexpr void _move(vector&& other) noexcept {								// Generic move function for vector
+	constexpr void _move(vector&& other) noexcept
+	{
 		_data._First 	= custom::exchange(other._data._First, nullptr);
 		_data._Last 	= custom::exchange(other._data._Last, nullptr);
 		_data._Final 	= custom::exchange(other._data._Final, nullptr);
 	}
 
-	constexpr void _construct_range(value_type* const address, const size_t length) {
+	constexpr void _construct_range(value_type* const address, const size_t length)
+	{
 		for (size_t i = 0; i < length; ++i)
 			_Alloc_Traits::construct(_alloc, address + i);
 	}
 
-	constexpr void _construct_range(value_type* const address, const size_t length, const value_type& value) {
+	constexpr void _construct_range(value_type* const address, const size_t length, const value_type& value)
+	{
 		for (size_t i = 0; i < length; ++i)
 			_Alloc_Traits::construct(_alloc, address + i, value);
 	}
 
-	constexpr void _destroy_range(value_type* address, const size_t length) {
+	constexpr void _destroy_range(value_type* address, const size_t length)
+	{
 		for (size_t i = 0; i < length; ++i)
 			_Alloc_Traits::destroy(_alloc, address + i);
 	}
 
-	constexpr void _extend_if_full() {											// Reserve 50% more capacity when full
+	// Reserve 50% more capacity when full
+	constexpr void _extend_if_full()
+	{
 		if (_data._Last == _data._Final)
 			reserve(capacity() + capacity() / 2 + 1);
 	}
 
-	constexpr void _clean_up_array() {											// Clear and Deallocate array
+	// Clear and Deallocate array
+	constexpr void _clean_up_array()
+	{
 		if (_data._First != nullptr)
 		{
 			_destroy_range(_data._First, size());
@@ -592,7 +698,8 @@ private:
 
 // vector binary operators
 template<class _Type, class _Alloc>
-constexpr bool operator==(const vector<_Type, _Alloc>& left, const vector<_Type, _Alloc>& right) {
+constexpr bool operator==(const vector<_Type, _Alloc>& left, const vector<_Type, _Alloc>& right)
+{
 	if (left.size() != right.size())
 		return false;
 
@@ -600,7 +707,8 @@ constexpr bool operator==(const vector<_Type, _Alloc>& left, const vector<_Type,
 }
 
 template<class _Type, class _Alloc>
-constexpr bool operator!=(const vector<_Type, _Alloc>& left, const vector<_Type, _Alloc>& right) {
+constexpr bool operator!=(const vector<_Type, _Alloc>& left, const vector<_Type, _Alloc>& right)
+{
 	return !(left == right);
 }
 

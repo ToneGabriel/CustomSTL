@@ -53,11 +53,13 @@ protected:
 protected:
     // Constructors
 
-    _Hash_Table() {
+    _Hash_Table()
+	{
 		rehash(_DEFAULT_BUCKETS);
 	}
 
-	_Hash_Table(const size_t noBuckets) {
+	_Hash_Table(const size_t noBuckets)
+	{
 		rehash((noBuckets < _DEFAULT_BUCKETS) ? _DEFAULT_BUCKETS : noBuckets);
 	}
 
@@ -72,7 +74,8 @@ protected:
 protected:
 	// Operators
 
-	_Hash_Table& operator=(const _Hash_Table& other) {
+	_Hash_Table& operator=(const _Hash_Table& other)
+	{
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= other._elems;
@@ -82,7 +85,8 @@ protected:
 		return *this;
 	}
 
-	_Hash_Table& operator=(_Hash_Table&& other) noexcept {
+	_Hash_Table& operator=(_Hash_Table&& other) noexcept
+	{
 		if (_elems._data._Head != other._elems._data._Head)
 		{
 			_elems 		= custom::move(other._elems);
@@ -96,7 +100,8 @@ public:
 	// Main Functions
 
     template<class... Args>
-	iterator emplace(Args&&... args) {
+	iterator emplace(Args&&... args)
+	{
 		_NodePtr newNode 		= _alloc.allocate(1);
 		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
@@ -117,7 +122,8 @@ public:
 		}
 	}
 
-	iterator erase(const key_type& key) {
+	iterator erase(const key_type& key)
+	{
 		iterator it = find(key);
 
 		if (it == end())
@@ -138,43 +144,53 @@ public:
 		return _elems.erase(it);
 	}
 
-	iterator erase(iterator where) {
+	iterator erase(iterator where)
+	{
 		if (where == end())
 			throw std::out_of_range("erase iterator outside range.");
 
 		return erase(Traits::extract_key(*where));
 	}
 	
-	iterator erase(const_iterator where) {
+	iterator erase(const_iterator where)
+	{
 		if (where == end())
 			throw std::out_of_range("erase iterator outside range.");
 
 		return erase(Traits::extract_key(*where));
 	}
 
-	iterator find(const key_type& key) {
+	iterator find(const key_type& key)
+	{
 		return iterator(_find(key), &_elems._data);
 	}
 
-	const_iterator find(const key_type& key) const {
+	const_iterator find(const key_type& key) const
+	{
 		return const_iterator(_find(key), &_elems._data);
 	}
 
-	bool contains(const key_type& key) const {
+	bool contains(const key_type& key) const
+	{
 		return find(key) != end();
 	}
 
-	void rehash(const size_t noBuckets) {							// rebuild table with at least noBuckets
+	// rebuild table with at least noBuckets
+	void rehash(const size_t noBuckets)
+	{
 		size_t newBucketCount = (custom::max)(_min_load_factor_buckets(size()), noBuckets);	// don't violate bucket_count() >= size() / max_load_factor()
 		if (newBucketCount > bucket_count())
 			_force_rehash(newBucketCount);
 	}
 
-	void reserve(const size_t size) {								// rehash for at least "size" elements
+	// rehash for at least "size" elements
+	void reserve(const size_t size)
+	{
 		rehash(_min_load_factor_buckets(size));
 	}
 
-	void clear() {
+	void clear()
+	{
 		_elems.clear();						// Delete all Node* with values
 
 		for (auto& val : _buckets)			// Update _buckets to empty
@@ -184,39 +200,49 @@ public:
 		}
 	}
 
-	size_t bucket_count() const {									// Get _Hash_Vector size
+	size_t bucket_count() const
+	{
 		return _buckets.size();
 	}
 
-	size_t bucket_size(const size_t index) const {					// Get the size of the bucket at index
+	size_t bucket_size(const size_t index) const
+	{
 		return _buckets[index].first;
 	}
 
-	size_t bucket(const key_type& key) const {						// Get bucket index from key
+	size_t bucket(const key_type& key) const
+	{
 		return _hash(key) % bucket_count();
 	}
 
-	size_t size() const {
+	size_t size() const
+	{
 		return _elems.size();
 	}
 
-	size_t max_size() const noexcept {
+	size_t max_size() const noexcept
+	{
 		return _elems.max_size();
 	}
 
-	bool empty() const {
+	bool empty() const
+	{
 		return _elems.empty();
 	}
 
-	float load_factor() const {
+	float load_factor() const
+	{
 		return static_cast<float>(size()) / static_cast<float>(bucket_count());
 	}
 
-	float max_load_factor() const {
+	float max_load_factor() const
+	{
 		return _TABLE_LOAD_FACTOR;
 	}
 
-	void print_details()  {									// For Debugging
+	// For Debugging
+	void print_details() 
+	{
 		std::cout << "Capacity= " << _buckets.size() << ' ' << "Size= " << _elems.size() << '\n';
 
 		for (size_t i = 0; i < _buckets.size(); ++i)
@@ -236,27 +262,33 @@ public:
 public:
 	// iterator functions
 
-	iterator begin() {
+	iterator begin()
+	{
 		return _elems.begin();
 	}
 
-	const_iterator begin() const {
+	const_iterator begin() const
+	{
 		return _elems.begin();
 	}
 
-	iterator end() {
+	iterator end()
+	{
 		return _elems.end();
 	}
 
-	const_iterator end() const {
+	const_iterator end() const
+	{
 		return _elems.end();
 	}
 
 protected:
 	// Others
 
+	// Force construction with known key and given arguments for object
 	template<class _KeyType, class... Args>
-	pair<iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
+	pair<iterator, bool> _try_emplace(_KeyType&& key, Args&&... args)
+	{
 		iterator it = find(key);		// Check key and decide to construct or not
 
 		if (it != end())
@@ -280,7 +312,8 @@ protected:
 		}
 	}
 
-	const mapped_type& _at(const key_type& key) const {				// Access _Value at key with check
+	const mapped_type& _at(const key_type& key) const
+	{
 		const_iterator it = find(key);
 
 		if (it == end())
@@ -289,7 +322,8 @@ protected:
 		return Traits::extract_mapval(it._Ptr->_Value);
 	}
 
-	mapped_type& _at(const key_type& key) {
+	mapped_type& _at(const key_type& key)
+	{
 		const_iterator it = find(key);
 
 		if (it == end())
@@ -301,7 +335,8 @@ protected:
 private:
 	// Helpers
 
-	_NodePtr _find(const key_type& key) const {
+	_NodePtr _find(const key_type& key) const
+	{
 		const _Bucket& currentBucket 	= _buckets[bucket(key)];
 		size_t remainingNodes			= currentBucket.first;
 		_NodePtr currentNode			= currentBucket.second;
@@ -318,7 +353,8 @@ private:
 		return currentNode;
 	}
 
-	void _map_and_link_node(size_t index, _NodePtr newNode) {
+	void _map_and_link_node(size_t index, _NodePtr newNode)
+	{
 		if (_buckets[index].first == 0)	// bucket is empty
 			_elems._link_node_before(_elems._data._Head, newNode);	// link last
 		else
@@ -329,7 +365,8 @@ private:
 		_buckets[index].second = newNode;
 	}
 
-	void _force_rehash(const size_t noBuckets) {
+	void _force_rehash(const size_t noBuckets)
+	{
 		_buckets.realloc(noBuckets);
 
 		for (auto it = _elems.begin(); it != _elems.end(); /*no increment here*/)
@@ -359,19 +396,25 @@ private:
 		}
 	}
 
-	void _rehash_if_overload() {									// Check load factor and rehash if needed
+	// Check load factor and rehash if needed
+	void _rehash_if_overload()
+	{
 		if (static_cast<float>(size() + 1) / static_cast<float>(bucket_count()) > max_load_factor())
 			_force_rehash(2 * bucket_count());
 	}
 
-	size_t _min_load_factor_buckets(const size_t size) const {		// returns the minimum number of buckets necessary for the elements in list
+	// returns the minimum number of buckets necessary for the elements in list
+	size_t _min_load_factor_buckets(const size_t size) const
+	{
 		return static_cast<size_t>(std::ceil(static_cast<float>(size) / max_load_factor()));
 	}
-};	// END _Hash_Table Template
+};	// END _Hash_Table
 
 // _Hash_Table binary operators
 template<class Traits>
-bool operator==(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right) {	// Contains the same elems, but not the same hashtable
+bool operator==(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right)
+{
+	// Contains the same elems, but not the same hashtable
 	if (left.size() != right.size())
 		return false;
 
@@ -386,7 +429,8 @@ bool operator==(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& righ
 }
 
 template<class Traits>
-bool operator!=(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right) {
+bool operator!=(const _Hash_Table<Traits>& left, const _Hash_Table<Traits>& right)
+{
 	return !(left == right);
 }
 

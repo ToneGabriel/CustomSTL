@@ -20,7 +20,7 @@ public:
     first_type first;
     second_type second;
 
-public:
+public: // TODO: check public
     // Constructor Helpers
 
     // (H1) Helper for (5)
@@ -102,7 +102,8 @@ public:
                                 is_assignable<Type1&, const Other1&>,
                                 is_assignable<Type2&, const Other2&>>, bool> = true>
     constexpr pair& operator=(const pair<Other1, Other2>& other)
-    noexcept(is_nothrow_assignable_v<Type1&, const Other1&> && is_nothrow_assignable_v<Type2&, const Other2&>) {
+    noexcept(is_nothrow_assignable_v<Type1&, const Other1&> && is_nothrow_assignable_v<Type2&, const Other2&>)
+    {
         first  = other.first;
         second = other.second;
         return *this;
@@ -114,7 +115,8 @@ public:
                                 is_assignable<Type1&, Other1>,
                                 is_assignable<Type2&, Other2>>, bool> = true>
     constexpr pair& operator=(pair<Other1, Other2>&& other)
-    noexcept(is_nothrow_assignable_v<Type1&, Other1> && is_nothrow_assignable_v<Type2&, Other2>) {
+    noexcept(is_nothrow_assignable_v<Type1&, Other1> && is_nothrow_assignable_v<Type2&, Other2>)
+    {
         first  = custom::forward<Other1>(other.first);
         second = custom::forward<Other2>(other.second);
         return *this;
@@ -123,22 +125,25 @@ public:
     pair& operator=(const pair&)            = default;
     pair& operator=(pair&&)                 = default;
     pair& operator=(const volatile pair&)   = delete;
-}; // END pair Template
+}; // END pair
 
 
 template<class Type1, class Type2>
-constexpr bool operator==(const pair<Type1, Type2>& left, const pair<Type1, Type2>& right) {
+constexpr bool operator==(const pair<Type1, Type2>& left, const pair<Type1, Type2>& right)
+{
     return left.first == right.first && left.second == right.second;
 }
 
 template<class Type1, class Type2>
-constexpr bool operator!=(const pair<Type1, Type2>& left, const pair<Type1, Type2>& right) {
+constexpr bool operator!=(const pair<Type1, Type2>& left, const pair<Type1, Type2>& right)
+{
     return !(left == right);
 }
 
 template<class Type1, class Type2>
 constexpr pair<unrefwrap_t<Type1>, unrefwrap_t<Type2>> make_pair(Type1&& first, Type2&& second)
-noexcept(is_nothrow_constructible_v<unrefwrap_t<Type1>, Type1> && is_nothrow_constructible_v<unrefwrap_t<Type2>, Type2>) {
+noexcept(is_nothrow_constructible_v<unrefwrap_t<Type1>, Type1> && is_nothrow_constructible_v<unrefwrap_t<Type2>, Type2>)
+{
     return pair<unrefwrap_t<Type1>, unrefwrap_t<Type2>>(custom::forward<Type1>(first), custom::forward<Type2>(second));
 }
 
