@@ -246,55 +246,64 @@ struct numeric_limits
 
     /* The minimum finite value, or for floating types with
 	denormalization, the minimum positive normalized value. */
-    static constexpr Type (min)() noexcept { 
+    static constexpr Type (min)() noexcept
+	{
         return Type();
     }
 
     /* The maximum finite value. */
-    static constexpr Type (max)() noexcept { 
+    static constexpr Type (max)() noexcept
+	{
         return Type();
     }
 
     /* A finite value x such that there is no other finite value y
     where y < x. */
-    static constexpr Type lowest() noexcept {
+    static constexpr Type lowest() noexcept
+	{
         return Type();
     }
 
     /* The machine epsilon:  the difference between 1 and the least
     value greater than 1 that is representable. */
-    static constexpr Type epsilon() noexcept {
+    static constexpr Type epsilon() noexcept
+	{
         return Type();
     }
 
     /* The maximum rounding error measurement (see LIA-1). */
-    static constexpr Type round_error() noexcept {
+    static constexpr Type round_error() noexcept
+	{
         return Type();
     }
 
     /* The representation of positive infinity, if has_infinity. */
-    static constexpr Type infinity() noexcept {
+    static constexpr Type infinity() noexcept
+	{
         return Type();
     }
 
     /* The representation of a quiet Not a Number,
     if has_quiet_NaN. */
-    static constexpr Type quiet_NaN() noexcept {
+    static constexpr Type quiet_NaN() noexcept
+	{
         return Type();
     }
 
     /* The representation of a signaling Not a Number, if
     has_signaling_NaN. */
-    static constexpr Type signaling_NaN() noexcept {
+    static constexpr Type signaling_NaN() noexcept
+	{
         return Type();
     }
 
     /* The minimum positive denormalized value.  For types where
     has_denorm is false, this is the minimum positive normalized value. */
-    static constexpr Type denorm_min() noexcept {
+    static constexpr Type denorm_min() noexcept
+	{
         return Type();
     }
-};
+};  // END numeric_limits
 
 // ignore CV qualifiers
 template<typename Type>
@@ -341,39 +350,48 @@ struct numeric_limits<bool>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr bool (min)() noexcept {
+    static constexpr bool (min)() noexcept
+	{
         return false;
     }
 
-    static constexpr bool (max)() noexcept {
+    static constexpr bool (max)() noexcept
+	{
         return true;
     }
 
-    static constexpr bool lowest() noexcept {
+    static constexpr bool lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr bool epsilon() noexcept {
+    static constexpr bool epsilon() noexcept
+	{
         return false;
     }
 
-    static constexpr bool round_error() noexcept {
+    static constexpr bool round_error() noexcept
+	{
         return false;
     }
 
-    static constexpr bool infinity() noexcept {
+    static constexpr bool infinity() noexcept
+	{
         return false;
     }
 
-    static constexpr bool quiet_NaN() noexcept {
+    static constexpr bool quiet_NaN() noexcept
+	{
         return false;
     }
 
-    static constexpr bool signaling_NaN() noexcept {
+    static constexpr bool signaling_NaN() noexcept
+	{
         return false;
     }
 
-    static constexpr bool denorm_min() noexcept {
+    static constexpr bool denorm_min() noexcept
+	{
         return false;
     }
 };  // END bool specialization
@@ -413,39 +431,48 @@ struct numeric_limits<char>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr char (min)() noexcept {
+    static constexpr char (min)() noexcept
+	{
         return CHAR_MIN;
     }
 
-    static constexpr char (max)() noexcept {
+    static constexpr char (max)() noexcept
+	{
         return CHAR_MAX;
     }
 
-    static constexpr char lowest() noexcept {
+    static constexpr char lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr char epsilon() noexcept {
+    static constexpr char epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr char round_error() noexcept {
+    static constexpr char round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr char infinity() noexcept {
+    static constexpr char infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr char quiet_NaN() noexcept {
+    static constexpr char quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char signaling_NaN() noexcept {
+    static constexpr char signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char denorm_min() noexcept {
+    static constexpr char denorm_min() noexcept
+	{
         return 0;
     }
 };  // END char specialization
@@ -485,39 +512,48 @@ struct numeric_limits<signed char>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr signed char (min)() noexcept {
+    static constexpr signed char (min)() noexcept
+	{
         return SCHAR_MIN;
     }
 
-    static constexpr signed char (max)() noexcept {
+    static constexpr signed char (max)() noexcept
+	{
         return SCHAR_MAX;
     }
 
-    static constexpr signed char lowest() noexcept {
+    static constexpr signed char lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr signed char epsilon() noexcept {
+    static constexpr signed char epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr signed char round_error() noexcept {
+    static constexpr signed char round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr signed char infinity() noexcept {
+    static constexpr signed char infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr signed char quiet_NaN() noexcept {
+    static constexpr signed char quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr signed char signaling_NaN() noexcept {
+    static constexpr signed char signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr signed char denorm_min() noexcept {
+    static constexpr signed char denorm_min() noexcept
+	{
         return 0;
     }
 };  // END signed char specialization
@@ -557,39 +593,48 @@ struct numeric_limits<unsigned char>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr unsigned char (min)() noexcept {
+    static constexpr unsigned char (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char (max)() noexcept {
+    static constexpr unsigned char (max)() noexcept
+	{
         return UCHAR_MAX;
     }
 
-    static constexpr unsigned char lowest() noexcept {
+    static constexpr unsigned char lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr unsigned char epsilon() noexcept {
+    static constexpr unsigned char epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char round_error() noexcept {
+    static constexpr unsigned char round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char infinity() noexcept {
+    static constexpr unsigned char infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char quiet_NaN() noexcept {
+    static constexpr unsigned char quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char signaling_NaN() noexcept {
+    static constexpr unsigned char signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned char denorm_min() noexcept {
+    static constexpr unsigned char denorm_min() noexcept
+	{
         return 0;
     }
 };  // END unsigned char specialization
@@ -629,39 +674,48 @@ struct numeric_limits<wchar_t>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr wchar_t (min)() noexcept {
+    static constexpr wchar_t (min)() noexcept
+	{
         return WCHAR_MIN;
     }
 
-    static constexpr wchar_t (max)() noexcept {
+    static constexpr wchar_t (max)() noexcept
+	{
         return WCHAR_MAX;
     }
 
-    static constexpr wchar_t lowest() noexcept {
+    static constexpr wchar_t lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr wchar_t epsilon() noexcept {
+    static constexpr wchar_t epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr wchar_t round_error() noexcept {
+    static constexpr wchar_t round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr wchar_t infinity() noexcept {
+    static constexpr wchar_t infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr wchar_t quiet_NaN() noexcept {
+    static constexpr wchar_t quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr wchar_t signaling_NaN() noexcept {
+    static constexpr wchar_t signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr wchar_t denorm_min() noexcept {
+    static constexpr wchar_t denorm_min() noexcept
+	{
         return 0;
     }
 };  // END wchar_t specialization
@@ -702,39 +756,48 @@ struct numeric_limits<char8_t>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr char8_t (min)() noexcept {
+    static constexpr char8_t (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t (max)() noexcept {
+    static constexpr char8_t (max)() noexcept
+	{
         return UCHAR_MAX;
     }
 
-    static constexpr char8_t lowest() noexcept {
+    static constexpr char8_t lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr char8_t epsilon() noexcept {
+    static constexpr char8_t epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t round_error() noexcept {
+    static constexpr char8_t round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t infinity() noexcept {
+    static constexpr char8_t infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t quiet_NaN() noexcept {
+    static constexpr char8_t quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t signaling_NaN() noexcept {
+    static constexpr char8_t signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char8_t denorm_min() noexcept {
+    static constexpr char8_t denorm_min() noexcept
+	{
         return 0;
     }
 };  // END char8_t specialization
@@ -775,39 +838,48 @@ struct numeric_limits<char16_t>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr char16_t (min)() noexcept {
+    static constexpr char16_t (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t (max)() noexcept {
+    static constexpr char16_t (max)() noexcept
+	{
         return USHRT_MAX;
     }
 
-    static constexpr char16_t lowest() noexcept {
+    static constexpr char16_t lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr char16_t epsilon() noexcept {
+    static constexpr char16_t epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t round_error() noexcept {
+    static constexpr char16_t round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t infinity() noexcept {
+    static constexpr char16_t infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t quiet_NaN() noexcept {
+    static constexpr char16_t quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t signaling_NaN() noexcept {
+    static constexpr char16_t signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char16_t denorm_min() noexcept {
+    static constexpr char16_t denorm_min() noexcept
+	{
         return 0;
     }
 };  // END char16_t specialization
@@ -847,39 +919,48 @@ struct numeric_limits<char32_t>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr char32_t (min)() noexcept {
+    static constexpr char32_t (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t (max)() noexcept {
+    static constexpr char32_t (max)() noexcept
+	{
         return UINT_MAX;
     }
 
-    static constexpr char32_t lowest() noexcept {
+    static constexpr char32_t lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr char32_t epsilon() noexcept {
+    static constexpr char32_t epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t round_error() noexcept {
+    static constexpr char32_t round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t infinity() noexcept {
+    static constexpr char32_t infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t quiet_NaN() noexcept {
+    static constexpr char32_t quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t signaling_NaN() noexcept {
+    static constexpr char32_t signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr char32_t denorm_min() noexcept {
+    static constexpr char32_t denorm_min() noexcept
+	{
         return 0;
     }
 };  // END char32_t specialization
@@ -919,39 +1000,48 @@ struct numeric_limits<short>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr short (min)() noexcept {
+    static constexpr short (min)() noexcept
+	{
         return SHRT_MIN;
     }
 
-    static constexpr short (max)() noexcept {
+    static constexpr short (max)() noexcept
+	{
         return SHRT_MAX;
     }
 
-    static constexpr short lowest() noexcept {
+    static constexpr short lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr short epsilon() noexcept {
+    static constexpr short epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr short round_error() noexcept {
+    static constexpr short round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr short infinity() noexcept {
+    static constexpr short infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr short quiet_NaN() noexcept {
+    static constexpr short quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr short signaling_NaN() noexcept {
+    static constexpr short signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr short denorm_min() noexcept {
+    static constexpr short denorm_min() noexcept
+	{
         return 0;
     }
 };  // END short specialization
@@ -991,39 +1081,48 @@ struct numeric_limits<unsigned short>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr unsigned short (min)() noexcept {
+    static constexpr unsigned short (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short (max)() noexcept {
+    static constexpr unsigned short (max)() noexcept
+	{
         return USHRT_MAX;
     }
 
-    static constexpr unsigned short lowest() noexcept {
+    static constexpr unsigned short lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr unsigned short epsilon() noexcept {
+    static constexpr unsigned short epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short round_error() noexcept {
+    static constexpr unsigned short round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short infinity() noexcept {
+    static constexpr unsigned short infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short quiet_NaN() noexcept {
+    static constexpr unsigned short quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short signaling_NaN() noexcept {
+    static constexpr unsigned short signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned short denorm_min() noexcept {
+    static constexpr unsigned short denorm_min() noexcept
+	{
         return 0;
     }
 };  // END unsigned short specialization
@@ -1063,39 +1162,48 @@ struct numeric_limits<int>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr int (min)() noexcept {
+    static constexpr int (min)() noexcept
+	{
         return INT_MIN;
     }
 
-    static constexpr int (max)() noexcept {
+    static constexpr int (max)() noexcept
+	{
         return INT_MAX;
     }
 
-    static constexpr int lowest() noexcept {
+    static constexpr int lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr int epsilon() noexcept {
+    static constexpr int epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr int round_error() noexcept {
+    static constexpr int round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr int infinity() noexcept {
+    static constexpr int infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr int quiet_NaN() noexcept {
+    static constexpr int quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr int signaling_NaN() noexcept {
+    static constexpr int signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr int denorm_min() noexcept {
+    static constexpr int denorm_min() noexcept
+	{
         return 0;
     }
 };  // END int specialization
@@ -1135,39 +1243,48 @@ struct numeric_limits<unsigned int>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr unsigned int (min)() noexcept {
+    static constexpr unsigned int (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int (max)() noexcept {
+    static constexpr unsigned int (max)() noexcept
+	{
         return UINT_MAX;
     }
 
-    static constexpr unsigned int lowest() noexcept {
+    static constexpr unsigned int lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr unsigned int epsilon() noexcept {
+    static constexpr unsigned int epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int round_error() noexcept {
+    static constexpr unsigned int round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int infinity() noexcept {
+    static constexpr unsigned int infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int quiet_NaN() noexcept {
+    static constexpr unsigned int quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int signaling_NaN() noexcept {
+    static constexpr unsigned int signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned int denorm_min() noexcept {
+    static constexpr unsigned int denorm_min() noexcept
+	{
         return 0;
     }
 };  // END unsigned int specialization
@@ -1207,39 +1324,48 @@ struct numeric_limits<long>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr long (min)() noexcept {
+    static constexpr long (min)() noexcept
+	{
         return LONG_MIN;
     }
 
-    static constexpr long (max)() noexcept {
+    static constexpr long (max)() noexcept
+	{
         return LONG_MAX;
     }
 
-    static constexpr long lowest() noexcept {
+    static constexpr long lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr long epsilon() noexcept {
+    static constexpr long epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr long round_error() noexcept {
+    static constexpr long round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr long infinity() noexcept {
+    static constexpr long infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr long quiet_NaN() noexcept {
+    static constexpr long quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr long signaling_NaN() noexcept {
+    static constexpr long signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr long denorm_min() noexcept {
+    static constexpr long denorm_min() noexcept
+	{
         return 0;
     }
 };  // END long specialization
@@ -1279,39 +1405,48 @@ struct numeric_limits<unsigned long>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr unsigned long (min)() noexcept {
+    static constexpr unsigned long (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long (max)() noexcept {
+    static constexpr unsigned long (max)() noexcept
+	{
         return ULONG_MAX;
     }
 
-    static constexpr unsigned long lowest() noexcept {
+    static constexpr unsigned long lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr unsigned long epsilon() noexcept {
+    static constexpr unsigned long epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long round_error() noexcept {
+    static constexpr unsigned long round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long infinity() noexcept {
+    static constexpr unsigned long infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long quiet_NaN() noexcept {
+    static constexpr unsigned long quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long signaling_NaN() noexcept {
+    static constexpr unsigned long signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long denorm_min() noexcept {
+    static constexpr unsigned long denorm_min() noexcept
+	{
         return 0;
     }
 };  // END unsigned long specialization
@@ -1351,39 +1486,48 @@ struct numeric_limits<long long>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr long long (min)() noexcept {
+    static constexpr long long (min)() noexcept
+	{
         return LLONG_MIN;
     }
 
-    static constexpr long long (max)() noexcept {
+    static constexpr long long (max)() noexcept
+	{
         return LLONG_MAX;
     }
 
-    static constexpr long long lowest() noexcept {
+    static constexpr long long lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr long long epsilon() noexcept {
+    static constexpr long long epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr long long round_error() noexcept {
+    static constexpr long long round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr long long infinity() noexcept {
+    static constexpr long long infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr long long quiet_NaN() noexcept {
+    static constexpr long long quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr long long signaling_NaN() noexcept {
+    static constexpr long long signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr long long denorm_min() noexcept {
+    static constexpr long long denorm_min() noexcept
+	{
         return 0;
     }
 };  // END long long specialization
@@ -1423,39 +1567,48 @@ struct numeric_limits<unsigned long long>
     static constexpr int max_exponent10 = 0;
 
 
-    static constexpr unsigned long long (min)() noexcept {
+    static constexpr unsigned long long (min)() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long (max)() noexcept {
+    static constexpr unsigned long long (max)() noexcept
+	{
         return ULLONG_MAX;
     }
 
-    static constexpr unsigned long long lowest() noexcept {
+    static constexpr unsigned long long lowest() noexcept
+	{
         return (min)();
     }
 
-    static constexpr unsigned long long epsilon() noexcept {
+    static constexpr unsigned long long epsilon() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long round_error() noexcept {
+    static constexpr unsigned long long round_error() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long infinity() noexcept {
+    static constexpr unsigned long long infinity() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long quiet_NaN() noexcept {
+    static constexpr unsigned long long quiet_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long signaling_NaN() noexcept {
+    static constexpr unsigned long long signaling_NaN() noexcept
+	{
         return 0;
     }
 
-    static constexpr unsigned long long denorm_min() noexcept {
+    static constexpr unsigned long long denorm_min() noexcept
+	{
         return 0;
     }
 };  // END unsigned long long specialization
@@ -1495,39 +1648,48 @@ struct numeric_limits<float>
     static constexpr int max_exponent10 = FLT_MAX_10_EXP;
 
 
-    static constexpr float (min)() noexcept {
+    static constexpr float (min)() noexcept
+	{
         return FLT_MIN;
     }
 
-    static constexpr float (max)() noexcept {
+    static constexpr float (max)() noexcept
+	{
         return FLT_MAX;
     }
 
-    static constexpr float lowest() noexcept {
+    static constexpr float lowest() noexcept
+	{
         return -(max)();
     }
 
-    static constexpr float epsilon() noexcept {
+    static constexpr float epsilon() noexcept
+	{
         return FLT_EPSILON;
     }
 
-    static constexpr float round_error() noexcept {
+    static constexpr float round_error() noexcept
+	{
         return 0.5f;
     }
 
-    static constexpr float infinity() noexcept {
+    static constexpr float infinity() noexcept
+	{
         return __builtin_huge_valf();
     }
 
-    static constexpr float quiet_NaN() noexcept {
+    static constexpr float quiet_NaN() noexcept
+	{
         return __builtin_nanf("");
     }
 
-    static constexpr float signaling_NaN() noexcept {
+    static constexpr float signaling_NaN() noexcept
+	{
         return __builtin_nansf("");
     }
 
-    static constexpr float denorm_min() noexcept {
+    static constexpr float denorm_min() noexcept
+	{
         return FLT_TRUE_MIN;
     }
 };  // END float specialization
@@ -1567,39 +1729,48 @@ struct numeric_limits<double>
     static constexpr int max_exponent10 = DBL_MAX_10_EXP;
 
 
-    static constexpr double (min)() noexcept {
+    static constexpr double (min)() noexcept
+	{
         return DBL_MIN;
     }
 
-    static constexpr double (max)() noexcept {
+    static constexpr double (max)() noexcept
+	{
         return DBL_MAX;
     }
 
-    static constexpr double lowest() noexcept {
+    static constexpr double lowest() noexcept
+	{
         return -(max)();
     }
 
-    static constexpr double epsilon() noexcept {
+    static constexpr double epsilon() noexcept
+	{
         return DBL_EPSILON;
     }
 
-    static constexpr double round_error() noexcept {
+    static constexpr double round_error() noexcept
+	{
         return 0.5;
     }
 
-    static constexpr double infinity() noexcept {
+    static constexpr double infinity() noexcept
+	{
         return __builtin_huge_val();
     }
 
-    static constexpr double quiet_NaN() noexcept {
+    static constexpr double quiet_NaN() noexcept
+	{
         return __builtin_nan("");
     }
 
-    static constexpr double signaling_NaN() noexcept {
+    static constexpr double signaling_NaN() noexcept
+	{
         return __builtin_nans("");
     }
 
-    static constexpr double denorm_min() noexcept {
+    static constexpr double denorm_min() noexcept
+	{
         return DBL_TRUE_MIN;
     }
 };  // END double specialization
@@ -1639,39 +1810,48 @@ struct numeric_limits<long double>
     static constexpr int max_exponent10 = LDBL_MAX_10_EXP;
 
 
-    static constexpr long double (min)() noexcept {
+    static constexpr long double (min)() noexcept
+	{
         return LDBL_MIN;
     }
 
-    static constexpr long double (max)() noexcept {
+    static constexpr long double (max)() noexcept
+	{
         return LDBL_MAX;
     }
 
-    static constexpr long double lowest() noexcept {
+    static constexpr long double lowest() noexcept
+	{
         return -(max)();
     }
 
-    static constexpr long double epsilon() noexcept {
+    static constexpr long double epsilon() noexcept
+	{
         return LDBL_EPSILON;
     }
 
-    static constexpr long double round_error() noexcept {
+    static constexpr long double round_error() noexcept
+	{
         return 0.5L;
     }
 
-    static constexpr long double infinity() noexcept {
+    static constexpr long double infinity() noexcept
+	{
         return __builtin_huge_val();
     }
 
-    static constexpr long double quiet_NaN() noexcept {
+    static constexpr long double quiet_NaN() noexcept
+	{
         return __builtin_nan("");
     }
 
-    static constexpr long double signaling_NaN() noexcept {
+    static constexpr long double signaling_NaN() noexcept
+	{
         return __builtin_nans("");
     }
 
-    static constexpr long double denorm_min() noexcept {
+    static constexpr long double denorm_min() noexcept
+	{
         return LDBL_TRUE_MIN;
     }
 };  // END long double specialization

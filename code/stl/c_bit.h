@@ -23,13 +23,15 @@ template<class To, class From,
 enable_if_t<conjunction_v<  bool_constant<sizeof(To) == sizeof(From)>,
                             is_trivially_copyable<To>,
                             is_trivially_copyable<From>>, bool> = true>
-constexpr To bit_cast(const From& src) noexcept {
+constexpr To bit_cast(const From& src) noexcept
+{
     return __builtin_bit_cast(To, src);
 }
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr bool has_single_bit(Ty val) noexcept {
+constexpr bool has_single_bit(Ty val) noexcept
+{
     return val != 0 && (val & (val - 1)) == 0;
 }
 
@@ -38,7 +40,8 @@ constexpr bool has_single_bit(Ty val) noexcept {
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-3
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int countl_zero(Ty val) noexcept {
+constexpr int countl_zero(Ty val) noexcept
+{
     Ty yy = 0;
 
     unsigned int nn = numeric_limits<Ty>::digits;
@@ -65,26 +68,30 @@ constexpr int countl_zero(Ty val) noexcept {
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-4
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int countr_zero(Ty val) noexcept {
+constexpr int countr_zero(Ty val) noexcept
+{
     constexpr int digits = numeric_limits<Ty>::digits;
     return digits - countl_zero(static_cast<Ty>(static_cast<Ty>(~val) & static_cast<Ty>(val - 1)));
 }
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int countl_one(Ty val) noexcept {
+constexpr int countl_one(Ty val) noexcept
+{
     return custom::countl_zero(static_cast<Ty>(~val));
 }
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int countr_one(Ty val) noexcept {
+constexpr int countr_one(Ty val) noexcept
+{
     return custom::countr_zero(static_cast<Ty>(~val));
 }
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr Ty bit_ceil(Ty val) noexcept {
+constexpr Ty bit_ceil(Ty val) noexcept
+{
     if (val <= 1u)
         return Ty{1};
 
@@ -103,7 +110,8 @@ constexpr Ty bit_ceil(Ty val) noexcept {
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr Ty bit_floor(Ty val) noexcept {
+constexpr Ty bit_floor(Ty val) noexcept
+{
     if (val == 0)
         return 0;
 
@@ -112,7 +120,8 @@ constexpr Ty bit_floor(Ty val) noexcept {
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int bit_width(Ty val) noexcept {
+constexpr int bit_width(Ty val) noexcept
+{
     return numeric_limits<Ty>::digits - custom::countl_zero(val);
 }
 
@@ -122,7 +131,8 @@ constexpr Ty rotl(Ty val, int rotation) noexcept;
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr Ty rotr(Ty val, int rotation) noexcept {
+constexpr Ty rotr(Ty val, int rotation) noexcept
+{
     constexpr int digits    = numeric_limits<Ty>::digits;
     const int remainder     = rotation % digits;
 
@@ -136,7 +146,8 @@ constexpr Ty rotr(Ty val, int rotation) noexcept {
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool>>
-constexpr Ty rotl(Ty val, int rotation) noexcept {
+constexpr Ty rotl(Ty val, int rotation) noexcept
+{
     constexpr int digits    = numeric_limits<Ty>::digits;
     const int remainder     = rotation % digits;
 
@@ -150,7 +161,8 @@ constexpr Ty rotl(Ty val, int rotation) noexcept {
 
 
 template<class Ty, enable_if_t<is_unsigned_integer_v<Ty>, bool> = true>
-constexpr int popcount(Ty val) noexcept {
+constexpr int popcount(Ty val) noexcept
+{
 #ifdef __GNUG__
     constexpr int digits = numeric_limits<Ty>::digits;
 

@@ -55,58 +55,73 @@ public:
 
     constexpr duration& operator=(const duration& other) = default;
 
-    constexpr common_type_t<duration> operator+() const noexcept(is_arithmetic_v<rep>) {
+    constexpr common_type_t<duration> operator+() const noexcept(is_arithmetic_v<rep>)
+    {
         return common_type_t<duration>(*this);
     }
 
-    constexpr common_type_t<duration> operator-() const noexcept(is_arithmetic_v<rep>) {
+    constexpr common_type_t<duration> operator-() const noexcept(is_arithmetic_v<rep>)
+    {
         return common_type_t<duration>(-_rep);
     }
 
-    constexpr duration& operator++() noexcept(is_arithmetic_v<rep>) {
+    constexpr duration& operator++() noexcept(is_arithmetic_v<rep>)
+    {
         ++_rep;
         return *this;
     }
 
-    constexpr duration operator++(int) noexcept(is_arithmetic_v<rep>) {
+    constexpr duration operator++(int) noexcept(is_arithmetic_v<rep>)
+    {
         return duration(_rep++);
     }
 
-    constexpr duration& operator--() noexcept(is_arithmetic_v<rep>) {
+    constexpr duration& operator--() noexcept(is_arithmetic_v<rep>)
+    {
         --_rep;
         return *this;
     }
 
-    constexpr duration operator--(int) noexcept(is_arithmetic_v<rep>) {
+    constexpr duration operator--(int) noexcept(is_arithmetic_v<rep>)
+    {
         return duration(_rep--);
     }
 
-    constexpr duration& operator+=(const duration& other) noexcept(is_arithmetic_v<rep>) {     // need axact same duration
+    // need axact same duration
+    constexpr duration& operator+=(const duration& other) noexcept(is_arithmetic_v<rep>)
+    {
         _rep += other._rep;
         return *this;
     }
 
-    constexpr duration& operator-=(const duration& other) noexcept(is_arithmetic_v<rep>) {     // need axact same duration
+    // need axact same duration
+    constexpr duration& operator-=(const duration& other) noexcept(is_arithmetic_v<rep>)
+    {
         _rep -= other._rep;
         return *this;
     }
 
-    constexpr duration& operator*=(const rep& otherRep) noexcept(is_arithmetic_v<rep>) {
+    constexpr duration& operator*=(const rep& otherRep) noexcept(is_arithmetic_v<rep>)
+    {
         _rep *= otherRep;
         return *this;
     }
 
-    constexpr duration& operator/=(const rep& otherRep) noexcept(is_arithmetic_v<rep>) {
+    constexpr duration& operator/=(const rep& otherRep) noexcept(is_arithmetic_v<rep>)
+    {
         _rep /= otherRep;
         return *this;
     }
 
-    constexpr duration& operator%=(const rep& otherRep) noexcept(is_arithmetic_v<rep>) {
+    constexpr duration& operator%=(const rep& otherRep) noexcept(is_arithmetic_v<rep>)
+    {
         _rep %= otherRep;
         return *this;
     }
 
-    constexpr duration& operator%=(const duration& other) noexcept(is_arithmetic_v<rep>) {     // need axact same duration
+    // need axact same duration
+    constexpr duration& operator%=(const duration& other) noexcept(is_arithmetic_v<rep>)
+    {
         _rep %= other._rep;
         return *this;
     }
@@ -114,19 +129,23 @@ public:
 public:
     // Main functions
 
-    constexpr rep count() const noexcept(is_arithmetic_v<rep>) {
+    constexpr rep count() const noexcept(is_arithmetic_v<rep>)
+    {
         return _rep;
     }
 
-    static constexpr duration zero() noexcept {
+    static constexpr duration zero() noexcept
+    {
         return duration(duration_values<rep>::zero());
     }
 
-    static constexpr duration (min)() noexcept {
+    static constexpr duration (min)() noexcept
+    {
         return duration((duration_values<rep>::min)());
     }
 
-    static constexpr duration (max)() noexcept {
+    static constexpr duration (max)() noexcept
+    {
         return duration((duration_values<rep>::max)());
     }
 };  // END duration
@@ -136,7 +155,8 @@ public:
 template<class Rep1, class Period1, class Rep2, class Period2>         // duration + duration
 constexpr common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>
 operator+(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
     using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
     return CD(CD(left).count() + CD(right).count());
 }
@@ -144,7 +164,8 @@ noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
 template<class Rep1, class Period1, class Rep2, class Period2>         // duration - duration
 constexpr common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>
 operator-(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
     using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
     return CD(CD(left).count() - CD(right).count());
 }
@@ -152,7 +173,8 @@ noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
 template<class Rep1, class Period1, class Rep2, class Period2>         // duration / duration (return rep type)
 constexpr common_type_t<Rep1, Rep2>
 operator/(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
     using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
     return CD(left).count() / CD(right).count();
 }
@@ -160,7 +182,8 @@ noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
 template<class Rep1, class Period1, class Rep2, class Period2>          // duration % duration
 constexpr common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>
 operator%(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
     using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
     return CD(CD(left).count() % CD(right).count());
 }
@@ -169,7 +192,8 @@ template<class Rep, class Period, class RightRep,
 enable_if_t<is_convertible_v<const RightRep&, common_type_t<Rep, RightRep>>, bool> = true> // duration * constant
 constexpr duration<common_type_t<Rep, RightRep>, Period>
 operator*(const duration<Rep, Period>& dur, const RightRep& rep) 
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>)
+{
     using CRDur = duration<common_type_t<Rep, RightRep>, Period>;
     return CRDur(CRDur(dur).count() * rep);
 }
@@ -178,7 +202,8 @@ template<class Rep, class Period, class LeftRep,
 enable_if_t<is_convertible_v<const LeftRep&, common_type_t<Rep, LeftRep>>, bool> = true>   // constant * duration
 constexpr duration<common_type_t<Rep, LeftRep>, Period>
 operator*(const LeftRep& rep, const duration<Rep, Period>& duration)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<LeftRep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<LeftRep>)
+{
     return duration * rep;
 }
 
@@ -186,7 +211,8 @@ template<class Rep, class Period, class RightRep,
 enable_if_t<is_convertible_v<const RightRep&, common_type_t<Rep, RightRep>>, bool> = true> // duration / constant
 constexpr duration<common_type_t<Rep, RightRep>, Period>
 operator/(const duration<Rep, Period>& dur, const RightRep& rep)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>)
+{
     using CRDur = duration<common_type_t<Rep, RightRep>, Period>;
     return CRDur(CRDur(dur).count() / rep);
 }
@@ -195,48 +221,55 @@ template<class Rep, class Period, class RightRep,
 enable_if_t<is_convertible_v<const RightRep&, common_type_t<Rep, RightRep>>, bool> = true> // duration % constant
 constexpr duration<common_type_t<Rep, RightRep>, Period>
 operator%(const duration<Rep, Period>& dur, const RightRep& rep)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<RightRep>)
+{
     using CRDur = duration<common_type_t<Rep, RightRep>, Period>;
     return CRDur(CRDur(dur).count() % rep);
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator==(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
    using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
    return CD(left).count() == CD(right).count();
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator!=(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
     return !(left == right);
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator<(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
    using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
    return CD(left).count() < CD(right).count();
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator<=(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
    using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
    return CD(left).count() <= CD(right).count();
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator>(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
    using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
    return CD(left).count() > CD(right).count();
 }
 
 template<class Rep1, class Period1, class Rep2, class Period2>
 constexpr bool operator>=(const duration<Rep1, Period1>& left, const duration<Rep2, Period2>& right)
-noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
+noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>)
+{
    using CD = common_type_t<duration<Rep1, Period1>, duration<Rep2, Period2>>;
    return CD(left).count() >= CD(right).count();
 }
@@ -246,7 +279,8 @@ noexcept(is_arithmetic_v<Rep1> && is_arithmetic_v<Rep2>) {
 // convert duration to another duration (truncate)
 template<class ToDur, class Rep, class Period, enable_if_t<is_duration_v<ToDur>, bool> /* = true (redefinition) */>
 constexpr ToDur duration_cast(const duration<Rep, Period>& duration)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>)
+{
 
     using _ToDurRep  = typename ToDur::rep;
     using _RatioType = ratio_divide<Period, typename ToDur::period>;
@@ -274,7 +308,8 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
 // i.e. the greatest integral result such that the result <= duration
 template<class ToDur, class Rep, class Period, enable_if_t<is_duration_v<ToDur>, bool> = true>
 constexpr ToDur floor(const duration<Rep, Period>& duration)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     const ToDur durationCasted = custom::chrono::duration_cast<ToDur>(duration);
 
     if (durationCasted > duration)
@@ -288,7 +323,8 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
 // i.e. the least integral result such that duration <= the result
 template<class ToDur, class Rep, class Period, enable_if_t<is_duration_v<ToDur>, bool> = true>
 constexpr ToDur ceil(const duration<Rep, Period>& duration)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     const ToDur durationCasted = custom::chrono::duration_cast<ToDur>(duration);
 
     if (durationCasted < duration)
@@ -302,7 +338,8 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
 template<class ToDur, class Rep, class Period,
 enable_if_t<is_duration_v<ToDur> && !is_floating_point_v<typename ToDur::rep>, bool> = true>
 constexpr ToDur round(const duration<Rep, Period>& duration)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     ToDur durationFloored   = custom::chrono::floor<ToDur>(duration);
     ToDur durationCeiled    = durationFloored + ToDur{ 1 };
     auto floorAdjustment    = duration - durationFloored;
@@ -318,8 +355,8 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename ToDur::rep>) {
 // duration abs
 // create a duration whose count() is the absolute value of duration.count()
 template<class Rep, class Period, enable_if_t<numeric_limits<Rep>::is_signed, bool> = true>
-constexpr duration<Rep, Period> abs(const duration<Rep, Period> dur) noexcept(is_arithmetic_v<Rep>) {
-
+constexpr duration<Rep, Period> abs(const duration<Rep, Period> dur) noexcept(is_arithmetic_v<Rep>)
+{
     if (dur < duration<Rep, Period>::zero())
         return duration<Rep, Period>::zero() - dur;
     else
@@ -373,30 +410,36 @@ public:
 public:
     // Operators
 
-    constexpr time_point& operator++() noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point& operator++() noexcept(is_arithmetic_v<rep>)
+    {
         ++_dur;
         return *this;
     }
 
-    constexpr time_point operator++(int) noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point operator++(int) noexcept(is_arithmetic_v<rep>)
+    {
         return time_point(_dur++);
     }
 
-    constexpr time_point& operator--() noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point& operator--() noexcept(is_arithmetic_v<rep>)
+    {
         --_dur;
         return *this;
     }
 
-    constexpr time_point operator--(int) noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point operator--(int) noexcept(is_arithmetic_v<rep>)
+    {
         return time_point(_dur--);
     }
 
-    constexpr time_point& operator+=(const duration& otherDuration) noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point& operator+=(const duration& otherDuration) noexcept(is_arithmetic_v<rep>)
+    {
         _dur += otherDuration;
         return *this;
     }
 
-    constexpr time_point& operator-=(const duration& otherDuration) noexcept(is_arithmetic_v<rep>) {
+    constexpr time_point& operator-=(const duration& otherDuration) noexcept(is_arithmetic_v<rep>)
+    {
         _dur -= otherDuration;
         return *this;
     }
@@ -404,15 +447,18 @@ public:
 public:
     // Main functions
 
-    constexpr duration time_since_epoch() const noexcept(is_arithmetic_v<rep>) {
+    constexpr duration time_since_epoch() const noexcept(is_arithmetic_v<rep>)
+    {
         return _dur;
     }
 
-    static constexpr time_point (min)() noexcept {
+    static constexpr time_point (min)() noexcept
+    {
         return time_point((duration::min)());
     }
 
-    static constexpr time_point (max)() noexcept {
+    static constexpr time_point (max)() noexcept
+    {
         return time_point((duration::max)());
     }
 
@@ -423,7 +469,8 @@ public:
 template<class Clock, class DurationTP, class Rep, class Period>        // time_point + duration (return TP)
 constexpr time_point<Clock, common_type_t<DurationTP, duration<Rep, Period>>>
 operator+(const time_point<Clock, DurationTP>& time, const duration<Rep, Period>& dur)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>)
+{
     using CDTime = time_point<Clock, common_type_t<DurationTP, duration<Rep, Period>>>;
     return CDTime(time.time_since_epoch() + dur);
 }
@@ -431,14 +478,16 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>) {
 template<class Clock, class DurationTP, class Rep, class Period>        // duration + time_point (return TP)
 constexpr time_point<Clock, common_type_t<DurationTP, duration<Rep, Period>>>
 operator+(const duration<Rep, Period>& duration, const time_point<Clock, DurationTP>& time)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>)
+{
     return time + duration;
 }
 
 template<class Clock, class DurationTP, class Rep, class Period>        // time_point - duration (return TP)
 constexpr time_point<Clock, common_type_t<DurationTP, duration<Rep, Period>>>
 operator-(const time_point<Clock, DurationTP>& time, const duration<Rep, Period>& dur)
-noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>) {
+noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>)
+{
     using CDTime = time_point<Clock, common_type_t<DurationTP, duration<Rep, Period>>>;
     return CDTime(time.time_since_epoch() - dur);
 }
@@ -446,43 +495,50 @@ noexcept(is_arithmetic_v<Rep> && is_arithmetic_v<typename DurationTP::rep>) {
 template<class Clock, class Duration1, class Duration2>                 // time_point - time_point (NO "+" between TP)
 constexpr common_type_t<Duration1, Duration2>
 operator-(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() - right.time_since_epoch();
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator==(const time_point<Clock, Duration2>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() == right.time_since_epoch();
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator!=(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return !(left == right);
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator<(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() < right.time_since_epoch();
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator<=(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() <= right.time_since_epoch();
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator>(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() > right.time_since_epoch();
 }
 
 template<class Clock, class Duration1, class Duration2>
 constexpr bool operator>=(const time_point<Clock, Duration1>& left, const time_point<Clock, Duration2>& right)
-noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>) {
+noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Duration2::rep>)
+{
     return left.time_since_epoch() >= right.time_since_epoch();
 }
 
@@ -491,7 +547,8 @@ noexcept(is_arithmetic_v<typename Duration1::rep> && is_arithmetic_v<typename Du
 // change the duration type of a time_point (truncate)
 template<class ToDur, class Clock, class Duration, enable_if_t<is_duration_v<ToDur>, bool> = true>
 constexpr time_point<Clock, ToDur> time_point_cast(const time_point<Clock, Duration>& time)
-noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     return time_point<Clock, ToDur>(custom::chrono::duration_cast<ToDur>(time.time_since_epoch()));
 }
 
@@ -499,15 +556,17 @@ noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToD
 // change the duration type of a time_point; round towards negative infinity
 template<class ToDur, class Clock, class Duration, enable_if_t<is_duration_v<ToDur>, bool> = true>
 constexpr time_point<Clock, ToDur> floor(const time_point<Clock, Duration>& time)
-noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     return time_point<Clock, ToDur>(custom::chrono::floor<ToDur>(time.time_since_epoch()));  // use duration floor
 }
 
 // time point ceil
 // change the duration type of a time_point; round towards positive infinity
 template<class ToDur, class Clock, class Duration, enable_if_t<is_duration_v<ToDur>, bool> = true>
-constexpr time_point<Clock, ToDur> ceil(const time_point<Clock, Duration>& time) noexcept(
-    is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>) {
+constexpr time_point<Clock, ToDur> ceil(const time_point<Clock, Duration>& time)
+noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     return time_point<Clock, ToDur>(custom::chrono::ceil<ToDur>(time.time_since_epoch()));   // use duration ceil
 }
 
@@ -516,14 +575,14 @@ constexpr time_point<Clock, ToDur> ceil(const time_point<Clock, Duration>& time)
 template<class ToDur, class Clock, class Duration,
 enable_if_t<is_duration_v<ToDur> && !is_floating_point_v<typename ToDur::rep>, bool> = true>
 constexpr time_point<Clock, ToDur> round(const time_point<Clock, Duration>& time)
-noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>) {
+noexcept(is_arithmetic_v<typename Duration::rep> && is_arithmetic_v<typename ToDur::rep>)
+{
     return time_point<Clock, ToDur>(custom::chrono::round<ToDur>(time.time_since_epoch()));  // use duration round
 }
 #pragma endregion TimePoint
 
 
 #pragma region Clock
-// system clock
 struct system_clock     // wraps GetSystemTimePreciseAsFileTime
 {
 #if defined _MSC_VER
@@ -537,8 +596,9 @@ struct system_clock     // wraps GetSystemTimePreciseAsFileTime
 
     static constexpr bool is_steady = false;
 
-
-    static time_point now() noexcept { // get current time
+    // get current time
+    static time_point now() noexcept
+    {
 #if defined _MSC_VER
         return time_point(duration(detail::_get_system_time_precise() - UNIX_EPOCH));
 #elif defined __GNUG__
@@ -548,11 +608,15 @@ struct system_clock     // wraps GetSystemTimePreciseAsFileTime
 #endif
     }
 
-    static std::time_t to_time_t(const time_point& time) noexcept { // convert to std::time_t
+    // convert to std::time_t
+    static std::time_t to_time_t(const time_point& time) noexcept
+    {
         return duration_cast<seconds>(time.time_since_epoch()).count();
     }
 
-    static time_point from_time_t(std::time_t time) noexcept { // convert from std::time_t
+    // convert from std::time_t
+    static time_point from_time_t(std::time_t time) noexcept
+    {
         return time_point(seconds(time));
     }
 };  // END system_clock
@@ -568,8 +632,8 @@ struct steady_clock     // wraps QueryPerformanceCounter
 
     static constexpr bool is_steady = true;
 
-
-    static time_point now() noexcept {
+    static time_point now() noexcept
+    {
 #if defined _MSC_VER
         const long long freq    = detail::_query_performance_frequency(); // doesn't change after system boot
         const long long count   = detail::_query_performance_counter();

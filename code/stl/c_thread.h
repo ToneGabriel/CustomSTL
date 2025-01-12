@@ -30,7 +30,8 @@ private:
     // Core functions
 
     template<class CallableTuple, size_t... Indices>
-    static void* _invoke_impl(void* args) noexcept {
+    static void* _invoke_impl(void* args) noexcept
+    {
         const unique_ptr<CallableTuple> callable(static_cast<CallableTuple*>(args));
         CallableTuple& derefCallable = *callable;
         custom::invoke(custom::move(custom::get<Indices>(derefCallable))...);
@@ -39,7 +40,8 @@ private:
     }
 
     template<class CallableTuple, size_t... Indices>
-    static constexpr _Invoker _get_invoke_impl(index_sequence<Indices...>) noexcept {
+    static constexpr _Invoker _get_invoke_impl(index_sequence<Indices...>) noexcept
+    {
         return reinterpret_cast<_Invoker>(_invoke_impl<CallableTuple, Indices...>);
     }
 
@@ -51,7 +53,8 @@ public:
 
     template<class Functor, class... Args, 
     enable_if_t<!is_same_v<decay_t<Functor>, thread>, bool> = true>
-    explicit thread(Functor&& func, Args&&... args) {
+    explicit thread(Functor&& func, Args&&... args)
+    {
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
         using _CallableTuple = tuple<decay_t<Functor>, decay_t<Args>...>;
 
@@ -67,11 +70,13 @@ public:
         }
     }
 
-    thread(thread&& other) noexcept {
+    thread(thread&& other) noexcept
+    {
         _move(custom::move(other));
     }
 
-    ~thread() {
+    ~thread()
+    {
         if (joinable())
             std::terminate();
     }
@@ -81,7 +86,8 @@ public:
 
     thread& operator=(const thread&) = delete;
 
-    thread& operator=(thread&& other) noexcept {
+    thread& operator=(thread&& other) noexcept
+    {
         if (*this != other)
         {
             if (joinable())
@@ -93,22 +99,26 @@ public:
         return *this;
     }
 
-    bool operator==(const thread& other) const {
+    bool operator==(const thread& other) const
+    {
         return (pthread_equal(_thread, other._thread) != 0);
     }
 
-    bool operator!=(const thread& other) const {
+    bool operator!=(const thread& other) const
+    {
         return !(*this == other);
     }
 
 public:
     // Main functions
 
-    bool joinable() const noexcept {
+    bool joinable() const noexcept
+    {
         return _thread != 0;
     }
 
-    void join() {
+    void join()
+    {
         if (!joinable())
             throw std::runtime_error("thread not joinable.");
 
@@ -121,7 +131,8 @@ public:
         _thread = 0;
     }
 
-    void detach() {
+    void detach()
+    {
         if (!joinable())
             throw std::runtime_error("thread not joinable.");
 
@@ -133,11 +144,13 @@ public:
 
     id get_id() const noexcept;
 
-    native_handle_type native_handle() noexcept {
+    native_handle_type native_handle() noexcept
+    {
         return _thread;
     }
 
-    static unsigned int hardware_concurrency() noexcept {
+    static unsigned int hardware_concurrency() noexcept
+    {
 #if defined _WIN32
         SYSTEM_INFO sysinfo;
         GetSystemInfo(&sysinfo);
@@ -150,7 +163,8 @@ public:
 private:
     // Helpers
 
-    void _move(thread&& other) {
+    void _move(thread&& other)
+    {
         _thread = custom::exchange(other._thread, 0);
     }
 }; // END thread
@@ -160,12 +174,14 @@ namespace this_thread
 {
     thread::id get_id() noexcept;
 
-    inline void yield() noexcept {
+    inline void yield() noexcept
+    {
         sched_yield();
     }
 
     template<class Rep, class Period>
-    void sleep_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+    void sleep_for(const custom::chrono::duration<Rep, Period>& relativeTime)
+    {
         if (relativeTime <= relativeTime.zero())
 	        return;
 
@@ -190,7 +206,8 @@ namespace this_thread
     }
 
     template<class Clock, class Duration>
-    void sleep_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
+    void sleep_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime)
+    {
         auto now = Clock::now();
 
         while (now < absoluteTime)
@@ -199,7 +216,6 @@ namespace this_thread
             now = Clock::now();
         }
     }
-
 } // END namespace this_thread
 
 
@@ -224,23 +240,28 @@ private:
 
 
 // other definitions
-inline thread::id thread::get_id() const noexcept {
+inline thread::id thread::get_id() const noexcept 
+{
     return _thread;             // calls private constructor of thread::id
 }
 
-inline thread::id this_thread::get_id() noexcept {
+inline thread::id this_thread::get_id() noexcept
+{
     return pthread_self();      // calls private constructor of thread::id
 }
 
-inline bool operator==(thread::id left, thread::id right) noexcept {
+inline bool operator==(thread::id left, thread::id right) noexcept
+{
     return (pthread_equal(left._threadID, right._threadID) != 0);
 }
 
-inline bool operator!=(thread::id left, thread::id right) noexcept {
+inline bool operator!=(thread::id left, thread::id right) noexcept
+{
     return !(left == right);
 }
 
-inline std::ostream& operator<<(std::ostream& os, const thread::id& id) {
+inline std::ostream& operator<<(std::ostream& os, const thread::id& id)
+{
     os << id._threadID;
     return os;
 }

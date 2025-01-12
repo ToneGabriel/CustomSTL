@@ -3,6 +3,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Key, class Compare, class Alloc>
 class _Set_Traits										// set Traits
 {
@@ -17,23 +19,26 @@ public:
 
 	_Set_Traits() = default;
 
-	static const key_type& extract_key(const value_type& value) noexcept {		// extract key from element value
+	static const key_type& extract_key(const value_type& value) noexcept	// extract key from element value
+	{
 		return value;
 	}
 
-	static const mapped_type& extract_mapval(const value_type& value) noexcept {	// extract mapped val from element value
+	static const mapped_type& extract_mapval(const value_type& value) noexcept	// extract mapped val from element value
+	{
 		return value;
 	}
-}; // END set Traits
+}; // END _Set_Traits
 
+CUSTOM_DETAIL_END
 
 template<class Key,
 class Compare 	= custom::less<Key>,
 class Alloc		= custom::allocator<Key>>
-class set : public detail::_Search_Tree<_Set_Traits<Key, Compare, Alloc>>		// set Template
+class set : public detail::_Search_Tree<detail::_Set_Traits<Key, Compare, Alloc>>		// set Template
 {
 private:
-	using _Base = detail::_Search_Tree<_Set_Traits<Key, Compare, Alloc>>;
+	using _Base = detail::_Search_Tree<detail::_Set_Traits<Key, Compare, Alloc>>;
 
 public:
 	using key_type					= typename _Base::key_type;
@@ -71,12 +76,14 @@ public:
 public:
     // Operators
 
-	set& operator=(const set& other) {
+	set& operator=(const set& other)
+	{
 		_Base::operator=(other);
 		return *this;
 	}
 
-	set& operator=(set&& other) noexcept {
+	set& operator=(set&& other) noexcept
+	{
 		_Base::operator=(custom::move(other));
 		return *this;
 	}

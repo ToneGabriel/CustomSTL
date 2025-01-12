@@ -3,8 +3,10 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Key, class Type, class Compare, class Alloc>
-class _Map_Traits										// map Traits
+class _Map_Traits
 {
 public:
 	using key_type 			= Key;
@@ -17,23 +19,26 @@ public:
 
 	_Map_Traits() = default;
 
-	static const key_type& extract_key(const value_type& value) noexcept {		// extract key from element value
+	static const key_type& extract_key(const value_type& value) noexcept	// extract key from element value
+	{
 		return value.first;
 	}
 
-	static const mapped_type& extract_mapval(const value_type& value) noexcept {	// extract mapped val from element value
+	static const mapped_type& extract_mapval(const value_type& value) noexcept	// extract mapped val from element value
+	{
 		return value.second;
 	}
-}; // END map Traits
+}; // END _Map_Traits
 
+CUSTOM_DETAIL_END
 
 template<class Key, class Type,
 class Compare 	= custom::less<Key>,
 class Alloc		= custom::allocator<custom::pair<Key, Type>>>
-class map : public detail::_Search_Tree<_Map_Traits<Key, Type, Compare, Alloc>>		// map Template
+class map : public detail::_Search_Tree<detail::_Map_Traits<Key, Type, Compare, Alloc>>		// map Template
 {
 private:
-	using _Base = detail::_Search_Tree<_Map_Traits<Key, Type, Compare, Alloc>>;
+	using _Base = detail::_Search_Tree<detail::_Map_Traits<Key, Type, Compare, Alloc>>;
 
 public:
 	using key_type					= typename _Base::key_type;
@@ -71,20 +76,24 @@ public:
 public:
 	// Operators
 
-	mapped_type& operator[](const key_type& key) {				// Access value or create new one with key and assignment (no const)
+	mapped_type& operator[](const key_type& key)	// Access value or create new one with key and assignment (no const)
+	{
 		return this->_try_emplace(key).first->second;
 	}
 
-	mapped_type& operator[](key_type&& key) {
+	mapped_type& operator[](key_type&& key)
+	{
 		return this->_try_emplace(custom::move(key)).first->second;
 	}
 
-	map& operator=(const map& other) {
+	map& operator=(const map& other)
+	{
 		_Base::operator=(other);
 		return *this;
 	}
 
-	map& operator=(map&& other) noexcept {
+	map& operator=(map&& other) noexcept
+	{
 		_Base::operator=(custom::move(other));
 		return *this;
 	}
@@ -93,20 +102,24 @@ public:
 	// Main functions
 
 	template<class... Args>
-	pair<iterator, bool> try_emplace(const key_type& key, Args&&... args) {	// Force construction with known key and given arguments for object
+	pair<iterator, bool> try_emplace(const key_type& key, Args&&... args)	// Force construction with known key and given arguments for object
+	{
 		return this->_try_emplace(key, custom::forward<Args>(args)...);
 	}
 
 	template<class... Args>
-	pair<iterator, bool> try_emplace(key_type&& key, Args&&... args) {
+	pair<iterator, bool> try_emplace(key_type&& key, Args&&... args)
+	{
 		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 
-	const mapped_type& at(const key_type& key) const {			// Access _Value at key with check
+	const mapped_type& at(const key_type& key) const	// Access value at key with check
+	{
 		return this->_at(key);
 	}
 
-	mapped_type& at(const key_type& key) {
+	mapped_type& at(const key_type& key)
+	{
 		return this->_at(key);
 	}
 };  // END map Template

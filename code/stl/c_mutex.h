@@ -6,6 +6,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 class _Mutex_Base         // mutex adaptor for pthread_mutex_t
 {
 public:
@@ -21,13 +23,15 @@ private:
 public:
     // Constructors & Operators
 
-    explicit _Mutex_Base(int attributeFlag) noexcept {
+    explicit _Mutex_Base(int attributeFlag) noexcept
+    {
         pthread_mutexattr_init(&_mutexAttr);
         pthread_mutexattr_settype(&_mutexAttr, attributeFlag);
         pthread_mutex_init(&_mutex, &_mutexAttr);
     }
 
-    virtual ~_Mutex_Base() {
+    virtual ~_Mutex_Base()
+    {
         pthread_mutex_destroy(&_mutex);
         pthread_mutexattr_destroy(&_mutexAttr);
     }
@@ -38,11 +42,13 @@ public:
 public:
     // Main functions
 
-    void lock() {
+    void lock()
+    {
         pthread_mutex_lock(&_mutex);
     }
 
-    bool try_lock() {
+    bool try_lock()
+    {
         switch (pthread_mutex_trylock(&_mutex))
         {
             case 0:
@@ -54,36 +60,39 @@ public:
         }
     }
 
-    void unlock() {
+    void unlock()
+    {
         pthread_mutex_unlock(&_mutex);
     }
 
-    native_handle_type native_handle() {
+    native_handle_type native_handle()
+    {
         return _mutex;
     }
 }; // END _Mutex_Base
 
+CUSTOM_DETAIL_END
 
-class mutex : public _Mutex_Base
+class mutex : public detail::_Mutex_Base
 {
 public:
     // Constructors & Operators
 
     explicit mutex() noexcept
-        : _Mutex_Base(PTHREAD_MUTEX_NORMAL) { /*Empty*/ }
+        : detail::_Mutex_Base(PTHREAD_MUTEX_NORMAL) { /*Empty*/ }
 
     mutex(const mutex&)             = delete;
     mutex& operator= (const mutex&) = delete;
 }; // END mutex
 
 
-class recursive_mutex : public _Mutex_Base
+class recursive_mutex : public detail::_Mutex_Base
 {
 public:
     // Constructors & Operators
 
     explicit recursive_mutex() noexcept
-        : _Mutex_Base(PTHREAD_MUTEX_RECURSIVE) { /*Empty*/ }
+        : detail::_Mutex_Base(PTHREAD_MUTEX_RECURSIVE) { /*Empty*/ }
 
     recursive_mutex(const recursive_mutex&)             = delete;
     recursive_mutex& operator= (const recursive_mutex&) = delete;
