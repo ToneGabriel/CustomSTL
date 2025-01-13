@@ -44,12 +44,14 @@ public:
 public:
 	// Operators
 
-	queue& operator=(const queue& other) {					// Assign operator using reference
+	queue& operator=(const queue& other)
+	{
 		_baseContainer = other._baseContainer;
 		return *this;
 	}
 
-	queue& operator=(queue&& other) noexcept {				// Assign operator using temporary
+	queue& operator=(queue&& other) noexcept
+	{
 		_baseContainer = custom::move(other._baseContainer);
 		return *this;
 	}
@@ -61,60 +63,73 @@ public:
 	// Main functions
 
 	template<class... Args>
-	void emplace(Args&&... args) {							// Construct object using arguments (Args) and add it to the tail
+	void emplace(Args&&... args)
+	{
 		_baseContainer.emplace_back(custom::forward<Args>(args)...);
 	}
 
-	void push(const value_type& copyValue) {
+	void push(const value_type& copyValue)
+	{
 		emplace(copyValue);
 	}
 
-	void push(value_type&& moveValue) {
+	void push(value_type&& moveValue)
+	{
 		emplace(custom::move(moveValue));
 	}
 
-	void pop() {											// Remove first elem from queue
+	void pop()
+	{
 		_baseContainer.pop_front();
 	}
 
-	void clear() {								// Remove ALL components
+	void clear()
+	{
 		return _baseContainer.clear();
 	}
 
-	reference front() noexcept {
+	reference front() noexcept
+	{
 		return _baseContainer.front();
 	}
 
-	const_reference front() const noexcept {
+	const_reference front() const noexcept
+	{
 		return _baseContainer.front();
 	}
 
-	reference back() noexcept {
+	reference back() noexcept
+	{
 		return _baseContainer.back();
 	}
 
-	const_reference back() const noexcept {
+	const_reference back() const noexcept
+	{
 		return _baseContainer.back();
 	}
 
-	size_t size() const noexcept {				// Get size
+	size_t size() const noexcept
+	{
 		return _baseContainer.size();
 	}
 
-	bool empty() const noexcept {					// Check if list is empty
+	bool empty() const noexcept
+	{
 		return _baseContainer.empty();
 	}
-}; // END queue template
+}; // END queue
 
 
 // queue binary operators
 template<class _Type, class _Container>
-bool operator==(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right) {
+bool operator==(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right)
+{
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container>
-bool operator!=(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right) {
+bool operator!=(const queue<_Type, _Container>& left, const queue<_Type, _Container>& right)
+{
 	return !(left == right);
 }
 
@@ -158,12 +173,14 @@ public:
 public:
 	// Operators
 
-	priority_queue& operator=(const priority_queue& other) {
+	priority_queue& operator=(const priority_queue& other)
+	{
 		_baseContainer = other._baseContainer;
 		return *this;
 	}
 
-	priority_queue& operator=(priority_queue&& other) noexcept {
+	priority_queue& operator=(priority_queue&& other) noexcept
+	{
 		_baseContainer = custom::move(other._baseContainer);
 		return *this;
 	}
@@ -176,20 +193,24 @@ public:
 	// Main Functions
 
 	template<class... Args>
-	void emplace(Args&&... args) {
+	void emplace(Args&&... args)
+	{
 		_baseContainer.emplace_back(custom::forward<Args>(args)...);
 		_heap_push_adjust();
 	}
 
-	void push(const value_type& copyValue) {
+	void push(const value_type& copyValue)
+	{
 		emplace(copyValue);
 	}
 
-	void push(value_type&& moveValue) {
+	void push(value_type&& moveValue)
+	{
 		emplace(custom::move(moveValue));
 	}
 
-	void pop() {											// Remove first elem from queue
+	void pop()
+	{
 		if (_baseContainer.size() > 0)
 		{
 			custom::swap(_baseContainer[0], _baseContainer[_baseContainer.size() - 1]);
@@ -198,34 +219,41 @@ public:
 		}
 	}
 	
-	void clear() {
+	void clear()
+	{
 		return _baseContainer.clear();
 	}
 
-	reference front() noexcept {
+	reference front() noexcept
+	{
 		return _baseContainer.front();
 	}
 
-	const_reference front() const noexcept {
+	const_reference front() const noexcept
+	{
 		return _baseContainer.front();
 	}
 
-	size_t size() const noexcept {
+	size_t size() const noexcept
+	{
 		return _baseContainer.size();
 	}
 
-	bool empty() const noexcept {
+	bool empty() const noexcept
+	{
 		return _baseContainer.empty();
 	}
 
-	void print_details() {
+	void print_details()
+	{
 		std::cout << "Size= " << size() << '\n';
 		_print_graph(0, 0, "HEAD");
 	}
 
 private:
 	// Helpers
-	void _print_graph(const size_t ident, const size_t index, const custom::string& rlFlag) const {
+	void _print_graph(const size_t ident, const size_t index, const custom::string& rlFlag) const
+	{
 		custom::string str;
 		str.append(ident, '\t');
 
@@ -239,7 +267,8 @@ private:
 			_print_graph(ident + 1, (index + 1) * 2, "RIGHT");
 	}
 
-	void _heap_push_adjust() {								// Adjust from last elem
+	void _heap_push_adjust()	// Adjust from last elem
+	{
 		if (size() == 0)
 			return;
 
@@ -254,7 +283,8 @@ private:
 		}
 	}
 
-	void _heap_pop_adjust() {								// Adjust from first elem
+	void _heap_pop_adjust()	// Adjust from first elem
+	{
 		if (size() == 0)
 			return;
 
@@ -275,7 +305,8 @@ private:
 		}
 	}
 
-	size_t _heap_get_max_child(const size_t index) {
+	size_t _heap_get_max_child(const size_t index)
+	{
 		size_t leftChild	= (index + 1) * 2 - 1;
 		size_t rightChild	= leftChild + 1;
 
@@ -291,25 +322,28 @@ private:
 			return rightChild;
 	}
 
-	size_t _heap_get_parent(const size_t index) {
+	size_t _heap_get_parent(const size_t index)
+	{
 		if (index > 0)
 			return static_cast<size_t>((index + 1) / 2) - 1;
 
 		return index;	// 0 (root)
 	}
-}; // END priority_queue Template
+}; // END priority_queue
 
 
 // priority_queue binary operators
 template<class _Type, class _Container, class _Compare>
 bool operator==(const priority_queue<_Type, _Container, _Compare>& left,
-				const priority_queue<_Type, _Container, _Compare>& right) {
+				const priority_queue<_Type, _Container, _Compare>& right)
+{
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container, class _Compare>
 bool operator!=(const priority_queue<_Type, _Container, _Compare>& left,
-				const priority_queue<_Type, _Container, _Compare>& right) {
+				const priority_queue<_Type, _Container, _Compare>& right)
+{
 	return !(left == right);
 }
 

@@ -3,8 +3,10 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Key, class Type, class Hash, class Compare, class Alloc>
-class _Umap_Traits		// unordered_map Traits
+class _Umap_Traits
 {
 public:
 	using key_type			= Key;
@@ -18,24 +20,27 @@ public:
 
 	_Umap_Traits() = default;
 
-	static const key_type& extract_key(const value_type& value) noexcept {		// extract key from element value
+	static const key_type& extract_key(const value_type& value) noexcept	// extract key from element value
+	{
 		return value.first;
 	}
 
-	static const mapped_type& extract_mapval(const value_type& value) noexcept {	// extract mapped val from element value
+	static const mapped_type& extract_mapval(const value_type& value) noexcept	// extract mapped val from element value
+	{
 		return value.second;
 	}
-}; // END unordered_map Traits
+}; // END _Umap_Traits
 
+CUSTOM_DETAIL_END
 
 template<class Key, class Type,
 class Hash 		= custom::hash<Key>,
 class Compare 	= custom::equal_to<Key>,
 class Alloc 	= custom::allocator<custom::pair<Key, Type>>>
-class unordered_map : public detail::_Hash_Table<_Umap_Traits<Key, Type, Hash, Compare, Alloc>>	// unordered_map Template
+class unordered_map : public detail::_Hash_Table<detail::_Umap_Traits<Key, Type, Hash, Compare, Alloc>>	// unordered_map Template
 {
 private:
-	using _Base = detail::_Hash_Table<_Umap_Traits<Key, Type, Hash, Compare, Alloc>>;
+	using _Base = detail::_Hash_Table<detail::_Umap_Traits<Key, Type, Hash, Compare, Alloc>>;
 
 public:
 	static_assert(is_same_v<pair<Key, Type>, typename Alloc::value_type>, "Object type and allocator type must be the same!");
@@ -78,20 +83,24 @@ public:
 public:
 	// Operators
 
-	mapped_type& operator[](const key_type& key) {				// Access value or create new one with key and assignment
+	mapped_type& operator[](const key_type& key)	// Access value or create new one with key and assignment
+	{
 		return this->_try_emplace(key).first->second;
 	}
 
-	mapped_type& operator[](key_type&& key) {
+	mapped_type& operator[](key_type&& key)
+	{
 		return this->_try_emplace(custom::move(key)).first->second;
 	}
 
-	unordered_map& operator=(const unordered_map& other) {
+	unordered_map& operator=(const unordered_map& other)
+	{
 		_Base::operator=(other);
 		return *this;
 	}
 
-	unordered_map& operator=(unordered_map&& other) noexcept {
+	unordered_map& operator=(unordered_map&& other) noexcept
+	{
 		_Base::operator=(custom::move(other));
 		return *this;
 	}
@@ -100,22 +109,26 @@ public:
 	// Main functions
 
 	template<class... Args>
-	pair<iterator, bool> try_emplace(const key_type& key, Args&&... args) {	// Force construction with known key and given arguments for object
+	pair<iterator, bool> try_emplace(const key_type& key, Args&&... args)	// Force construction with known key and given arguments for object
+	{
 		return this->_try_emplace(key, custom::forward<Args>(args)...);
 	}
 
 	template<class... Args>
-	pair<iterator, bool> try_emplace(key_type&& key, Args&&... args) {
+	pair<iterator, bool> try_emplace(key_type&& key, Args&&... args)
+	{
 		return this->_try_emplace(custom::move(key), custom::forward<Args>(args)...);
 	}
 
-	const mapped_type& at(const key_type& key) const {			// Access value at key with check
+	const mapped_type& at(const key_type& key) const	// Access value at key with check
+	{
 		return this->_at(key);
 	}
 
-	mapped_type& at(const key_type& key) {
+	mapped_type& at(const key_type& key)
+	{
 		return this->_at(key);
 	}
-}; // END unordered_map Template
+}; // END unordered_map
 
 CUSTOM_END

@@ -3,8 +3,10 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Key, class Hash, class Compare, class Alloc>
-class _Uset_Traits					// unordered_set Traits
+class _Uset_Traits
 {
 public:
 	using key_type			= Key;
@@ -18,24 +20,27 @@ public:
 
 	_Uset_Traits() = default;
 
-	static const key_type& extract_key(const value_type& value) {			// extract key from element value
+	static const key_type& extract_key(const value_type& value)	// extract key from element value
+	{
 		return value;
 	}
 
-	static const mapped_type& extract_mapval(const value_type& value) {	// extract key from element value
+	static const mapped_type& extract_mapval(const value_type& value)	// extract key from element value
+	{
 		return value;
 	}
-}; // END unordered_set Traits
+}; // END _Uset_Traits
 
+CUSTOM_DETAIL_END
 
 template<class Key,
 class Hash 		= custom::hash<Key>,
 class Compare 	= custom::equal_to<Key>,
 class Alloc 	= custom::allocator<Key>>
-class unordered_set : public detail::_Hash_Table<_Uset_Traits<Key, Hash, Compare, Alloc>>		// unordered_set Template
+class unordered_set : public detail::_Hash_Table<detail::_Uset_Traits<Key, Hash, Compare, Alloc>>		// unordered_set Template
 {
 private:
-	using _Base = detail::_Hash_Table<_Uset_Traits<Key, Hash, Compare, Alloc>>;
+	using _Base = detail::_Hash_Table<detail::_Uset_Traits<Key, Hash, Compare, Alloc>>;
 
 public:
 	static_assert(is_same_v<Key, typename Alloc::value_type>, "Object type and Allocator type must be the same!");
@@ -78,15 +83,17 @@ public:
 public:
 	// Operators
 
-	unordered_set& operator=(const unordered_set& other) {
+	unordered_set& operator=(const unordered_set& other)
+	{
 		_Base::operator=(other);
 		return *this;
 	}
 
-	unordered_set& operator=(unordered_set&& other) noexcept {
+	unordered_set& operator=(unordered_set&& other) noexcept
+	{
 		_Base::operator=(custom::move(other));
 		return *this;
 	}
-}; // END unordered_set Template
+}; // END unordered_set
 
 CUSTOM_END

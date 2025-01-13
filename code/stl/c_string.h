@@ -16,12 +16,14 @@ using u8string	= basic_string<char8_t,		custom::allocator<char8_t>,		custom::cha
 
 
 // string inout
-inline std::ostream& operator<<(std::ostream& os, const string& string) {
+inline std::ostream& operator<<(std::ostream& os, const string& string)
+{
 	os << string.c_str();
 	return os;
 }
 
-inline std::istream& operator>>(std::istream& is, string& string) {
+inline std::istream& operator>>(std::istream& is, string& string)
+{
 	auto al 	= string::allocator_type();
 	auto aux 	= al.allocate(255);			// create cstring
 	is.getline(aux, 255);					// get input to cstring
@@ -31,12 +33,14 @@ inline std::istream& operator>>(std::istream& is, string& string) {
 }
 
 // wstring inout
-inline std::wostream& operator<<(std::wostream& os, const wstring& wstring) {
+inline std::wostream& operator<<(std::wostream& os, const wstring& wstring)
+{
 	os << wstring.c_str();
 	return os;
 }
 
-inline std::wistream& operator>>(std::wistream& is, wstring& wstring) {
+inline std::wistream& operator>>(std::wistream& is, wstring& wstring)
+{
 	auto al 	= wstring::allocator_type();
 	auto aux 	= al.allocate(255);			// create cstring
 	is.getline(aux, 255);					// get input to cstring
@@ -60,8 +64,8 @@ template<class Type, class Alloc, class Traits>
 struct less<basic_string<Type, Alloc, Traits>>		// used by map, set
 {
 	constexpr bool operator()(	const basic_string<Type, Alloc, Traits>& left,
-								const basic_string<Type, Alloc, Traits>& right) const {
-
+								const basic_string<Type, Alloc, Traits>& right) const
+	{
 		return left.compare(right) < 0;
 	}
 };
@@ -70,7 +74,8 @@ template<class Type, class Alloc, class Traits>
 struct hash<basic_string<Type, Alloc, Traits>>
 : detail::_Base_Hash_Enabler<basic_string<Type, Alloc, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
 {
-	static size_t compute_hash(const basic_string<Type, Alloc, Traits>& key) noexcept {
+	static size_t compute_hash(const basic_string<Type, Alloc, Traits>& key) noexcept
+	{
 		return detail::_hash_array_representation(key.c_str(), key.size());
 	}
 };

@@ -8,6 +8,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Type, class Alloc>
 struct _Forward_List_Data
 {
@@ -27,7 +29,7 @@ struct _Forward_List_Data
 
 	size_t _Size				= 0;									// Number of Nodes held
 	_NodePtr _Head				= nullptr;								// Head of list
-};
+};	// END _Forward_List_Data
 
 template<class ForwardListData>
 class _Forward_List_Const_Iterator
@@ -53,50 +55,60 @@ public:
 	explicit _Forward_List_Const_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		:_Ptr(nodePtr), _RefData(data) { /*Empty*/ }
 
-	_Forward_List_Const_Iterator& operator++() noexcept {
+	_Forward_List_Const_Iterator& operator++() noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot increment end iterator.");
 		_Ptr = _Ptr->_Next;
 		return *this;
 	}
 
-	_Forward_List_Const_Iterator operator++(int) noexcept {
+	_Forward_List_Const_Iterator operator++(int) noexcept
+	{
 		_Forward_List_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
 		return pointer_traits<pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != nullptr, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const _Forward_List_Const_Iterator& other) const noexcept {
+	bool operator==(const _Forward_List_Const_Iterator& other) const noexcept
+	{
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const _Forward_List_Const_Iterator& other) const noexcept {
+	bool operator!=(const _Forward_List_Const_Iterator& other) const noexcept
+	{
 		return !(*this == other);
 	}
 
 public:
 
-	bool is_begin() const noexcept {
+	bool is_begin() const noexcept
+	{
 		return _Ptr == _RefData->_Head->_Next;
 	}
 
-	bool is_end() const noexcept {
+	bool is_end() const noexcept
+	{
 		return _Ptr == nullptr;
 	}
 
-	bool is_last_valid() const noexcept {
+	bool is_last_valid() const noexcept
+	{
 		return _Ptr->_Next == nullptr;
 	}
 
-	friend void _verify_range(const _Forward_List_Const_Iterator& first, const _Forward_List_Const_Iterator& last) noexcept {
+	friend void _verify_range(const _Forward_List_Const_Iterator& first, const _Forward_List_Const_Iterator& last) noexcept
+	{
 		CUSTOM_ASSERT(first._RefData == last._RefData, "forward_list iterators in range are from different containers");
 		// No possible way to determine order.
 	}
@@ -124,32 +136,37 @@ public:
 	explicit _Forward_List_Iterator(_NodePtr nodePtr, const _Data* data) noexcept
 		: _Base(nodePtr, data) { /*Empty*/ }
 
-	_Forward_List_Iterator& operator++() noexcept {
+	_Forward_List_Iterator& operator++() noexcept
+	{
 		_Base::operator++();
 		return *this;
 	}
 
-	_Forward_List_Iterator operator++(int) noexcept {
+	_Forward_List_Iterator operator++(int) noexcept
+	{
 		_Forward_List_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
 		return const_cast<pointer>(_Base::operator->());
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		return const_cast<reference>(_Base::operator*());
 	}
 }; // END _Forward_List_Iterator
 
+CUSTOM_DETAIL_END
 
 template<class Type, class Alloc = custom::allocator<Type>>
 class forward_list				// Singly Linked list
 {
 private:
-	using _Data 				= _Forward_List_Data<Type, Alloc>;
+	using _Data 				= detail::_Forward_List_Data<Type, Alloc>;
 	using _Alloc_Traits			= typename _Data::_Alloc_Traits;
 	using _Node					= typename _Data::_Node;
 	using _Alloc_Node			= typename _Data::_Alloc_Node;
@@ -168,38 +185,44 @@ public:
 	using const_pointer			= typename _Data::const_pointer;
 	using allocator_type		= Alloc;
 
-	using iterator				= _Forward_List_Iterator<_Data>;				// iterator type
-	using const_iterator		= _Forward_List_Const_Iterator<_Data>;			// Const iterator type
+	using iterator				= detail::_Forward_List_Iterator<_Data>;		// iterator type
+	using const_iterator		= detail::_Forward_List_Const_Iterator<_Data>;	// Const iterator type
 
 private:
-	_Data _data;															// Actual container data
-	_Alloc_Node _alloc;														// allocator for nodes
+	_Data _data;			// Actual container data
+	_Alloc_Node _alloc;		// allocator for nodes
 
 public:
 	// Constructors
 
-	forward_list() {
+	forward_list()
+	{
 		_create_head();
 	}
 
-	forward_list(const size_t newSize, const value_type& value) : forward_list() {	// Add multiple copies Constructor
+	forward_list(const size_t newSize, const value_type& value) : forward_list()	// Add multiple copies Constructor
+	{
 		_create_until_size(newSize, value);
 	}
 
-	forward_list(std::initializer_list<value_type> list) : forward_list() {
+	forward_list(std::initializer_list<value_type> list) : forward_list()
+	{
 		for (const auto& val : list)
 			push_back(val);
 	}
 
-	forward_list(const forward_list& other) : forward_list() {
+	forward_list(const forward_list& other) : forward_list()
+	{
 		_copy(other);
 	}
 
-	forward_list(forward_list&& other) noexcept : forward_list() {
+	forward_list(forward_list&& other) noexcept : forward_list()
+	{
 		_move(custom::move(other));
 	}
 
-	~forward_list() noexcept {
+	~forward_list() noexcept
+	{
 		clear();
 		_free_head();
 	}
@@ -207,7 +230,8 @@ public:
 public:
 	// Operators
 
-	forward_list& operator=(const forward_list& other) {
+	forward_list& operator=(const forward_list& other)
+	{
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -217,7 +241,8 @@ public:
 		return *this;
 	}
 
-	forward_list& operator=(forward_list&& other) noexcept {
+	forward_list& operator=(forward_list&& other) noexcept
+	{
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -230,38 +255,45 @@ public:
 public:
 	// Main functions
 
-	void resize(const size_t newSize) {						// Resize the list by removing or adding default elements to the tail
+	void resize(const size_t newSize)	// Resize the list by removing or adding default elements to the tail
+	{
 		_delete_until_size(newSize);
 		_create_until_size(newSize);
 	}
 
 	void resize(const size_t newSize,
-				const value_type& copyValue) {					// Resize the list by removing or adding copy elements to the tail
+				const value_type& copyValue)
+	{
 		_delete_until_size(newSize);
 		_create_until_size(newSize, copyValue);
 	}
 
 	template<class... Args>
-	void emplace_front(Args&&... args) {						// Construct object using arguments (Args) and add it to the tail
+	void emplace_front(Args&&... args)
+	{
 		_NodePtr newNode = _create_common_node(custom::forward<Args>(args)...);
 		_insert_node_after(_data._Head, newNode);
 	}
 
-	void push_front(const value_type& copyValue) {				// Construct object using reference and add it to the tail
+	void push_front(const value_type& copyValue)
+	{
 		emplace_front(copyValue);
 	}
 
-	void push_front(value_type&& moveValue) {					// Construct object using temporary and add it to the tail
+	void push_front(value_type&& moveValue)
+	{
 		emplace_front(custom::move(moveValue));
 	}
 
-	void pop_front() {											// Remove last component
+	void pop_front()
+	{
 		if (_data._Size > 0)
 			_remove_node_after(_data._Head);
 	}
 
 	template<class... Args>
-	iterator emplace_after(const_iterator where, Args&&... args) {	// Construct object using arguments (Args) and add it AFTER the where position
+	iterator emplace_after(const_iterator where, Args&&... args)
+	{
 		if (where.is_end())
 			throw std::out_of_range("Cannot emplace after end iterator.");
 
@@ -271,7 +303,8 @@ public:
 		return iterator(newNode, &_data);
 	}
 
-	iterator erase_after(const_iterator where) {						// Remove component after where position
+	iterator erase_after(const_iterator where)
+	{
 		if (where.is_end() || where.is_last_valid())
 			throw std::out_of_range("Cannot erase after end iterator.");
 
@@ -282,37 +315,44 @@ public:
 		return nextIterator;
 	}
 
-	reference front() noexcept {								// Get the value of the first component
+	reference front() noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
-	const_reference front() const noexcept {
+	const_reference front() const noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return _data._Head->_Next->_Value;
 	}
 
-	size_t size() const noexcept {
+	size_t size() const noexcept
+	{
 		return _data._Size;
 	}
 
-	size_t max_size() const noexcept {
+	size_t max_size() const noexcept
+	{
         return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_Alloc_Node_Traits::max_size(_alloc));
     }
 
-	bool empty() const noexcept {
+	bool empty() const noexcept
+	{
 		return _data._Size == 0;
 	}
 
-	void clear() {
+	void clear()
+	{
 		_delete_until_size(0);
 	}
 
 public:
 	// Main Operations
 
-	void reverse() noexcept {
+	void reverse() noexcept
+	{
 		if (_data._Size > 1)
 		{
 			_NodePtr current 	= _data._Head->_Next;
@@ -332,7 +372,8 @@ public:
     }
 
 	template<class UnaryPredicate>
-	size_t remove_if(UnaryPredicate pred) {
+	size_t remove_if(UnaryPredicate pred)
+	{
 		size_t oldSize 		= _data._Size;
 		_NodePtr current 	= _data._Head->_Next;
 		_NodePtr prev 		= _data._Head;
@@ -353,12 +394,14 @@ public:
 		return oldSize - _data._Size;
 	}
 
-	size_t remove(const Type& val) {
+	size_t remove(const Type& val)
+	{
 		return remove_if([&](const Type& other) -> bool { return other == val; });
 	}
 
 	template<class BinaryPredicate>
-	size_t unique(BinaryPredicate pred) {
+	size_t unique(BinaryPredicate pred)
+	{
 		size_t oldSize 		= _data._Size;
 		_NodePtr current 	= _data._Head->_Next;
 		_NodePtr next 		= current->_Next;
@@ -376,11 +419,13 @@ public:
 		return oldSize - _data._Size;
 	}
 
-	size_t unique() {
+	size_t unique()
+	{
 		return unique(equal_to<>{});
 	}
 
-	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst, const_iterator otherLast) {
+	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst, const_iterator otherLast)
+	{
 		// splice (otherFirst, otherLast) AFTER where
 
 		if (where._RefData->_Head == otherFirst._RefData->_Head ||
@@ -408,86 +453,103 @@ public:
 		}
 	}
 
-	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst) {
+	void splice_after(const_iterator where, forward_list& other, const_iterator otherFirst)
+	{
 		splice_after(where, other, otherFirst, other.end());
 	}
 
-	void splice_after(const_iterator where, forward_list& other) {
+	void splice_after(const_iterator where, forward_list& other)
+	{
 		splice_after(where, other, other.before_begin(), other.end());
 	}
 
 	template<class Compare>
-	void merge(forward_list& other, Compare comp) {
+	void merge(forward_list& other, Compare comp)
+	{
 		// TODO: implement
 	}
 
-	void merge(forward_list& other) {
+	void merge(forward_list& other)
+	{
 		merge(other, less<>{});
 	}
 
 	template<class Compare>
-	void sort(Compare comp) {
+	void sort(Compare comp)
+	{
 		// TODO: implement
 	}
 
-	void sort() {
+	void sort()
+	{
 		sort(less<>{});
 	}
 
 public:
 	// iterator specific functions
 
-	iterator before_begin() noexcept {
+	iterator before_begin() noexcept
+	{
         return iterator(_data._Head, &_data);
     }
 
-    const_iterator before_begin() const noexcept {
+    const_iterator before_begin() const noexcept
+	{
         return const_iterator(_data._Head, &_data);
     }
 
-	iterator begin() noexcept {
+	iterator begin() noexcept
+	{
 		return iterator(_data._Head->_Next, &_data);
 	}
 
-	const_iterator begin() const noexcept {
+	const_iterator begin() const noexcept
+	{
 		return const_iterator(_data._Head->_Next, &_data);
 	}
 
-	iterator end() noexcept {
+	iterator end() noexcept
+	{
 		return iterator(nullptr, &_data);
 	}
 
-	const_iterator end() const noexcept {
+	const_iterator end() const noexcept
+	{
 		return const_iterator(nullptr, &_data);
 	}
 
 private:
 	// Others
 
-	void _create_head() {
+	void _create_head()
+	{
 		_data._Head 			= _alloc.allocate(1);
 		_data._Head->_Next 		= nullptr;
 	}
 
-	void _free_head() {
+	void _free_head()
+	{
 		_alloc.deallocate(_data._Head, 1);
 	}
 
 	template<class... Args>
-	_NodePtr _create_common_node(Args&&... args) {
+	_NodePtr _create_common_node(Args&&... args)
+	{
 		// don't increase size here
 		_NodePtr newNode = _alloc.allocate(1);
 		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		return newNode;
 	}
 
-	void _insert_node_after(_NodePtr afterNode, _NodePtr newNode) {
+	void _insert_node_after(_NodePtr afterNode, _NodePtr newNode)
+	{
 		newNode->_Next 		= afterNode->_Next;
 		afterNode->_Next 	= newNode;
 		++_data._Size;
 	}
 
-	void _remove_node_after(_NodePtr afterNode) {
+	void _remove_node_after(_NodePtr afterNode)
+	{
 		_NodePtr junkNode 	= afterNode->_Next;
 		afterNode->_Next 	= junkNode->_Next;
 		--_data._Size;
@@ -496,7 +558,8 @@ private:
 		_alloc.deallocate(junkNode, 1);
 	}
 
-	void _copy(const forward_list& other) {								// Generic copy function for list
+	void _copy(const forward_list& other)
+	{
 		_NodePtr temp = other._data._Head->_Next;
 		while (_data._Size < other._data._Size)
 		{
@@ -505,23 +568,27 @@ private:
 		}
 	}
 
-	void _move(forward_list&& other) noexcept {							// Generic move function for list
+	void _move(forward_list&& other) noexcept
+	{
 		custom::swap(_data._Head, other._data._Head);
 		_data._Size = custom::exchange(other._data._Size, 0);
 	}
 
 	template<class... Args>
-	void _create_until_size(const size_t newSize, Args&&... args) {		// Add elements until current size equals newSize
+	void _create_until_size(const size_t newSize, Args&&... args)
+	{
 		while (_data._Size < newSize)
 			emplace_front(custom::forward<Args>(args)...);
 	}
 
-	void _delete_until_size(const size_t newSize) {						// Remove elements until current size equals newSize
+	void _delete_until_size(const size_t newSize)
+	{
 		while (_data._Size > newSize)
 			pop_front();
 	}
 
-	void _splice_after(_NodePtr thisFirst, _NodePtr otherFirst, _NodePtr otherLast) {
+	void _splice_after(_NodePtr thisFirst, _NodePtr otherFirst, _NodePtr otherLast)
+	{
 		// here beforeOtherLast should link to
 		_NodePtr thisLast				= thisFirst->_Next;
 
@@ -542,7 +609,8 @@ private:
 
 // forward_list binary operators
 template<class _Type, class _Alloc>
-bool operator==(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right) {
+bool operator==(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right)
+{
     if (left.size() != right.size())
 		return false;
 
@@ -550,7 +618,8 @@ bool operator==(const forward_list<_Type, _Alloc>& left, const forward_list<_Typ
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right) {
+bool operator!=(const forward_list<_Type, _Alloc>& left, const forward_list<_Type, _Alloc>& right)
+{
 	return !(left == right);
 }
 

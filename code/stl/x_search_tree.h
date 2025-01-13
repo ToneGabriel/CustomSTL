@@ -12,15 +12,15 @@ CUSTOM_DETAIL_BEGIN
 
 enum class _Tree_Child
 {
-	Left,
-	Right
+	_Left,
+	_Right
 };
 
 template<class _NodePtr>
 struct _Tree_Node_ID 			// Indicator for child placement
 {							
 	_NodePtr _Parent 	= nullptr;
-	_Tree_Child _Child 	= _Tree_Child::Left;
+	_Tree_Child _Child 	= _Tree_Child::_Left;
 };
 
 template<class Traits>
@@ -47,14 +47,16 @@ struct _Search_Tree_Data
 	size_t _Size				= 0;									// Number of Nodes held
 	_NodePtr _Head				= nullptr;								// Helper node used to link min and max elems for iteration (root == head->parent)
 
-	_NodePtr leftmost(_NodePtr node) const {						// return leftmost node in subtree at node
+	_NodePtr leftmost(_NodePtr node) const	// return leftmost node in subtree at node
+	{
 		while (!node->_Left->_IsNil)
 			node = node->_Left;
 
 		return node;
 	}
 
-	_NodePtr rightmost(_NodePtr node) const {						// return rightmost node in subtree at node
+	_NodePtr rightmost(_NodePtr node) const	// return rightmost node in subtree at node
+	{
 		while (!node->_Right->_IsNil)
 			node = node->_Right;
 
@@ -86,7 +88,8 @@ public:
 	explicit _Search_Tree_Const_Iterator(_NodePtr ptr, const _Data* data) noexcept
 		:_Ptr(ptr), _RefData(data) { /*Empty*/ }
 
-	_Search_Tree_Const_Iterator& operator++() noexcept {
+	_Search_Tree_Const_Iterator& operator++() noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot increment end iterator.");
 
 		if (_Ptr->_Right->_IsNil)
@@ -105,13 +108,15 @@ public:
 		return *this;
 	}
 
-	_Search_Tree_Const_Iterator operator++(int) noexcept {
+	_Search_Tree_Const_Iterator operator++(int) noexcept
+	{
 		_Search_Tree_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	_Search_Tree_Const_Iterator& operator--() noexcept {
+	_Search_Tree_Const_Iterator& operator--() noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head->_Left, "Cannot decrement begin iterator.");
 
 		if (_Ptr->_IsNil)
@@ -134,31 +139,37 @@ public:
 		return *this;
 	}
 
-	_Search_Tree_Const_Iterator operator--(int) noexcept {
+	_Search_Tree_Const_Iterator operator--(int) noexcept
+	{
 		_Search_Tree_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot access end iterator.");
         return pointer_traits<pointer>::pointer_to(**this);	// return &(**this);
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		CUSTOM_ASSERT(_Ptr != _RefData->_Head, "Cannot dereference end iterator.");
 		return _Ptr->_Value;
 	}
 
-	bool operator==(const _Search_Tree_Const_Iterator& other) const noexcept {
+	bool operator==(const _Search_Tree_Const_Iterator& other) const noexcept
+	{
 		return _Ptr == other._Ptr;
 	}
 
-	bool operator!=(const _Search_Tree_Const_Iterator& other) const noexcept {
+	bool operator!=(const _Search_Tree_Const_Iterator& other) const noexcept
+	{
 		return !(*this == other);
 	}
 
-	friend void _verify_range(const _Search_Tree_Const_Iterator& first, const _Search_Tree_Const_Iterator& last) noexcept {
+	friend void _verify_range(const _Search_Tree_Const_Iterator& first, const _Search_Tree_Const_Iterator& last) noexcept
+	{
 		CUSTOM_ASSERT(first._RefData == last._RefData, "_Search_Tree iterators in range are from different containers");
 		// No possible way to determine order.
 	}
@@ -186,33 +197,39 @@ public:
 	explicit _Search_Tree_Iterator(_NodePtr ptr, const _Data* data) noexcept
 		:_Base(ptr, data) { /*Empty*/ }
 
-	_Search_Tree_Iterator& operator++() noexcept {
+	_Search_Tree_Iterator& operator++() noexcept
+	{
 		_Base::operator++();
 		return *this;
 	}
 
-	_Search_Tree_Iterator operator++(int) noexcept {
+	_Search_Tree_Iterator operator++(int) noexcept
+	{
 		_Search_Tree_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	_Search_Tree_Iterator& operator--() noexcept {
+	_Search_Tree_Iterator& operator--() noexcept
+	{
 		_Base::operator--();
 		return *this;
 	}
 
-	_Search_Tree_Iterator operator--(int) noexcept {
+	_Search_Tree_Iterator operator--(int) noexcept
+	{
 		_Search_Tree_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
 		return const_cast<pointer>(_Base::operator->());
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		return const_cast<reference>(_Base::operator*());
 	}
 }; // END _Search_Tree_Iterator
@@ -254,24 +271,29 @@ protected:
 protected:
 	// Constructors
 
-	_Search_Tree() {
+	_Search_Tree()
+	{
 		_create_head();
 	}
 
-	_Search_Tree(std::initializer_list<value_type> list) : _Search_Tree() {
+	_Search_Tree(std::initializer_list<value_type> list) : _Search_Tree()
+	{
 		for (const auto& val : list)
 			emplace(val);
 	}
 
-	_Search_Tree(const _Search_Tree& other) : _Search_Tree() {
+	_Search_Tree(const _Search_Tree& other) : _Search_Tree()
+	{
 		_copy(other);
 	}
 
-	_Search_Tree(_Search_Tree&& other) noexcept : _Search_Tree() {
+	_Search_Tree(_Search_Tree&& other) noexcept : _Search_Tree()
+	{
 		_move(custom::move(other));
 	}
 
-	virtual ~_Search_Tree() {
+	virtual ~_Search_Tree()
+	{
 		_destroy_all(_data._Head->_Parent);
 		_free_head();
 	}
@@ -279,7 +301,8 @@ protected:
 protected:
 	// Operators
 
-	_Search_Tree& operator=(const _Search_Tree& other) {
+	_Search_Tree& operator=(const _Search_Tree& other)
+	{
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -289,7 +312,8 @@ protected:
 		return *this;
 	}
 
-	_Search_Tree& operator=(_Search_Tree&& other) noexcept {
+	_Search_Tree& operator=(_Search_Tree&& other) noexcept
+	{
 		if (_data._Head != other._data._Head)
 		{
 			clear();
@@ -303,7 +327,8 @@ public:
     // Main functions
 
     template<class... Args>
-	iterator emplace(Args&&... args) {								// Constructs Node first with any given arguments
+	iterator emplace(Args&&... args)
+	{
 		_NodePtr newNode 		= _create_common_node(custom::forward<Args>(args)...);
 		const key_type& newKey 	= Traits::extract_key(newNode->_Value);
 		iterator it 			= find(newKey);
@@ -321,7 +346,8 @@ public:
 		}
 	}
 
-	iterator erase(const key_type& key) {
+	iterator erase(const key_type& key)
+	{
 		iterator it = find(key);
 
 		if (it == end())
@@ -334,42 +360,50 @@ public:
 		return nextIterator;
 	}
 
-	iterator erase(const_iterator where) {
+	iterator erase(const_iterator where)
+	{
 		if (where == end())
 			throw std::out_of_range("map erase iterator outside range.");
 
 		return erase(Traits::extract_key(where._Ptr->_Value));
 	}
 
-	iterator erase(iterator where) {
+	iterator erase(iterator where)
+	{
 		if (where == end())
 			throw std::out_of_range("map erase iterator outside range.");
 
 		return erase(Traits::extract_key(where._Ptr->_Value));
 	}
 
-	const_iterator find (const key_type& key) const {
+	const_iterator find (const key_type& key) const
+	{
 		return const_iterator(_find_in_tree(key), &_data);
 	}
 
-	iterator find(const key_type& key) {
+	iterator find(const key_type& key)
+	{
 		return iterator(_find_in_tree(key), &_data);
 	}
 
-	size_t size() const noexcept {
+	size_t size() const noexcept
+	{
 		return _data._Size;
 	}
 
-	size_t max_size() const noexcept {
+	size_t max_size() const noexcept
+	{
 		return (custom::min)(static_cast<size_t>((	numeric_limits<difference_type>::max)()),
 													_Alloc_Node_Traits::max_size(_alloc));
 	}
 
-	bool empty() const noexcept {
+	bool empty() const noexcept
+	{
 		return _data._Size == 0;
 	}
 
-	void clear() {
+	void clear()
+	{
 		_destroy_all(_data._Head->_Parent);
 		_data._Head->_Parent 	= _data._Head;
 		_data._Head->_Left 		= _data._Head;
@@ -377,7 +411,8 @@ public:
 		_data._Size				= 0;
 	}
 
-	void print_details() const {									// For Debugging
+	void print_details() const
+	{
 		std::cout << "Size= " << _data._Size << '\n';
 		std::cout << "first= " << Traits::extract_key(_data._Head->_Left->_Value) << '\n';
 		std::cout << "Last= " << Traits::extract_key(_data._Head->_Right->_Value) << '\n';
@@ -387,35 +422,43 @@ public:
 public:
 	// iterator functions
 
-	iterator begin() {
+	iterator begin()
+	{
 		return iterator(_data._Head->_Left, &_data);
 	}
 
-	const_iterator begin() const {
+	const_iterator begin() const
+	{
 		return const_iterator(_data._Head->_Left, &_data);
 	}
 
-	reverse_iterator rbegin() {
+	reverse_iterator rbegin()
+	{
 		return reverse_iterator(end());
 	}
 
-	const_reverse_iterator rbegin() const {
+	const_reverse_iterator rbegin() const
+	{
 		return const_reverse_iterator(end());
 	}
 
-	iterator end() {
+	iterator end()
+	{
 		return iterator(_data._Head, &_data);
 	}
 
-	const_iterator end() const {
+	const_iterator end() const
+	{
 		return const_iterator(_data._Head, &_data);
 	}
 
-	reverse_iterator rend() {
+	reverse_iterator rend()
+	{
 		return reverse_iterator(begin());
 	}
 
-	const_reverse_iterator rend() const {
+	const_reverse_iterator rend() const
+	{
 		return const_reverse_iterator(begin());
 	}
 
@@ -423,7 +466,8 @@ protected:
 	// Others
 
 	template<class _KeyType, class... Args>
-	pair<iterator, bool> _try_emplace(_KeyType&& key, Args&&... args) {			// Force construction with known key and given arguments for object
+	pair<iterator, bool> _try_emplace(_KeyType&& key, Args&&... args)	// Force construction with known key and given arguments for object
+	{
 		iterator it = find(key);
 
 		if (it != end())
@@ -441,7 +485,8 @@ protected:
 		}
 	}
 
-	const mapped_type& _at(const key_type& key) const {				// Access _Value at key with check
+	const mapped_type& _at(const key_type& key) const	// Access value at key with check
+	{
 		const_iterator it = find(key);
 		if (it == end())
 			throw std::out_of_range("Invalid key.");
@@ -449,7 +494,8 @@ protected:
 		return Traits::extract_mapval(*it);
 	}
 
-	mapped_type& _at(const key_type& key) {
+	mapped_type& _at(const key_type& key)
+	{
 		iterator it = find(key);
 		if (it == end())
 			throw std::out_of_range("Invalid key.");
@@ -460,7 +506,8 @@ protected:
 private:
 	// Helpers
 
-	void _print_graph(const size_t ident, _NodePtr root, const custom::string& rlFlag) const {
+	void _print_graph(const size_t ident, _NodePtr root, const custom::string& rlFlag) const
+	{
 		custom::string str;
 		str.append(ident, '\t');
 
@@ -474,7 +521,8 @@ private:
 			_print_graph(ident + 1, root->_Right, "RIGHT");
 	}
 	
-	void _rotate_left(_NodePtr subroot) {					// promotes subroot right
+	void _rotate_left(_NodePtr subroot)	// promotes subroot right
+	{
 		_NodePtr promotedNode = subroot->_Right;
 		subroot->_Right = promotedNode->_Left;			// subroot adopt left child of promoted
 
@@ -494,7 +542,8 @@ private:
 		subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 	}
 
-	void _rotate_right(_NodePtr subroot) {					// promotes subroot left
+	void _rotate_right(_NodePtr subroot)	// promotes subroot left
+	{
 		_NodePtr promotedNode = subroot->_Left;
 		subroot->_Left = promotedNode->_Right;			// subroot adopt right child of promoted
 
@@ -514,7 +563,8 @@ private:
 		subroot->_Parent = promotedNode;				// subroot has promoted as new parent
 	}
 
-	_NodePtr _copy_all(_NodePtr subroot) {								// DFS Preorder
+	_NodePtr _copy_all(_NodePtr subroot)
+	{
 		if (subroot->_IsNil)
 			return _data._Head;
 
@@ -535,7 +585,8 @@ private:
 		return newNode;
 	}
 
-	void _destroy_all(_NodePtr subroot) {								// DFS Postorder
+	void _destroy_all(_NodePtr subroot)
+	{
 		if (subroot->_IsNil)
 			return;
 
@@ -545,7 +596,8 @@ private:
 		_free_common_node_default(subroot);
 	}
 
-	_NodePtr _in_order_successor(_NodePtr node) const {
+	_NodePtr _in_order_successor(_NodePtr node) const
+	{
 		if (!node->_Right->_IsNil)
 			node = _data.leftmost(node->_Right);
 		else
@@ -554,7 +606,8 @@ private:
 		return node;
 	}
 
-	_NodePtr _find_in_tree(const key_type& key) const {
+	_NodePtr _find_in_tree(const key_type& key) const
+	{
 		_NodePtr found = _data._Head;
 
 		for (_NodePtr iterNode = _data._Head->_Parent; !iterNode->_IsNil; )
@@ -573,7 +626,8 @@ private:
 		return found;
 	}
 
-	_Tree_Node_ID<_NodePtr> _find_insertion_slot(_NodePtr newNode) const {	// Find parent for newly created node
+	_Tree_Node_ID<_NodePtr> _find_insertion_slot(_NodePtr newNode) const	// Find parent for newly created node
+	{
 		_Tree_Node_ID<_NodePtr> position;
 
 		if (_data._Head->_Parent == _data._Head)					// first node
@@ -586,20 +640,21 @@ private:
 				{
 					iterNode = iterNode->_Left;
 					if (iterNode->_IsNil)
-						position._Child = _Tree_Child::Left;
+						position._Child = _Tree_Child::_Left;
 				}
 				else
 				{
 					iterNode = iterNode->_Right;
 					if (iterNode->_IsNil)
-						position._Child = _Tree_Child::Right;
+						position._Child = _Tree_Child::_Right;
 				}
 			}
 
 		return position;
 	}
 
-	void _insert(_NodePtr newNode, const _Tree_Node_ID<_NodePtr>& position) {
+	void _insert(_NodePtr newNode, const _Tree_Node_ID<_NodePtr>& position)
+	{
 		++_data._Size;
 
 		// Raw Insert
@@ -612,7 +667,7 @@ private:
 			_data._Head->_Right		= newNode;
 			newNode->_Color 		= _Node::Colors::Black;
 		}
-		else if (position._Child == _Tree_Child::Left)				// add to left
+		else if (position._Child == _Tree_Child::_Left)				// add to left
 		{
 			position._Parent->_Left = newNode;
 			if (position._Parent == _data._Head->_Left)
@@ -682,7 +737,8 @@ private:
 		_data._Head->_Parent->_Color = _Node::Colors::Black;							// root is black
 	}
 
-	void _destroy(_NodePtr oldNode) {
+	void _destroy(_NodePtr oldNode)
+	{
 		--_data._Size;
 
 		_NodePtr fixNode; 			// the node to recolor as needed
@@ -780,7 +836,8 @@ private:
 		_data._Head->_Right 	= _data.rightmost(_data._Head->_Parent);
 	}
 
-	void _transplant(_NodePtr first, _NodePtr second) {
+	void _transplant(_NodePtr first, _NodePtr second)
+	{
 		if (first == second)
 			return;
 
@@ -789,7 +846,8 @@ private:
 		custom::swap(first->_Color, second->_Color);
 	}
 
-	void _swap_parents(_NodePtr first, _NodePtr second) {
+	void _swap_parents(_NodePtr first, _NodePtr second)
+	{
 		// check head first
 		if (first->_Parent != _data._Head)
 			if (first == first->_Parent->_Left)
@@ -811,7 +869,8 @@ private:
 		custom::swap(first->_Parent, second->_Parent);
 	}
 
-	void _swap_children(_NodePtr first, _NodePtr second) {
+	void _swap_children(_NodePtr first, _NodePtr second)
+	{
 		// left child
 		custom::swap(first->_Left, second->_Left);
 
@@ -829,7 +888,8 @@ private:
 			second->_Right->_Parent = second;
 	}
 
-	void _create_head() {
+	void _create_head()
+	{
 		// don't construct value, it's not needed
 		_data._Head 			= _alloc.allocate(1);
 		_data._Head->_Parent	= _data._Head;
@@ -839,7 +899,8 @@ private:
 		_data._Head->_Color		= _Node::Colors::Black;
 	}
 
-	void _free_head() {
+	void _free_head()
+	{
 		// don't destroy value, it's not constructed
 		_data._Head->_Parent	= nullptr;
 		_data._Head->_Left		= nullptr;
@@ -848,7 +909,8 @@ private:
 	}
 
 	template<class... Args>
-	_NodePtr _create_common_node(Args&&... args) {
+	_NodePtr _create_common_node(Args&&... args)
+	{
 		_NodePtr newNode 	= _alloc.allocate(1);
 		_Alloc_Node_Traits::construct(_alloc, &(newNode->_Value), custom::forward<Args>(args)...);
 		newNode->_Parent	= _data._Head;
@@ -860,7 +922,8 @@ private:
 		return newNode;
 	}
 
-	void _free_common_node_default(_NodePtr oldNode) {
+	void _free_common_node_default(_NodePtr oldNode)
+	{
 		oldNode->_Parent	= nullptr;
 		oldNode->_Left		= nullptr;
 		oldNode->_Right		= nullptr;
@@ -868,7 +931,8 @@ private:
 		_alloc.deallocate(oldNode, 1);
 	}
 
-	void _free_common_node(_NodePtr oldNode) {
+	void _free_common_node(_NodePtr oldNode)
+	{
 		// detach parent from node
 		if (oldNode == _data._Head->_Parent)
 			_data._Head->_Parent = _data._Head;
@@ -880,7 +944,8 @@ private:
 		_free_common_node_default(oldNode);
 	}
 
-	void _copy(const _Search_Tree& other) {
+	void _copy(const _Search_Tree& other)
+	{
 		_data._Head->_Parent 			= _copy_all(other._data._Head->_Parent);	// copy from root
 		_data._Head->_Left 				= _data.leftmost(_data._Head->_Parent);
 		_data._Head->_Right 			= _data.rightmost(_data._Head->_Parent);
@@ -888,7 +953,8 @@ private:
 		_data._Size 					= other._data._Size;
 	}
 
-	void _move(_Search_Tree&& other) {
+	void _move(_Search_Tree&& other)
+	{
 		custom::swap(_data._Head, other._data._Head);
 		_data._Size = custom::exchange(other._data._Size, 0);
 	}
@@ -896,8 +962,11 @@ private:
 
 
 // _Search_Tree binary operators
+
+// Contains the same elems, same order, but not the same tree
 template<class Traits>
-bool operator==(const _Search_Tree<Traits>& left, const _Search_Tree<Traits>& right) {	// Contains the same elems, same order, but not the same tree
+bool operator==(const _Search_Tree<Traits>& left, const _Search_Tree<Traits>& right)
+{
 	if (left.size() != right.size())
 		return false;
 
@@ -905,7 +974,8 @@ bool operator==(const _Search_Tree<Traits>& left, const _Search_Tree<Traits>& ri
 }
 
 template<class Traits>
-bool operator!=(const _Search_Tree<Traits>& left, const _Search_Tree<Traits>& right) {
+bool operator!=(const _Search_Tree<Traits>& left, const _Search_Tree<Traits>& right)
+{
 	return !(left == right);
 }
 

@@ -7,6 +7,8 @@
 
 CUSTOM_BEGIN
 
+CUSTOM_DETAIL_BEGIN
+
 template<class Type, class Alloc>
 struct _Deque_Data
 {
@@ -29,10 +31,11 @@ struct _Deque_Data
 
 	static constexpr size_t _BLOCK_SIZE = 4;
 
-	size_t get_block(const size_t offset) const noexcept {
+	size_t get_block(const size_t offset) const noexcept
+	{
 		return (offset / _BLOCK_SIZE) % _MapCapacity;
     }
-};
+};	// END _Deque_Data
 
 template<class DequeData>
 class _Deque_Const_Iterator
@@ -57,19 +60,22 @@ public:
     explicit _Deque_Const_Iterator(size_t offset, const _Data* data) noexcept
 		:_Offset(offset), _RefData(data) { /*Empty*/ }
 
-	_Deque_Const_Iterator& operator++() noexcept {
+	_Deque_Const_Iterator& operator++() noexcept
+	{
 		CUSTOM_ASSERT(_Offset < _RefData->_First + _RefData->_Size, "Cannot increment end iterator.");
 		++_Offset;
 		return *this;
 	}
 
-	_Deque_Const_Iterator operator++(int) noexcept {
+	_Deque_Const_Iterator operator++(int) noexcept
+	{
 		_Deque_Const_Iterator temp = *this;
 		++(*this);
 		return temp;
 	}
 
-	_Deque_Const_Iterator& operator+=(const difference_type diff) noexcept {
+	_Deque_Const_Iterator& operator+=(const difference_type diff) noexcept
+	{
 		CUSTOM_ASSERT(	_Offset + static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset + static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size, 
 						"Cannot increment end iterator.");
@@ -77,25 +83,29 @@ public:
 		return *this;
 	}
 
-	_Deque_Const_Iterator operator+(const difference_type diff) const noexcept {
+	_Deque_Const_Iterator operator+(const difference_type diff) const noexcept
+	{
 		_Deque_Const_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	_Deque_Const_Iterator& operator--() noexcept {
+	_Deque_Const_Iterator& operator--() noexcept
+	{
 		CUSTOM_ASSERT(_Offset > _RefData->_First, "Cannot decrement begin iterator.");
 		--_Offset;
 		return *this;
 	}
 
-	_Deque_Const_Iterator operator--(int) noexcept {
+	_Deque_Const_Iterator operator--(int) noexcept
+	{
 		_Deque_Const_Iterator temp = *this;
 		--(*this);
 		return temp;
 	}
 
-	_Deque_Const_Iterator& operator-=(const difference_type diff) noexcept {
+	_Deque_Const_Iterator& operator-=(const difference_type diff) noexcept
+	{
 		CUSTOM_ASSERT(	_Offset - static_cast<size_t>(diff) >= _RefData->_First &&
 						_Offset - static_cast<size_t>(diff) <= _RefData->_First + _RefData->_Size,
 						"Cannot decrement begin iterator.");
@@ -103,17 +113,20 @@ public:
 		return *this;
 	}
 
-	_Deque_Const_Iterator operator-(const difference_type diff) const noexcept {
+	_Deque_Const_Iterator operator-(const difference_type diff) const noexcept
+	{
 		_Deque_Const_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
         return pointer_traits<pointer>::pointer_to(**this);	//return &(**this); calls operator*
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		CUSTOM_ASSERT(	_Offset >= _RefData->_First &&
 						_Offset < _RefData->_First + _RefData->_Size,
 						"Cannot dereference end iterator.");
@@ -123,29 +136,35 @@ public:
 		return _RefData->_Map[block][offset];
 	}
 
-	reference operator[](const difference_type diff) const noexcept {
+	reference operator[](const difference_type diff) const noexcept
+	{
         return *(*this + diff);
     }
 
-	bool operator==(const _Deque_Const_Iterator& other) const noexcept {
+	bool operator==(const _Deque_Const_Iterator& other) const noexcept
+	{
 		return _Offset == other._Offset;
 	}
 
-	bool operator!=(const _Deque_Const_Iterator& other) const noexcept {
+	bool operator!=(const _Deque_Const_Iterator& other) const noexcept
+	{
 		return !(*this == other);
 	}
 
 public:
 
-	bool is_begin() const noexcept {
+	bool is_begin() const noexcept
+	{
 		return _Offset == _RefData->_First;
 	}
 
-	bool is_end() const noexcept {
+	bool is_end() const noexcept
+	{
 		return _Offset == _RefData->_First + _RefData->_Size;
 	}
 
-	friend void _verify_range(const _Deque_Const_Iterator& first, const _Deque_Const_Iterator& last) noexcept {
+	friend void _verify_range(const _Deque_Const_Iterator& first, const _Deque_Const_Iterator& last) noexcept
+	{
 		CUSTOM_ASSERT(first._RefData == last._RefData, "deque iterators in range are from different containers");
 		CUSTOM_ASSERT(first._Offset <= last._Offset, "deque iterator range transposed");
 	}
@@ -172,69 +191,81 @@ public:
 	explicit _Deque_Iterator(size_t offset, const _Data* data) noexcept
 		:_Base(offset, data) { /*Empty*/ }
 
-	_Deque_Iterator& operator++() noexcept {
+	_Deque_Iterator& operator++() noexcept
+	{
 		_Base::operator++();
 		return *this;
 	}
 
-	_Deque_Iterator operator++(int) noexcept {
+	_Deque_Iterator operator++(int) noexcept
+	{
 		_Deque_Iterator temp = *this;
 		_Base::operator++();
 		return temp;
 	}
 
-	_Deque_Iterator& operator+=(const difference_type diff) noexcept {
+	_Deque_Iterator& operator+=(const difference_type diff) noexcept
+	{
 		_Base::operator+=(diff);
 		return *this;
 	}
 
-	_Deque_Iterator operator+(const difference_type diff) const noexcept {
+	_Deque_Iterator operator+(const difference_type diff) const noexcept
+	{
 		_Deque_Iterator temp = *this;
 		temp += diff;
 		return temp;
 	}
 
-	_Deque_Iterator& operator--() noexcept {
+	_Deque_Iterator& operator--() noexcept
+	{
 		_Base::operator--();
 		return *this;
 	}
 
-	_Deque_Iterator operator--(int) noexcept {
+	_Deque_Iterator operator--(int) noexcept
+	{
 		_Deque_Iterator temp = *this;
 		_Base::operator--();
 		return temp;
 	}
 
-	_Deque_Iterator& operator-=(const difference_type diff) noexcept {
+	_Deque_Iterator& operator-=(const difference_type diff) noexcept
+	{
 		_Base::operator-=(diff);
 		return *this;
 	}
 
-	_Deque_Iterator operator-(const difference_type diff) const noexcept {
+	_Deque_Iterator operator-(const difference_type diff) const noexcept
+	{
 		_Deque_Iterator temp = *this;
 		temp -= diff;
 		return temp;
 	}
 
-	pointer operator->() const noexcept {
+	pointer operator->() const noexcept
+	{
 		return const_cast<pointer>(_Base::operator->());
 	}
 
-	reference operator*() const noexcept {
+	reference operator*() const noexcept
+	{
 		return const_cast<reference>(_Base::operator*());
 	}
 
-	reference operator[](const difference_type diff) const noexcept {
+	reference operator[](const difference_type diff) const noexcept
+	{
         return const_cast<reference>(_Base::operator[](diff));
     }
 }; // END deque iterator
 
+CUSTOM_DETAIL_END
 
 template<class Type, class Alloc = custom::allocator<Type>>
 class deque					// deque Template implemented as map of blocks
 {
 private:
-	using _Data						= _Deque_Data<Type, Alloc>;
+	using _Data						= detail::_Deque_Data<Type, Alloc>;
 	using _Alloc_Traits				= typename _Data::_Alloc_Traits;
 	using _AllocPtr					= typename _Data::_AllocPtr;
 	using _AllocPtr_Traits			= typename _Data::_AllocPtr_Traits;
@@ -252,63 +283,73 @@ public:
 	using const_pointer				= typename _Data::const_pointer;
 	using allocator_type			= Alloc;									// allocator for block
 
-	using iterator					= _Deque_Iterator<_Data>;
-	using const_iterator			= _Deque_Const_Iterator<_Data>;
+	using iterator					= detail::_Deque_Iterator<_Data>;
+	using const_iterator			= detail::_Deque_Const_Iterator<_Data>;
 	using reverse_iterator			= custom::reverse_iterator<iterator>;
 	using const_reverse_iterator	= custom::reverse_iterator<const_iterator>;
 
 private:
-	_Data _data;
-	allocator_type _alloc;
+	_Data 			_data;
+	allocator_type 	_alloc;
 
 	static constexpr size_t _DEFAULT_CAPACITY = 8;
 
 public:
 	// Constructors
 
-	deque() {
+	deque()
+	{
 		_init_map(_DEFAULT_CAPACITY);
 	}
 
-	deque(const size_t newSize) {
+	deque(const size_t newSize)
+	{
 		resize(newSize);
 	}
 
-	deque(const size_t newSize, const value_type& copyValue) {
+	deque(const size_t newSize, const value_type& copyValue)
+	{
 		resize(newSize, copyValue);
 	}
 
-	deque(std::initializer_list<value_type> list) {
+	deque(std::initializer_list<value_type> list)
+	{
 		for (const auto& val : list)
 			push_back(val);
 	}
 
-	deque(const deque& other) {
+	deque(const deque& other)
+	{
 		_copy(other);
 	}
 
-	deque(deque&& other) noexcept {
+	deque(deque&& other) noexcept
+	{
 		_move(custom::move(other));
 	}
 
-	~deque() noexcept {
+	~deque() noexcept
+	{
 		_clean_up_map();
 	}
 
 public:
 	// Operators
 
-	const value_type& operator[](const size_t index) const {
+	const value_type& operator[](const size_t index) const
+	{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<difference_type>(index));
 	}
 
-	value_type& operator[](const size_t index) {
+	value_type& operator[](const size_t index)
+	{
 		CUSTOM_ASSERT(index < size(), "Index out of bounds.");
 		return *(begin() + static_cast<difference_type>(index));
 	}
 
-	deque& operator=(const deque& other) {
+	deque& operator=(const deque& other)
+	{
 		if (_data._Map != other._data._Map)
 		{
 			_clean_up_map();
@@ -318,7 +359,8 @@ public:
 		return *this;
 	}
 
-	deque& operator=(deque&& other) noexcept {
+	deque& operator=(deque&& other) noexcept
+	{
 		if (_data._Map != other._data._Map)
 		{
 			_clean_up_map();
@@ -331,7 +373,8 @@ public:
 public:
 	// Main functions
 
-	void resize(const size_t newSize) {
+	void resize(const size_t newSize)
+	{
 		while (_data._Size < newSize)
 			emplace_back();
 
@@ -339,7 +382,8 @@ public:
             pop_back();
 	}
 
-	void resize(const size_t newSize, const value_type& copyValue) {
+	void resize(const size_t newSize, const value_type& copyValue)
+	{
 		while (_data._Size < newSize)
 			emplace_back(copyValue);
 
@@ -348,7 +392,8 @@ public:
 	}
 
 	template<class... Args>
-	void emplace_back(Args&&... args) {
+	void emplace_back(Args&&... args)
+	{
 		_extend_if_full();
 		
 		size_t backOffset	= _data._First + _data._Size;
@@ -361,15 +406,18 @@ public:
 		++_data._Size;
 	}
 
-	void push_back(const value_type& copyValue) {
+	void push_back(const value_type& copyValue)
+	{
 		emplace_back(copyValue);
 	}
 
-	void push_back(value_type&& moveValue) {
+	void push_back(value_type&& moveValue)
+	{
 		emplace_back(custom::move(moveValue));
 	}
 
-	void pop_back() {
+	void pop_back()
+	{
 		if (!empty())
 		{
 			size_t backOffset	= _data._First + _data._Size - 1;
@@ -382,7 +430,8 @@ public:
 	}
 
 	template<class... Args>
-	void emplace_front(Args&&... args) {
+	void emplace_front(Args&&... args)
+	{
 		_extend_if_full();
 
 		if (_data._First == 0)
@@ -396,15 +445,18 @@ public:
 		++_data._Size;
 	}
 
-	void push_front(const value_type& copyValue) {
+	void push_front(const value_type& copyValue)
+	{
 		emplace_front(copyValue);
 	}
 
-	void push_front(value_type&& moveValue) {
+	void push_front(value_type&& moveValue)
+	{
 		emplace_front(custom::move(moveValue));
 	}
 
-	void pop_front() {
+	void pop_front()
+	{
 		if (!empty())
 		{
 			size_t block = _data.get_block(_data._First);
@@ -418,7 +470,8 @@ public:
 	}
 
 	template<class... Args>
-	iterator emplace(const_iterator where, Args&&... args) {
+	iterator emplace(const_iterator where, Args&&... args)
+	{
 		size_t off = where._Offset - _data._First;
 
 		if (off <= _data._Size / 2)		// closer to front
@@ -449,15 +502,18 @@ public:
 		return begin() + static_cast<difference_type>(off);
 	}
 
-	iterator insert(const_iterator where, const value_type& copyValue) {
+	iterator insert(const_iterator where, const value_type& copyValue)
+	{
 		return emplace(where, copyValue);
 	}
 
-	iterator insert(const_iterator where, value_type&& moveValue) {
+	iterator insert(const_iterator where, value_type&& moveValue)
+	{
 		return emplace(where, custom::move(moveValue));
 	}
 
-	iterator erase(const_iterator where) {
+	iterator erase(const_iterator where)
+	{
 		if (where.is_end())
 			throw std::out_of_range("array erase iterator outside range.");
 			
@@ -487,7 +543,8 @@ public:
 		return begin() + static_cast<difference_type>(off);
 	}
 
-	void clear() {
+	void clear()
+	{
 		while (!empty())
 			pop_back();
 
@@ -499,54 +556,64 @@ public:
 			}
 	}
 
-	size_t size() const noexcept {
+	size_t size() const noexcept
+	{
 		return _data._Size;
 	}
 
-    size_t max_size() const noexcept {
+    size_t max_size() const noexcept
+	{
         return (custom::min)(	static_cast<size_t>((numeric_limits<difference_type>::max)()),
 								_Alloc_Traits::max_size(_alloc));
     }
 
-	bool empty() const noexcept {
+	bool empty() const noexcept
+	{
 		return (_data._Size == 0);
 	}
 
-	const_reference at(const size_t index) const {
+	const_reference at(const size_t index) const
+	{
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<difference_type>(index));
 	}
 
-	reference at(const size_t index) {
+	reference at(const size_t index)
+	{
 		if (index >= size())
 			throw std::out_of_range("Index out of bounds.");
 
 		return *(begin() + static_cast<difference_type>(index));
 	}
 
-	const_reference front() const noexcept {
+	const_reference front() const noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
-	reference front() noexcept {										// Get the value of the first component
+	reference front() noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *begin();
 	}
 
-	const_reference back() const noexcept {
+	const_reference back() const noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
 
-	reference back() noexcept {                                                      	// Get the value of the last component
+	reference back() noexcept
+	{
 		CUSTOM_ASSERT(!empty(), "Container is empty.");
 		return *(--end());
 	}
 
-	void print_details() {
+	void print_details()
+	{
 		std::cout << "Map Capacity= " << _data._MapCapacity << '\n';
 		std::cout << "Size= " << _data._Size << '\n';
 		std::cout << "Init Offset= " << _data._First << '\n';
@@ -568,42 +635,51 @@ public:
 public:
 	// iterator specific functions
 
-	iterator begin() noexcept {
+	iterator begin() noexcept
+	{
 		return iterator(_data._First, &_data);
 	}
 
-	const_iterator begin() const noexcept {
+	const_iterator begin() const noexcept
+	{
 		return const_iterator(_data._First, &_data);
 	}
 
-	reverse_iterator rbegin() noexcept {
+	reverse_iterator rbegin() noexcept
+	{
 		return reverse_iterator(end());
 	}
 
-	const_reverse_iterator rbegin() const noexcept {
+	const_reverse_iterator rbegin() const noexcept
+	{
 		return const_reverse_iterator(end());
 	}
 
-	iterator end() noexcept {
+	iterator end() noexcept
+	{
 		return iterator(_data._First + _data._Size, &_data);
 	}
 
-	const_iterator end() const noexcept {
+	const_iterator end() const noexcept
+	{
 		return const_iterator(_data._First + _data._Size, &_data);
 	}
 
-	reverse_iterator rend() noexcept {
+	reverse_iterator rend() noexcept
+	{
 		return reverse_iterator(begin());
 	}
 
-	const_reverse_iterator rend() const noexcept {
+	const_reverse_iterator rend() const noexcept
+	{
 		return const_reverse_iterator(begin());
 	}
 
 private:
 	// Helpers
 
-	void _reserve(const size_t newMapCapacity) {
+	void _reserve(const size_t newMapCapacity)
+	{
 		size_t newSize			= _data._Size;
 		size_t newFirst			= _data._First % _data._BLOCK_SIZE;
 		_MapPtr newMap 			= _create_empty_map(newMapCapacity);
@@ -635,28 +711,32 @@ private:
 		_data._First			= newFirst;
 	}
 
-	void _extend_if_full() {												
+	void _extend_if_full()
+	{
 		if (_data._Map == nullptr)												// after custom::move()
 			_init_map(_DEFAULT_CAPACITY);
 		else if (_data._Size >= (_data._MapCapacity - 1) * _data._BLOCK_SIZE)	// ensure first and last elem are not in the same block...
 			_reserve(2 * _data._MapCapacity);									// ...with last < first
 	}
 
-	void _copy(const deque& other) {
+	void _copy(const deque& other)
+	{
 		_init_map(other._data._MapCapacity);
 
 		for (auto& val : other)
 			push_back(val);
 	}
 
-	void _move(deque&& other) noexcept {
+	void _move(deque&& other) noexcept
+	{
 		_data._Map 			= custom::exchange(other._data._Map, nullptr);
 		_data._MapCapacity 	= custom::exchange(other._data._MapCapacity, 0);
 		_data._Size 		= custom::exchange(other._data._Size, 0);
 		_data._First 		= custom::exchange(other._data._First, 0);
 	}
 
-	_MapPtr _create_empty_map(const size_t newMapCapacity) {
+	_MapPtr _create_empty_map(const size_t newMapCapacity)
+	{
 		_MapPtr newMap = _AllocPtr().allocate(newMapCapacity);
 		for(size_t i = 0; i < newMapCapacity; ++i)
 			newMap[i] = nullptr;
@@ -664,7 +744,8 @@ private:
 		return newMap;
 	}
 
-	void _init_map(const size_t newMapCapacity) {
+	void _init_map(const size_t newMapCapacity)
+	{
 		size_t newCapacity 	= (newMapCapacity < _DEFAULT_CAPACITY) ? _DEFAULT_CAPACITY : newMapCapacity;
 
 		_data._Map 			= _create_empty_map(newCapacity);
@@ -673,7 +754,8 @@ private:
 		_data._First		= 0;
 	}
 
-	void _clean_up_map() {
+	void _clean_up_map()
+	{
 		if (_data._Map != nullptr)
 		{
 			clear();
@@ -686,7 +768,8 @@ private:
 
 // deque binary operators
 template<class _Type, class _Alloc>
-bool operator==(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right) {
+bool operator==(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right)
+{
 	if (left.size() != right.size())
 		return false;
 
@@ -694,7 +777,8 @@ bool operator==(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& ri
 }
 
 template<class _Type, class _Alloc>
-bool operator!=(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right) {
+bool operator!=(const deque<_Type, _Alloc>& left, const deque<_Type, _Alloc>& right)
+{
 	return !(left == right);
 }
 

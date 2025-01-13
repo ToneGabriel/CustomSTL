@@ -8,8 +8,9 @@ CUSTOM_BEGIN
 
 // iota
 template<class ForwardIt, class Type>
-constexpr void iota(ForwardIt first, ForwardIt last, Type value) {
-    _verify_iteration_range(first, last);
+constexpr void iota(ForwardIt first, ForwardIt last, Type value)
+{
+    detail::_verify_iteration_range(first, last);
 
     for (/*Empty*/; first != last; ++first, ++value)
         *first = value;
@@ -19,8 +20,9 @@ constexpr void iota(ForwardIt first, ForwardIt last, Type value) {
 
 // accumulate
 template<class InputIt, class Type, class BinaryOperation>
-constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperation op) {
-    _verify_iteration_range(first, last);
+constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
 
     for (/*Empty*/; first != last; ++first)
         init = op(custom::move(init), *first);
@@ -29,7 +31,8 @@ constexpr Type accumulate(InputIt first, InputIt last, Type init, BinaryOperatio
 }
 
 template<class InputIt, class Type>
-constexpr Type accumulate(InputIt first, InputIt last, Type init) {
+constexpr Type accumulate(InputIt first, InputIt last, Type init)
+{
     return custom::accumulate(first, last, init, plus<>{});
 }
 // END accumulate
@@ -39,9 +42,9 @@ constexpr Type accumulate(InputIt first, InputIt last, Type init) {
 template<class InputIt1, class InputIt2, class Type, class BinaryOperation1, class BinaryOperation2>
 constexpr Type inner_product(   InputIt1 first1, InputIt1 last1,
                                 InputIt2 first2, Type init, 
-                                BinaryOperation1 op1, BinaryOperation2 op2) {
-
-    _verify_iteration_range(first1, last1);
+                                BinaryOperation1 op1, BinaryOperation2 op2)
+{
+    detail::_verify_iteration_range(first1, last1);
 
     for (/*Empty*/; first1 != last1; ++first1, ++first2)
         init = op1(custom::move(init), op2(*first1, *first2));
@@ -50,7 +53,8 @@ constexpr Type inner_product(   InputIt1 first1, InputIt1 last1,
 }
 
 template<class InputIt1, class InputIt2, class Type>
-constexpr Type inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init) {
+constexpr Type inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init)
+{
     return custom::inner_product(first1, last1, first2, custom::move(init), plus<>{}, multiplies<>{});
 }
 // END inner_product
@@ -58,8 +62,9 @@ constexpr Type inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2, T
 
 // adjacent_difference
 template<class InputIt, class OutputIt, class BinaryOperation>
-constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt destFirst, BinaryOperation op) {
-    _verify_iteration_range(first, last);
+constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt destFirst, BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
     
     if (first != last)
     {
@@ -82,7 +87,8 @@ constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt des
 }
 
 template<class InputIt, class OutputIt>
-constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt destFirst) {
+constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt destFirst)
+{
     return custom::adjacent_difference(first, last, destFirst, minus<>{});
 }
 // END adjacent_difference
@@ -90,8 +96,9 @@ constexpr OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt des
 
 // partial_sum
 template<class InputIt, class OutputIt, class BinaryOperation>
-constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, BinaryOperation op) {
-    _verify_iteration_range(first, last);
+constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
     
     if (first != last)
     {
@@ -113,7 +120,8 @@ constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst, 
 }
 
 template<class InputIt, class OutputIt>
-constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst) {
+constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst)
+{
     return partial_sum(first, last, destFirst, plus<>{});
 }
 // END partial_sum
@@ -121,8 +129,9 @@ constexpr OutputIt partial_sum(InputIt first, InputIt last, OutputIt destFirst) 
 
 // reduce
 template<class InputIt, class Type, class BinaryOperation>
-constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op) {
-    _verify_iteration_range(first, last);
+constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
 
     for (/*Empty*/; first != last; ++first)
         init = op(custom::move(init), *first);
@@ -131,12 +140,14 @@ constexpr Type reduce(InputIt first, InputIt last, Type init, BinaryOperation op
 }
 
 template<class InputIt, class Type>
-constexpr Type reduce(InputIt first, InputIt last, Type init) {
+constexpr Type reduce(InputIt first, InputIt last, Type init)
+{
     return custom::reduce(first, last, custom::move(init), plus<>{});
 }
 
 template<class InputIt>
-constexpr typename iterator_traits<InputIt>::value_type reduce(InputIt first, InputIt last) {
+constexpr typename iterator_traits<InputIt>::value_type reduce(InputIt first, InputIt last)
+{
     return custom::reduce(first, last, typename iterator_traits<InputIt>::value_type{}, plus<>{});
 }
 // END reduce
@@ -146,9 +157,9 @@ constexpr typename iterator_traits<InputIt>::value_type reduce(InputIt first, In
 template<class InputIt, class OutputIt, class Type, class BinaryOperation>
 constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
                                     OutputIt destFirst, Type init,
-                                    BinaryOperation op) {
-
-    _verify_iteration_range(first, last);
+                                    BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
 
     if (first != last)
     {
@@ -170,8 +181,8 @@ constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
 
 template<class InputIt, class OutputIt, class Type>
 constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
-                                    OutputIt destFirst, Type init) {
-
+                                    OutputIt destFirst, Type init)
+{
     return custom::exclusive_scan(first, last, destFirst, custom::move(init), plus<>{});
 }
 // END exclusive_scan
@@ -180,9 +191,9 @@ constexpr OutputIt exclusive_scan(  InputIt first, InputIt last,
 // inclusive_scan
 template<class InputIt, class OutputIt, class BinaryOperation, class Type>
 constexpr OutputIt inclusive_scan( InputIt first, InputIt last, OutputIt destFirst,
-                                   BinaryOperation op, Type init) {
-
-    _verify_iteration_range(first, last);
+                                   BinaryOperation op, Type init)
+{
+    detail::_verify_iteration_range(first, last);
     
     for (/*Empty*/; first != last; ++first)
     {
@@ -195,9 +206,9 @@ constexpr OutputIt inclusive_scan( InputIt first, InputIt last, OutputIt destFir
 
 template<class InputIt, class OutputIt, class BinaryOperation>
 constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
-                                    OutputIt destFirst, BinaryOperation op) {
-                                   
-    _verify_iteration_range(first, last);
+                                    OutputIt destFirst, BinaryOperation op)
+{
+    detail::_verify_iteration_range(first, last);
 
     if (first != last)
     {
@@ -221,7 +232,8 @@ constexpr OutputIt inclusive_scan(  InputIt first, InputIt last,
 }
 
 template<class InputIt, class OutputIt>
-constexpr OutputIt inclusive_scan(InputIt first, InputIt last, OutputIt destFirst) {
+constexpr OutputIt inclusive_scan(InputIt first, InputIt last, OutputIt destFirst)
+{
     return custom::inclusive_scan(first, last, destFirst, plus<>{});
 }
 // END inclusive_scan
@@ -231,9 +243,9 @@ constexpr OutputIt inclusive_scan(InputIt first, InputIt last, OutputIt destFirs
 template<class InputIt1, class InputIt2, class Type, class BinaryOperation1, class BinaryOperation2>
 constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1,
                                 InputIt2 first2, Type init,
-                                BinaryOperation1 bop1, BinaryOperation2 bop2) {
-
-    _verify_iteration_range(first1, last1);
+                                BinaryOperation1 bop1, BinaryOperation2 bop2)
+{
+    detail::_verify_iteration_range(first1, last1);
 
     for (/*Empty*/; first1 != last1; ++first1, ++first2)
         init = bop1(custom::move(init), bop2(*first1, *first2));
@@ -242,15 +254,16 @@ constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1,
 }
 
 template<class InputIt1, class InputIt2, class Type>
-constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init) {
+constexpr Type transform_reduce(InputIt1 first1, InputIt1 last1, InputIt2 first2, Type init)
+{
     return custom::transform_reduce(first1, last1, first2, custom::move(init), plus<>{}, multiplies<>{});
 }
 
 template<class InputIt1, class Type, class BinaryOperation, class UnaryOperation>
 constexpr Type transform_reduce(InputIt1 first, InputIt1 last,
-                                Type init, BinaryOperation bop, UnaryOperation uop) {
-    
-    _verify_iteration_range(first, last);
+                                Type init, BinaryOperation bop, UnaryOperation uop)
+{
+    detail::_verify_iteration_range(first, last);
 
     for (/*Empty*/; first != last; ++first)
         init = bop(custom::move(init), uop(*first));
@@ -264,9 +277,9 @@ constexpr Type transform_reduce(InputIt1 first, InputIt1 last,
 template<class InputIt, class OutputIt, class Type, class BinaryOperation, class UnaryOperation>
 constexpr OutputIt transform_exclusive_scan(InputIt first, InputIt last,
                                             OutputIt destFirst, Type init,
-                                            BinaryOperation bop, UnaryOperation uop) {
-    
-    _verify_iteration_range(first, last);
+                                            BinaryOperation bop, UnaryOperation uop)
+{
+    detail::_verify_iteration_range(first, last);
 
     if (first != last)
     {
@@ -291,9 +304,9 @@ constexpr OutputIt transform_exclusive_scan(InputIt first, InputIt last,
 // transform_inclusive_scan
 template<class InputIt, class OutputIt, class BinaryOperation, class UnaryOperation, class Type>
 constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last, OutputIt destFirst,
-                                            BinaryOperation bop, UnaryOperation uop, Type init) {
-
-    _verify_iteration_range(first, last);
+                                            BinaryOperation bop, UnaryOperation uop, Type init)
+{
+    detail::_verify_iteration_range(first, last);
 
     for (/*Empty*/; first != last; ++first)
     {
@@ -306,9 +319,9 @@ constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last, OutputI
 
 template<class InputIt, class OutputIt, class BinaryOperation, class UnaryOperation>
 constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last,
-                                            OutputIt destFirst, BinaryOperation bop, UnaryOperation uop) {
-
-    _verify_iteration_range(first, last);
+                                            OutputIt destFirst, BinaryOperation bop, UnaryOperation uop)
+{
+    detail::_verify_iteration_range(first, last);
 
     if (first != last)
     {
@@ -332,7 +345,8 @@ constexpr OutputIt transform_inclusive_scan(InputIt first, InputIt last,
 
 
 template<class Integral>
-constexpr auto abs_unsigned(const Integral val) noexcept {
+constexpr auto abs_unsigned(const Integral val) noexcept
+{
     // computes absolute value of val (converting to an unsigned integer type if necessary to avoid overflow
     // representing the negation of the minimum value)
     static_assert(is_integral_v<Integral>);
@@ -354,7 +368,8 @@ constexpr auto abs_unsigned(const Integral val) noexcept {
 
 // greatest common divizor
 template<class first, class second>
-constexpr common_type_t<first, second> gcd(first val1, second val2) noexcept {
+constexpr common_type_t<first, second> gcd(first val1, second val2) noexcept
+{
     static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "GCD requires nonbool integral types");
 
     using _Common           = common_type_t<first, second>;
@@ -398,7 +413,8 @@ constexpr common_type_t<first, second> gcd(first val1, second val2) noexcept {
 
 //least common multiple
 template<class first, class second>
-constexpr common_type_t<first, second> lcm(const first val1, const second val2) noexcept {
+constexpr common_type_t<first, second> lcm(const first val1, const second val2) noexcept
+{
     static_assert(is_nonbool_integral_v<first> && is_nonbool_integral_v<second>, "LCM requires nonbool integral types");
     
     using _Common           = common_type_t<first, second>;
@@ -417,7 +433,8 @@ constexpr common_type_t<first, second> lcm(const first val1, const second val2) 
 
 // midpoint
 template<class Type>
-constexpr Type midpoint(Type val1, Type val2) noexcept {
+constexpr Type midpoint(Type val1, Type val2) noexcept
+{
     if constexpr (is_integral_v<Type>)
     {
         using _Unsigned = make_unsigned_t<Type>;
@@ -454,7 +471,8 @@ constexpr Type midpoint(Type val1, Type val2) noexcept {
 }
 
 template<class Type, enable_if_t<is_object_v<Type>, bool> = true>
-constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept {
+constexpr Type* midpoint(Type* const ptr1, Type* const ptr2) noexcept
+{
     static_assert(sizeof(Type) != 0, "type must be complete");
 
     if (ptr1 > ptr2)

@@ -16,14 +16,16 @@ using u8string_view		= basic_string_view<char8_t,	custom::char_traits<char8_t>>;
 
 
 // string_view out
-inline std::ostream& operator<<(std::ostream& os, const string_view& stringView) {
+inline std::ostream& operator<<(std::ostream& os, const string_view& stringView)
+{
 	os << stringView.data();
 	return os;
 }
 
 
 // wstring_view inout
-inline std::wostream& operator<<(std::wostream& os, const wstring_view& wstringView) {
+inline std::wostream& operator<<(std::wostream& os, const wstring_view& wstringView)
+{
 	os << wstringView.data();
 	return os;
 }
@@ -34,8 +36,8 @@ template<class Type, class Traits>
 struct less<basic_string_view<Type, Traits>>		// used by map, set
 {
 	constexpr bool operator()(	const basic_string_view<Type, Traits>& left,
-								const basic_string_view<Type, Traits>& right) const {
-
+								const basic_string_view<Type, Traits>& right) const
+	{
 		return left.compare(right) < 0;
 	}
 };
@@ -44,7 +46,8 @@ template<class Type, class Traits>
 struct hash<basic_string_view<Type, Traits>>
 : detail::_Base_Hash_Enabler<basic_string_view<Type, Traits>, is_char_v<Type>>	// used by unordered_map, unordered_set
 {
-	static size_t compute_hash(const basic_string_view<Type, Traits>& key) noexcept {
+	static size_t compute_hash(const basic_string_view<Type, Traits>& key) noexcept
+	{
 		return detail::_hash_array_representation(key.data(), key.size());
 	}
 };

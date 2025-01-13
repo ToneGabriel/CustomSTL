@@ -41,12 +41,14 @@ public:
 public:
 	// Operators
 
-	stack& operator=(const stack& other) {
+	stack& operator=(const stack& other)
+	{
 		_baseContainer = other._baseContainer;
 		return *this;
 	}
 
-	stack& operator=(stack&& other) noexcept {
+	stack& operator=(stack&& other) noexcept
+	{
 		_baseContainer = custom::move(other._baseContainer);
 		return *this;
 	}
@@ -58,52 +60,63 @@ public:
 	// Main Functions
 
 	template<class... Args>
-	void emplace(Args&&... args) {
+	void emplace(Args&&... args)
+	{
 		_baseContainer.emplace_back(custom::forward<Args>(args)...);
 	}
 
-	void push(const value_type& copyValue) {
+	void push(const value_type& copyValue)
+	{
 		emplace(copyValue);
 	}
 
-	void push(value_type&& moveValue) {
+	void push(value_type&& moveValue)
+	{
 		emplace(custom::move(moveValue));
 	}
 
-	void pop() {											// Remove first elem from stack
+	void pop()	// Remove first elem from stack
+	{
 		_baseContainer.pop_back();
 	}
 
-	void clear() {
+	void clear()
+	{
 		_baseContainer.clear();
 	}
 
-	const_reference top() const noexcept {
+	const_reference top() const noexcept
+	{
 		return _baseContainer.back();
 	}
 
-	reference top() noexcept {
+	reference top() noexcept
+	{
 		return _baseContainer.back();
 	}
 
-	size_t size() const noexcept {
+	size_t size() const noexcept
+	{
 		return _baseContainer.size();
 	}
 
-	bool empty() const noexcept {
+	bool empty() const noexcept
+	{
 		return _baseContainer.empty();
 	}
-}; // END stack Template
+}; // END stack
 
 
 // stack binary operators
 template<class _Type, class _Container>
-bool operator==(const stack<_Type, _Container>& left, const stack<_Type, _Container>& right) {
+bool operator==(const stack<_Type, _Container>& left, const stack<_Type, _Container>& right)
+{
 	return left._baseContainer == right._baseContainer;
 }
 
 template<class _Type, class _Container>
-bool operator!=(const stack<_Type, _Container>& left, const stack<_Type, _Container>& right) {
+bool operator!=(const stack<_Type, _Container>& left, const stack<_Type, _Container>& right)
+{
 	return !(left == right);
 }
 

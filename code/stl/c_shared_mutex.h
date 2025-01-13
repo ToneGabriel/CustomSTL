@@ -19,11 +19,13 @@ private:
 public:
     // Constructors & Operators
 
-    shared_mutex() {
+    shared_mutex()
+    {
         pthread_rwlock_init(&_rwMutex, nullptr);
     }
 
-    ~shared_mutex() {
+    ~shared_mutex()
+    {
         pthread_rwlock_destroy(&_rwMutex);
     }
 
@@ -34,11 +36,13 @@ public:
     // Main functions
 
 // Exclusive (Write)
-    void lock() {
+    void lock()
+    {
         pthread_rwlock_wrlock(&_rwMutex);
     }
 
-    bool try_lock() {
+    bool try_lock()
+    {
         switch (pthread_rwlock_trywrlock(&_rwMutex))
         {
             case 0:
@@ -50,17 +54,20 @@ public:
         }
     }
 
-    void unlock() {
-        pthread_rwlock_unlock(&_rwMutex);               // read / write
+    void unlock()
+    {
+        pthread_rwlock_unlock(&_rwMutex);   // read / write
     }
 // end Exclusive
 
 // Shared (Read)
-    void lock_shared() {
+    void lock_shared()
+    {
         pthread_rwlock_rdlock(&_rwMutex);
     }
 
-    bool try_lock_shared() {
+    bool try_lock_shared()
+    {
         switch (pthread_rwlock_tryrdlock(&_rwMutex))
         {
             case 0:
@@ -72,12 +79,14 @@ public:
         }
     }
 
-    void unlock_shared() {
-        pthread_rwlock_unlock(&_rwMutex);               // same as unlock
+    void unlock_shared()
+    {
+        pthread_rwlock_unlock(&_rwMutex);   // same as unlock
     }
 // end Shared
 
-    native_handle_type native_handle() {
+    native_handle_type native_handle()
+    {
         return _rwMutex;
     }
 };  // END shared_mutex
@@ -107,21 +116,25 @@ public:
     // Main Functions
 
 // Exclusive (Write)
-    void lock() {
+    void lock()
+    {
         _Base::lock();
     }
 
-    bool try_lock() {
+    bool try_lock()
+    {
         return _Base::try_lock();
     }
 
-    void unlock() {
+    void unlock()
+    {
         _Base::unlock();
     }
 
     template<class Clock, class Duration,
     enable_if_t<is_same_v<Clock, _ReqClock>, bool> = true>
-    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
+    bool try_lock_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime)
+    {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::seconds>(absoluteTime);
@@ -137,30 +150,35 @@ public:
         return ((pthread_rwlock_timedwrlock(&_rwMutex, &ts) == 0 ) ? true : false);
 #endif
     }
-    
+
     template<class Rep, class Period>
-    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+    bool try_lock_for(const custom::chrono::duration<Rep, Period>& relativeTime)
+    {
         return try_lock_until(  _ReqClock::now() + 
                                 custom::chrono::ceil<typename _ReqClock::duration>(relativeTime));
     }
 // end Exclusive
 
 // Shared (Read)
-    void lock_shared() {
+    void lock_shared()
+    {
         _Base::lock_shared();
     }
 
-    bool try_lock_shared() {
+    bool try_lock_shared()
+    {
         return _Base::try_lock_shared();
     }
 
-    void unlock_shared() {
+    void unlock_shared()
+    {
         _Base::unlock_shared();
     }
 
     template<class Clock, class Duration,
     enable_if_t<is_same_v<Clock, _ReqClock>, bool> = true>
-    bool try_lock_shared_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime) {
+    bool try_lock_shared_until(const custom::chrono::time_point<Clock, Duration>& absoluteTime)
+    {
         // if absoluteTime duration cast to seconds is 0, then nanoseconds duration will be representative
         // else if absoluteTime duration cast to seconds is > 0, then nanoseconds duration will be 0.
         auto secondsTime    = custom::chrono::time_point_cast<custom::chrono::seconds>(absoluteTime);
@@ -178,7 +196,8 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_lock_shared_for(const custom::chrono::duration<Rep, Period>& relativeTime) {
+    bool try_lock_shared_for(const custom::chrono::duration<Rep, Period>& relativeTime)
+    {
         return try_lock_shared_until(   _ReqClock::now() + 
                                         custom::chrono::ceil<typename _ReqClock::duration>(relativeTime));
     }
