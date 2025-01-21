@@ -27,7 +27,7 @@ struct _Invoker_PMF_Object
 {
     template<class Callable, class Type, class... Args>
     static constexpr auto invoke_impl(Callable&& pmf, Type&& typeObj, Args&&... args) noexcept
-    -> decltype((static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...))\
+    -> decltype((static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...))
     {
         return (static_cast<Type&&>(typeObj).*pmf)(static_cast<Args&&>(args)...);
     }

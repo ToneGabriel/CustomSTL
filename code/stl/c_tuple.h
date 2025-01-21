@@ -58,6 +58,22 @@ using tuple_element_t = typename tuple_element<Index, Tuple>::type;
 template<size_t Index, class Tuple>
 using tuple_element_tuple_t = typename tuple_element<Index, Tuple>::tuple_type;
 
+// get
+template<int Index, class... Types>
+tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj);
+
+template<int Index, class... Types>
+const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj);
+
+template<int Index, class... Types>
+tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj);
+
+template<int Index, class... Types>
+const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj);
+
+template<int Index, class... Types>
+const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj);
+
 CUSTOM_DETAIL_BEGIN
 
 // _Is_Tuple_Constructible
@@ -113,6 +129,30 @@ struct _Tuple_Cat<Type, index_sequence<Kx...>, index_sequence<Ix...>, IxNext, in
 	: _Tuple_Cat<Type, index_sequence<Kx..., KxNext...>, index_sequence<Ix..., (IxNext + 0 * KxNext)...>, // repeat IxNext, ignoring the elements of KxNext
 	IxNext + 1, Rest...> {};
 
+template<class Callable, class Tuple, size_t... Indices>
+constexpr auto _apply_impl(Callable&& func, Tuple&& tuple, index_sequence<Indices...>)
+noexcept(noexcept(custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...)))
+-> decltype(custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...))
+{
+    return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...);
+}
+
+template<class Type, class Tuple, size_t... Indices>
+constexpr Type _make_from_tuple_impl(Tuple&& tuple, index_sequence<Indices...>)
+noexcept(is_nothrow_constructible_v<Type, decltype(custom::get<Indices>(custom::forward<Tuple>(tuple)))...>)
+{
+	static_assert(is_constructible_v<Type, decltype(custom::get<Indices>(custom::forward<Tuple>(tuple)))...>,
+					"The target type must be constructible using the arguments in tuple.");
+
+	return Type(custom::get<Indices>(custom::forward<Tuple>(tuple))...);
+}
+
+template<class RetType, size_t... Kx, size_t... Ix, class Tuple>
+constexpr RetType _tuple_cat_impl(index_sequence<Kx...>, index_sequence<Ix...>, Tuple tuple)
+{
+	return RetType(custom::get<Kx>(custom::get<Ix>(custom::move(tuple)))...);
+}
+
 CUSTOM_DETAIL_END
 
 template<>
@@ -164,7 +204,8 @@ public:
 	
 	// (H2) Helper for (H3)
 	template<class Tag, class Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
-	tuple(Tag, Tuple&& other, index_sequence<Indices...>);		// defined after custom::get()
+	tuple(Tag, Tuple&& other, index_sequence<Indices...>)
+		: tuple(_Tuple_Exact_Args_t{}, custom::get<Indices>(custom::forward<Tuple>(other))...) { /*Empty*/ }	// Uses (H1)
 
 	// (H3) Helper for (2), (3)
 	template<class Tag, class Tuple, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
@@ -331,40 +372,6 @@ const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupl
 	return static_cast<const _Type&&>(static_cast<const _Tuple_Type&>(tupleObj)._ThisVal);
 }
 
-// (H2) Constructor helper defined here because of custom::get()
-template<class This, class... Rest>
-template<class Tag, class Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool>>
-tuple<This, Rest...>::tuple(Tag, Tuple&& other, index_sequence<Indices...>)
-	: tuple(_Tuple_Exact_Args_t{}, custom::get<Indices>(custom::forward<Tuple>(other))...) { /*Empty*/ }	// Uses (H1)
-
-
-CUSTOM_DETAIL_BEGIN		// apply, make_from_tuple, tuple_cat helpers
-
-// apply
-template<class Callable, class Tuple, size_t... Indices>
-decltype(auto) _apply_impl(Callable&& func, Tuple&& tuple, index_sequence<Indices...>) noexcept
-{
-    return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...);
-}
-
-// make from tuple
-template<class Type, class Tuple, size_t... Indices>
-Type _make_from_tuple_impl(Tuple&& tuple, index_sequence<Indices...>)
-{
-	static_assert(is_constructible_v<Type, decltype(custom::get<Indices>(custom::forward<Tuple>(tuple)))...>, "The target type must be constructible using the arguments in tuple.");
-	return Type(custom::get<Indices>(custom::forward<Tuple>(tuple))...);
-}
-
-// tuple cat
-template<class RetType, size_t... Kx, size_t... Ix, class Tuple>
-RetType _tuple_cat_impl(index_sequence<Kx...>, index_sequence<Ix...>, Tuple tuple)	// tuple copy
-{
-	return RetType(custom::get<Kx>(custom::get<Ix>(custom::move(tuple)))...);
-}
-
-CUSTOM_DETAIL_END	// apply, make_from_tuple, tuple_cat helpers
-
-
 // forward as tuple
 template<class... Types>
 tuple<Types&&...> forward_as_tuple(Types&&... args)	// Forward arguments in a tuple
@@ -374,11 +381,11 @@ tuple<Types&&...> forward_as_tuple(Types&&... args)	// Forward arguments in a tu
 
 // apply
 template<class Callable, class Tuple>
-decltype(auto) apply(Callable&& func, Tuple&& tuple) noexcept	// Invoke Callable obj with args as tuple
+constexpr auto apply(Callable&& func, Tuple&& tuple)	// Invoke Callable obj with args as tuple
+noexcept(noexcept(detail::_apply_impl(custom::forward<Callable>(func), custom::forward<Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{})))
+-> decltype(detail::_apply_impl(custom::forward<Callable>(func), custom::forward<Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{}))
 {
-    return detail::_apply_impl(	custom::forward<Callable>(func),
-								custom::forward<Tuple>(tuple),
-								make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
+    return detail::_apply_impl(custom::forward<Callable>(func), custom::forward<Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
 }
 
 // make tuple / tie
@@ -397,16 +404,16 @@ tuple<Args&...> tie(Args&... args) noexcept	// Create tuple with references of a
 
 // make_from_tuple
 template<class Type, class Tuple>
-Type make_from_tuple(Tuple&& tuple)	// construct Type from the elements of Tuple
+constexpr Type make_from_tuple(Tuple&& tuple)	// construct Type from the elements of Tuple
+noexcept(noexcept(detail::_make_from_tuple_impl<Type>(custom::forward<Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{})))
 {
-	return detail::_make_from_tuple_impl<Type>(	custom::forward<Tuple>(tuple),
-												make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
+	return detail::_make_from_tuple_impl<Type>(custom::forward<Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
 }
 
 // tuple_cat
 template<class... Tuples>	// concatenate tuples
-typename detail::_Tuple_Cat<tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
-							make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>::_Ret_Type tuple_cat(Tuples&&... tuples)
+constexpr typename detail::_Tuple_Cat<	tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
+										make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>::_Ret_Type tuple_cat(Tuples&&... tuples)
 {	
 	using _Cat		= detail::_Tuple_Cat<	tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
 											make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>;
