@@ -742,4 +742,40 @@ struct allocator_traits<allocator<Type>>		// allocator_traits default
 };	// END allocator_traits default
 #pragma endregion Allocator
 
+
+#pragma region Deleters
+
+template<class Type>
+struct default_delete
+{
+    constexpr default_delete() noexcept = default;
+
+    template<class Type2, enable_if_t<is_convertible_v<Type2*, Type*>, bool> = true>
+    constexpr default_delete(const default_delete<Type2>&) noexcept { /*Empty*/ }
+
+    constexpr void operator()(Type* ptr) const noexcept
+    {
+        static_assert(0 < sizeof(Type), "can't delete an incomplete type");
+        delete ptr;
+    }
+}; // END default_delete
+
+template<class Type>
+struct default_delete<Type[]>
+{
+    constexpr default_delete() noexcept = default;
+
+    template<class Type2, enable_if_t<is_convertible_v<Type2(*)[], Type(*)[]>, bool> = true>
+    constexpr default_delete(const default_delete<Type2[]>&) noexcept { /*Empty*/ }
+
+    template<class Type2, enable_if_t<is_convertible_v<Type2(*)[], Type(*)[]>, bool> = true>
+    constexpr void operator()(Type2* ptr) const noexcept
+    {
+        static_assert(0 < sizeof(Type2), "can't delete an incomplete type");
+        delete[] ptr;
+    }
+}; // END default_delete[]
+
+#pragma endregion Deleters
+
 CUSTOM_END

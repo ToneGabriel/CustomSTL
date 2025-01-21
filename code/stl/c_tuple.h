@@ -20,84 +20,83 @@ template<class... Types>
 class tuple;
 
 // tuple size
-template<class _Tuple>
+template<class Tuple>
 struct tuple_size;
 
 template<class... Elements>
 struct tuple_size<tuple<Elements...>> : integral_constant<size_t, sizeof...(Elements)> {};
 
-template<class _Tuple>
-constexpr size_t tuple_size_v = tuple_size<_Tuple>::value;
+template<class Tuple>
+struct tuple_size<const Tuple> : public tuple_size<Tuple> {};
 
-template<class _Tuple, class NoCV_t = remove_cv_t<_Tuple>, class = enable_if_t<is_same_v<_Tuple, NoCV_t>>, size_t = tuple_size_v<_Tuple>>
-using _EnableTupleSize = _Tuple;
+template<class Tuple>
+struct tuple_size<volatile Tuple> : public tuple_size<Tuple> {};
 
-template<class _Tuple>
-struct tuple_size<const _EnableTupleSize<_Tuple>> : public tuple_size<_Tuple> {};
+template<class Tuple>
+struct tuple_size<const volatile Tuple> : public tuple_size<Tuple> {};
 
-template<class _Tuple>
-struct tuple_size<volatile _EnableTupleSize<_Tuple>> : public tuple_size<_Tuple> {};
+template<class Tuple>
+constexpr size_t tuple_size_v = tuple_size<Tuple>::value;
 
-template<class _Tuple>
-struct tuple_size<const volatile _EnableTupleSize<_Tuple>> : public tuple_size<_Tuple> {};
+// tuple_element
+template<size_t Index, class Tuple>
+struct tuple_element;	// tuple_element prototype for accessing tuple members
 
-// tuple constructible
-template<bool SameSize, class _Tuple, class... Args>
-constexpr bool _Tuple_Constructible_v = false;
-
-template<class... Types, class... Args>						// Each type component from tuple (tuple<Types...>) is constructible with the corresponding argument (copy/move obj)
-constexpr bool _Tuple_Constructible_v<true, tuple<Types...>, Args...> = conjunction_v<is_constructible<Types, Args>...>;
-
-template<class _Tuple, class... Args>						// Check tuple size with given construction arguments then above
-constexpr bool tuple_constructible_v = _Tuple_Constructible_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
-
-template<class _Tuple, class... Args>
-struct tuple_constructible : bool_constant<tuple_constructible_v<_Tuple, Args...>> {};
-
-// tuple assignable
-template<bool SameSize, class _Tuple, class... Args>
-constexpr bool _Tuple_Assignable_v = false;
-
-template<class... Types, class... Args>
-constexpr bool _Tuple_Assignable_v<true, tuple<Types...>, Args...> = conjunction_v<is_assignable<Types&, Args>...>; // note Types& instead of Types
-
-template<class _Tuple, class... Args>
-constexpr bool tuple_assignable_v = _Tuple_Assignable_v<tuple_size_v<_Tuple> == sizeof...(Args), _Tuple, Args...>;
-
-template<class _Tuple, class... Args>
-struct tuple_assignable : bool_constant<tuple_assignable_v<_Tuple, Args...>> {};
-
-// tuple convert
-template<class ThisTuple, class OtherTuple, class... OtherTypes>
-struct tuple_convert : true_type {};
-
-template<class This, class OtherTuple, class OtherType>
-struct tuple_convert<tuple<This>, OtherTuple, OtherType>
-	: bool_constant<!disjunction_v<	is_same<This, OtherType>,
-									is_constructible<This, OtherTuple>,
-									is_convertible<OtherTuple, This>>> {};
-
-// tuple element
-template<size_t Index, class _Tuple>
-struct tuple_element;                                        // tuple_element prototype for accessing tuple members
-
-template<size_t Index, class This, class... Rest>			// Recursive tuple_element implementation
+template<size_t Index, class This, class... Rest>	// Recursive tuple_element implementation
 struct tuple_element<Index, tuple<This, Rest...>> : public tuple_element<Index - 1, tuple<Rest...>> {};
 
 template<class This, class... Rest>
-struct tuple_element<0, tuple<This, Rest...>>				// Default tuple_element implementation
+struct tuple_element<0, tuple<This, Rest...>>	// Default tuple_element implementation
 {
 	using type			= This;
 	using tuple_type	= tuple<This, Rest...>;
 };
 
-template<size_t Index, class _Tuple>
-using tuple_element_t = typename tuple_element<Index, _Tuple>::type;
+template<size_t Index, class Tuple>
+using tuple_element_t = typename tuple_element<Index, Tuple>::type;
 
-template<size_t Index, class _Tuple>
-using tuple_element_tt = typename tuple_element<Index, _Tuple>::tuple_type;
+template<size_t Index, class Tuple>
+using tuple_element_tuple_t = typename tuple_element<Index, Tuple>::tuple_type;
 
-// tuple cat helper
+CUSTOM_DETAIL_BEGIN
+
+// _Is_Tuple_Constructible
+template<bool SameSize, class Tuple, class... Args>
+struct _Is_Tuple_Constructible_Impl : false_type {};
+
+template<class... Types, class... Args>
+struct _Is_Tuple_Constructible_Impl<true, tuple<Types...>, Args...> : conjunction<is_constructible<Types, Args>...> {};
+
+template<class Tuple, class... Args>
+struct _Is_Tuple_Constructible : _Is_Tuple_Constructible_Impl<tuple_size_v<Tuple> == sizeof...(Args), Tuple, Args...> {};
+
+template<class Tuple, class... Args>
+constexpr bool _Is_Tuple_Constructible_v = _Is_Tuple_Constructible<Tuple, Args...>::value;
+
+// _Is_Tuple_Assignable
+template<bool SameSize, class Tuple, class... Args>
+struct _Is_Tuple_Assignable_Impl : false_type {};
+
+template<class... Types, class... Args>
+struct _Is_Tuple_Assignable_Impl<true, tuple<Types...>, Args...> : conjunction<is_assignable<Types&, Args>...> {};
+
+template<class Tuple, class... Args>
+struct _Is_Tuple_Assignable : _Is_Tuple_Assignable_Impl<tuple_size_v<Tuple> == sizeof...(Args), Tuple, Args...> {};
+
+template<class Tuple, class... Args>
+constexpr bool _Is_Tuple_Assignable_v = _Is_Tuple_Assignable<Tuple, Args...>::value;
+
+// _Is_Tuple_Convertible
+template<class ThisTuple, class OtherTuple, class... OtherTypes>
+struct _Is_Tuple_Convertible : true_type {};
+
+template<class This, class OtherTuple, class OtherType>
+struct _Is_Tuple_Convertible<tuple<This>, OtherTuple, OtherType>
+	: bool_constant<!disjunction_v<	is_same<This, OtherType>,
+									is_constructible<This, OtherTuple>,
+									is_convertible<OtherTuple, This>>> {};
+
+// tuple_cat helper
 template<class Type, class KxArg, class IxArg, size_t IxNext, class... Sequences>
 struct _Tuple_Cat;
 
@@ -114,6 +113,7 @@ struct _Tuple_Cat<Type, index_sequence<Kx...>, index_sequence<Ix...>, IxNext, in
 	: _Tuple_Cat<Type, index_sequence<Kx..., KxNext...>, index_sequence<Ix..., (IxNext + 0 * KxNext)...>, // repeat IxNext, ignoring the elements of KxNext
 	IxNext + 1, Rest...> {};
 
+CUSTOM_DETAIL_END
 
 template<>
 class tuple<>												// Default tuple implementation
@@ -138,7 +138,8 @@ public:
 public:
 	// Helpers
 
-	bool _equals(const tuple&) const {
+	bool _equals(const tuple&) const
+	{
         return true;
     }
 };	// END tuple<>
@@ -162,14 +163,14 @@ public:
 		: _Base(_Tuple_Exact_Args_t{}, custom::forward<_Rest>(rest)...), _ThisVal(custom::forward<_This>(first)) { /*Empty*/ }
 	
 	// (H2) Helper for (H3)
-	template<class Tag, class _Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
-	tuple(Tag, _Tuple&& other, index_sequence<Indices...>);		// defined after custom::get()
+	template<class Tag, class Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
+	tuple(Tag, Tuple&& other, index_sequence<Indices...>);		// defined after custom::get()
 
 	// (H3) Helper for (2), (3)
-	template<class Tag, class _Tuple, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
-	tuple(Tag, _Tuple&& other)
-		: tuple(_Tuple_Unpack_t{}, custom::forward<_Tuple>(other),
-				make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}) { /*Empty*/ }	// Uses (H2)
+	template<class Tag, class Tuple, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool> = true>
+	tuple(Tag, Tuple&& other)
+		: tuple(_Tuple_Unpack_t{}, custom::forward<Tuple>(other),
+				make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{}) { /*Empty*/ }	// Uses (H2)
 
 public:
 	// Constructors
@@ -178,37 +179,37 @@ public:
 	template<class _This = This,
 	enable_if_t<conjunction_v<is_default_constructible<_This>, is_default_constructible<Rest>...>, bool> = true>
 	tuple()
-		: _Base(), _ThisVal() { /*Empty*/ }		// Uses itself
+		: _Base(), _ThisVal() { /*Empty*/ }
 
 	// (1) Copy/Move obj constructor
 	template<class _This = This, class... _Rest,
-	enable_if_t<tuple_constructible_v<tuple, _This, _Rest...>, bool> = true>
+	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, _This, _Rest...>, bool> = true>
 	tuple(_This&& first, _Rest&&... rest)
 		: tuple(_Tuple_Exact_Args_t{}, custom::forward<_This>(first), custom::forward<_Rest>(rest)...) { /*Empty*/ }	// Uses (H1)
 
 	// (2) Copy convertible constructor
 	template<class... OtherTypes,
-	enable_if_t<conjunction_v<	tuple_constructible<tuple, const OtherTypes&...>,
-								tuple_convert<tuple, const tuple<OtherTypes...>&, OtherTypes...>>, bool> = true>
+	enable_if_t<conjunction_v<	detail::_Is_Tuple_Constructible<tuple, const OtherTypes&...>,
+								detail::_Is_Tuple_Convertible<tuple, const tuple<OtherTypes...>&, OtherTypes...>>, bool> = true>
 	tuple(const tuple<OtherTypes...>& other)
 		: tuple(_Tuple_Unpack_t{}, other) { /*Empty*/ }	// Uses (H3)
 
 	// (3) Move convertible constructor
 	template<class... OtherTypes,
-	enable_if_t<conjunction_v<	tuple_constructible<tuple, OtherTypes...>,
-								tuple_convert<tuple, tuple<OtherTypes...>, OtherTypes...>>, bool> = true>
+	enable_if_t<conjunction_v<	detail::_Is_Tuple_Constructible<tuple, OtherTypes...>,
+								detail::_Is_Tuple_Convertible<tuple, tuple<OtherTypes...>, OtherTypes...>>, bool> = true>
 	tuple(tuple<OtherTypes...>&& other)
 		: tuple(_Tuple_Unpack_t{}, custom::move(other)) { /*Empty*/ }		// Uses (H3)
 
 	// (4) pair copy constructor
 	template<class first, class second,
-    enable_if_t<tuple_constructible_v<tuple, const first&, const second&>, bool> = true>
+    enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, const first&, const second&>, bool> = true>
     tuple(const pair<first, second>& pair)
 		: tuple(_Tuple_Exact_Args_t{}, pair.first, pair.second) { /*Empty*/ }	// Uses (H1)
 
 	// (5) pair move constructor
     template<class first, class second,
-	enable_if_t<tuple_constructible_v<tuple, first, second>, bool> = true>
+	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, first, second>, bool> = true>
 	tuple(pair<first, second>&& pair)
         : tuple(_Tuple_Exact_Args_t{}, custom::move(pair.first), custom::move(pair.second)) { /*Empty*/ }	// Uses (H1)
 
@@ -222,8 +223,9 @@ public:
 	// Copy convertible operator
     template<class... OtherTypes,
 	enable_if_t<conjunction_v<	negation<is_same<tuple, tuple<OtherTypes...>>>,
-                            	tuple_assignable<tuple, const OtherTypes&...>>, bool> = true>
-    tuple& operator=(const tuple<OtherTypes...>& other) {
+                            	detail::_Is_Tuple_Assignable<tuple, const OtherTypes&...>>, bool> = true>
+    tuple& operator=(const tuple<OtherTypes...>& other)
+	{
         _ThisVal 		= other._ThisVal;
         _get_rest()   	= other._get_rest();
 
@@ -233,8 +235,9 @@ public:
 	// Move convertible operator
     template<class... OtherTypes,
 	enable_if_t<conjunction_v<	negation<is_same<tuple, tuple<OtherTypes...>>>,
-                              	tuple_assignable<tuple, OtherTypes...>>, bool> = true>
-    tuple& operator=(tuple<OtherTypes...>&& other) {
+                              	detail::_Is_Tuple_Assignable<tuple, OtherTypes...>>, bool> = true>
+    tuple& operator=(tuple<OtherTypes...>&& other)
+	{
         _ThisVal 		= custom::forward<typename tuple<OtherTypes...>::_This_Type>(other._ThisVal);
         _get_rest()   	= custom::forward<typename tuple<OtherTypes...>::_Base>(other._get_rest());
 
@@ -242,8 +245,9 @@ public:
     }
 
 	template<class first, class second,
-	enable_if_t<tuple_assignable_v<tuple, const first&, const second&>, bool> = true>
-	tuple& operator=(const pair<first, second>& pair) {
+	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, const first&, const second&>, bool> = true>
+	tuple& operator=(const pair<first, second>& pair)
+	{
 		_ThisVal				= pair.first;
 		_get_rest()._ThisVal	= pair.second;
 
@@ -251,8 +255,9 @@ public:
 	}
 
 	template<class first, class second,
-	enable_if_t<tuple_assignable_v<tuple, first, second>, bool> = true>
-	tuple& operator=(pair<first, second>&& pair) {
+	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, first, second>, bool> = true>
+	tuple& operator=(pair<first, second>&& pair)
+	{
 		_ThisVal				= custom::forward<first>(pair.first);
 		_get_rest()._ThisVal	= custom::forward<second>(pair.second);
 
@@ -266,22 +271,26 @@ public:
 public:
 	// Helpers
 
-    _Base& _get_rest() noexcept { 							// get reference to rest of elements
+    _Base& _get_rest() noexcept	// get reference to rest of elements
+	{
         return *this;
     }
 
-    const _Base& _get_rest() const noexcept { 				// get const reference to rest of elements
+    const _Base& _get_rest() const noexcept
+	{
         return *this;
     }
 
 	template<class... OtherTypes>
-    bool _equals(const tuple<OtherTypes...>& other) const {
+    bool _equals(const tuple<OtherTypes...>& other) const
+	{
         return _ThisVal == other._ThisVal && _Base::_equals(other._get_rest());
     }
 };	// END tuple<This, Rest...>
 
 template<class... Types1, class... Types2>
-constexpr bool operator==(const tuple<Types1...>& left, const tuple<Types2...>& right) {
+constexpr bool operator==(const tuple<Types1...>& left, const tuple<Types2...>& right)
+{
     static_assert(sizeof...(Types1) == sizeof...(Types2), "cannot compare tuples of different sizes");
     return left._equals(right);
 }
@@ -289,60 +298,67 @@ constexpr bool operator==(const tuple<Types1...>& left, const tuple<Types2...>& 
 
 // get
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj) {				// Function to get Tuple member from reference
-	using tuple_type = tuple_element_tt<Index, tuple<Types...>>;
+tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj)	// Function to get Tuple member from reference
+{
+	using _Tuple_Type = tuple_element_tuple_t<Index, tuple<Types...>>;
 
-	return static_cast<tuple_type&>(tupleObj)._ThisVal;
+	return static_cast<_Tuple_Type&>(tupleObj)._ThisVal;
 }
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj) {		// Same but const
-	using tuple_type = tuple_element_tt<Index, tuple<Types...>>;
+const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj)
+{
+	using _Tuple_Type = tuple_element_tuple_t<Index, tuple<Types...>>;
 
-	return static_cast<const tuple_type&>(tupleObj)._ThisVal;
+	return static_cast<const _Tuple_Type&>(tupleObj)._ThisVal;
 }
 
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj) {					// Function to get tuple member from rval
-	using type			= tuple_element_t<Index, tuple<Types...>>;
-	using tuple_type 	= tuple_element_tt<Index, tuple<Types...>>;
+tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj)	// Function to get tuple member from rval
+{
+	using _Type			= tuple_element_t<Index, tuple<Types...>>;
+	using _Tuple_Type	= tuple_element_tuple_t<Index, tuple<Types...>>;
 
-	return static_cast<type&&>(static_cast<tuple_type&>(tupleObj)._ThisVal);
+	return static_cast<_Type&&>(static_cast<_Tuple_Type&>(tupleObj)._ThisVal);
 }
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj) {		// Same but const
-	using type			= tuple_element_t<Index, tuple<Types...>>;
-	using tuple_type 	= tuple_element_tt<Index, tuple<Types...>>;
+const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj)
+{
+	using _Type			= tuple_element_t<Index, tuple<Types...>>;
+	using _Tuple_Type	= tuple_element_tuple_t<Index, tuple<Types...>>;
 
-	return static_cast<const type&&>(static_cast<const tuple_type&>(tupleObj)._ThisVal);
+	return static_cast<const _Type&&>(static_cast<const _Tuple_Type&>(tupleObj)._ThisVal);
 }
 
 // (H2) Constructor helper defined here because of custom::get()
 template<class This, class... Rest>
-template<class Tag, class _Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool>>
-tuple<This, Rest...>::tuple(Tag, _Tuple&& other, index_sequence<Indices...>)
-	: tuple(_Tuple_Exact_Args_t{}, custom::get<Indices>(custom::forward<_Tuple>(other))...) { /*Empty*/ }	// Uses (H1)
+template<class Tag, class Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, _Tuple_Unpack_t>, bool>>
+tuple<This, Rest...>::tuple(Tag, Tuple&& other, index_sequence<Indices...>)
+	: tuple(_Tuple_Exact_Args_t{}, custom::get<Indices>(custom::forward<Tuple>(other))...) { /*Empty*/ }	// Uses (H1)
 
 
 CUSTOM_DETAIL_BEGIN		// apply, make_from_tuple, tuple_cat helpers
 
 // apply
-template<class Callable, class _Tuple, size_t... Indices>
-decltype(auto) _apply_impl(Callable&& func, _Tuple&& tuple, index_sequence<Indices...>) noexcept {
-    return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<_Tuple>(tuple))...);
+template<class Callable, class Tuple, size_t... Indices>
+decltype(auto) _apply_impl(Callable&& func, Tuple&& tuple, index_sequence<Indices...>) noexcept
+{
+    return custom::invoke(custom::forward<Callable>(func), custom::get<Indices>(custom::forward<Tuple>(tuple))...);
 }
 
 // make from tuple
-template<class Type, class _Tuple, size_t... Indices>
-Type _make_from_tuple_impl(_Tuple&& tuple, index_sequence<Indices...>) {
-	static_assert(is_constructible_v<Type, decltype(custom::get<Indices>(custom::forward<_Tuple>(tuple)))...>, "The target type must be constructible using the arguments in tuple.");
-	return Type(custom::get<Indices>(custom::forward<_Tuple>(tuple))...);
+template<class Type, class Tuple, size_t... Indices>
+Type _make_from_tuple_impl(Tuple&& tuple, index_sequence<Indices...>)
+{
+	static_assert(is_constructible_v<Type, decltype(custom::get<Indices>(custom::forward<Tuple>(tuple)))...>, "The target type must be constructible using the arguments in tuple.");
+	return Type(custom::get<Indices>(custom::forward<Tuple>(tuple))...);
 }
 
 // tuple cat
-template<class RetType, size_t... Kx, size_t... Ix, class _Tuple>
-RetType _tuple_cat_impl(index_sequence<Kx...>, index_sequence<Ix...>, _Tuple tuple) {		// tuple as copy
+template<class RetType, size_t... Kx, size_t... Ix, class Tuple>
+RetType _tuple_cat_impl(index_sequence<Kx...>, index_sequence<Ix...>, Tuple tuple)	// tuple copy
+{
 	return RetType(custom::get<Kx>(custom::get<Ix>(custom::move(tuple)))...);
 }
 
@@ -351,44 +367,53 @@ CUSTOM_DETAIL_END	// apply, make_from_tuple, tuple_cat helpers
 
 // forward as tuple
 template<class... Types>
-tuple<Types&&...> forward_as_tuple(Types&&... args) {									// Forward arguments in a tuple
+tuple<Types&&...> forward_as_tuple(Types&&... args)	// Forward arguments in a tuple
+{
 	return tuple<Types&&...>(custom::forward<Types>(args)...);
 }
 
 // apply
-template<class Callable, class _Tuple>
-decltype(auto) apply(Callable&& func, _Tuple&& tuple) noexcept {						// Invoke Callable obj with args as tuple
-    return detail::_apply_impl(custom::forward<Callable>(func), custom::forward<_Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
+template<class Callable, class Tuple>
+decltype(auto) apply(Callable&& func, Tuple&& tuple) noexcept	// Invoke Callable obj with args as tuple
+{
+    return detail::_apply_impl(	custom::forward<Callable>(func),
+								custom::forward<Tuple>(tuple),
+								make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
 }
 
 // make tuple / tie
 template<class... Args>
-tuple<unrefwrap_t<Args>...> make_tuple(Args&&... args) {								// Create tuple with args
+tuple<unrefwrap_t<Args>...> make_tuple(Args&&... args)	// Create tuple with args
+{
 	return tuple<unrefwrap_t<Args>...>(custom::forward<Args>(args)...);
 }
 
 // tie
 template<class... Args>
-tuple<Args&...> tie(Args&... args) noexcept {											// Create tuple with references of args
+tuple<Args&...> tie(Args&... args) noexcept	// Create tuple with references of args
+{
 	return tuple<Args&...>(args...);
 }
 
 // make_from_tuple
-template<class Type, class _Tuple>
-Type make_from_tuple(_Tuple&& tuple) {													// construct Type from the elements of _Tuple
-	return detail::_make_from_tuple_impl<Type>(custom::forward<_Tuple>(tuple), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
+template<class Type, class Tuple>
+Type make_from_tuple(Tuple&& tuple)	// construct Type from the elements of Tuple
+{
+	return detail::_make_from_tuple_impl<Type>(	custom::forward<Tuple>(tuple),
+												make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{});
 }
 
 // tuple_cat
-template<class... Tuples>																// concatenate tuples
-typename _Tuple_Cat<tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
-					make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>::_Ret_Type tuple_cat(Tuples&&... tuples) {
-	
-	using Cat		= _Tuple_Cat<tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
-								make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>;
-	using _Ret_Type	= typename Cat::_Ret_Type;
-	using _KxSeq	= typename Cat::_KxSeq;
-	using _IxSeq	= typename Cat::_IxSeq;
+template<class... Tuples>	// concatenate tuples
+typename detail::_Tuple_Cat<tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
+							make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>::_Ret_Type tuple_cat(Tuples&&... tuples)
+{	
+	using _Cat		= detail::_Tuple_Cat<	tuple<Tuples&&...>, index_sequence<>, index_sequence<>, 0,
+											make_index_sequence<tuple_size_v<remove_cv_ref_t<Tuples>>>...>;
+
+	using _Ret_Type	= typename _Cat::_Ret_Type;
+	using _KxSeq	= typename _Cat::_KxSeq;
+	using _IxSeq	= typename _Cat::_IxSeq;
 
 	return detail::_tuple_cat_impl<_Ret_Type>(_KxSeq{}, _IxSeq{}, custom::forward_as_tuple(custom::forward<Tuples>(tuples)...));
 }
