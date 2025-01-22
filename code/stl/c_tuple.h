@@ -60,19 +60,16 @@ using tuple_element_tuple_t = typename tuple_element<Index, Tuple>::tuple_type;
 
 // get
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj);
+constexpr tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj) noexcept;
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj);
+constexpr const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj) noexcept;
 
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj);
+constexpr tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj) noexcept;
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj);
-
-template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj);
+constexpr const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj) noexcept;
 
 CUSTOM_DETAIL_BEGIN
 
@@ -189,10 +186,25 @@ template<class This, class... Rest>
 class tuple<This, Rest...> : public tuple<Rest...>			// Recursive tuple implementation
 {
 public:
+	// Friends
+
+	template<int Index, class... Types>
+	friend constexpr tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj) noexcept;
+
+	template<int Index, class... Types>
+	friend constexpr const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj) noexcept;
+
+	template<int Index, class... Types>
+	friend constexpr tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj) noexcept;
+
+	template<int Index, class... Types>
+	friend constexpr const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj) noexcept;
+
+private:
 	using _This_Type	= This;
 	using _Base			= tuple<Rest...>;
 
-	_This_Type _ThisVal;											// Data stored to this iteration
+	_This_Type _ThisVal;	// Data stored to this iteration
 
 public:
 	// Construction Helpers
@@ -339,7 +351,7 @@ constexpr bool operator==(const tuple<Types1...>& left, const tuple<Types2...>& 
 
 // get
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj)	// Function to get Tuple member from reference
+constexpr tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj) noexcept	// Function to get Tuple member from reference
 {
 	using _Tuple_Type = tuple_element_tuple_t<Index, tuple<Types...>>;
 
@@ -347,7 +359,7 @@ tuple_element_t<Index, tuple<Types...>>& get(tuple<Types...>& tupleObj)	// Funct
 }
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj)
+constexpr const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleObj) noexcept
 {
 	using _Tuple_Type = tuple_element_tuple_t<Index, tuple<Types...>>;
 
@@ -355,7 +367,7 @@ const tuple_element_t<Index, tuple<Types...>>& get(const tuple<Types...>& tupleO
 }
 
 template<int Index, class... Types>
-tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj)	// Function to get tuple member from rval
+constexpr tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj) noexcept	// Function to get tuple member from rval
 {
 	using _Type			= tuple_element_t<Index, tuple<Types...>>;
 	using _Tuple_Type	= tuple_element_tuple_t<Index, tuple<Types...>>;
@@ -364,7 +376,7 @@ tuple_element_t<Index, tuple<Types...>>&& get(tuple<Types...>&& tupleObj)	// Fun
 }
 
 template<int Index, class... Types>
-const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj)
+constexpr const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupleObj) noexcept
 {
 	using _Type			= tuple_element_t<Index, tuple<Types...>>;
 	using _Tuple_Type	= tuple_element_tuple_t<Index, tuple<Types...>>;
@@ -374,7 +386,7 @@ const tuple_element_t<Index, tuple<Types...>>&& get(const tuple<Types...>&& tupl
 
 // forward as tuple
 template<class... Types>
-tuple<Types&&...> forward_as_tuple(Types&&... args)	// Forward arguments in a tuple
+constexpr tuple<Types&&...> forward_as_tuple(Types&&... args) noexcept	// Forward arguments in a tuple
 {
 	return tuple<Types&&...>(custom::forward<Types>(args)...);
 }
