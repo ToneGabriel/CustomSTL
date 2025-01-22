@@ -7,6 +7,8 @@
 
 CUSTOM_BEGIN
 
+#define _LOCAL_UINT_IS_ZERO_LAMBDA(var) [this]() -> bool { return var == 0; }
+
 enum class cv_status
 {
     no_timeout,
@@ -203,16 +205,6 @@ public:
 }; // END condition_variable_any
 
 
-struct _UINT_Is_Zero   // used as predicate in timed_mutex/recursive_timed_mutex::try_lock_until
-{
-    const unsigned int& _UInt;
-
-    bool operator()() const
-    {
-        return _UInt == 0;
-    }
-};
-
 class timed_mutex
 {
 public:
@@ -273,7 +265,7 @@ public:
     {
         unique_lock<mutex> lock(_mutex);
 
-        if (_cv.wait_until(lock, absoluteTime, _UINT_Is_Zero{_locked}) == false)
+        if (_cv.wait_until(lock, absoluteTime, _LOCAL_UINT_IS_ZERO_LAMBDA(_locked)) == false)
             return false;
 
         _locked = UINT_MAX;
@@ -390,7 +382,7 @@ public:
                 return false;
         else
         {
-            if (!_cv.wait_until(lock, absoluteTime, _UINT_Is_Zero{_locked}))
+            if (!_cv.wait_until(lock, absoluteTime, _LOCAL_UINT_IS_ZERO_LAMBDA(_locked)))
                 return false;
 
             _locked = 1;
@@ -412,6 +404,8 @@ public:
         return _mutex.native_handle();
     }
 }; // END recursive_timed_mutex
+
+#undef _LOCAL_UINT_IS_ZERO_LAMBDA // available only here
 
 CUSTOM_END
 

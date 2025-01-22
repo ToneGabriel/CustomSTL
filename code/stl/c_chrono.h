@@ -41,13 +41,15 @@ public:
     template<class _Rep,
     enable_if_t< is_convertible_v<const _Rep&, rep> && 
                 (is_floating_point_v<rep> || !is_floating_point_v<_Rep>), bool> = true>
-    constexpr explicit duration(const _Rep& val) noexcept(is_arithmetic_v<rep> && is_arithmetic_v<_Rep>)
+    constexpr explicit duration(const _Rep& val)
+    noexcept(is_arithmetic_v<rep> && is_arithmetic_v<_Rep>)
         : _rep(static_cast<rep>(val)) { /*Empty*/ }
 
     template<class _Rep, class _Period,
     enable_if_t< is_floating_point_v<rep> ||
-                (_Ratio_Divide_Sfinae<_Period, period>::den == 1 && !is_floating_point_v<_Rep>), bool> = true>
-    constexpr duration(const duration<_Rep, _Period>& other) noexcept(is_arithmetic_v<rep> && is_arithmetic_v<_Rep>)
+                (ratio_divide<_Period, period>::den == 1 && !is_floating_point_v<_Rep>), bool> = true>
+    constexpr duration(const duration<_Rep, _Period>& other)
+    noexcept(is_arithmetic_v<rep> && is_arithmetic_v<_Rep>)
         : _rep(custom::chrono::duration_cast<duration>(other).count()) { /*Empty*/ }
 
 public:
