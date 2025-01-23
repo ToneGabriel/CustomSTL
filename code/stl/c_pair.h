@@ -11,7 +11,7 @@ constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
 
 
 template<class Type1, class Type2>
-class pair
+struct pair
 {
 public:
     using first_type    = Type1;
@@ -20,7 +20,7 @@ public:
     first_type first;
     second_type second;
 
-public: // TODO: check public
+protected:
     // Constructor Helpers
 
     // (H1) Helper for (5)
