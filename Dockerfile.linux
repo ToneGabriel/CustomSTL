@@ -1,27 +1,24 @@
 # Use an official Ubuntu as a parent image
 FROM ubuntu:latest
 
-# Install dependencies
-RUN apt-get update
-RUN apt-get install -y build-essential
-RUN apt-get install -y cmake
-RUN apt-get install -y git
-
-# Clear files
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/*
+# Install dependencies and clear files
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/customstl
 
-# Copy the current directory contents into the container at /usr/src/app
-#COPY . .
+# Copy the current directory contents into the container at current working dir (ignor files in .dockerignore)
+COPY . .
 
-# Run CMake to configure the project
-#RUN cmake .
-
-# Build the project
-#RUN make
+# Run CMake to configure the project and build it (-G "Unix Makefiles")
+RUN cmake -G "Ninja" -B build && \
+    cmake --build build
 
 # Define the command to run the application
-# CMD ["./your_application_executable"]
+CMD ["./build/bin/CustomSTL"]

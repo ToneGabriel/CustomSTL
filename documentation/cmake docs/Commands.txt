@@ -31,8 +31,8 @@ add_subdirectory(code)
 add_subdirectory(app)
 
 # Variables
-set(LIBRARY_NAME "ProjectLib")
-${LIBRARY_NAME} # to use it
+set(PROJECT_LIBRARY_NAME "ProjectLib")
+${PROJECT_LIBRARY_NAME} # to use it
 
 # Redefine CMake existing variables
 set(CMAKE_CXX_STANDARD 20)

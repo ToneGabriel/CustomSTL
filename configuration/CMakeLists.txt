@@ -5,4 +5,4 @@ configure_file(
     "Config.hpp.in"
     "${CONFIG_INCLUDE_DIRECTORY}/Config.hpp" ESCAPE_QUOTES
 )
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CONFIG_INCLUDE_DIRECTORY})
+target_include_directories(${PROJECT_LIBRARY_NAME} PUBLIC ${CONFIG_INCLUDE_DIRECTORY})

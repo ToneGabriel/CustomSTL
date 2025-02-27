@@ -1,1 +1,1 @@
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CURRENT_DIRECTORY})
+target_include_directories(${PROJECT_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

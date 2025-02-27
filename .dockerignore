@@ -76,4 +76,12 @@ x64/
 *.sh
 *.bat
 
+# GIT
+.git
+*.gitignore
+*.gitattributes
+
 # Others
+Jenkinsfile
+Dockerfile
+Dockerfile.linux
