@@ -4,7 +4,7 @@
 #include <climits>
 #include <iostream>     // debugging
 
-#include "Config.hpp"   // project configuration
+#include "CustomSTLConfig.hpp"   // project configuration
 
 
 #define CUSTOM_BEGIN namespace custom { // gloabal namespace for this project
@@ -38,7 +38,8 @@ CUSTOM_BEGIN
 
 CUSTOM_DETAIL_BEGIN // create the "detail" namespace inside "custom" namespace
 
-inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line) {
+inline void __Assert(bool expr, const char* msg, const char* exprStr, const char* file, int line)
+{
     if (!expr)
     {
         std::cerr   << "Assert failed:\t"   << msg << "\n"

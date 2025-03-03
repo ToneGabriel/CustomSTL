@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.22.1 FATAL_ERROR)
 project(
     CustomSTL
     VERSION 1.0.0
-    LANGUAGES C CXX)
+    LANGUAGES C CXX
+)
 
 # Languages
 set(CMAKE_C_STANDARD            17)
@@ -29,3 +30,9 @@ add_library(${PROJECT_LIBRARY_NAME} STATIC)
 add_subdirectory(configuration)
 add_subdirectory(code)
 add_subdirectory(app)
+
+# CPack settings
+set(CPACK_GENERATOR "ZIP")
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+include(CPack)
