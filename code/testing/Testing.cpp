@@ -3,36 +3,43 @@
 
 TEST_BEGIN
 
-Test::Test() {
+Test::Test()
+{
 	std::cout << "Default Construct\n";
 }
 
-Test::Test(int x) {
+Test::Test(int x)
+{
 	TestValue = x;
 	std::cout << "Custom Construct " << TestValue << '\n';
 }
 
-Test::Test(const Test& other) {
+Test::Test(const Test& other)
+{
 	TestValue = other.TestValue;
 	std::cout << "Copy Construct " << TestValue << '\n';
 }
 
-Test::Test(Test&& other) noexcept {
+Test::Test(Test&& other) noexcept
+{
 	TestValue = custom::move(other.TestValue);
 	std::cout << "Move Construct " << TestValue << '\n';
 }
 
-Test::~Test() {
+Test::~Test()
+{
 	std::cout << "Destruct " << TestValue << '\n';
 }
 
-Test& Test::operator=(const Test& other) {
+Test& Test::operator=(const Test& other)
+{
 	TestValue = other.TestValue;
 	std::cout << "Copy Assign " << TestValue << '\n';
 	return *this;
 }
 
-Test& Test::operator=(Test&& other) noexcept {
+Test& Test::operator=(Test&& other) noexcept
+{
 	TestValue = custom::move(other.TestValue);
 	std::cout << "Move Assign " << TestValue << '\n';
 	return *this;
@@ -50,28 +57,33 @@ void Test::operator()() const {
 	std::cout << "TestValue= " << TestValue << '\n';
 }
 
-std::ostream& operator<<(std::ostream& os, const Test& test) {
+std::ostream& operator<<(std::ostream& os, const Test& test)
+{
 	os << "TestValue = " << test.TestValue;
 	return os;
 }
 
-bool operator<(const Test& test1, const Test& test2) {
+bool operator<(const Test& test1, const Test& test2)
+{
 	return test1.TestValue < test2.TestValue;
 }
 
-int Test::test_function(int x) {
+int Test::test_function(int x)
+{
 	return x;
 }
 
 
-void print_sequence_test() {
+void print_sequence_test()
+{
 	print_sequence(custom::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
 	print_sequence(custom::make_integer_sequence<int, 20>{});
 	print_sequence(custom::make_index_sequence<10>{});
 	print_sequence(custom::index_sequence_for<float, std::iostream, char>{});
 }
 
-void piecewise_pair_test() {
+void piecewise_pair_test()
+{
 	 custom::pair<int, Test> p(
 		 custom::piecewise_construct,
 		 custom::forward_as_tuple(3),
@@ -80,7 +92,8 @@ void piecewise_pair_test() {
 	std::cout << p.first << ' ' << p.second << '\n';
 }
 
-void tuple_test() {
+void tuple_test()
+{
 	{
 		std::tuple<int, Test> tuple1(3, Test(3));
 		std::tuple<Test, int, float> tuple2(Test(3), 3, 3.3);
@@ -100,7 +113,8 @@ void tuple_test() {
 	}
 }
 
-void list_test() {
+void list_test()
+{
 	custom::list<Test> list;
 	custom::list<Test> list1;
 
@@ -127,7 +141,8 @@ void list_test() {
 		std::cout << *it << '\n';
 }
 
-void forward_list_test() {
+void forward_list_test()
+{
 	custom::forward_list<Test> flist;
 	flist.emplace_front(1);
 	flist.emplace_front(2);
@@ -137,7 +152,8 @@ void forward_list_test() {
 		std::cout << val << '\n';
 }
 
-void unordered_map_test() {
+void unordered_map_test()
+{
 	custom::unordered_map<int, custom::string> map;
 
 	map[10] = "abc";
@@ -157,7 +173,8 @@ void unordered_map_test() {
 		std::cout << val.first << ' ' << val.second << '\n';
 }
 
-void unordered_set_test() {
+void unordered_set_test()
+{
 	custom::unordered_set<custom::string> set;
 	custom::unordered_set<custom::string> set1;
 
@@ -171,7 +188,8 @@ void unordered_set_test() {
 	set.print_details();
 }
 
-void map_test() {
+void map_test()
+{
 	custom::map<int, int> map;
 
 	map.emplace(5, 5);
@@ -209,7 +227,8 @@ void map_test() {
 		std::cout << val.first << ' ' << val.second << '\n';
 }
 
-void deque_test() {
+void deque_test()
+{
 	custom::deque<int> dq;
 	dq.emplace_back(0);
 	dq.emplace_back(1);
@@ -229,7 +248,8 @@ void deque_test() {
 	dq.print_details();
 }
 
-void queue_test() {
+void queue_test()
+{
 	custom::queue<Test> q;
 
 	for (size_t i = 0; i < 50; ++i)
@@ -242,7 +262,8 @@ void queue_test() {
 	}
 }
 
-void priority_queue_test() {
+void priority_queue_test()
+{
 	custom::priority_queue<int> pq;
 
 	pq.emplace(0);
@@ -264,7 +285,8 @@ void priority_queue_test() {
 	}
 }
 
-void stack_test() {
+void stack_test()
+{
 	custom::stack<int> s;
 
 	s.push(0);
@@ -279,7 +301,8 @@ void stack_test() {
 	}
 }
 
-void vector_test() {
+void vector_test()
+{
 	custom::vector<int> v;
 	v.emplace_back(0);
 	v.emplace_back(1);
@@ -294,7 +317,8 @@ void vector_test() {
 	std::cout << v1.size() << ' ' << v1.capacity() << '\n';
 }
 
-void string_test() {
+void string_test()
+{
 	custom::string s("abcd");
 	custom::string s1("abcd");
 	s.insert(++s.begin(),s1.begin(),--s1.end());
@@ -307,7 +331,8 @@ void string_test() {
 	s.print_details();
 }
 
-void string_view_test() {
+void string_view_test()
+{
 	custom::string str = "cdef";
 	custom::string_view sv1 = "abcdef";
 	custom::string_view sv2(str);
@@ -320,7 +345,8 @@ void string_view_test() {
 	std::cout << str1 << '\n';
 }
 
-void array_test() {
+void array_test()
+{
 	custom::array<Test, 5> arr;
 	arr.fill(Test(3));
 
@@ -328,19 +354,22 @@ void array_test() {
 		std::cout << val << '\n';
 }
 
-void function_test() {
+void function_test()
+{
 	custom::function<void()> fct1(unordered_map_test);
 	custom::function<void()> fct2(Test{});
 	fct1.swap(fct2);
 	fct1();
 }
 
-void invoke_test() {
+void invoke_test()
+{
 	Test t;
 	std::cout << custom::invoke(&Test::test_function, t, 3) << '\n';
 }
 
-void memory_test() {
+void memory_test()
+{
 	// unique_ptr===============
 	//custom::unique_ptr<Test> up = custom::make_unique<Test>(3);
 
@@ -356,7 +385,8 @@ void memory_test() {
     std::cout << '\n';
 }
 
-void chrono_test() {
+void chrono_test()
+{
 	{
 		using namespace std::chrono;
 		//using namespace std::chrono_literals;
@@ -389,7 +419,8 @@ void chrono_test() {
 	}
 }
 
-void complex_test() {
+void complex_test()
+{
 	std::complex<float> cf(3.5, 8.0);
 
 	std::cout << "number= " << cf.real() << '\n' << cf.imag() << '\n';
@@ -457,7 +488,8 @@ void complex_test() {
 	std::cout << "atanh= " 	<< custom::atanh(cf1) << '\n';
 }
 
-void bitset_test() {
+void bitset_test()
+{
 	std::string str1 = "aBaaBBaB";
     std::bitset<8> bs1(str1, 0, str1.size(), 'a', 'B');
 	std::cout << bs1 << '\n' << bs1.count() << '\n';

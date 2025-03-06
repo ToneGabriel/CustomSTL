@@ -66,7 +66,8 @@ void _Employee::assign_lunch_partner(_Employee &e1, _Employee &e2)
 }
 
 // actual thread test functions
-void lock_locks_test() {
+void lock_locks_test()
+{
     _Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
  
     // assign in parallel threads because mailing users about lunch assignments takes a long time
@@ -85,14 +86,17 @@ void lock_locks_test() {
                 << dave.output()        << '\n';
 }
 
-void thread_test() {
+void thread_test()
+{
 	std::cout << custom::this_thread::get_id();
 	custom::thread t(test::deque_test);
 	t.join();
 }
 
-void semaphore_test() {
-    auto semaphore_test_task = [](int id, custom::counting_semaphore<>& sem) {
+void semaphore_test()
+{
+    auto semaphore_test_task = [](int id, custom::counting_semaphore<>& sem)
+    {
         // custom::chrono::system_clock::now() + custom::chrono::Milliseconds(2000);
         // custom::chrono::Milliseconds(2000);
 
@@ -109,7 +113,7 @@ void semaphore_test() {
             // If unable to acquire the semaphore within the timeout
             std::cout << "Task " << id << " couldn't acquire the semaphore within the timeout." << std::endl;
         }
-    };  // semaphore task
+    };  // semaphore_test_task
 
 	const int numTasks = 3;
     custom::counting_semaphore<> semaphore(2); // Initialize semaphore with a count of 2
@@ -124,8 +128,10 @@ void semaphore_test() {
         tasks[i].join();
 }
 
-void timed_mutex_test() {
-    auto timed_mutex_test_task = [](int id, custom::timed_mutex& mtx) {
+void timed_mutex_test()
+{
+    auto timed_mutex_test_task = [](int id, custom::timed_mutex& mtx)
+    {
         // Try to acquire the timed mutex for 3 seconds
         if (mtx.try_lock_for(custom::chrono::seconds(3)))
         {
@@ -138,7 +144,7 @@ void timed_mutex_test() {
         }
         else
             std::cout << "thread " << id << " couldn't acquire the timed mutex within 3 seconds." << std::endl;
-    };  // task for timed mutex
+    };  // timed_mutex_test_task
 
     custom::timed_mutex mtx;
     custom::thread t1(timed_mutex_test_task, 1, custom::ref(mtx));
@@ -148,12 +154,13 @@ void timed_mutex_test() {
     t2.join();
 }
 
-void recursive_timed_mutex_test() {
+void recursive_timed_mutex_test()
+{
     auto recursive_timed_mutex_test_task = [] ( int id, int depth,
                                                 custom::recursive_timed_mutex& rmtx,
                                                 auto&& recursive_timed_mutex_test_task
-                                                /* for recursive lambda */) {
-
+                                                /* for recursive lambda */)
+    {
         if (depth <= 0)
             return;
 
@@ -174,7 +181,7 @@ void recursive_timed_mutex_test() {
         }
         else
             std::cout << "thread " << id << " couldn't acquire the recursive timed mutex within 3 seconds." << std::endl;
-    };  // task for recursive timed mutex
+    };  // recursive_timed_mutex_test_task
 
 	custom::recursive_timed_mutex rmtx;
     custom::thread t1(recursive_timed_mutex_test_task, 1, 3, custom::ref(rmtx), recursive_timed_mutex_test_task);
@@ -184,8 +191,10 @@ void recursive_timed_mutex_test() {
     t2.join();
 }
 
-void condition_variable_any_test() {
-    auto cva_producer = [](custom::condition_variable_any& cva, custom::mutex& mtx, bool& dataReady) {
+void condition_variable_any_test()
+{
+    auto cva_producer = [](custom::condition_variable_any& cva, custom::mutex& mtx, bool& dataReady)
+    {
         std::cout << "Producer is working..." << std::endl;
         custom::this_thread::sleep_for(custom::chrono::seconds(2)); // Simulating some work
         
@@ -196,9 +205,10 @@ void condition_variable_any_test() {
 
         std::cout << "Producer: Data is ready!" << std::endl;
         cva.notify_one(); // Notify the consumer that data is ready
-    };  // producer task
+    };  // cva_producer
 
-    auto cva_consumer = [](custom::condition_variable_any& cva, custom::mutex& mtx, bool& dataReady) {
+    auto cva_consumer = [](custom::condition_variable_any& cva, custom::mutex& mtx, bool& dataReady)
+    {
         std::cout << "Consumer is waiting..." << std::endl;
         custom::unique_lock<custom::mutex> lock(mtx);
 
@@ -211,7 +221,7 @@ void condition_variable_any_test() {
         else    // Timeout occurred
             std::cout << "Consumer: Timeout! Data is not ready within 3 seconds." << std::endl;
 #endif  // 0/1
-    };  // consumer task
+    };  // cva_consumer
 
     custom::condition_variable_any cva;
     custom::mutex mtx;
@@ -224,20 +234,23 @@ void condition_variable_any_test() {
     consumerThread.join();
 }
 
-void shared_mutex_test() {
+void shared_mutex_test()
+{
     int sharedData      = 0;        // critical resource
     int storedData[40]  = {-1};     // output ("safe" to share)
 
-    auto writer = [&](custom::shared_mutex& smtx) {
+    auto writer = [&](custom::shared_mutex& smtx)
+    {
         custom::lock_guard<custom::shared_mutex> lock(smtx);  // exclusive
         ++sharedData;                                       // modify data
-    };
+    };  // writer
 
-    auto reader = [&](custom::shared_mutex& smtx, int current) {
+    auto reader = [&](custom::shared_mutex& smtx, int current)
+    {
         custom::shared_lock<custom::shared_mutex> lock(smtx); // shared
         storedData[current] = sharedData;                   // read data
         //custom::this_thread::sleep_for(custom::chrono::Milliseconds(100));
-    };
+    };  // reader
 
     custom::vector<custom::thread> threads;
     custom::shared_mutex smtx;
@@ -263,20 +276,23 @@ void shared_mutex_test() {
     std::cout << "\nShared Data= " << sharedData << '\n';
 }
 
-void shared_timed_mutex_test() {
+void shared_timed_mutex_test()
+{
     int sharedData      = 0;        // critical resource
     int storedData[40]  = {-1};     // output ("safe" to share)
 
-    auto writer = [&](custom::shared_timed_mutex& stmtx) {
+    auto writer = [&](custom::shared_timed_mutex& stmtx)
+    {
         custom::unique_lock<custom::shared_timed_mutex> lock(stmtx, custom::chrono::seconds(2));  // exclusive (try_lock_for)
         ++sharedData;                                       // modify data
-    };
+    };  // writer
 
-    auto reader = [&](custom::shared_timed_mutex& stmtx, int current) {
+    auto reader = [&](custom::shared_timed_mutex& stmtx, int current)
+    {
         custom::shared_lock<custom::shared_timed_mutex> lock(stmtx, custom::chrono::seconds(1)); // shared (try_lock_shared_for)
         storedData[current] = sharedData;                   // read data
         custom::this_thread::sleep_for(custom::chrono::milliseconds(2000));
-    };
+    };  // reader
 
     custom::vector<custom::thread> threads;
     custom::shared_timed_mutex stmtx;

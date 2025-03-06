@@ -70,7 +70,8 @@ void print_sequence(custom::integer_sequence<T, ints...> int_seq)
 }
 
 template<class Type>
-void print_numeric_limits_statics() {
+void print_numeric_limits_statics()
+{
 	std::cout << std::numeric_limits<Type>::round_style			<< ' ' << custom::numeric_limits<Type>::RoundStyle << '\n';
 	std::cout << std::numeric_limits<Type>::has_denorm			<< ' ' << custom::numeric_limits<Type>::HasDenorm << '\n';
 	std::cout << std::numeric_limits<Type>::has_denorm_loss		<< ' ' << custom::numeric_limits<Type>::HasDenormLoss << '\n';
@@ -97,7 +98,8 @@ void print_numeric_limits_statics() {
 }
 
 template<class Type>
-void print_numeric_limits_functions() {
+void print_numeric_limits_functions()
+{
 	std::cout << (std::numeric_limits<Type>::min)()				<< ' ' << (custom::numeric_limits<Type>::min)() << '\n';
 	std::cout << (std::numeric_limits<Type>::max)()				<< ' ' << (custom::numeric_limits<Type>::max)() << '\n';
 	std::cout << std::numeric_limits<Type>::lowest()			<< ' ' << custom::numeric_limits<Type>::lowest() << '\n';
