@@ -20,16 +20,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Names
-set(PROJECT_LIBRARY_NAME    "CustomSTLProjectLibrary")
-set(PROJECT_EXECUTABLE_NAME "CustomSTL")
+set(TEST_LIBRARY_NAME       "CustomSTLTestLibrary")
+set(TEST_EXECUTABLE_NAME    "CustomSTLTest")
 
-# Create project library (link executable and other cpp files to this)
-add_library(${PROJECT_LIBRARY_NAME} STATIC)
+# Create test library (test - link executable and other cpp files to this)
+add_library(${TEST_LIBRARY_NAME} STATIC)
 
 # CMakeLists subdirectory config
-add_subdirectory(configuration)
+add_subdirectory(config)
 add_subdirectory(code)
-add_subdirectory(app)
+add_subdirectory(test)
 
 # CPack settings
 set(CPACK_GENERATOR "ZIP")

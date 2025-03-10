@@ -1,2 +1,3 @@
-add_subdirectory(stl)
-add_subdirectory(testing)
+target_include_directories(${TEST_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.h")
