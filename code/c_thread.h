@@ -1,10 +1,10 @@
 #pragma once
 
 #if defined __GNUG__
-#include "c_utility.h"
-#include "c_tuple.h"
-#include "c_memory.h"
-#include "c_chrono.h"
+#include <c_utility.h>
+#include <c_tuple.h>
+#include <c_memory.h>
+#include <c_chrono.h>
 
 #include <pthread.h>
 #if defined _WIN32

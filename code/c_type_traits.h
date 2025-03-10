@@ -1,5 +1,5 @@
 #pragma once
-#include "y_core.h"
+#include <y_core.h>
 
 
 CUSTOM_BEGIN

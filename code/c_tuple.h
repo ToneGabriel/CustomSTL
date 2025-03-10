@@ -1,6 +1,6 @@
 #pragma once
-#include "c_utility.h"
-#include "x_functional.h"
+#include <c_utility.h>
+#include <x_functional.h>
 
 
 CUSTOM_BEGIN

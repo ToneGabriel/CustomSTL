@@ -2,9 +2,9 @@
 
 #if defined __GNUG__    // thread tests available only on __GNUG__
 
-#include "__CTMThreadInclude.h"
-#include "__STDThreadInclude.h"
-#include "Testing.h"
+#include <__CTMThreadInclude.h>
+#include <__STDThreadInclude.h>
+#include <Testing.h>
 
 #define TEST_BOOST_BEGIN namespace test_boost {
 #define TEST_BOOST_END }

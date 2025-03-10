@@ -1,7 +1,7 @@
 #pragma once
 
-#include "__CTMCommonInclude.h"
-#include "__STDCommonInclude.h"
+#include <__CTMCommonInclude.h>
+#include <__STDCommonInclude.h>
 
 #define TEST_BEGIN namespace test {
 #define TEST_END }

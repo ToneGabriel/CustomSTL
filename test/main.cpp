@@ -1,6 +1,3 @@
-#include "../code/Testing.h"
-#include "../code/TestingBoost.h"
-
 #include <gtest/gtest.h>
 
 int main(int argc, char** argv)

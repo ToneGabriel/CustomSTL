@@ -1,9 +1,9 @@
 #pragma once
-// #include "deque.h"	// can be used as Container in queue/priority_queue
-#include "c_list.h"
-#include "c_vector.h"
-#include "c_utility.h"
-#include "c_functional.h"	// for custom::Less
+// #include "deque.h>	// can be used as Container in queue/priority_queue
+#include <c_list.h>
+#include <c_vector.h>
+#include <c_utility.h>
+#include <c_functional.h>	// for custom::Less
 
 
 CUSTOM_BEGIN

@@ -1,4 +1,4 @@
-#include "TestingBoost.h"
+#include <TestingBoost.h>
 
 
 #if defined __GNUG__    // thread tests available only on __GNUG__

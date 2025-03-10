@@ -1,0 +1,26 @@
+#pragma once
+
+#include <c_string.h>
+#include <c_string_view.h>
+#include <c_array.h>
+#include <c_vector.h>
+#include <c_deque.h>
+#include <c_list.h>
+#include <c_forward_list.h>
+#include <c_queue.h>
+#include <c_stack.h>
+#include <c_unordered_map.h>
+#include <c_unordered_set.h>
+#include <c_map.h>
+#include <c_set.h>
+#include <c_functional.h>
+#include <c_memory.h>
+#include <c_limits.h>
+#include <c_chrono.h>
+#include <c_algorithm.h>
+#include <c_numeric.h>
+#include <c_complex.h>
+#include <c_bitset.h>
+#include <c_pair.h>
+#include <c_tuple.h>
+#include <c_numbers.h>
