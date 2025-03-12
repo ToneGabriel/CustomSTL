@@ -11,11 +11,13 @@ set(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
-# add headers from googletest to this library
+# add headers from googletest and googlemock to this library
 target_include_directories(${TEST_LIBRARY_NAME} PUBLIC ${gtest_SOURCE_DIR}/include)
+target_include_directories(${TEST_LIBRARY_NAME} PUBLIC ${gmock_SOURCE_DIR}/include)
 
 # get test source files
 target_sources(${TEST_LIBRARY_NAME} PUBLIC
+    c_thread_test.cpp
     c_vector_test.cpp
 )
 
