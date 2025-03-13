@@ -24,15 +24,22 @@ TYPED_TEST_P(VectorTypeTestFixture, construct_default_values_from_initializer_li
     this->_custom_vector_instance = {TypeParam(), TypeParam(), TypeParam()};
 
     EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance[0], TypeParam());
+    EXPECT_EQ(this->_custom_vector_instance.front(), TypeParam());
 }
 
 // Register test cases to suite
-REGISTER_TYPED_TEST_SUITE_P(VectorTypeTestFixture, construct_default_values_from_initializer_list);
+REGISTER_TYPED_TEST_SUITE_P(
+                                VectorTypeTestFixture,
+                                construct_default_values_from_initializer_list
+                            );
 
 // Create test cases based on types
 using VectorTestTypes = ::testing::Types<int, double, std::string>;
-INSTANTIATE_TYPED_TEST_SUITE_P(VectorTypeTestSuite, VectorTypeTestFixture, VectorTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+                                VectorTypeTestSuite,
+                                VectorTypeTestFixture,
+                                VectorTestTypes
+                            );
 
 // Value dependent tests
 // =====================================================================================================
@@ -76,6 +83,10 @@ TEST_P(VectorValueTestFixture, clear)
     EXPECT_TRUE(this->_custom_vector_instance.empty());
 }
 
-INSTANTIATE_TEST_SUITE_P(   VectorValueTestSuite, VectorValueTestFixture,
-                            ::testing::Values(std::make_tuple(3, 3.5, "hello"))
-                        );  // can add more values
+INSTANTIATE_TEST_SUITE_P(
+                            VectorValueTestSuite,
+                            VectorValueTestFixture,
+                            ::testing::Values   (
+                                                    std::make_tuple(3, 3.5, "hello")
+                                                )   // can add more values
+                        );

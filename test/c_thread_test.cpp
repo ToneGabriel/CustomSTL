@@ -5,6 +5,9 @@
 #include <c_chrono.h>
 #include <c_thread.h>   // unit to be tested
 
+// custom::thread tests
+// =============================================================================
+
 class ThreadTestFixture : public ::testing::Test
 {
 protected:
@@ -35,17 +38,23 @@ private:
 
 TEST_F(ThreadTestFixture, different_thread_id)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable() &&
-                this->_custom_thread_instance_2.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
 
-    EXPECT_TRUE(this->_custom_thread_instance_1 !=
-                this->_custom_thread_instance_2);
+    EXPECT_TRUE(this->_custom_thread_instance_1.get_id() !=
+                this->_custom_thread_instance_2.get_id());
 }
 
 TEST_F(ThreadTestFixture, throw_on_join_after_detach)
 {
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
+
+    EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
+    EXPECT_FALSE(this->_custom_thread_instance_2.joinable());
 
     EXPECT_THROW(this->_custom_thread_instance_1.join(), std::system_error);
     EXPECT_THROW(this->_custom_thread_instance_2.join(), std::system_error);
@@ -53,8 +62,14 @@ TEST_F(ThreadTestFixture, throw_on_join_after_detach)
 
 TEST_F(ThreadTestFixture, throw_on_join_after_join)
 {
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
+
+    EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
+    EXPECT_FALSE(this->_custom_thread_instance_2.joinable());
 
     EXPECT_THROW(this->_custom_thread_instance_1.join(), std::system_error);
     EXPECT_THROW(this->_custom_thread_instance_2.join(), std::system_error);
@@ -62,8 +77,14 @@ TEST_F(ThreadTestFixture, throw_on_join_after_join)
 
 TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
 {
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
+
+    EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
+    EXPECT_FALSE(this->_custom_thread_instance_2.joinable());
 
     EXPECT_THROW(this->_custom_thread_instance_1.detach(), std::system_error);
     EXPECT_THROW(this->_custom_thread_instance_2.detach(), std::system_error);
@@ -71,8 +92,14 @@ TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
 
 TEST_F(ThreadTestFixture, throw_on_detach_after_join)
 {
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
+
+    EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
+    EXPECT_FALSE(this->_custom_thread_instance_2.joinable());
 
     EXPECT_THROW(this->_custom_thread_instance_1.detach(), std::system_error);
     EXPECT_THROW(this->_custom_thread_instance_2.detach(), std::system_error);
@@ -80,16 +107,19 @@ TEST_F(ThreadTestFixture, throw_on_detach_after_join)
 
 TEST_F(ThreadTestFixture, no_throw_on_self_assignment)
 {
+    // nothing happens
     EXPECT_NO_THROW(this->_custom_thread_instance_1 =
                     custom::move(this->_custom_thread_instance_1));
 }
 
 TEST_F(ThreadTestFixture, no_throw_ownership_transfer_on_move_assignment)
 {
+    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
+    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+
     this->_custom_thread_instance_1.join();
 
     EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
 
     EXPECT_NO_THROW(this->_custom_thread_instance_1 =
                     std::move(this->_custom_thread_instance_2));
@@ -108,6 +138,7 @@ TEST_F(ThreadTestFixture, death_on_move_assignment_when_joinable)
                                 "");
 }
 
+// custom::this_thread tests
 // =============================================================================
 
 class ThisThreadTimeTestFixture : public ::testing::TestWithParam<int>
@@ -149,6 +180,8 @@ TEST_P(ThisThreadTimeTestFixture, sleep_until_duration_ms)
     EXPECT_LE(duration.count(), ms_to_check + _MS_TOLERANCE);
 }
 
-INSTANTIATE_TEST_SUITE_P(ThisThreadTimeTestSuite, ThisThreadTimeTestFixture,
+INSTANTIATE_TEST_SUITE_P(
+                            ThisThreadTimeTestSuite,
+                            ThisThreadTimeTestFixture,
                             ::testing::Values(1000, 0, -1000)
                         );
