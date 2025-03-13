@@ -57,15 +57,15 @@ protected:
 
 TEST_P(VectorValueTestFixture, emplace_back)
 {
-    auto int_val = std::get<0>(GetParam());
-    auto dbl_val = std::get<1>(GetParam());
-    auto str_val = std::get<2>(GetParam());
-
+    auto tuple_param = GetParam();
     auto prev_vector_size = this->_custom_vector_instance.size();
-    this->_custom_vector_instance.emplace_back(int_val, dbl_val, str_val);
+
+    this->_custom_vector_instance.emplace_back( std::get<0>(tuple_param),
+                                                std::get<1>(tuple_param),
+                                                std::get<2>(tuple_param));
 
     EXPECT_EQ(this->_custom_vector_instance.size(), prev_vector_size + 1);
-    EXPECT_EQ(*(--this->_custom_vector_instance.end()), GetParam());
+    EXPECT_EQ(this->_custom_vector_instance.back(), tuple_param);
 }   // END emplace_back
 
 TEST_P(VectorValueTestFixture, clear)

@@ -66,7 +66,8 @@ public:
         else
         {
             _thread = 0;
-            throw std::runtime_error("thread creation failed.");
+            throw std::system_error(std::make_error_code(std::errc::io_error),
+                                                            "Thread creation failed.");
         }
     }
 
@@ -120,13 +121,16 @@ public:
     void join()
     {
         if (!joinable())
-            throw std::runtime_error("thread not joinable.");
+            throw std::system_error(std::make_error_code(std::errc::operation_not_permitted),
+                                                            "Thread not joinable.");
 
         if (_thread == pthread_self())
-            throw std::runtime_error("Resource deadlock would occur.");
+            throw std::system_error(std::make_error_code(std::errc::resource_deadlock_would_occur),
+                                                            "Resource deadlock would occur.");
 
         if (pthread_join(_thread, nullptr) != 0)
-            throw std::runtime_error("thread join failed.");
+            throw std::system_error(std::make_error_code(std::errc::io_error),
+                                                            "Thread join failed.");
 
         _thread = 0;
     }
@@ -134,10 +138,12 @@ public:
     void detach()
     {
         if (!joinable())
-            throw std::runtime_error("thread not joinable.");
+            throw std::system_error(std::make_error_code(std::errc::operation_not_permitted),
+                                                            "Thread not joinable.");
 
         if (pthread_detach(_thread) != 0)
-            throw std::runtime_error("thread detach failed.");
+            throw std::system_error(std::make_error_code(std::errc::io_error),
+                                                            "Thread detach failed.");
 
         _thread = 0;
     }
