@@ -5,7 +5,7 @@
 #include <c_chrono.h>
 #include <c_thread.h>   // unit to be tested
 
-// custom::thread tests
+// custom::thread and custom::this_thread tests
 // =============================================================================
 
 class ThreadTestFixture : public ::testing::Test
@@ -41,7 +41,7 @@ TEST_F(ThreadTestFixture, different_thread_id)
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
 
-    EXPECT_TRUE(this->_custom_thread_instance_1.get_id() !=
+    EXPECT_NE(  this->_custom_thread_instance_1.get_id(),
                 this->_custom_thread_instance_2.get_id());
 }
 
@@ -117,15 +117,19 @@ TEST_F(ThreadTestFixture, no_throw_ownership_transfer_on_move_assignment)
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
 
+    custom::thread::id initial_t2_id = this->_custom_thread_instance_2.get_id();
     this->_custom_thread_instance_1.join();
 
     EXPECT_FALSE(this->_custom_thread_instance_1.joinable());
 
     EXPECT_NO_THROW(this->_custom_thread_instance_1 =
-                    std::move(this->_custom_thread_instance_2));
+                    custom::move(this->_custom_thread_instance_2));
 
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_FALSE(this->_custom_thread_instance_2.joinable());
+
+    EXPECT_EQ(this->_custom_thread_instance_1.get_id(), initial_t2_id);
+    EXPECT_EQ(this->_custom_thread_instance_2.get_id(), custom::thread::id());
 }
 
 TEST_F(ThreadTestFixture, death_on_move_assignment_when_joinable)
@@ -138,7 +142,22 @@ TEST_F(ThreadTestFixture, death_on_move_assignment_when_joinable)
                                 "");
 }
 
-// custom::this_thread tests
+TEST_F(ThreadTestFixture, get_id)
+{
+    this->_custom_thread_instance_1.join();
+
+    EXPECT_EQ(this->_custom_thread_instance_1.get_id(), custom::thread::id());
+    EXPECT_NE(this->_custom_thread_instance_2.get_id(), custom::thread::id());
+}
+
+TEST_F(ThreadTestFixture, this_thread_get_id)
+{
+    EXPECT_NE(custom::this_thread::get_id(), custom::thread::id());
+    EXPECT_NE(custom::this_thread::get_id(), this->_custom_thread_instance_1.get_id());
+    EXPECT_NE(custom::this_thread::get_id(), this->_custom_thread_instance_2.get_id());
+}
+
+// Thread time tests
 // =============================================================================
 
 class ThisThreadTimeTestFixture : public ::testing::TestWithParam<int>
