@@ -52,13 +52,6 @@ class VectorValueTestFixture : public ::testing::TestWithParam<custom::tuple<int
 {
 protected:
     custom::vector<ParamType> _custom_vector_instance;
-
-protected:
-
-    void TearDown() override
-    {
-        _custom_vector_instance.clear();  // Clear the vector after each test
-    }
 };  // END VectorValueTestFixture
 
 TEST_P(VectorValueTestFixture, default_init)
@@ -83,7 +76,6 @@ TEST_P(VectorValueTestFixture, custom_capacity_given_value_init)
 
     EXPECT_EQ(this->_custom_vector_instance.size(), 3);
     EXPECT_EQ(this->_custom_vector_instance.capacity(), 3); // custom capacity
-
     EXPECT_EQ(this->_custom_vector_instance.back(), GetParam());   // has given values
 }
 
@@ -114,9 +106,6 @@ TEST_P(VectorValueTestFixture, copy_assign_operator)
 TEST_P(VectorValueTestFixture, move_assign_operator)
 {
     custom::vector<ParamType> other = {GetParam(), GetParam(), GetParam()};
-
-    EXPECT_EQ(this->_custom_vector_instance.size(), 0);
-    EXPECT_EQ(this->_custom_vector_instance.capacity(), 8); // default capacity
     
     EXPECT_EQ(other.size(), 3);
     EXPECT_EQ(other.capacity(), 3); // custom capacity
@@ -132,44 +121,19 @@ TEST_P(VectorValueTestFixture, move_assign_operator)
     EXPECT_EQ(this->_custom_vector_instance.back(), GetParam());
 }
 
-TEST_P(VectorValueTestFixture, reserve_less)
-{
-    // TODO
-}
-
-TEST_P(VectorValueTestFixture, reserve_more)
-{
-    // TODO
-}
-
 TEST_P(VectorValueTestFixture, shrink_to_fit)
 {
-    // TODO
-}
+    this->_custom_vector_instance.emplace_back();
+    this->_custom_vector_instance.emplace_back();
+    this->_custom_vector_instance.emplace_back();
 
-TEST_P(VectorValueTestFixture, realloc_default)
-{
-    // TODO
-}
+    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
+    EXPECT_EQ(this->_custom_vector_instance.capacity(), 8); // default
 
-TEST_P(VectorValueTestFixture, realloc_value)
-{
-    // TODO
-}
+    this->_custom_vector_instance.shrink_to_fit();
 
-TEST_P(VectorValueTestFixture, resize_less)
-{
-    // TODO
-}
-
-TEST_P(VectorValueTestFixture, resize_more_default)
-{
-    // TODO
-}
-
-TEST_P(VectorValueTestFixture, resize_more_value)
-{
-    // TODO
+    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
+    EXPECT_EQ(this->_custom_vector_instance.capacity(), 3);
 }
 
 TEST_P(VectorValueTestFixture, emplace_back)
@@ -183,7 +147,7 @@ TEST_P(VectorValueTestFixture, emplace_back)
 
     EXPECT_EQ(this->_custom_vector_instance.size(), prev_vector_size + 1);
     EXPECT_EQ(this->_custom_vector_instance.back(), tuple_param);
-}   // END emplace_back
+}
 
 TEST_P(VectorValueTestFixture, push_back_copy)
 {
@@ -211,7 +175,14 @@ TEST_P(VectorValueTestFixture, push_back_move)
 
 TEST_P(VectorValueTestFixture, pop_back)
 {
-    // TODO
+    this->_custom_vector_instance.emplace_back();
+    this->_custom_vector_instance.emplace_back();
+
+    EXPECT_EQ(this->_custom_vector_instance.size(), 2);
+
+    this->_custom_vector_instance.pop_back();
+
+    EXPECT_EQ(this->_custom_vector_instance.size(), 1);
 }
 
 TEST_P(VectorValueTestFixture, clear)
@@ -231,22 +202,28 @@ TEST_P(VectorValueTestFixture, clear)
 
 TEST_P(VectorValueTestFixture, at_index)
 {
-    // TODO
+    this->_custom_vector_instance.push_back(GetParam());
+
+    EXPECT_EQ(this->_custom_vector_instance.at(0), GetParam());
 }
 
 TEST_P(VectorValueTestFixture, at_index_throw)
 {
-    // TODO
+    EXPECT_TRUE(this->_custom_vector_instance.empty());
+    EXPECT_THROW(this->_custom_vector_instance.at(0), std::out_of_range);
 }
 
 TEST_P(VectorValueTestFixture, operator_index)
 {
-    // TODO
+    this->_custom_vector_instance.push_back(GetParam());
+
+    EXPECT_EQ(this->_custom_vector_instance[0], GetParam());
 }
 
 TEST_P(VectorValueTestFixture, operator_index_death)
 {
-    // TODO
+    EXPECT_TRUE(this->_custom_vector_instance.empty());
+    EXPECT_DEATH_IF_SUPPORTED(this->_custom_vector_instance[0], "");
 }
 
 INSTANTIATE_TEST_SUITE_P(

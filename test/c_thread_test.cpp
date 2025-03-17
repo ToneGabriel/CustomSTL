@@ -38,18 +38,18 @@ private:
 
 TEST_F(ThreadTestFixture, different_thread_id)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
-
     EXPECT_NE(  this->_custom_thread_instance_1.get_id(),
                 this->_custom_thread_instance_2.get_id());
 }
 
-TEST_F(ThreadTestFixture, throw_on_join_after_detach)
+TEST_F(ThreadTestFixture, joinable_after_init)
 {
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
+}
 
+TEST_F(ThreadTestFixture, throw_on_join_after_detach)
+{
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
 
@@ -62,9 +62,6 @@ TEST_F(ThreadTestFixture, throw_on_join_after_detach)
 
 TEST_F(ThreadTestFixture, throw_on_join_after_join)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
-
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
 
@@ -77,9 +74,6 @@ TEST_F(ThreadTestFixture, throw_on_join_after_join)
 
 TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
-
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
 
@@ -92,9 +86,6 @@ TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
 
 TEST_F(ThreadTestFixture, throw_on_detach_after_join)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
-
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
 
@@ -114,9 +105,6 @@ TEST_F(ThreadTestFixture, no_throw_on_self_assignment)
 
 TEST_F(ThreadTestFixture, no_throw_ownership_transfer_on_move_assignment)
 {
-    EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
-    EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
-
     custom::thread::id initial_t2_id = this->_custom_thread_instance_2.get_id();
     this->_custom_thread_instance_1.join();
 
@@ -202,5 +190,9 @@ TEST_P(ThisThreadTimeTestFixture, sleep_until_duration_ms)
 INSTANTIATE_TEST_SUITE_P(
                             ThisThreadTimeTestSuite,
                             ThisThreadTimeTestFixture,
-                            ::testing::Values(1000, 0, -1000)
+                            ::testing::Values(
+                                                300,
+                                                0,
+                                                -300
+                                            )
                         );
