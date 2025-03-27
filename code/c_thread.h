@@ -5,6 +5,7 @@
 #include <c_tuple.h>
 #include <c_memory.h>
 #include <c_chrono.h>
+#include <c_functional.h>
 
 #include <pthread.h>
 #if defined _WIN32
@@ -23,33 +24,34 @@ public:
     using native_handle_type  = pthread_t;
 
 private:
-    using _Invoker      = void*(*)(void*);
-    pthread_t _thread   = 0;
+    using _Thread_Entry_t = void*(*)(void*);
+
+private:
+    native_handle_type _handle = {};
+
+#if CUSTOM_OPTIMAL_IMPLEMENTATION
 
 private:
     // Core functions
 
     template<class CallableTuple, size_t... Indices>
-    static void* _invoke_impl(void* args) noexcept
+    static void* _thread_entry(void* args) noexcept
     {
-        const unique_ptr<CallableTuple> callable(static_cast<CallableTuple*>(args));
-        CallableTuple& derefCallable = *callable;
-        custom::invoke(custom::move(custom::get<Indices>(derefCallable))...);
+        const custom::unique_ptr<CallableTuple> callablePtr(static_cast<CallableTuple*>(args));
+        CallableTuple& derefCallable = *callablePtr;
+        (void)custom::invoke(custom::move(custom::get<Indices>(derefCallable))...);
 
         return nullptr;
     }
 
     template<class CallableTuple, size_t... Indices>
-    static constexpr _Invoker _get_invoke_impl(index_sequence<Indices...>) noexcept
+    static constexpr _Thread_Entry_t _get_thread_entry(index_sequence<Indices...>) noexcept
     {
-        return reinterpret_cast<_Invoker>(_invoke_impl<CallableTuple, Indices...>);
+        return reinterpret_cast<_Thread_Entry_t>(_thread_entry<CallableTuple, Indices...>);
     }
 
 public:
-    // Constructors
-
-    thread()                = default;
-    thread(const thread&)   = delete;
+    // Main Constructor
 
     template<class Functor, class... Args, 
     enable_if_t<!is_same_v<decay_t<Functor>, thread>, bool> = true>
@@ -58,18 +60,68 @@ public:
         // forward functor and arguments as tuple pointer to match "pthread_create" procedure
         using _CallableTuple = tuple<decay_t<Functor>, decay_t<Args>...>;
 
-        _Invoker invoker    = _get_invoke_impl<_CallableTuple>(make_index_sequence<1 + sizeof...(Args)>{});
-        auto callable       = custom::make_unique<_CallableTuple>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+        _Thread_Entry_t entry   = _get_thread_entry<_CallableTuple>(make_index_sequence<1 + sizeof...(Args)>{});
+        auto callablePtr        = custom::make_unique<_CallableTuple>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
 
-        if (pthread_create(&_thread, nullptr, invoker, callable.get()) == 0)
-            (void)callable.release();     // ownership transferred to the thread
+        if (pthread_create(&_handle, nullptr, entry, callablePtr.get()) == 0)
+            (void)callablePtr.release();     // ownership transferred to the thread
         else
         {
-            _thread = 0;
-            throw std::system_error(std::make_error_code(std::errc::io_error),
+            _handle = {};
+            throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again),
                                                             "Thread creation failed.");
         }
     }
+
+#else   // CUSTOM_OPTIMAL_IMPLEMENTATION
+
+private:
+    // Core functions
+
+    template<class Callable>
+    static void* _thread_entry(void* args) noexcept
+    {
+        const unique_ptr<Callable> callablePtr(static_cast<Callable*>(args));
+        (*callablePtr)();
+
+        return nullptr;
+    }
+
+    template<class CallableTuple>
+    static constexpr _Thread_Entry_t _get_thread_entry() noexcept
+    {
+        return reinterpret_cast<_Thread_Entry_t>(_thread_entry<CallableTuple>);
+    }
+
+public:
+    // Main Constructor
+
+    template<class Functor, class... Args, 
+    enable_if_t<!is_same_v<decay_t<Functor>, thread>, bool> = true>
+    explicit thread(Functor&& func, Args&&... args)
+    {
+        using _Callable_t = custom::binder<Functor, Args...>;
+
+        _Thread_Entry_t entry   = _get_thread_entry<_Callable_t>();
+        auto callablePtr        = custom::make_unique<_Callable_t>(custom::forward<Functor>(func), custom::forward<Args>(args)...);
+
+        if (pthread_create(&_handle, nullptr, entry, callablePtr.get()) == 0)
+            (void)callablePtr.release();     // ownership transferred to the thread
+        else
+        {
+            _handle = {};
+            throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again),
+                                                            "Thread creation failed.");
+        }
+    }
+
+#endif  // CUSTOM_OPTIMAL_IMPLEMENTATION
+
+public:
+    // Constructors
+
+    thread()                = default;
+    thread(const thread&)   = delete;
 
     thread(thread&& other) noexcept
     {
@@ -102,7 +154,7 @@ public:
 
     bool operator==(const thread& other) const
     {
-        return (pthread_equal(_thread, other._thread) != 0);
+        return (pthread_equal(_handle, other._handle) != 0);
     }
 
     bool operator!=(const thread& other) const
@@ -115,7 +167,7 @@ public:
 
     bool joinable() const noexcept
     {
-        return _thread != 0;
+        return (pthread_equal(_handle, {}) == 0);
     }
 
     void join()
@@ -124,15 +176,15 @@ public:
             throw std::system_error(std::make_error_code(std::errc::operation_not_permitted),
                                                             "Thread not joinable.");
 
-        if (_thread == pthread_self())
+        if (_handle == pthread_self())
             throw std::system_error(std::make_error_code(std::errc::resource_deadlock_would_occur),
                                                             "Resource deadlock would occur.");
 
-        if (pthread_join(_thread, nullptr) != 0)
-            throw std::system_error(std::make_error_code(std::errc::io_error),
+        if (pthread_join(_handle, nullptr) != 0)
+            throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again),
                                                             "Thread join failed.");
 
-        _thread = 0;
+        _handle = {};
     }
 
     void detach()
@@ -141,18 +193,18 @@ public:
             throw std::system_error(std::make_error_code(std::errc::operation_not_permitted),
                                                             "Thread not joinable.");
 
-        if (pthread_detach(_thread) != 0)
-            throw std::system_error(std::make_error_code(std::errc::io_error),
+        if (pthread_detach(_handle) != 0)
+            throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again),
                                                             "Thread detach failed.");
 
-        _thread = 0;
+        _handle = {};
     }
 
     id get_id() const noexcept;
 
     native_handle_type native_handle() noexcept
     {
-        return _thread;
+        return _handle;
     }
 
     static unsigned int hardware_concurrency() noexcept
@@ -171,7 +223,7 @@ private:
 
     void _move(thread&& other)
     {
-        _thread = custom::exchange(other._thread, 0);
+        _handle = custom::exchange(other._handle, {});
     }
 }; // END thread
 
@@ -228,11 +280,11 @@ namespace this_thread
 class thread::id
 {
 private:
-    pthread_t _threadID;
+    native_handle_type _threadID = {};
 
 public:
 
-    id() : _threadID(0) { /*Empty*/ }
+    id() noexcept = default;
 
     friend thread::id thread::get_id() const noexcept;
     friend thread::id this_thread::get_id() noexcept;
@@ -241,14 +293,14 @@ public:
 
 private:
 
-    id(const pthread_t& thr) : _threadID(thr) { /*Empty*/ }
+    id(const native_handle_type& other) : _threadID(other) { /*Empty*/ }
 }; // END thread::id
 
 
 // other definitions
 inline thread::id thread::get_id() const noexcept 
 {
-    return _thread;             // calls private constructor of thread::id
+    return _handle;             // calls private constructor of thread::id
 }
 
 inline thread::id this_thread::get_id() noexcept
