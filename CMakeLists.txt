@@ -28,8 +28,11 @@ add_library(${TEST_LIBRARY_NAME} STATIC)
 
 # CMakeLists subdirectory config
 add_subdirectory(config)
-add_subdirectory(code)
-add_subdirectory(test)
+add_subdirectory(code_cpp)
+add_subdirectory(code_c)
+
+add_subdirectory(test_cpp)
+add_subdirectory(test_c)
 
 # CPack settings
 set(CPACK_GENERATOR "ZIP")
