@@ -1,5 +1,7 @@
 #pragma once
 #include "stl_cpp/x_memory.h"
+#include "stl_cpp/x_node.h"
+#include "stl_cpp/c_string.h"
 #include "stl_cpp/c_pair.h"
 #include "stl_cpp/c_utility.h"
 #include "stl_cpp/c_iterator.h"

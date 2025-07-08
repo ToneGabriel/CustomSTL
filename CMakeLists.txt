@@ -19,24 +19,35 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# Get googletest project
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG main
+)
+
+set(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)    # disable googletest installation
+FetchContent_MakeAvailable(googletest)
+
 # Names
 set(CUSTOM_STL_C_LIBRARY "Custom_STL_C_Library")
-set(CUSTOM_STL_C_TEST_EXECUTABLE "Custom_STL_C_Test_Executable")
+set(CUSTOM_STL_C_FULL_TEST_EXECUTABLE "Custom_STL_C_Full_Test_Executable")
 
 set(CUSTOM_STL_CPP_LIBRARY "Custom_STL_Cpp_Library")
-set(CUSTOM_STL_CPP_TEST_EXECUTABLE "Custom_STL_Cpp_Test_Executable")
+set(CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE "Custom_STL_Cpp_Full_Test_Executable")
 
 # Interface libraries
 add_library(${CUSTOM_STL_C_LIBRARY} INTERFACE)
 add_library(${CUSTOM_STL_CPP_LIBRARY} INTERFACE)
 
-# Test executables
-# add_executable(${CUSTOM_STL_C_TEST_EXECUTABLE})
-add_executable(${CUSTOM_STL_CPP_TEST_EXECUTABLE})
+# Full Test executables
+# add_executable(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE})
+add_executable(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE})
 
 # Link now, populate later
-# target_link_libraries(${CUSTOM_STL_C_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_C_LIBRARY})
-target_link_libraries(${CUSTOM_STL_CPP_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_CPP_LIBRARY})
+# target_link_libraries(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_C_LIBRARY})
+target_link_libraries(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_CPP_LIBRARY} gtest gmock)
 
 # CMakeLists subdirectory config
 # add_subdirectory(config)
