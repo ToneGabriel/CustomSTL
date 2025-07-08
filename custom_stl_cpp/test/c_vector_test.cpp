@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <c_string.h>
-#include <c_tuple.h>
-#include <c_vector.h>   // unit to be tested
+#include "stl_cpp/c_string.h"
+#include "stl_cpp/c_tuple.h"
+#include "stl_cpp/c_vector.h"   // unit to be tested
 
 // Type dependent tests
 // =====================================================================================================

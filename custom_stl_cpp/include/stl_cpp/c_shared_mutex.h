@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined __GNUG__
-#include <x_lock.h>
+#include "stl_cpp/x_lock.h"
 
 
 CUSTOM_BEGIN

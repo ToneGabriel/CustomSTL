@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <c_algorithm.h>
-#include <c_chrono.h>
-#include <c_thread.h>   // unit to be tested
+#include "stl_cpp/c_algorithm.h"
+#include "stl_cpp/c_chrono.h"
+#include "stl_cpp/c_thread.h"   // unit to be tested
 
 // custom::thread and custom::this_thread tests
 // =============================================================================

@@ -1,5 +1,5 @@
 #pragma once
-#include <y_core.h>
+#include "stl_cpp/y_core.h"
 
 
 CUSTOM_BEGIN

@@ -1,8 +1,8 @@
 #pragma once
 
 #if defined __GNUG__
-#include <c_mutex.h>
-#include <c_memory.h>
+#include "stl_cpp/c_mutex.h"
+#include "stl_cpp/c_memory.h"
 
 
 CUSTOM_BEGIN

@@ -2,7 +2,7 @@
 #define PRIORITY_QUEUE_H
 
 
-#include "y_core.h"
+#include "stl_c/y_core.h"
 
 
 #define _DEFINE_PRIORITY_QUEUE_IMPL(                                                    \

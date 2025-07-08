@@ -4,7 +4,7 @@
 #include <climits>
 #include <iostream>     // debugging
 
-#include <_custom_stl_config.hpp>   // project configuration
+// #include <_custom_stl_config.hpp>   // project configuration
 
 
 #define CUSTOM_BEGIN namespace custom { // gloabal namespace for this project

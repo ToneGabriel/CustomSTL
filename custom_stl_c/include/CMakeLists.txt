@@ -1,1 +1,1 @@
-target_include_directories(${TEST_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${CUSTOM_STL_C_LIBRARY} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

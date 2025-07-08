@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include <_custom_stl_config.hpp>   // project configuration
+// #include <_custom_stl_config.hpp>   // project configuration
 
 
 #ifndef NDEBUG

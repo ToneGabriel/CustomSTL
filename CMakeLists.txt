@@ -20,22 +20,32 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Names
-set(TEST_LIBRARY_NAME       "CustomSTLTestLibrary")
-set(TEST_EXECUTABLE_NAME    "CustomSTLTest")
+set(CUSTOM_STL_C_LIBRARY "Custom_STL_C_Library")
+set(CUSTOM_STL_C_TEST_EXECUTABLE "Custom_STL_C_Test_Executable")
 
-# Create test library (test - link executable and other cpp files to this)
-add_library(${TEST_LIBRARY_NAME} STATIC)
+set(CUSTOM_STL_CPP_LIBRARY "Custom_STL_Cpp_Library")
+set(CUSTOM_STL_CPP_TEST_EXECUTABLE "Custom_STL_Cpp_Test_Executable")
+
+# Interface libraries
+add_library(${CUSTOM_STL_C_LIBRARY} INTERFACE)
+add_library(${CUSTOM_STL_CPP_LIBRARY} INTERFACE)
+
+# Test executables
+# add_executable(${CUSTOM_STL_C_TEST_EXECUTABLE})
+add_executable(${CUSTOM_STL_CPP_TEST_EXECUTABLE})
+
+# Link now, populate later
+# target_link_libraries(${CUSTOM_STL_C_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_C_LIBRARY})
+target_link_libraries(${CUSTOM_STL_CPP_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_CPP_LIBRARY})
 
 # CMakeLists subdirectory config
-add_subdirectory(config)
-add_subdirectory(code_cpp)
-add_subdirectory(code_c)
+# add_subdirectory(config)
+add_subdirectory(custom_stl_c)
+add_subdirectory(custom_stl_cpp)
 
-add_subdirectory(test_cpp)
-add_subdirectory(test_c)
 
 # CPack settings
-set(CPACK_GENERATOR "ZIP")
-set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-include(CPack)
+# set(CPACK_GENERATOR "ZIP")
+# set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+# set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+# include(CPack)
