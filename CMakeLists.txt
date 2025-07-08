@@ -42,11 +42,11 @@ add_library(${CUSTOM_STL_C_LIBRARY} INTERFACE)
 add_library(${CUSTOM_STL_CPP_LIBRARY} INTERFACE)
 
 # Full Test executables
-# add_executable(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE})
+add_executable(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE})
 add_executable(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE})
 
 # Link now, populate later
-# target_link_libraries(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_C_LIBRARY})
+target_link_libraries(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_C_LIBRARY} gtest gmock)
 target_link_libraries(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} PRIVATE ${CUSTOM_STL_CPP_LIBRARY} gtest gmock)
 
 # CMakeLists subdirectory config
