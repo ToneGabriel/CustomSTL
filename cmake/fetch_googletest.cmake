@@ -10,5 +10,9 @@ FetchContent_Declare(
 # Disable installation
 set(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)
 
-# Make googletest available
-FetchContent_MakeAvailable(googletest)
+# Check if already available
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+    # Make googletest available
+    FetchContent_MakeAvailable(googletest)
+endif()
