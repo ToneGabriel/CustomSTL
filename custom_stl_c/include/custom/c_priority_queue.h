@@ -8,9 +8,9 @@
 #define _DEFINE_PRIORITY_QUEUE_IMPL(                                                    \
     PQ_NAME,                                                                            \
     TYPE,                                                                               \
-    TYPE_PTR_COMPARE_FUNC,                                                              \
-    TYPE_PTR_COPY_FUNC,                                                                 \
-    TYPE_PTR_FREE_FUNC,                                                                 \
+    TYPE_REF_COMPARE_FUNC,                                                              \
+    TYPE_REF_COPY_FUNC,                                                                 \
+    TYPE_REF_DELETE_FUNC,                                                               \
     _PQ_FUNC_NAME_TYPE_PTR_SWAP,                                                        \
     _PQ_FUNC_NAME_HEAP_INSERT_ADJUST,                                                   \
     _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST,                                                 \
@@ -35,15 +35,15 @@ typedef struct                                                                  
 static void _PQ_FUNC_NAME_TYPE_PTR_SWAP(TYPE* left, TYPE* right)                        \
 {                                                                                       \
     TYPE temp;                                                                          \
-    TYPE_PTR_COPY_FUNC(&temp, left);                                                    \
-    TYPE_PTR_COPY_FUNC(left, right);                                                    \
-    TYPE_PTR_COPY_FUNC(right, &temp);                                                   \
+    TYPE_REF_COPY_FUNC(&temp, left);                                                    \
+    TYPE_REF_COPY_FUNC(left, right);                                                    \
+    TYPE_REF_COPY_FUNC(right, &temp);                                                   \
 }                                                                                       \
                                                                                         \
 static void _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(PQ_NAME* pq, size_t idx)                   \
 {                                                                                       \
     _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    while (idx > 0 && TYPE_PTR_COMPARE_FUNC(&pq->arr[idx], &pq->arr[(idx - 1) / 2]))    \
+    while (idx > 0 && TYPE_REF_COMPARE_FUNC(&pq->arr[idx], &pq->arr[(idx - 1) / 2]))    \
     {                                                                                   \
         _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[(idx - 1) / 2]);            \
         idx = (idx - 1) / 2;                                                            \
@@ -59,9 +59,9 @@ static void _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST(PQ_NAME* pq, size_t idx)         
         smallest = idx;                                                                 \
         left = 2 * idx + 1;                                                             \
         right = 2 * idx + 2;                                                            \
-        if (left < pq->size && TYPE_PTR_COMPARE_FUNC(&pq->arr[left], &pq->arr[smallest]))   \
+        if (left < pq->size && TYPE_REF_COMPARE_FUNC(&pq->arr[left], &pq->arr[smallest]))   \
             smallest = left;                                                            \
-        if (right < pq->size && TYPE_PTR_COMPARE_FUNC(&pq->arr[right], &pq->arr[smallest])) \
+        if (right < pq->size && TYPE_REF_COMPARE_FUNC(&pq->arr[right], &pq->arr[smallest])) \
             smallest = right;                                                           \
         if (smallest == idx) return;                                                    \
         _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[smallest]);                 \
@@ -89,7 +89,7 @@ static PQ_NAME* PQ_FUNC_NAME_CREATE(size_t capacity)                            
 static void PQ_FUNC_NAME_DESTROY(PQ_NAME* pq)                                           \
 {                                                                                       \
     _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    for (size_t i = 0; i < pq->size; ++i) TYPE_PTR_FREE_FUNC(&pq->arr[i]);              \
+    for (size_t i = 0; i < pq->size; ++i) TYPE_REF_DELETE_FUNC(&pq->arr[i]);            \
     free(pq->arr);                                                                      \
     free(pq);                                                                           \
 }                                                                                       \
@@ -97,7 +97,7 @@ static void PQ_FUNC_NAME_DESTROY(PQ_NAME* pq)                                   
 static void PQ_FUNC_NAME_CLEAR(PQ_NAME* pq)                                             \
 {                                                                                       \
     _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    for (size_t i = 0; i < pq->size; ++i) TYPE_PTR_FREE_FUNC(&pq->arr[i]);              \
+    for (size_t i = 0; i < pq->size; ++i) TYPE_REF_DELETE_FUNC(&pq->arr[i]);            \
     pq->size = 0;                                                                       \
 }                                                                                       \
                                                                                         \
@@ -130,7 +130,7 @@ static bool PQ_FUNC_NAME_INSERT(PQ_NAME* pq, TYPE item)                         
         pq->arr = new_arr;                                                              \
         pq->capacity = new_cap;                                                         \
     }                                                                                   \
-    TYPE_PTR_COPY_FUNC(&pq->arr[pq->size++], &item);                                    \
+    TYPE_REF_COPY_FUNC(&pq->arr[pq->size++], &item);                                    \
     _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(pq, pq->size - 1);                                 \
     return true;                                                                        \
 }                                                                                       \
@@ -139,9 +139,9 @@ static bool PQ_FUNC_NAME_RETRIEVE(PQ_NAME* pq, TYPE* out)                       
 {                                                                                       \
     _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
     if (pq->size == 0) return false;                                                    \
-    TYPE_PTR_COPY_FUNC(out, &pq->arr[0]);                                               \
-    TYPE_PTR_COPY_FUNC(&pq->arr[0], &pq->arr[--pq->size]);                              \
-    TYPE_PTR_FREE_FUNC(&pq->arr[pq->size]);                                             \
+    TYPE_REF_COPY_FUNC(out, &pq->arr[0]);                                               \
+    TYPE_REF_COPY_FUNC(&pq->arr[0], &pq->arr[--pq->size]);                              \
+    TYPE_REF_DELETE_FUNC(&pq->arr[pq->size]);                                           \
     _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST(pq, 0);                                          \
     return true;                                                                        \
 }                                                                                       \
@@ -154,20 +154,20 @@ static const TYPE* PQ_FUNC_NAME_PEEK(PQ_NAME* pq)                               
 }                                                                                       \
 
 
-#define _DEFINE_PRIORITY_QUEUE_BASE(                                                \
+#define DEFINE_PRIORITY_QUEUE(                                                      \
     PRIORITY_QUEUE_NAME,                                                            \
     TYPE,                                                                           \
-    TYPE_PTR_COMPARE_FUNC,                                                          \
-    TYPE_PTR_COPY_FUNC,                                                             \
-    TYPE_PTR_FREE_FUNC                                                              \
+    TYPE_REF_COMPARE_FUNC,                                                          \
+    TYPE_REF_COPY_FUNC,                                                             \
+    TYPE_REF_DELETE_FUNC                                                            \
 )                                                                                   \
                                                                                     \
 _DEFINE_PRIORITY_QUEUE_IMPL(                                                        \
     PRIORITY_QUEUE_NAME,                                                            \
     TYPE,                                                                           \
-    TYPE_PTR_COMPARE_FUNC,                                                          \
-    TYPE_PTR_COPY_FUNC,                                                             \
-    TYPE_PTR_FREE_FUNC,                                                             \
+    TYPE_REF_COMPARE_FUNC,                                                          \
+    TYPE_REF_COPY_FUNC,                                                             \
+    TYPE_REF_DELETE_FUNC,                                                           \
     _##PRIORITY_QUEUE_NAME##_type_ptr_swap,                                         \
     _##PRIORITY_QUEUE_NAME##_heap_insert_adjust,                                    \
     _##PRIORITY_QUEUE_NAME##_heap_retrieve_adjust,                                  \
@@ -181,58 +181,5 @@ _DEFINE_PRIORITY_QUEUE_IMPL(                                                    
     PRIORITY_QUEUE_NAME##_retrieve,                                                 \
     PRIORITY_QUEUE_NAME##_peek                                                      \
 )                                                                                   \
-
-
-#define _DEFINE_PRIORITY_QUEUE_DEFAULT(                     \
-    PRIORITY_QUEUE_NAME,                                    \
-    TYPE                                                    \
-)                                                           \
-                                                            \
-_DEFINE_PRIORITY_QUEUE_BASE(                                \
-    PRIORITY_QUEUE_NAME,                                    \
-    TYPE,                                                   \
-    _DEFAULT_TYPE_PTR_LESS_COMPARE,                         \
-    _DEFAULT_TYPE_PTR_SHALLOW_COPY,                         \
-    _DEFAULT_TYPE_PTR_DEEP_FREE                             \
-)                                                           \
-
-
-#define _DEFINE_PRIORITY_QUEUE_CUSTOM(                      \
-    PRIORITY_QUEUE_NAME,                                    \
-    TYPE,                                                   \
-    TYPE_PTR_COMPARE_FUNC,                                  \
-    TYPE_PTR_COPY_FUNC,                                     \
-    TYPE_PTR_FREE_FUNC                                      \
-)                                                           \
-                                                            \
-_DEFINE_PRIORITY_QUEUE_BASE(                                \
-    PRIORITY_QUEUE_NAME,                                    \
-    TYPE,                                                   \
-    TYPE_PTR_COMPARE_FUNC,                                  \
-    TYPE_PTR_COPY_FUNC,                                     \
-    TYPE_PTR_FREE_FUNC                                      \
-)                                                           \
-
-
-#define _GET_PRIORITY_QUEUE_DEFINITION(_1, _2, _3, _4, _5, DEFINITION, ...) DEFINITION
-
-/**
- * @def DEFINE_PRIORITY_QUEUE
- * @brief Defines a priority queue structure and its corresponding functions.
- * @param _1 Desired NAME of the structure and functions prefix.
- * @param _2 Data TYPE.
- * @param _3 Optional: Function used to compare values for priority. Must accept two TYPE* arguments and return bool.
- * @param _4 Optional: Function used to copy values for insertion or swap. Must accept two TYPE* arguments and return void.
- * @param _5 Optional: Function used to delete values for retrieve or clear. Must accept one TYPE* argument and return void.
- * If this function is not provided, then the default `less` comparator is used.
- */
-#define DEFINE_PRIORITY_QUEUE(...)                          \
-                                                            \
-_GET_PRIORITY_QUEUE_DEFINITION(                             \
-    __VA_ARGS__,                                            \
-    _DEFINE_PRIORITY_QUEUE_CUSTOM,                          \
-    _DEFINE_PRIORITY_QUEUE_DEFAULT                          \
-)(__VA_ARGS__)                                              \
-
 
 #endif // PRIORITY_QUEUE_H

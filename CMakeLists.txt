@@ -11,7 +11,8 @@ include(cmake/fetch_googletest.cmake)
 # Add utils
 include(cmake/internal_utils.cmake)
 
-# Configure C++ STL
+# Configure C and C++ STL
+add_subdirectory(custom_stl_c)
 add_subdirectory(custom_stl_cpp)
 
 

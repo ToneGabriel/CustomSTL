@@ -33,9 +33,9 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
 }
 
 
-#define _DEFAULT_TYPE_PTR_LESS_COMPARE(LEFT_PTR, RIGHT_PTR) (*(LEFT_PTR) < *(RIGHT_PTR))
-#define _DEFAULT_TYPE_PTR_SHALLOW_COPY(DEST_PTR, SRC_PTR) (*(DEST_PTR) = *(SRC_PTR))
-#define _DEFAULT_TYPE_PTR_DEEP_FREE(TARGET_PTR) // nothing special
+#define DEFAULT_TYPE_REF_LESS(LEFT_REF, RIGHT_REF) (*(LEFT_REF) < *(RIGHT_REF))
+#define DEFAULT_TYPE_REF_COPY(DEST_REF, SRC_REF) (*(DEST_REF) = *(SRC_REF))
+#define DEFAULT_TYPE_REF_DELETE(TARGET_REF) // nothing special
 
 
 #endif  // Y_CORE_H

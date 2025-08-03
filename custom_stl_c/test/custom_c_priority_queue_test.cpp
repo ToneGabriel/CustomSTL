@@ -4,7 +4,13 @@
 #include "custom/c_priority_queue.h"
 
 
-DEFINE_PRIORITY_QUEUE(IntPQ, double)
+DEFINE_PRIORITY_QUEUE(
+    IntPQ,
+    int,
+    DEFAULT_TYPE_REF_LESS,
+    DEFAULT_TYPE_REF_COPY,
+    DEFAULT_TYPE_REF_DELETE
+)
 
 
 TEST(PriorityQueueTest, default_init)
