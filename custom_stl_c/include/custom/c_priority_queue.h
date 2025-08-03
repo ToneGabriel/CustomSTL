@@ -2,7 +2,7 @@
 #define PRIORITY_QUEUE_H
 
 
-#include "custom/__c_core.h"
+#include "custom/c_utility.h"
 
 
 #define _DEFINE_PRIORITY_QUEUE_IMPL(                                                    \
@@ -11,7 +11,7 @@
     TYPE_REF_COMPARE_FUNC,                                                              \
     TYPE_REF_COPY_FUNC,                                                                 \
     TYPE_REF_DELETE_FUNC,                                                               \
-    _PQ_FUNC_NAME_TYPE_PTR_SWAP,                                                        \
+    _PQ_FUNC_NAME_TYPE_REF_SWAP,                                                        \
     _PQ_FUNC_NAME_HEAP_INSERT_ADJUST,                                                   \
     _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST,                                                 \
     PQ_FUNC_NAME_CREATE,                                                                \
@@ -25,6 +25,8 @@
     PQ_FUNC_NAME_PEEK                                                                   \
 )                                                                                       \
                                                                                         \
+DEFINE_SWAP_GENERIC_FUNCTION(_PQ_FUNC_NAME_TYPE_REF_SWAP, TYPE, TYPE_REF_COPY_FUNC)     \
+                                                                                        \
 typedef struct                                                                          \
 {                                                                                       \
     TYPE* arr;                                                                          \
@@ -32,20 +34,12 @@ typedef struct                                                                  
     size_t capacity;                                                                    \
 } PQ_NAME;                                                                              \
                                                                                         \
-static void _PQ_FUNC_NAME_TYPE_PTR_SWAP(TYPE* left, TYPE* right)                        \
-{                                                                                       \
-    TYPE temp;                                                                          \
-    TYPE_REF_COPY_FUNC(&temp, left);                                                    \
-    TYPE_REF_COPY_FUNC(left, right);                                                    \
-    TYPE_REF_COPY_FUNC(right, &temp);                                                   \
-}                                                                                       \
-                                                                                        \
 static void _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(PQ_NAME* pq, size_t idx)                   \
 {                                                                                       \
     _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
     while (idx > 0 && TYPE_REF_COMPARE_FUNC(&pq->arr[idx], &pq->arr[(idx - 1) / 2]))    \
     {                                                                                   \
-        _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[(idx - 1) / 2]);            \
+        _PQ_FUNC_NAME_TYPE_REF_SWAP(&pq->arr[idx], &pq->arr[(idx - 1) / 2]);            \
         idx = (idx - 1) / 2;                                                            \
     }                                                                                   \
 }                                                                                       \
@@ -64,7 +58,7 @@ static void _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST(PQ_NAME* pq, size_t idx)         
         if (right < pq->size && TYPE_REF_COMPARE_FUNC(&pq->arr[right], &pq->arr[smallest])) \
             smallest = right;                                                           \
         if (smallest == idx) return;                                                    \
-        _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[smallest]);                 \
+        _PQ_FUNC_NAME_TYPE_REF_SWAP(&pq->arr[idx], &pq->arr[smallest]);                 \
         idx = smallest;                                                                 \
     }                                                                                   \
 }                                                                                       \
@@ -168,7 +162,7 @@ _DEFINE_PRIORITY_QUEUE_IMPL(                                                    
     TYPE_REF_COMPARE_FUNC,                                                          \
     TYPE_REF_COPY_FUNC,                                                             \
     TYPE_REF_DELETE_FUNC,                                                           \
-    _##PRIORITY_QUEUE_NAME##_type_ptr_swap,                                         \
+    _##PRIORITY_QUEUE_NAME##_type_ref_swap,                                         \
     _##PRIORITY_QUEUE_NAME##_heap_insert_adjust,                                    \
     _##PRIORITY_QUEUE_NAME##_heap_retrieve_adjust,                                  \
     PRIORITY_QUEUE_NAME##_create,                                                   \
