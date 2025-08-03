@@ -1,4 +1,3 @@
-0. Rename push with insert
 1. Learn and implement algorithm
 2. Learn and implement smart pointers
 3. Learn and implement lists sort/merge/unique etc.
