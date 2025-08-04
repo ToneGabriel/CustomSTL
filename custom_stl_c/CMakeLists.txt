@@ -8,4 +8,5 @@ create_cxx_executable(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE}
     "${CUSTOM_STL_C_LIBRARY};gtest;gmock"
     test/main.cpp
     test/custom_c_priority_queue_test.cpp
+    test/custom_c_vector_test.cpp
 )
