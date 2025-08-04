@@ -33,7 +33,8 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
 }
 
 
-#define c_IDENTIFIER_BIND(prefix, name) prefix##_##name
+#define _C_IDENTIFIER_HELPER_PREFIX(prefix) _##prefix
+#define _C_IDENTIFIER_BIND(prefix, name) prefix##_##name
 
 
 #endif  // Y_CORE_H
