@@ -1,16 +1,18 @@
-#ifndef PRIORITY_QUEUE_H
-#define PRIORITY_QUEUE_H
+#ifndef C_PRIORITY_QUEUE_H
+#define C_PRIORITY_QUEUE_H
 
 
-#include "custom/c_utility.h"
+#include "custom/c_vector.h"
 
 
 #define _DEFINE_PRIORITY_QUEUE_IMPL(                                                    \
     PQ_NAME,                                                                            \
     TYPE,                                                                               \
     TYPE_REF_COMPARE_FUNC,                                                              \
+    TYPE_REF_EQUALS_FUNC,                                                               \
     TYPE_REF_COPY_FUNC,                                                                 \
     TYPE_REF_DELETE_FUNC,                                                               \
+    _PQ_VECTOR_NAME,                                                                    \
     _PQ_FUNC_NAME_TYPE_REF_SWAP,                                                        \
     _PQ_FUNC_NAME_HEAP_INSERT_ADJUST,                                                   \
     _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST,                                                 \
@@ -25,13 +27,12 @@
     PQ_FUNC_NAME_PEEK                                                                   \
 )                                                                                       \
                                                                                         \
-DEFINE_SWAP_GENERIC_FUNCTION(_PQ_FUNC_NAME_TYPE_REF_SWAP, TYPE, TYPE_REF_COPY_FUNC)     \
+DEFINE_GENERIC_SWAP_FUNCTION(_PQ_FUNC_NAME_TYPE_REF_SWAP, TYPE, TYPE_REF_COPY_FUNC)     \
+DEFINE_GENERIC_VECTOR(_PQ_VECTOR_NAME, TYPE, TYPE_REF_EQUALS_FUNC, TYPE_REF_COPY_FUNC, TYPE_REF_DELETE_FUNC)    \
                                                                                         \
 typedef struct                                                                          \
 {                                                                                       \
-    TYPE* arr;                                                                          \
-    size_t size;                                                                        \
-    size_t capacity;                                                                    \
+    _PQ_VECTOR_NAME vec;                                                                \
 } PQ_NAME;                                                                              \
                                                                                         \
 static void _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(PQ_NAME* pq, size_t idx)                   \
@@ -176,4 +177,4 @@ _DEFINE_PRIORITY_QUEUE_IMPL(                                                    
     PRIORITY_QUEUE_NAME##_peek                                                      \
 )                                                                                   \
 
-#endif // PRIORITY_QUEUE_H
+#endif // C_PRIORITY_QUEUE_H

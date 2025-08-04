@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef C_VECTOR_H
+#define C_VECTOR_H
 
 
 #include "custom/c_utility.h"
@@ -89,25 +89,25 @@ static void VECTOR_FUNC_NAME_MOVE(VECTOR_NAME* dest, VECTOR_NAME* source)       
     source->arr = NULL;                                                                 \
 }                                                                                       \
                                                                                         \
-static size_t PQ_FUNC_NAME_SIZE(const VECTOR_NAME* vec)                                 \
+static size_t VECTOR_FUNC_NAME_SIZE(const VECTOR_NAME* vec)                             \
 {                                                                                       \
     _ASSERT(NULL != vec, "Vector is NULL");                                             \
     return vec->size;                                                                   \
 }                                                                                       \
                                                                                         \
-static size_t PQ_FUNC_NAME_CAPACITY(const VECTOR_NAME* vec)                             \
+static size_t VECTOR_FUNC_NAME_CAPACITY(const VECTOR_NAME* vec)                         \
 {                                                                                       \
     _ASSERT(NULL != vec, "Vector is NULL");                                             \
     return vec->capacity;                                                               \
 }                                                                                       \
                                                                                         \
-static bool PQ_FUNC_NAME_EMPTY(const VECTOR_NAME* vec)                                  \
+static bool VECTOR_FUNC_NAME_EMPTY(const VECTOR_NAME* vec)                              \
 {                                                                                       \
     _ASSERT(NULL != vec, "Vector is NULL");                                             \
     return vec->size == 0;                                                              \
 }                                                                                       \
                                                                                         \
-static void VECTOR_FUNC_NAME_PUSH_BACK(VECTOR_NAME* vec, const TYPE* item)                  \
+static void VECTOR_FUNC_NAME_PUSH_BACK(VECTOR_NAME* vec, const TYPE* item)              \
 {                                                                                       \
     _ASSERT(NULL != vec, "Vector is NULL");                                             \
     if (vec->size >= vec->capacity)                                                     \
@@ -190,4 +190,4 @@ _DEFINE_GENERIC_VECTOR_IMPL(                                                    
 )                                                                                   \
 
 
-#endif  // VECTOR_H
+#endif  // C_VECTOR_H
