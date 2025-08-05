@@ -5,7 +5,7 @@
 #include "custom/c_utility.h"
 
 
-#define DEFINE_GENERIC_VECTOR(                                                                          \
+#define _DEFINE_GENERIC_VECTOR_IMPL(                                                                    \
     VECTOR_NAME,                                                                                        \
     TYPE,                                                                                               \
     TYPE_REF_EQUALS_FUNC,                                                                               \
@@ -149,6 +149,24 @@ static bool _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, con
         if (!TYPE_REF_EQUALS_FUNC(&left->arr[i], &right->arr[i])) return false;                         \
     return true;                                                                                        \
 }                                                                                                       \
+
+
+#define DEFINE_GENERIC_VECTOR(                  \
+    VECTOR_NAME_PUBLIC_PREFIX,                  \
+    VECTOR_NAME_PRIVATE_PREFIX, /*unused*/      \
+    TYPE,                                       \
+    TYPE_REF_EQUALS_FUNC,                       \
+    TYPE_REF_COPY_FUNC,                         \
+    TYPE_REF_DELETE_FUNC                        \
+)                                               \
+                                                \
+_DEFINE_GENERIC_VECTOR_IMPL(                    \
+    VECTOR_NAME_PUBLIC_PREFIX,                  \
+    TYPE,                                       \
+    TYPE_REF_EQUALS_FUNC,                       \
+    TYPE_REF_COPY_FUNC,                         \
+    TYPE_REF_DELETE_FUNC                        \
+)                                               \
 
 
 #endif  // C_VECTOR_H

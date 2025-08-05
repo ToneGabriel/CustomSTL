@@ -4,8 +4,9 @@
 #include "custom/c_priority_queue.h"
 
 
-DEFINE_PRIORITY_QUEUE(
+DEFINE_GENERIC_PRIORITY_QUEUE(
     IntPQ,
+    _IntPQ,
     int,
     DEFAULT_TYPE_REF_LESS,
     DEFAULT_TYPE_REF_EQUALS,

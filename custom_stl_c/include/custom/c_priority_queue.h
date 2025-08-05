@@ -5,29 +5,13 @@
 #include "custom/c_vector.h"
 
 
-#define _DEFINE_PRIORITY_QUEUE_IMPL(                                                                                                    \
+#define _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                            \
     PQ_NAME,                                                                                                                            \
     PQ_HEAPIFY_HELPER_NAME,                                                                                                             \
     PQ_VECTOR_HELPER_NAME,                                                                                                              \
     TYPE,                                                                                                                               \
-    TYPE_REF_COMPARE_FUNC,                                                                                                              \
-    TYPE_REF_EQUALS_FUNC,                                                                                                               \
-    TYPE_REF_COPY_FUNC,                                                                                                                 \
-    TYPE_REF_DELETE_FUNC                                                                                                                \
+    TYPE_REF_COPY_FUNC                                                                                                                  \
 )                                                                                                                                       \
-                                                                                                                                        \
-DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                                                       \
-    PQ_HEAPIFY_HELPER_NAME,                                                                                                             \
-    TYPE,                                                                                                                               \
-    TYPE_REF_COMPARE_FUNC,                                                                                                              \
-    TYPE_REF_COPY_FUNC)                                                                                                                 \
-                                                                                                                                        \
-DEFINE_GENERIC_VECTOR(                                                                                                                  \
-    PQ_VECTOR_HELPER_NAME,                                                                                                              \
-    TYPE,                                                                                                                               \
-    TYPE_REF_EQUALS_FUNC,                                                                                                               \
-    TYPE_REF_COPY_FUNC,                                                                                                                 \
-    TYPE_REF_DELETE_FUNC)                                                                                                               \
                                                                                                                                         \
 typedef struct                                                                                                                          \
 {                                                                                                                                       \
@@ -99,8 +83,9 @@ static TYPE* _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                     
 }                                                                                                                                       \
 
 
-#define DEFINE_PRIORITY_QUEUE(                                                      \
-    PRIORITY_QUEUE_NAME,                                                            \
+#define DEFINE_GENERIC_PRIORITY_QUEUE(                                              \
+    PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                              \
+    PRIORITY_QUEUE_NAME_PRIVATE_PREFIX,                                             \
     TYPE,                                                                           \
     TYPE_REF_COMPARE_FUNC,                                                          \
     TYPE_REF_EQUALS_FUNC,                                                           \
@@ -108,15 +93,29 @@ static TYPE* _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                     
     TYPE_REF_DELETE_FUNC                                                            \
 )                                                                                   \
                                                                                     \
-_DEFINE_PRIORITY_QUEUE_IMPL(                                                        \
-    PRIORITY_QUEUE_NAME,                                                            \
-    _C_IDENTIFIER_HELPER_PREFIX(_C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME, HEAP)),     \
-    _C_IDENTIFIER_HELPER_PREFIX(_C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME, VECTOR)),   \
+DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP),                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP_PRIVATE),           \
     TYPE,                                                                           \
     TYPE_REF_COMPARE_FUNC,                                                          \
+    TYPE_REF_COPY_FUNC                                                              \
+)                                                                                   \
+                                                                                    \
+DEFINE_GENERIC_VECTOR(                                                              \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR),                 \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR_PRIVATE),         \
+    TYPE,                                                                           \
     TYPE_REF_EQUALS_FUNC,                                                           \
     TYPE_REF_COPY_FUNC,                                                             \
     TYPE_REF_DELETE_FUNC                                                            \
+)                                                                                   \
+                                                                                    \
+_DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                \
+    PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                              \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP),                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR),                 \
+    TYPE,                                                                           \
+    TYPE_REF_COPY_FUNC                                                              \
 )                                                                                   \
 
 

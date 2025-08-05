@@ -31,13 +31,7 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
 }
 
 
-// core implementation macros
-#define _C_IDENTIFIER_HELPER_PREFIX_IMPL(name) _##name
 #define _C_IDENTIFIER_BIND_IMPL(prefix, name) prefix##_##name
-
-
-// wrapper macros that trigger expansion
-#define _C_IDENTIFIER_HELPER_PREFIX(x) _C_IDENTIFIER_HELPER_PREFIX_IMPL(x)
 #define _C_IDENTIFIER_BIND(prefix, name) _C_IDENTIFIER_BIND_IMPL(prefix, name)
 
 
