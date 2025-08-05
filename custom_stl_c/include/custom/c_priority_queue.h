@@ -1,185 +1,194 @@
-#ifndef PRIORITY_QUEUE_H
-#define PRIORITY_QUEUE_H
+#ifndef C_PRIORITY_QUEUE_H
+#define C_PRIORITY_QUEUE_H
 
 
-#include "custom/__c_core.h"
+#include "custom/c_vector.h"
 
 
-#define _DEFINE_PRIORITY_QUEUE_IMPL(                                                    \
-    PQ_NAME,                                                                            \
-    TYPE,                                                                               \
-    TYPE_REF_COMPARE_FUNC,                                                              \
-    TYPE_REF_COPY_FUNC,                                                                 \
-    TYPE_REF_DELETE_FUNC,                                                               \
-    _PQ_FUNC_NAME_TYPE_PTR_SWAP,                                                        \
-    _PQ_FUNC_NAME_HEAP_INSERT_ADJUST,                                                   \
-    _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST,                                                 \
-    PQ_FUNC_NAME_CREATE,                                                                \
-    PQ_FUNC_NAME_DESTROY,                                                               \
-    PQ_FUNC_NAME_CLEAR,                                                                 \
-    PQ_FUNC_NAME_SIZE,                                                                  \
-    PQ_FUNC_NAME_CAPACITY,                                                              \
-    PQ_FUNC_NAME_EMPTY,                                                                 \
-    PQ_FUNC_NAME_INSERT,                                                                \
-    PQ_FUNC_NAME_RETRIEVE,                                                              \
-    PQ_FUNC_NAME_PEEK                                                                   \
-)                                                                                       \
-                                                                                        \
-typedef struct                                                                          \
-{                                                                                       \
-    TYPE* arr;                                                                          \
-    size_t size;                                                                        \
-    size_t capacity;                                                                    \
-} PQ_NAME;                                                                              \
-                                                                                        \
-static void _PQ_FUNC_NAME_TYPE_PTR_SWAP(TYPE* left, TYPE* right)                        \
-{                                                                                       \
-    TYPE temp;                                                                          \
-    TYPE_REF_COPY_FUNC(&temp, left);                                                    \
-    TYPE_REF_COPY_FUNC(left, right);                                                    \
-    TYPE_REF_COPY_FUNC(right, &temp);                                                   \
-}                                                                                       \
-                                                                                        \
-static void _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(PQ_NAME* pq, size_t idx)                   \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    while (idx > 0 && TYPE_REF_COMPARE_FUNC(&pq->arr[idx], &pq->arr[(idx - 1) / 2]))    \
-    {                                                                                   \
-        _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[(idx - 1) / 2]);            \
-        idx = (idx - 1) / 2;                                                            \
-    }                                                                                   \
-}                                                                                       \
-                                                                                        \
-static void _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST(PQ_NAME* pq, size_t idx)                 \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    size_t smallest, left, right;                                                       \
-    while (idx < pq->size)                                                              \
-    {                                                                                   \
-        smallest = idx;                                                                 \
-        left = 2 * idx + 1;                                                             \
-        right = 2 * idx + 2;                                                            \
-        if (left < pq->size && TYPE_REF_COMPARE_FUNC(&pq->arr[left], &pq->arr[smallest]))   \
-            smallest = left;                                                            \
-        if (right < pq->size && TYPE_REF_COMPARE_FUNC(&pq->arr[right], &pq->arr[smallest])) \
-            smallest = right;                                                           \
-        if (smallest == idx) return;                                                    \
-        _PQ_FUNC_NAME_TYPE_PTR_SWAP(&pq->arr[idx], &pq->arr[smallest]);                 \
-        idx = smallest;                                                                 \
-    }                                                                                   \
-}                                                                                       \
-                                                                                        \
-static PQ_NAME* PQ_FUNC_NAME_CREATE(size_t capacity)                                    \
-{                                                                                       \
-    _ASSERT(capacity != 0, "Capacity should be greater than 0");                        \
-    PQ_NAME* pq = (PQ_NAME*)malloc(sizeof(PQ_NAME));                                    \
-    if (NULL == pq) return NULL;                                                        \
-    TYPE* temp_arr = (TYPE*)malloc(sizeof(TYPE) * capacity);                            \
-    if (NULL == temp_arr)                                                               \
-    {                                                                                   \
-        free(pq);                                                                       \
-        return NULL;                                                                    \
-    }                                                                                   \
-    pq->arr = temp_arr;                                                                 \
-    pq->size = 0;                                                                       \
-    pq->capacity = capacity;                                                            \
-    return pq;                                                                          \
-}                                                                                       \
-                                                                                        \
-static void PQ_FUNC_NAME_DESTROY(PQ_NAME* pq)                                           \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    for (size_t i = 0; i < pq->size; ++i) TYPE_REF_DELETE_FUNC(&pq->arr[i]);            \
-    free(pq->arr);                                                                      \
-    free(pq);                                                                           \
-}                                                                                       \
-                                                                                        \
-static void PQ_FUNC_NAME_CLEAR(PQ_NAME* pq)                                             \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    for (size_t i = 0; i < pq->size; ++i) TYPE_REF_DELETE_FUNC(&pq->arr[i]);            \
-    pq->size = 0;                                                                       \
-}                                                                                       \
-                                                                                        \
-static size_t PQ_FUNC_NAME_SIZE(PQ_NAME* pq)                                            \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    return pq->size;                                                                    \
-}                                                                                       \
-                                                                                        \
-static size_t PQ_FUNC_NAME_CAPACITY(PQ_NAME* pq)                                        \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    return pq->capacity;                                                                \
-}                                                                                       \
-                                                                                        \
-static bool PQ_FUNC_NAME_EMPTY(PQ_NAME* pq)                                             \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    return pq->size == 0;                                                               \
-}                                                                                       \
-                                                                                        \
-static bool PQ_FUNC_NAME_INSERT(PQ_NAME* pq, TYPE item)                                 \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    if (pq->size >= pq->capacity)                                                       \
-    {                                                                                   \
-        size_t new_cap = pq->capacity + pq->capacity / 2 + 1;                           \
-        TYPE* new_arr = (TYPE*)realloc(pq->arr, sizeof(TYPE) * new_cap);                \
-        if (NULL == new_arr) return false;                                              \
-        pq->arr = new_arr;                                                              \
-        pq->capacity = new_cap;                                                         \
-    }                                                                                   \
-    TYPE_REF_COPY_FUNC(&pq->arr[pq->size++], &item);                                    \
-    _PQ_FUNC_NAME_HEAP_INSERT_ADJUST(pq, pq->size - 1);                                 \
-    return true;                                                                        \
-}                                                                                       \
-                                                                                        \
-static bool PQ_FUNC_NAME_RETRIEVE(PQ_NAME* pq, TYPE* out)                               \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    if (pq->size == 0) return false;                                                    \
-    TYPE_REF_COPY_FUNC(out, &pq->arr[0]);                                               \
-    TYPE_REF_COPY_FUNC(&pq->arr[0], &pq->arr[--pq->size]);                              \
-    TYPE_REF_DELETE_FUNC(&pq->arr[pq->size]);                                           \
-    _PQ_FUNC_NAME_HEAP_RETRIEVE_ADJUST(pq, 0);                                          \
-    return true;                                                                        \
-}                                                                                       \
-                                                                                        \
-static const TYPE* PQ_FUNC_NAME_PEEK(PQ_NAME* pq)                                       \
-{                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                      \
-    if (pq->size == 0) return NULL;                                                     \
-    return &pq->arr[0];                                                                 \
-}                                                                                       \
+/**
+ * @def _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL
+ * @brief Internal macro that defines the complete implementation of a priority queue.
+ *
+ * This macro generates a full implementation of a min/max heap-based priority queue using a vector as the backing store.
+ * The generated queue operates on elements of type `TYPE`, and uses helper macros for heap and vector operations.
+ *
+ * @param PQ_NAME                   Public-facing name prefix for struct and functions (e.g., `MyPQ` -> `MyPQ_create`, etc.)
+ * @param PQ_HEAPIFY_HELPER_NAME    Name prefix of the helper heapify functions (defined beforehand via another macro)
+ * @param PQ_VECTOR_HELPER_NAME     Name prefix for the vector implementation used internally (defined beforehand via another macro)
+ * @param TYPE                      Type of elements to be stored in the priority queue
+ * @param TYPE_REF_COPY_FUNC        Function used to copy one `TYPE*` to another `TYPE*`
+ */
+#define _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                            \
+    PQ_NAME,                                                                                                                            \
+    PQ_HEAPIFY_HELPER_NAME,                                                                                                             \
+    PQ_VECTOR_HELPER_NAME,                                                                                                              \
+    TYPE,                                                                                                                               \
+    TYPE_REF_COPY_FUNC                                                                                                                  \
+)                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @struct PQ_NAME                                                                                                                      \
+ * @brief Struct representing the priority queue. Contains the internal vector.                                                         \
+ */                                                                                                                                     \
+typedef struct                                                                                                                          \
+{                                                                                                                                       \
+    PQ_VECTOR_HELPER_NAME vec;                                                                                                          \
+} PQ_NAME;                                                                                                                              \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Creates and initializes a new priority queue.                                                                                 \
+ * @return A new instance of PQ_NAME.                                                                                                   \
+ */                                                                                                                                     \
+static PQ_NAME _C_IDENTIFIER_BIND(PQ_NAME, create)()                                                                                    \
+{                                                                                                                                       \
+    PQ_NAME pq = {                                                                                                                      \
+        .vec = _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, create)(8)                                                                     \
+    };                                                                                                                                  \
+    return pq;                                                                                                                          \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Destroys the priority queue and its internal data.                                                                            \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ */                                                                                                                                     \
+static void _C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq)                                                                           \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, destroy)(&pq->vec);                                                                       \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Clears all elements from the priority queue without destroying it.                                                            \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ */                                                                                                                                     \
+static void _C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq)                                                                             \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, clear)(&pq->vec);                                                                         \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Returns the number of elements in the priority queue.                                                                         \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ * @return The number of elements.                                                                                                      \
+ */                                                                                                                                     \
+static size_t _C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq)                                                                            \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec);                                                                   \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Checks if the priority queue is empty.                                                                                        \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ * @return `true` if empty, `false` otherwise.                                                                                          \
+ */                                                                                                                                     \
+static bool _C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq)                                                                             \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec);                                                                  \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Inserts a new element into the priority queue.                                                                                \
+ * Performs a heapify-up after insertion to maintain heap order.                                                                        \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ * @param item Pointer to the element to insert.                                                                                        \
+ */                                                                                                                                     \
+static void _C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)                                                          \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, push_back)(&pq->vec, item);                                                               \
+    _C_IDENTIFIER_BIND(PQ_HEAPIFY_HELPER_NAME, heapify_up)(                                                                             \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                      \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                      \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1);                                                                 \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Removes the top element (highest priority) from the priority queue.                                                           \
+ * Performs a heapify-down after removal to maintain heap order.                                                                        \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ */                                                                                                                                     \
+static void _C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq)                                                                               \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    if (_C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec)) return;                                                             \
+    TYPE_REF_COPY_FUNC(                                                                                                                 \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, 0),                                                             \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1)  \
+    );                                                                                                                                  \
+    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, pop_back)(&pq->vec);                                                                      \
+    _C_IDENTIFIER_BIND(PQ_HEAPIFY_HELPER_NAME, heapify_down)(                                                                           \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                      \
+        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                      \
+        0                                                                                                                               \
+    );                                                                                                                                  \
+}                                                                                                                                       \
+                                                                                                                                        \
+/**                                                                                                                                     \
+ * @brief Returns a pointer to the top element (highest priority) of the queue.                                                         \
+ * @param pq Pointer to the priority queue.                                                                                             \
+ * @return Pointer to the top element.                                                                                                  \
+ */                                                                                                                                     \
+static TYPE* _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                                                                             \
+{                                                                                                                                       \
+    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_front)(&pq->vec);                                                          \
+}                                                                                                                                       \
 
 
-#define DEFINE_PRIORITY_QUEUE(                                                      \
-    PRIORITY_QUEUE_NAME,                                                            \
+/**
+ * @def DEFINE_GENERIC_PRIORITY_QUEUE
+ * @brief Fully defines a priority queue for a given type with all required dependencies.
+ *
+ * This macro instantiates:
+ * - A heapify helper for maintaining priority ordering
+ * - A dynamic vector container for internal storage
+ * - The priority queue API (create, insert, pop, etc.)
+ *
+ * @param PRIORITY_QUEUE_NAME_PUBLIC_PREFIX   Public prefix (e.g. `MyPQ` → `MyPQ_create`)
+ * @param PRIORITY_QUEUE_NAME_PRIVATE_PREFIX  Private helper prefix (for heap/vector implementation)
+ * @param TYPE                                The element type stored in the priority queue
+ * @param TYPE_REF_COMPARE_FUNC               Function comparing two `TYPE*` (for priority)
+ * @param TYPE_REF_EQUALS_FUNC                Function comparing two `TYPE*` for equality
+ * @param TYPE_REF_COPY_FUNC                  Function that copies from `TYPE*` to `TYPE*`
+ * @param TYPE_REF_DELETE_FUNC                Function that deletes/frees a `TYPE*`
+ */
+#define DEFINE_GENERIC_PRIORITY_QUEUE(                                              \
+    PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                              \
+    PRIORITY_QUEUE_NAME_PRIVATE_PREFIX,                                             \
     TYPE,                                                                           \
     TYPE_REF_COMPARE_FUNC,                                                          \
+    TYPE_REF_EQUALS_FUNC,                                                           \
     TYPE_REF_COPY_FUNC,                                                             \
     TYPE_REF_DELETE_FUNC                                                            \
 )                                                                                   \
                                                                                     \
-_DEFINE_PRIORITY_QUEUE_IMPL(                                                        \
-    PRIORITY_QUEUE_NAME,                                                            \
+DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP),                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP_PRIVATE),           \
     TYPE,                                                                           \
     TYPE_REF_COMPARE_FUNC,                                                          \
+    TYPE_REF_COPY_FUNC                                                              \
+)                                                                                   \
+                                                                                    \
+DEFINE_GENERIC_VECTOR(                                                              \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR),                 \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR_PRIVATE),         \
+    TYPE,                                                                           \
+    TYPE_REF_EQUALS_FUNC,                                                           \
     TYPE_REF_COPY_FUNC,                                                             \
-    TYPE_REF_DELETE_FUNC,                                                           \
-    _##PRIORITY_QUEUE_NAME##_type_ptr_swap,                                         \
-    _##PRIORITY_QUEUE_NAME##_heap_insert_adjust,                                    \
-    _##PRIORITY_QUEUE_NAME##_heap_retrieve_adjust,                                  \
-    PRIORITY_QUEUE_NAME##_create,                                                   \
-    PRIORITY_QUEUE_NAME##_destroy,                                                  \
-    PRIORITY_QUEUE_NAME##_clear,                                                    \
-    PRIORITY_QUEUE_NAME##_size,                                                     \
-    PRIORITY_QUEUE_NAME##_capacity,                                                 \
-    PRIORITY_QUEUE_NAME##_empty,                                                    \
-    PRIORITY_QUEUE_NAME##_insert,                                                   \
-    PRIORITY_QUEUE_NAME##_retrieve,                                                 \
-    PRIORITY_QUEUE_NAME##_peek                                                      \
+    TYPE_REF_DELETE_FUNC                                                            \
+)                                                                                   \
+                                                                                    \
+_DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                \
+    PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                              \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, HEAP),                   \
+    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PRIVATE_PREFIX, VECTOR),                 \
+    TYPE,                                                                           \
+    TYPE_REF_COPY_FUNC                                                              \
 )                                                                                   \
 
-#endif // PRIORITY_QUEUE_H
+
+#endif // C_PRIORITY_QUEUE_H

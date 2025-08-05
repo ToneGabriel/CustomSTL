@@ -1,12 +1,10 @@
-#ifndef Y_CORE_H
-#define Y_CORE_H
+#ifndef _C_CORE_H
+#define _C_CORE_H
 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-// #include <_custom_stl_config.hpp>   // project configuration
 
 
 #ifndef NDEBUG
@@ -33,9 +31,8 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
 }
 
 
-#define DEFAULT_TYPE_REF_LESS(LEFT_REF, RIGHT_REF) (*(LEFT_REF) < *(RIGHT_REF))
-#define DEFAULT_TYPE_REF_COPY(DEST_REF, SRC_REF) (*(DEST_REF) = *(SRC_REF))
-#define DEFAULT_TYPE_REF_DELETE(TARGET_REF) // nothing special
+#define _C_IDENTIFIER_BIND_IMPL(prefix, name) prefix##_##name
+#define _C_IDENTIFIER_BIND(prefix, name) _C_IDENTIFIER_BIND_IMPL(prefix, name)
 
 
-#endif  // Y_CORE_H
+#endif  // _C_CORE_H
