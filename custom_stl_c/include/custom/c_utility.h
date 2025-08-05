@@ -2,7 +2,7 @@
 #define C_UTILITY_H
 
 
-#include "custom/__c_core.h"
+#include "custom/_c_core.h"
 
 
 #define DEFAULT_TYPE_REF_LESS(LEFT_REF, RIGHT_REF) (*(LEFT_REF) < *(RIGHT_REF))
@@ -37,14 +37,14 @@ static void _C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, swap)(TYPE* left, TYPE* ri
 
 #define _DEFINE_GENERIC_HEAPIFY_FUNCTIONS_IMPL(                                                                 \
     HEAP_ADJUST_NAME_PREFIX,                                                                                    \
-    HEAP_ADJUST_HELPER_NAME_PREFIX,                                                                             \
+    HEAP_ADJUST_SWAP_HELPER_NAME_PREFIX,                                                                        \
     TYPE,                                                                                                       \
     TYPE_REF_COMPARE_FUNC,                                                                                      \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
                                                                                                                 \
 DEFINE_GENERIC_SWAP_FUNCTION(                                                                                   \
-    HEAP_ADJUST_HELPER_NAME_PREFIX,                                                                             \
+    HEAP_ADJUST_SWAP_HELPER_NAME_PREFIX,                                                                        \
     TYPE,                                                                                                       \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
@@ -55,7 +55,7 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PREFIX, heapify_up)(TYPE* arr, s
     _ASSERT(idx < arr_size, "Heap index is greater than array size");                                           \
     while (idx > 0 && TYPE_REF_COMPARE_FUNC(&arr[idx], &arr[(idx - 1) / 2]))                                    \
     {                                                                                                           \
-        _C_IDENTIFIER_BIND(HEAP_ADJUST_HELPER_NAME_PREFIX, swap)(&arr[idx], &arr[(idx - 1) / 2]);               \
+        _C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME_PREFIX, swap)(&arr[idx], &arr[(idx - 1) / 2]);          \
         idx = (idx - 1) / 2;                                                                                    \
     }                                                                                                           \
 }                                                                                                               \
@@ -75,7 +75,7 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PREFIX, heapify_down)(TYPE* arr,
         if (right < arr_size && TYPE_REF_COMPARE_FUNC(&arr[right], &arr[smallest]))                             \
             smallest = right;                                                                                   \
         if (smallest == idx) return;                                                                            \
-        _C_IDENTIFIER_BIND(HEAP_ADJUST_HELPER_NAME_PREFIX, swap)(&arr[idx], &arr[smallest]);                    \
+        _C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME_PREFIX, swap)(&arr[idx], &arr[smallest]);               \
         idx = smallest;                                                                                         \
     }                                                                                                           \
 }                                                                                                               \

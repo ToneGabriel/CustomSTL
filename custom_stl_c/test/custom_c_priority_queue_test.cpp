@@ -8,6 +8,7 @@ DEFINE_PRIORITY_QUEUE(
     IntPQ,
     int,
     DEFAULT_TYPE_REF_LESS,
+    DEFAULT_TYPE_REF_EQUALS,
     DEFAULT_TYPE_REF_COPY,
     DEFAULT_TYPE_REF_DELETE
 )
@@ -15,6 +16,6 @@ DEFINE_PRIORITY_QUEUE(
 
 TEST(PriorityQueueTest, default_init)
 {
-    IntPQ* pq = IntPQ_create(10);
-    IntPQ_destroy(pq);
+    IntPQ pq = IntPQ_create();
+    IntPQ_destroy(&pq);
 }

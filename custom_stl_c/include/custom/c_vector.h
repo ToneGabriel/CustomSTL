@@ -75,6 +75,12 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME
     source->arr = NULL;                                                                                 \
 }                                                                                                       \
                                                                                                         \
+static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec)                              \
+{                                                                                                       \
+    _ASSERT(NULL != vec, "Vector is NULL");                                                             \
+    return vec->arr;                                                                                    \
+}                                                                                                       \
+                                                                                                        \
 static size_t _C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec)                             \
 {                                                                                                       \
     _ASSERT(NULL != vec, "Vector is NULL");                                                             \

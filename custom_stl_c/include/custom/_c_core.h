@@ -1,12 +1,10 @@
-#ifndef Y_CORE_H
-#define Y_CORE_H
+#ifndef _C_CORE_H
+#define _C_CORE_H
 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-// #include <_custom_stl_config.hpp>   // project configuration
 
 
 #ifndef NDEBUG
@@ -33,8 +31,14 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
 }
 
 
-#define _C_IDENTIFIER_HELPER_PREFIX(prefix) _##prefix
-#define _C_IDENTIFIER_BIND(prefix, name) prefix##_##name
+// core implementation macros
+#define _C_IDENTIFIER_HELPER_PREFIX_IMPL(name) _##name
+#define _C_IDENTIFIER_BIND_IMPL(prefix, name) prefix##_##name
 
 
-#endif  // Y_CORE_H
+// wrapper macros that trigger expansion
+#define _C_IDENTIFIER_HELPER_PREFIX(x) _C_IDENTIFIER_HELPER_PREFIX_IMPL(x)
+#define _C_IDENTIFIER_BIND(prefix, name) _C_IDENTIFIER_BIND_IMPL(prefix, name)
+
+
+#endif  // _C_CORE_H
