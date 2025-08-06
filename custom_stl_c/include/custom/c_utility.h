@@ -74,7 +74,7 @@
     TYPE_REF_COPY_FUNC                                                                  \
 )                                                                                       \
                                                                                         \
-static void _C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, swap)(TYPE* left, TYPE* right)    \
+static void C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, swap)(TYPE* left, TYPE* right)     \
 {                                                                                       \
     TYPE temp;                                                                          \
     TYPE_REF_COPY_FUNC(&temp, left);                                                    \
@@ -102,19 +102,22 @@ static void _C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, swap)(TYPE* left, TYPE* ri
     TYPE_REF_COMPARE_FUNC                                                                                       \
 )                                                                                                               \
                                                                                                                 \
+static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t arr_size, size_t idx);            \
+static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t arr_size, size_t idx);          \
+                                                                                                                \
 /**                                                                                                             \
  * @brief Adjusts the heap upwards to restore the heap property.                                                \
  * @param arr Pointer to the heap array.                                                                        \
  * @param arr_size Total number of elements in the array.                                                       \
  * @param idx Index of the newly inserted element to heapify.                                                   \
  */                                                                                                             \
-static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t arr_size, size_t idx)            \
+static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t arr_size, size_t idx)             \
 {                                                                                                               \
     _ASSERT(NULL != arr, "Heap array is NULL");                                                                 \
     _ASSERT(idx < arr_size, "Heap index is greater than array size");                                           \
     while (idx > 0 && TYPE_REF_COMPARE_FUNC(&arr[idx], &arr[(idx - 1) / 2]))                                    \
     {                                                                                                           \
-        _C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[(idx - 1) / 2]);                 \
+        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[(idx - 1) / 2]);                  \
         idx = (idx - 1) / 2;                                                                                    \
     }                                                                                                           \
 }                                                                                                               \
@@ -125,7 +128,7 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t a
  * @param arr_size Total number of elements in the array.                                                       \
  * @param idx Index of the newly inserted element to heapify.                                                   \
  */                                                                                                             \
-static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t arr_size, size_t idx)          \
+static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t arr_size, size_t idx)           \
 {                                                                                                               \
     _ASSERT(NULL != arr, "Heap array is NULL");                                                                 \
     _ASSERT(idx < arr_size, "Heap index is greater than array size");                                           \
@@ -140,7 +143,7 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t
         if (right < arr_size && TYPE_REF_COMPARE_FUNC(&arr[right], &arr[smallest]))                             \
             smallest = right;                                                                                   \
         if (smallest == idx) return;                                                                            \
-        _C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[smallest]);                      \
+        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[smallest]);                       \
         idx = smallest;                                                                                         \
     }                                                                                                           \
 }                                                                                                               \
@@ -169,14 +172,14 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t
 )                                                                                                               \
                                                                                                                 \
 DEFINE_GENERIC_SWAP_FUNCTION(                                                                                   \
-    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC),                                      \
+    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC),                                       \
     TYPE,                                                                                                       \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
                                                                                                                 \
 _DEFINE_GENERIC_HEAPIFY_FUNCTIONS_IMPL(                                                                         \
     HEAP_ADJUST_NAME_PUBLIC_PREFIX,                                                                             \
-    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC), /*same as above*/                    \
+    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC), /*same as above*/                     \
     TYPE,                                                                                                       \
     TYPE_REF_COMPARE_FUNC                                                                                       \
 )                                                                                                               \
