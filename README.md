@@ -1,18 +1,73 @@
 # CustomSTL
 
-Personal approach inspired from MSVC and GNU. Actual implementation is found in "code" folder.
+**Version**: 1.0.0 (beta)
 
-This project deepened my understanding of STL internals, including memory management, iterators, and algorithm efficiency.
+**CustomSTL** is a dual-language library project that implements core features of the C++ Standard Template Library (STL) in both **C** and **C++**. It aims to provide equivalent functionality for commonly used data structures and algorithms in each language, enabling easier learning, comparison, or integration in C/C++ hybrid environments.
 
-I am confident that I can create lightweight versions of these classes and functions or use the existing ones with ease.
+---
 
-Compilation requirements:
+## Features
 
-- C++20 version
-- GCC (Linux or Windows) or MSVC (!no thread support!)
+<details>
+<summary><b>C Headers</b></summary>
 
-Components not fully operational:
+- `c_list`
+- `c_priority_queue`
+- `c_utility`
+- `c_vector`
+</details>
 
-- c_memory.h
-- c_algorithm.h
-- c_forward_list.h operations (splice/sort/merge)
+<details>
+<summary><b>C++ Headers</b></summary>
+
+- `algorithm`
+- `array`
+- `barrier`
+- `bit`
+- `bitset`
+- `chrono`
+- `complex`
+- `condition_variable`
+- `counting_semaphore`
+- `deque`
+- `forward_list`
+- `functional`
+- `iterator`
+- `limits`
+- `list`
+- `map`
+- `memory`
+- `mutex`
+- `numbers`
+- `numeric`
+- `pair`
+- `queue`
+- `ratio`
+- `set`
+- `shared_mutex`
+- `stack`
+- `string_view`
+- `string`
+- `thread`
+- `tuple`
+- `type_traits`
+- `unordered_map`
+- `unordered_set`
+- `utility`
+- `vector`
+</details>
+
+---
+
+## Requirements
+
+- C compiler supporting C99
+- C++20 or newer
+- CMake (≥3.22.1)
+- Ninja
+- GoogleTest (automatically fetched via CMake)
+
+---
+
+## Installation & Build
+
