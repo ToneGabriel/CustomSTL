@@ -1,5 +1,5 @@
 #pragma once
-#include "custom/__core.h"
+#include "custom/_stlcore.h"
 
 
 CUSTOM_BEGIN

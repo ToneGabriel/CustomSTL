@@ -2,7 +2,7 @@
 #define _C_NODE_H
 
 
-#include "custom/_c_core.h"
+#include "custom/_c_stlcore.h"
 
 
 #define DEFINE_SINGLE_NODE(     \
