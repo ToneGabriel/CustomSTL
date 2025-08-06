@@ -36,26 +36,52 @@ static TYPE*        C_IDENTIFIER_BIND(LIST_NAME, element_front)(LIST_NAME* list)
 static TYPE*        C_IDENTIFIER_BIND(LIST_NAME, element_back)(LIST_NAME* list);                            \
 static bool         C_IDENTIFIER_BIND(LIST_NAME, equals)(const LIST_NAME* left, const LIST_NAME* right);    \
                                                                                                             \
+static void         C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_unlink_node)(LIST_NAME* list, NODE_NAME* node);    \
+static void         C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_destroy_node)(LIST_NAME* list, NODE_NAME* node);   \
+                                                                                                            \
+static void C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_unlink_node)(LIST_NAME* list, NODE_NAME* node)             \
+{                                                                                                           \
+    _ASSERT(NULL != list, "List is NULL");                                                                  \
+    _ASSERT(node->next != NULL && node->prev != NULL, "Unlink only if linked");                             \
+    node->prev->next = node->next;                                                                          \
+    node->next->prev = node->prev;                                                                          \
+    node->next = node->prev = NULL;                                                                         \
+    --list->size;                                                                                           \
+}                                                                                                           \
+                                                                                                            \
+static void C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_destroy_node)(LIST_NAME* list, NODE_NAME* node)            \
+{                                                                                                           \
+    _ASSERT(NULL != list, "List is NULL");                                                                  \
+    C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_unlink_node)(list, node);                                          \
+    TYPE_REF_DELETE_FUNC(&node->value);                                                                     \
+    free(node);                                                                                             \
+}                                                                                                           \
+                                                                                                            \
 static LIST_NAME C_IDENTIFIER_BIND(LIST_NAME, create)()                                                     \
 {                                                                                                           \
     LIST_NAME list = {                                                                                      \
         .size = 0,                                                                                          \
         .head = (NODE_NAME*)malloc(sizeof(NODE_NAME))                                                       \
     };                                                                                                      \
+    list.head->next = list.head->prev = list.head; /*head value remains default*/                           \
     return list;                                                                                            \
-}                                                                                                           \
-                                                                                                            \
-static void C_IDENTIFIER_BIND(LIST_NAME, clear)(LIST_NAME* list)                                            \
-{                                                                                                           \
-    _ASSERT(NULL != list, "List is NULL");                                                                  \
-    /*TODO: implement*/                                                                                     \
 }                                                                                                           \
                                                                                                             \
 static void C_IDENTIFIER_BIND(LIST_NAME, destroy)(LIST_NAME* list)                                          \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
+    if (NULL == list->head) return;                                                                         \
     C_IDENTIFIER_BIND(LIST_NAME, clear)(list);                                                              \
-    /*TODO: delete head*/                                                                                   \
+    free(list->head);                                                                                       \
+    list->size = 0;                                                                                         \
+    list->head = NULL;                                                                                      \
+}                                                                                                           \
+                                                                                                            \
+static void C_IDENTIFIER_BIND(LIST_NAME, clear)(LIST_NAME* list)                                            \
+{                                                                                                           \
+    _ASSERT(NULL != list, "List is NULL");                                                                  \
+    while (list->size)                                                                                      \
+        C_IDENTIFIER_BIND(LIST_NAME, pop_back)(list);                                                       \
 }                                                                                                           \
                                                                                                             \
 static void C_IDENTIFIER_BIND(LIST_NAME, copy)(LIST_NAME* dest, const LIST_NAME* source)                    \
@@ -81,7 +107,7 @@ static size_t C_IDENTIFIER_BIND(LIST_NAME, size)(LIST_NAME* list)               
 static bool C_IDENTIFIER_BIND(LIST_NAME, empty)(const LIST_NAME* list)                                      \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
-    return list->size == 0;                                                                                 \
+    return 0 == list->size;                                                                                 \
 }                                                                                                           \
                                                                                                             \
 static void C_IDENTIFIER_BIND(LIST_NAME, push_back)(LIST_NAME* list, const TYPE* item)                      \
@@ -99,25 +125,29 @@ static void C_IDENTIFIER_BIND(LIST_NAME, push_front)(LIST_NAME* list, const TYPE
 static void C_IDENTIFIER_BIND(LIST_NAME, pop_back)(LIST_NAME* list)                                         \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
-    /*TODO: implement*/                                                                                     \
+    if (0 == list->size) return;                                                                            \
+    C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_destroy_node)(list, list->head->prev);                             \
 }                                                                                                           \
                                                                                                             \
 static void C_IDENTIFIER_BIND(LIST_NAME, pop_front)(LIST_NAME* list)                                        \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
-    /*TODO: implement*/                                                                                     \
+    if (0 == list->size) return;                                                                            \
+    C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_destroy_node)(list, list->head->next);                             \
 }                                                                                                           \
                                                                                                             \
 static TYPE* C_IDENTIFIER_BIND(LIST_NAME, element_front)(LIST_NAME* list)                                   \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
-    return NULL; /*TODO: implement*/                                                                        \
+    _ASSERT(list->size != 0, "List is empty");                                                              \
+    return &list->head->next->value;                                                                        \
 }                                                                                                           \
                                                                                                             \
 static TYPE* C_IDENTIFIER_BIND(LIST_NAME, element_back)(LIST_NAME* list)                                    \
 {                                                                                                           \
     _ASSERT(NULL != list, "List is NULL");                                                                  \
-    return NULL; /*TODO: implement*/                                                                        \
+    _ASSERT(list->size != 0, "List is empty");                                                              \
+    return &list->head->prev->value;                                                                        \
 }                                                                                                           \
                                                                                                             \
 static bool C_IDENTIFIER_BIND(LIST_NAME, equals)(const LIST_NAME* left, const LIST_NAME* right)             \
@@ -150,6 +180,9 @@ _DEFINE_GENERIC_LIST_IMPL(                                                      
     TYPE_REF_COPY_FUNC,                                                             \
     TYPE_REF_DELETE_FUNC                                                            \
 )                                                                                   \
+
+
+// DEFINE_GENERIC_LIST(MyListINT, int, DEFAULT_TYPE_REF_EQUALS, DEFAULT_TYPE_REF_COPY, DEFAULT_TYPE_REF_DELETE)
 
 
 #endif  // _C_LIST_H
