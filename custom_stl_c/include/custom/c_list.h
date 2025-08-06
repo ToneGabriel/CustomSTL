@@ -2,7 +2,6 @@
 #define _C_LIST_H
 
 
-#include "custom/_c_stlcore.h"
 #include "custom/_c_node.h"
 #include "custom/c_utility.h"
 
