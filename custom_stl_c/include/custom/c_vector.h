@@ -245,8 +245,13 @@ static bool _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, con
 /**
  * @brief Public macro to define a generic vector for a given type with all required dependencies.
  *
+ * This macro instantiates:
+ * 
+ * - The vector API (   `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
+ *                      `_push_back`, `_pop_back`, `_element_front`, `_element_back`, `_element_at`, `_equals`
+ *                  )
+ * 
  * @param VECTOR_NAME_PUBLIC_PREFIX     The public name prefix for generated vector.
- * @param VECTOR_NAME_PRIVATE_PREFIX    (Unused, reserved for future use).
  * @param TYPE                          Type stored in the vector.
  * @param TYPE_REF_EQUALS_FUNC          Equal comparison function for type.
  * @param TYPE_REF_COPY_FUNC            Copy function for type.
@@ -254,7 +259,6 @@ static bool _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, con
  */
 #define DEFINE_GENERIC_VECTOR(                  \
     VECTOR_NAME_PUBLIC_PREFIX,                  \
-    VECTOR_NAME_PRIVATE_PREFIX, /*unused*/      \
     TYPE,                                       \
     TYPE_REF_EQUALS_FUNC,                       \
     TYPE_REF_COPY_FUNC,                         \

@@ -6,7 +6,6 @@
 
 DEFINE_GENERIC_VECTOR(
     VectorINT,
-    _VectorINT,
     int,
     DEFAULT_TYPE_REF_EQUALS,
     DEFAULT_TYPE_REF_COPY,

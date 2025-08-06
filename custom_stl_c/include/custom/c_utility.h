@@ -60,6 +60,10 @@
  * @def DEFINE_GENERIC_SWAP_FUNCTION
  * @brief Defines a generic swap function for a given type and copy function.
  *
+ * This macro instantiates:
+ * 
+ * - The swap API (`_swap`)
+ * 
  * @param SWAP_FUNC_NAME_PREFIX Prefix for the generated swap function name.
  * @param TYPE The data type of elements to be swapped.
  * @param TYPE_REF_COPY_FUNC Function used to copy elements by reference.
@@ -147,32 +151,32 @@ static void _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t
  * @brief Public macro to define heapify operations for a type with all required dependencies.
  *
  * This macro instantiates:
- * - A swap helper for heap operations
- * - The heapify API (heapify_up, heapify_down)
+ * 
+ * - A `PRIVATE_SWAP_FUNC` helper for heap operations
+ * 
+ * - The heapify API (`_heapify_up`, `_heapify_down`)
  * 
  * @param HEAP_ADJUST_NAME_PUBLIC_PREFIX Public name prefix for heapify functions.
- * @param HEAP_ADJUST_NAME_PRIVATE_PREFIX Private prefix for internal helpers.
  * @param TYPE The data type in the heap.
  * @param TYPE_REF_COMPARE_FUNC A comparison function used for heap ordering.
  * @param TYPE_REF_COPY_FUNC A copy function used for swapping values.
  */
 #define DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                       \
     HEAP_ADJUST_NAME_PUBLIC_PREFIX,                                                                             \
-    HEAP_ADJUST_NAME_PRIVATE_PREFIX,                                                                            \
     TYPE,                                                                                                       \
     TYPE_REF_COMPARE_FUNC,                                                                                      \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
                                                                                                                 \
 DEFINE_GENERIC_SWAP_FUNCTION(                                                                                   \
-    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PRIVATE_PREFIX, SWAP_FUNC),                                             \
+    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC),                                      \
     TYPE,                                                                                                       \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
                                                                                                                 \
 _DEFINE_GENERIC_HEAPIFY_FUNCTIONS_IMPL(                                                                         \
     HEAP_ADJUST_NAME_PUBLIC_PREFIX,                                                                             \
-    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PRIVATE_PREFIX, SWAP_FUNC),                                             \
+    _C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC), /*same as above*/                    \
     TYPE,                                                                                                       \
     TYPE_REF_COMPARE_FUNC                                                                                       \
 )                                                                                                               \
