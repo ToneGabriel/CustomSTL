@@ -10,4 +10,5 @@ create_cxx_executable(${CUSTOM_STL_C_FULL_TEST_EXECUTABLE}
     test/custom_c_priority_queue_test.cpp
     test/custom_c_vector_test.cpp
     test/custom_c_list_test.cpp
+    test/custom_c_queue_test.cpp
 )
