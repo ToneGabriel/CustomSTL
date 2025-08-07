@@ -1,5 +1,5 @@
-#ifndef _C_CORE_H
-#define _C_CORE_H
+#ifndef _C_STLCORE_H
+#define _C_STLCORE_H
 
 
 #include <stdio.h>
@@ -54,4 +54,4 @@ _C_IDENTIFIER_BIND_IMPL_SELECTOR_HELPER(        \
 #define C_IDENTIFIER_BIND(...) _C_IDENTIFIER_BIND_IMPL_SELECTOR(__VA_ARGS__)(__VA_ARGS__)
 
 
-#endif  // _C_CORE_H
+#endif  // _C_STLCORE_H
