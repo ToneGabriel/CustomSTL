@@ -1,5 +1,5 @@
-#ifndef _C_LIST_H
-#define _C_LIST_H
+#ifndef C_LIST_H
+#define C_LIST_H
 
 
 #include "custom/_c_node.h"
@@ -194,4 +194,4 @@ _DEFINE_GENERIC_LIST_IMPL(                                                      
 )                                                                                   \
 
 
-#endif  // _C_LIST_H
+#endif  // C_LIST_H

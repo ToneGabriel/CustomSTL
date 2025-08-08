@@ -1,5 +1,5 @@
-#ifndef _C_QUEUE_H
-#define _C_QUEUE_H
+#ifndef C_QUEUE_H
+#define C_QUEUE_H
 
 
 #include "custom/c_list.h"
@@ -123,4 +123,4 @@ _DEFINE_GENERIC_QUEUE_IMPL(                                                     
 )                                                                                   \
 
 
-#endif // _C_QUEUE_H
+#endif // C_QUEUE_H

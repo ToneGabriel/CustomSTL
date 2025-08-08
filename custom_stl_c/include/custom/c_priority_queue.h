@@ -218,14 +218,14 @@ static bool C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAM
 )                                                                                               \
                                                                                                 \
 DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                               \
-    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_HEAP_FUNC),                   \
+    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_HEAP_FUNC),                    \
     TYPE,                                                                                       \
     TYPE_REF_COMPARE_FUNC,                                                                      \
     TYPE_REF_COPY_FUNC                                                                          \
 )                                                                                               \
                                                                                                 \
 DEFINE_GENERIC_VECTOR(                                                                          \
-    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR),                      \
+    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR),                       \
     TYPE,                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                       \
     TYPE_REF_COPY_FUNC,                                                                         \
@@ -234,8 +234,8 @@ DEFINE_GENERIC_VECTOR(                                                          
                                                                                                 \
 _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                            \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                          \
-    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_HEAP_FUNC), /*same as above*/ \
-    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR), /*same as above*/    \
+    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_HEAP_FUNC), /*same as above*/  \
+    C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR), /*same as above*/     \
     TYPE,                                                                                       \
     TYPE_REF_COPY_FUNC                                                                          \
 )                                                                                               \
