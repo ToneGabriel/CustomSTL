@@ -14,9 +14,9 @@
  *
  * @param VECTOR_NAME               Public-facing name prefix for struct and functions (e.g., `MyVec` -> `MyVec_create`, etc.)
  * @param TYPE                      Type of elements to be stored in the vector.
- * @param TYPE_REF_EQUALS_FUNC      Function used to compare two `TYPE*` (for equality).
- * @param TYPE_REF_COPY_FUNC        Function used to copy one `TYPE*` to another.
- * @param TYPE_REF_DELETE_FUNC      Function used to delete a `TYPE*`
+ * @param TYPE_REF_EQUALS_FUNC      Function comparing two `TYPE*` for equality.
+ * @param TYPE_REF_COPY_FUNC        Function that copies from `TYPE*` to `TYPE*`
+ * @param TYPE_REF_DELETE_FUNC      Function that deletes/frees the internal data of a `TYPE*`
  */
 #define _DEFINE_GENERIC_VECTOR_IMPL(                                                                            \
     VECTOR_NAME,                                                                                                \
@@ -269,9 +269,9 @@ static bool C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, cons
  * 
  * @param VECTOR_NAME_PUBLIC_PREFIX     The public name prefix for generated vector.
  * @param TYPE                          Type stored in the vector.
- * @param TYPE_REF_EQUALS_FUNC          Equal comparison function for type.
- * @param TYPE_REF_COPY_FUNC            Copy function for type.
- * @param TYPE_REF_DELETE_FUNC          Deletion/cleanup function for type.
+ * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
+ * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
+ * @param TYPE_REF_DELETE_FUNC          Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_VECTOR(                  \
     VECTOR_NAME_PUBLIC_PREFIX,                  \

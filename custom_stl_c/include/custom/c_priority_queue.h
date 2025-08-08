@@ -206,7 +206,7 @@ static bool C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAM
  * @param TYPE_REF_COMPARE_FUNC               Function comparing two `TYPE*` (for priority)
  * @param TYPE_REF_EQUALS_FUNC                Function comparing two `TYPE*` for equality
  * @param TYPE_REF_COPY_FUNC                  Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC                Function that deletes/frees a `TYPE*`
+ * @param TYPE_REF_DELETE_FUNC                Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_PRIORITY_QUEUE(                                                          \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                          \
