@@ -5,6 +5,121 @@
 #include "custom/c_utility.h"
 
 
+#define _DEFINE_GENERIC_VECTOR_DATA(                                \
+    VECTOR_NAME,                                                    \
+    TYPE                                                            \
+)                                                                   \
+                                                                    \
+/**                                                                 \
+ * @struct VECTOR_NAME                                              \
+ * @brief Represents a dynamic array of elements of type TYPE.      \
+ */                                                                 \
+typedef struct                                                      \
+{                                                                   \
+    TYPE* first;                                                    \
+    TYPE* last;                                                     \
+    TYPE* final;                                                    \
+} VECTOR_NAME;                                                      \
+
+
+#define _DEFINE_GENERIC_VECTOR_ITERATOR(                                                                                    \
+    VECTOR_ITERATOR_NAME,                                                                                                   \
+    VECTOR_NAME,                                                                                                            \
+    TYPE                                                                                                                    \
+)                                                                                                                           \
+                                                                                                                            \
+typedef struct                                                                                                              \
+{                                                                                                                           \
+    TYPE* ptr;                                                                                                              \
+    VECTOR_NAME* vec;                                                                                                       \
+} VECTOR_ITERATOR_NAME;                                                                                                     \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec);                   \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter);                             \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter);            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);              \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff); \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter);                             \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter);            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);              \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff); \
+static TYPE* C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter);                                    \
+static bool C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right);       \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec)                    \
+{                                                                                                                           \
+    VECTOR_ITERATOR_NAME iter = {                                                                                           \
+        .ptr = ptr,                                                                                                         \
+        .vec = vec                                                                                                          \
+    };                                                                                                                      \
+    return iter;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter)                              \
+{                                                                                                                           \
+    _ASSERT(iter->ptr < iter->vec->last, "Cannot increment end iterator.");                                                 \
+    ++iter->ptr;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter)             \
+{                                                                                                                           \
+    VECTOR_ITERATOR_NAME temp = *iter;                                                                                      \
+    C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(iter);                                                           \
+    return temp;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)               \
+{                                                                                                                           \
+    _ASSERT(iter->ptr + diff < iter->vec->last, "Cannot increment end iterator.");                                          \
+    iter->ptr += diff;                                                                                                      \
+}                                                                                                                           \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)  \
+{                                                                                                                           \
+    VECTOR_ITERATOR_NAME temp = *iter;                                                                                      \
+    C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(*temp, diff);                                                     \
+    return temp;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter)                              \
+{                                                                                                                           \
+    _ASSERT(iter->ptr > iter->vec->first, "Cannot decrement begin iterator.");                                              \
+    --iter->ptr;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter)             \
+{                                                                                                                           \
+    VECTOR_ITERATOR_NAME temp = *iter;                                                                                      \
+    C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(iter);                                                           \
+    return temp;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)               \
+{                                                                                                                           \
+    _ASSERT(iter->ptr + diff > iter->vec->first, "Cannot decrement begin iterator.");                                       \
+    iter->ptr -= diff;                                                                                                      \
+}                                                                                                                           \
+                                                                                                                            \
+static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)  \
+{                                                                                                                           \
+    VECTOR_ITERATOR_NAME temp = *iter;                                                                                      \
+    C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(*temp, diff);                                                     \
+    return temp;                                                                                                            \
+}                                                                                                                           \
+                                                                                                                            \
+static TYPE* C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter)                                     \
+{                                                                                                                           \
+    _ASSERT(iter->ptr < iter->vec->last, "Cannot dereference end iterator.");                                               \
+    return iter->ptr;                                                                                                       \
+}                                                                                                                           \
+                                                                                                                            \
+static bool C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right)        \
+{                                                                                                                           \
+    return left->ptr == right->ptr;                                                                                         \
+}                                                                                                                           \
+
+
+
 /**
  * @def _DEFINE_GENERIC_VECTOR_IMPL
  * @brief Internal macro that defines the complete implementation of a vector.
@@ -20,22 +135,12 @@
  */
 #define _DEFINE_GENERIC_VECTOR_IMPL(                                                                            \
     VECTOR_NAME,                                                                                                \
+    VECTOR_ITERATOR_NAME,                                                                                       \
     TYPE,                                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                                       \
     TYPE_REF_COPY_FUNC,                                                                                         \
     TYPE_REF_DELETE_FUNC                                                                                        \
 )                                                                                                               \
-                                                                                                                \
-/**                                                                                                             \
- * @struct VECTOR_NAME                                                                                          \
- * @brief Represents a dynamic array of elements of type TYPE.                                                  \
- */                                                                                                             \
-typedef struct                                                                                                  \
-{                                                                                                               \
-    TYPE* arr;                                                                                                  \
-    size_t size;                                                                                                \
-    size_t capacity;                                                                                            \
-} VECTOR_NAME;                                                                                                  \
                                                                                                                 \
 static VECTOR_NAME  C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity);                                    \
 static void         C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                  \
