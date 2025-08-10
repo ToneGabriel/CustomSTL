@@ -65,7 +65,7 @@ static PQ_NAME C_IDENTIFIER_BIND(PQ_NAME, create)()                             
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq)                                                                            \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, destroy)(&pq->vec);                                                                        \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -75,7 +75,7 @@ static void C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq)                    
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq)                                                                              \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, clear)(&pq->vec);                                                                          \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -86,8 +86,8 @@ static void C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq)                      
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source)                                                      \
 {                                                                                                                                       \
-    _ASSERT(NULL != dest, "PQ dest is NULL");                                                                                           \
-    _ASSERT(NULL != source, "PQ source is NULL");                                                                                       \
+    _C_CUSTOM_ASSERT(NULL != dest, "PQ dest is NULL");                                                                                  \
+    _C_CUSTOM_ASSERT(NULL != source, "PQ source is NULL");                                                                              \
     C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, copy)(&dest->vec, &source->vec);                                                           \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -98,8 +98,8 @@ static void C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* sourc
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source)                                                            \
 {                                                                                                                                       \
-    _ASSERT(NULL != dest, "PQ dest is NULL");                                                                                           \
-    _ASSERT(NULL != source, "PQ source is NULL");                                                                                       \
+    _C_CUSTOM_ASSERT(NULL != dest, "PQ dest is NULL");                                                                                  \
+    _C_CUSTOM_ASSERT(NULL != source, "PQ source is NULL");                                                                              \
     C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, move)(&dest->vec, &source->vec);                                                           \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -110,7 +110,7 @@ static void C_IDENTIFIER_BIND(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source)    
  */                                                                                                                                     \
 static size_t C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq)                                                                             \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     return C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec);                                                                    \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -121,7 +121,7 @@ static size_t C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq)                     
  */                                                                                                                                     \
 static bool C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq)                                                                              \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     return C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec);                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -133,7 +133,7 @@ static bool C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq)                      
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)                                                           \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, push_back)(&pq->vec, item);                                                                \
     C_IDENTIFIER_BIND(PQ_HEAPIFY_HELPER_NAME, heapify_up)(                                                                              \
         C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                       \
@@ -148,7 +148,7 @@ static void C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)   
  */                                                                                                                                     \
 static void C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq)                                                                                \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     if (C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec)) return;                                                              \
     TYPE_REF_COPY_FUNC(                                                                                                                 \
         C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, 0),                                                              \
@@ -169,7 +169,7 @@ static void C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq)                        
  */                                                                                                                                     \
 static TYPE* C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                                                                              \
 {                                                                                                                                       \
-    _ASSERT(NULL != pq, "Priority Queue is NULL");                                                                                      \
+    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     return C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_front)(&pq->vec);                                                           \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -181,8 +181,8 @@ static TYPE* C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                      
  */                                                                                                                                     \
 static bool C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right)                                               \
 {                                                                                                                                       \
-    _ASSERT(NULL != left, "PQ left is NULL");                                                                                           \
-    _ASSERT(NULL != right, "PQ right is NULL");                                                                                         \
+    _C_CUSTOM_ASSERT(NULL != left, "PQ left is NULL");                                                                                  \
+    _C_CUSTOM_ASSERT(NULL != right, "PQ right is NULL");                                                                                \
     return C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, equals)(&left->vec, &right->vec);                                                   \
 }                                                                                                                                       \
 

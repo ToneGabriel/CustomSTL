@@ -60,7 +60,7 @@ static QUEUE_NAME C_IDENTIFIER_BIND(QUEUE_NAME, create)()                       
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, destroy)(QUEUE_NAME* queue)                                       \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, destroy)(&queue->list);                                       \
 }                                                                                                           \
                                                                                                             \
@@ -70,7 +70,7 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, destroy)(QUEUE_NAME* queue)           
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, clear)(QUEUE_NAME* queue)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, clear)(&queue->list);                                         \
 }                                                                                                           \
                                                                                                             \
@@ -81,8 +81,8 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, clear)(QUEUE_NAME* queue)             
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, copy)(QUEUE_NAME* dest, const QUEUE_NAME* source)                 \
 {                                                                                                           \
-    _ASSERT(NULL != dest, "Queue dest is NULL");                                                            \
-    _ASSERT(NULL != source, "Queue source is NULL");                                                        \
+    _C_CUSTOM_ASSERT(NULL != dest, "Queue dest is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != source, "Queue source is NULL");                                               \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, copy)(&dest->list, &source->list);                            \
 }                                                                                                           \
                                                                                                             \
@@ -93,8 +93,8 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, copy)(QUEUE_NAME* dest, const QUEUE_NA
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, move)(QUEUE_NAME* dest, QUEUE_NAME* source)                       \
 {                                                                                                           \
-    _ASSERT(NULL != dest, "Queue dest is NULL");                                                            \
-    _ASSERT(NULL != source, "Queue source is NULL");                                                        \
+    _C_CUSTOM_ASSERT(NULL != dest, "Queue dest is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != source, "Queue source is NULL");                                               \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, move)(&dest->list, &source->list);                            \
 }                                                                                                           \
                                                                                                             \
@@ -105,7 +105,7 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, move)(QUEUE_NAME* dest, QUEUE_NAME* so
  */                                                                                                         \
 static size_t C_IDENTIFIER_BIND(QUEUE_NAME, size)(QUEUE_NAME* queue)                                        \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     return C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, size)(&queue->list);                                   \
 }                                                                                                           \
                                                                                                             \
@@ -116,7 +116,7 @@ static size_t C_IDENTIFIER_BIND(QUEUE_NAME, size)(QUEUE_NAME* queue)            
  */                                                                                                         \
 static bool C_IDENTIFIER_BIND(QUEUE_NAME, empty)(QUEUE_NAME* queue)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     return C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, empty)(&queue->list);                                  \
 }                                                                                                           \
                                                                                                             \
@@ -127,7 +127,7 @@ static bool C_IDENTIFIER_BIND(QUEUE_NAME, empty)(QUEUE_NAME* queue)             
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, insert)(QUEUE_NAME* queue, const TYPE* item)                      \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, push_back)(&queue->list, item);                               \
 }                                                                                                           \
                                                                                                             \
@@ -137,7 +137,7 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, insert)(QUEUE_NAME* queue, const TYPE*
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(QUEUE_NAME, pop)(QUEUE_NAME* queue)                                           \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, pop_front)(&queue->list);                                     \
 }                                                                                                           \
                                                                                                             \
@@ -148,7 +148,7 @@ static void C_IDENTIFIER_BIND(QUEUE_NAME, pop)(QUEUE_NAME* queue)               
  */                                                                                                         \
 static TYPE* C_IDENTIFIER_BIND(QUEUE_NAME, peek)(QUEUE_NAME* queue)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != queue, "Queue is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
     return C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, element_front)(&queue->list);                          \
 }                                                                                                           \
                                                                                                             \
@@ -160,8 +160,8 @@ static TYPE* C_IDENTIFIER_BIND(QUEUE_NAME, peek)(QUEUE_NAME* queue)             
  */                                                                                                         \
 static bool C_IDENTIFIER_BIND(QUEUE_NAME, equals)(const QUEUE_NAME* left, const QUEUE_NAME* right)          \
 {                                                                                                           \
-    _ASSERT(NULL != left, "Queue left is NULL");                                                            \
-    _ASSERT(NULL != right, "Queue right is NULL");                                                          \
+    _C_CUSTOM_ASSERT(NULL != left, "Queue left is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != right, "Queue right is NULL");                                                 \
     return C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, equals)(&left->list, &right->list);                    \
 }                                                                                                           \
 
