@@ -60,7 +60,7 @@ static STACK_NAME C_IDENTIFIER_BIND(STACK_NAME, create)()                       
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, destroy)(STACK_NAME* stack)                                       \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, destroy)(&stack->vec);                                      \
 }                                                                                                           \
                                                                                                             \
@@ -70,7 +70,7 @@ static void C_IDENTIFIER_BIND(STACK_NAME, destroy)(STACK_NAME* stack)           
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, clear)(STACK_NAME* stack)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, clear)(&stack->vec);                                        \
 }                                                                                                           \
                                                                                                             \
@@ -81,8 +81,8 @@ static void C_IDENTIFIER_BIND(STACK_NAME, clear)(STACK_NAME* stack)             
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, copy)(STACK_NAME* dest, const STACK_NAME* source)                 \
 {                                                                                                           \
-    _ASSERT(NULL != dest, "Stack dest is NULL");                                                            \
-    _ASSERT(NULL != source, "Stack source is NULL");                                                        \
+    _C_CUSTOM_ASSERT(NULL != dest, "Stack dest is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != source, "Stack source is NULL");                                               \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, copy)(&dest->vec, &source->vec);                            \
 }                                                                                                           \
                                                                                                             \
@@ -93,8 +93,8 @@ static void C_IDENTIFIER_BIND(STACK_NAME, copy)(STACK_NAME* dest, const STACK_NA
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, move)(STACK_NAME* dest, STACK_NAME* source)                       \
 {                                                                                                           \
-    _ASSERT(NULL != dest, "Stack dest is NULL");                                                            \
-    _ASSERT(NULL != source, "Stack source is NULL");                                                        \
+    _C_CUSTOM_ASSERT(NULL != dest, "Stack dest is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != source, "Stack source is NULL");                                               \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, move)(&dest->vec, &source->vec);                            \
 }                                                                                                           \
                                                                                                             \
@@ -105,7 +105,7 @@ static void C_IDENTIFIER_BIND(STACK_NAME, move)(STACK_NAME* dest, STACK_NAME* so
  */                                                                                                         \
 static size_t C_IDENTIFIER_BIND(STACK_NAME, size)(STACK_NAME* stack)                                        \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     return C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, size)(&stack->vec);                                  \
 }                                                                                                           \
                                                                                                             \
@@ -116,7 +116,7 @@ static size_t C_IDENTIFIER_BIND(STACK_NAME, size)(STACK_NAME* stack)            
  */                                                                                                         \
 static bool C_IDENTIFIER_BIND(STACK_NAME, empty)(STACK_NAME* stack)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     return C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, empty)(&stack->vec);                                 \
 }                                                                                                           \
                                                                                                             \
@@ -127,7 +127,7 @@ static bool C_IDENTIFIER_BIND(STACK_NAME, empty)(STACK_NAME* stack)             
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, insert)(STACK_NAME* stack, const TYPE* item)                      \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, push_back)(&stack->vec, item);                              \
 }                                                                                                           \
                                                                                                             \
@@ -137,7 +137,7 @@ static void C_IDENTIFIER_BIND(STACK_NAME, insert)(STACK_NAME* stack, const TYPE*
  */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, pop)(STACK_NAME* stack)                                           \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, pop_back)(&stack->vec);                                     \
 }                                                                                                           \
                                                                                                             \
@@ -148,7 +148,7 @@ static void C_IDENTIFIER_BIND(STACK_NAME, pop)(STACK_NAME* stack)               
  */                                                                                                         \
 static TYPE* C_IDENTIFIER_BIND(STACK_NAME, peek)(STACK_NAME* stack)                                         \
 {                                                                                                           \
-    _ASSERT(NULL != stack, "Stack is NULL");                                                                \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
     return C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, element_back)(&stack->vec);                          \
 }                                                                                                           \
                                                                                                             \
@@ -160,8 +160,8 @@ static TYPE* C_IDENTIFIER_BIND(STACK_NAME, peek)(STACK_NAME* stack)             
  */                                                                                                         \
 static bool C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left, const STACK_NAME* right)          \
 {                                                                                                           \
-    _ASSERT(NULL != left, "Stack left is NULL");                                                            \
-    _ASSERT(NULL != right, "Stack right is NULL");                                                          \
+    _C_CUSTOM_ASSERT(NULL != left, "Stack left is NULL");                                                   \
+    _C_CUSTOM_ASSERT(NULL != right, "Stack right is NULL");                                                 \
     return C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, equals)(&left->vec, &right->vec);                    \
 }                                                                                                           \
 

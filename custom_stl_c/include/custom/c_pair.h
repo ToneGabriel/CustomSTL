@@ -31,7 +31,7 @@ static PAIR_NAME C_IDENTIFIER_BIND(PAIR_NAME, create)()                         
                                                                                 \
 static void C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair)              \
 {                                                                               \
-    _ASSERT(NULL != pair, "Pair is NULL");                                      \
+    _C_CUSTOM_ASSERT(NULL != pair, "Pair is NULL");                             \
 }                                                                               \
 
 

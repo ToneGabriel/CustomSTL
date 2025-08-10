@@ -57,7 +57,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYPE
                                                                                                                             \
 static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter)                              \
 {                                                                                                                           \
-    _ASSERT(iter->ptr < iter->vec->last, "Cannot increment end iterator.");                                                 \
+    _C_CUSTOM_ASSERT(iter->ptr < iter->vec->last, "Cannot increment end iterator.");                                        \
     ++iter->ptr;                                                                                                            \
 }                                                                                                                           \
                                                                                                                             \
@@ -70,7 +70,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_increme
                                                                                                                             \
 static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)               \
 {                                                                                                                           \
-    _ASSERT(iter->ptr + diff < iter->vec->last, "Cannot increment end iterator.");                                          \
+    _C_CUSTOM_ASSERT(iter->ptr + diff < iter->vec->last, "Cannot increment end iterator.");                                 \
     iter->ptr += diff;                                                                                                      \
 }                                                                                                                           \
                                                                                                                             \
@@ -83,7 +83,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment)(V
                                                                                                                             \
 static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter)                              \
 {                                                                                                                           \
-    _ASSERT(iter->ptr > iter->vec->first, "Cannot decrement begin iterator.");                                              \
+    _C_CUSTOM_ASSERT(iter->ptr > iter->vec->first, "Cannot decrement begin iterator.");                                     \
     --iter->ptr;                                                                                                            \
 }                                                                                                                           \
                                                                                                                             \
@@ -96,7 +96,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_decreme
                                                                                                                             \
 static void C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)               \
 {                                                                                                                           \
-    _ASSERT(iter->ptr + diff > iter->vec->first, "Cannot decrement begin iterator.");                                       \
+    _C_CUSTOM_ASSERT(iter->ptr + diff > iter->vec->first, "Cannot decrement begin iterator.");                              \
     iter->ptr -= diff;                                                                                                      \
 }                                                                                                                           \
                                                                                                                             \
@@ -109,7 +109,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement)(V
                                                                                                                             \
 static TYPE* C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, get)(VECTOR_ITERATOR_NAME* iter)                                       \
 {                                                                                                                           \
-    _ASSERT(iter->ptr < iter->vec->last, "Cannot dereference end iterator.");                                               \
+    _C_CUSTOM_ASSERT(iter->ptr < iter->vec->last, "Cannot dereference end iterator.");                                      \
     return iter->ptr;                                                                                                       \
 }                                                                                                                           \
                                                                                                                             \
@@ -168,7 +168,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec
  */                                                                                                                     \
 static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)                                              \
 {                                                                                                                       \
-    _ASSERT(0 < capacity, "Vector capacity should be greater than 0");                                                  \
+    _C_CUSTOM_ASSERT(0 < capacity, "Vector capacity should be greater than 0");                                         \
     TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * capacity);                                                                 \
     VECTOR_NAME vec = {                                                                                                 \
         .first = arr,                                                                                                   \
@@ -184,7 +184,7 @@ static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)      
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec)                                                   \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                        \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
@@ -199,7 +199,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec)           
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec)                                                     \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     size_t vec_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                        \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
         TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
@@ -213,9 +213,9 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec)             
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source)                          \
 {                                                                                                                       \
-    _ASSERT(NULL != dest, "Vector dest is NULL");                                                                       \
-    _ASSERT(NULL != source, "Vector source is NULL");                                                                   \
-    _ASSERT(NULL != source->first, "Vector source array is NULL");                                                      \
+    _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
+    _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
+    _C_CUSTOM_ASSERT(NULL != source->first, "Vector source array is NULL");                                             \
     if (dest == source) return;                                                                                         \
     C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                      \
     size_t new_capacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                             \
@@ -233,9 +233,9 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME* source)                                \
 {                                                                                                                       \
-    _ASSERT(NULL != dest, "Vector dest is NULL");                                                                       \
-    _ASSERT(NULL != source, "Vector source is NULL");                                                                   \
-    _ASSERT(NULL != source->first, "Vector source array is NULL");                                                      \
+    _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
+    _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
+    _C_CUSTOM_ASSERT(NULL != source->first, "Vector source array is NULL");                                             \
     if (dest == source) return;                                                                                         \
     C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                      \
     *dest = *source;                                                                                                    \
@@ -249,7 +249,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME*
  */                                                                                                                     \
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec)                                               \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->first;                                                                                                  \
 }                                                                                                                       \
                                                                                                                         \
@@ -260,7 +260,7 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec)       
  */                                                                                                                     \
 static size_t C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec)                                              \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->last - vec->first;                                                                                      \
 }                                                                                                                       \
                                                                                                                         \
@@ -271,7 +271,7 @@ static size_t C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec)      
  */                                                                                                                     \
 static size_t C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(const VECTOR_NAME* vec)                                          \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->final - vec->first;                                                                                     \
 }                                                                                                                       \
                                                                                                                         \
@@ -282,7 +282,7 @@ static size_t C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(const VECTOR_NAME* vec)  
  */                                                                                                                     \
 static bool C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec)                                               \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->last == vec->first;                                                                                     \
 }                                                                                                                       \
                                                                                                                         \
@@ -293,7 +293,7 @@ static bool C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec)       
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item)                               \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->last >= vec->final)                                                                                        \
     {                                                                                                                   \
         size_t old_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                    \
@@ -312,7 +312,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TY
  */                                                                                                                     \
 static void C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)                                                  \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return;                                                                                \
     TYPE_REF_DELETE_FUNC(--vec->last);                                                                                  \
 }                                                                                                                       \
@@ -324,8 +324,8 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)          
  */                                                                                                                     \
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)                                            \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
-    _ASSERT(vec->first == vec->last, "Vector is empty");                                                                \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    _C_CUSTOM_ASSERT(vec->first == vec->last, "Vector is empty");                                                       \
     return vec->first;                                                                                                  \
 }                                                                                                                       \
                                                                                                                         \
@@ -336,8 +336,8 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)    
  */                                                                                                                     \
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)                                             \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
-    _ASSERT(vec->first == vec->last, "Vector is empty");                                                                \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    _C_CUSTOM_ASSERT(vec->first == vec->last, "Vector is empty");                                                       \
     return vec->last;                                                                                                   \
 }                                                                                                                       \
                                                                                                                         \
@@ -349,9 +349,8 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)     
  */                                                                                                                     \
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index)                                 \
 {                                                                                                                       \
-    _ASSERT(NULL != vec, "Vector is NULL");                                                                             \
-    _ASSERT(vec->first == vec->last, "Vector is empty");                                                                \
-    _ASSERT(vec->first + index < vec->last, "Index out of bounds");                                                     \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    _C_CUSTOM_ASSERT(vec->first + index < vec->last, "Index out of bounds");                                            \
     return vec->first + index;                                                                                          \
 }                                                                                                                       \
                                                                                                                         \
@@ -363,8 +362,8 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t
  */                                                                                                                     \
 static bool C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, const VECTOR_NAME* right)                   \
 {                                                                                                                       \
-    _ASSERT(NULL != left, "Vector left is NULL");                                                                       \
-    _ASSERT(NULL != right, "Vector right is NULL");                                                                     \
+    _C_CUSTOM_ASSERT(NULL != left, "Vector left is NULL");                                                              \
+    _C_CUSTOM_ASSERT(NULL != right, "Vector right is NULL");                                                            \
     if (C_IDENTIFIER_BIND(VECTOR_NAME, size)(left) ==                                                                   \
         C_IDENTIFIER_BIND(VECTOR_NAME, size)(right)) return false;                                                      \
     size_t s = C_IDENTIFIER_BIND(VECTOR_NAME, size)(left);                                                              \

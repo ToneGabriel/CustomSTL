@@ -113,8 +113,8 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t 
  */                                                                                                             \
 static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t arr_size, size_t idx)             \
 {                                                                                                               \
-    _ASSERT(NULL != arr, "Heap array is NULL");                                                                 \
-    _ASSERT(idx < arr_size, "Heap index is greater than array size");                                           \
+    _C_CUSTOM_ASSERT(NULL != arr, "Heap array is NULL");                                                        \
+    _C_CUSTOM_ASSERT(idx < arr_size, "Heap index is greater than array size");                                  \
     while (idx > 0 && TYPE_REF_COMPARE_FUNC(&arr[idx], &arr[(idx - 1) / 2]))                                    \
     {                                                                                                           \
         C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[(idx - 1) / 2]);                  \
@@ -130,8 +130,8 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t ar
  */                                                                                                             \
 static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t arr_size, size_t idx)           \
 {                                                                                                               \
-    _ASSERT(NULL != arr, "Heap array is NULL");                                                                 \
-    _ASSERT(idx < arr_size, "Heap index is greater than array size");                                           \
+    _C_CUSTOM_ASSERT(NULL != arr, "Heap array is NULL");                                                        \
+    _C_CUSTOM_ASSERT(idx < arr_size, "Heap index is greater than array size");                                  \
     size_t smallest, left, right;                                                                               \
     while (idx < arr_size)                                                                                      \
     {                                                                                                           \

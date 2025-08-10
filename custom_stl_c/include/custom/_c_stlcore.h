@@ -8,9 +8,9 @@
 
 
 #ifndef NDEBUG
-#   define _ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
+#   define _C_CUSTOM_ASSERT(Expr, Msg) __Assert(Expr, Msg, #Expr, __FILE__, __LINE__)
 #else
-#   define _ASSERT(Expr, Msg) ((void)0)
+#   define _C_CUSTOM_ASSERT(Expr, Msg) ((void)0)
 #endif
 
 
