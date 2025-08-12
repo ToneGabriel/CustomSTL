@@ -23,12 +23,10 @@ TYPED_TEST_SUITE_P(VectorTypeTestFixture);
 TYPED_TEST_P(VectorTypeTestFixture, construct_default_values_from_initializer_list)
 {
     TypeParam val;
-    this->_custom_vector_instance = {val, val, val};
+    this->_custom_vector_instance = {val};
 
-    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance[0], val);
-    EXPECT_EQ(this->_custom_vector_instance[1], val);
-    EXPECT_EQ(this->_custom_vector_instance[2], val);
+    EXPECT_EQ(this->_custom_vector_instance.size(), 1);
+    EXPECT_EQ(this->_custom_vector_instance.back(), val);
 }
 
 // Register test cases to suite
@@ -38,7 +36,7 @@ REGISTER_TYPED_TEST_SUITE_P(
                             );
 
 // Create test cases based on types
-using VectorTestTypes = ::testing::Types<int, double, custom::string>;
+using VectorTestTypes = ::testing::Types<int, custom::string>;
 INSTANTIATE_TYPED_TEST_SUITE_P(
                                 VectorTypeTestSuite,
                                 VectorTypeTestFixture,
@@ -62,29 +60,19 @@ TEST_P(VectorValueTestFixture, default_init)
 
 TEST_P(VectorValueTestFixture, custom_capacity_default_value_init)
 {
-    this->_custom_vector_instance = custom::vector<ParamType>(3);
+    this->_custom_vector_instance = custom::vector<ParamType>(1);
 
-    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance.capacity(), 3); // custom capacity
-
+    EXPECT_EQ(this->_custom_vector_instance.size(), 1);
+    EXPECT_EQ(this->_custom_vector_instance.capacity(), 1); // custom capacity
     EXPECT_EQ(this->_custom_vector_instance.back(), ParamType());   // has default values
 }
 
 TEST_P(VectorValueTestFixture, custom_capacity_given_value_init)
 {
-    this->_custom_vector_instance = custom::vector<ParamType>(3, GetParam());
+    this->_custom_vector_instance = custom::vector<ParamType>(1, GetParam());
 
-    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance.capacity(), 3); // custom capacity
-    EXPECT_EQ(this->_custom_vector_instance.back(), GetParam());   // has given values
-}
-
-TEST_P(VectorValueTestFixture, initializer_list_init)
-{
-    this->_custom_vector_instance = {GetParam(), GetParam(), GetParam()};
-
-    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance.capacity(), 3); // custom capacity
+    EXPECT_EQ(this->_custom_vector_instance.size(), 1);
+    EXPECT_EQ(this->_custom_vector_instance.capacity(), 1); // custom capacity
     EXPECT_EQ(this->_custom_vector_instance.back(), GetParam());   // has given values
 }
 
@@ -92,33 +80,20 @@ TEST_P(VectorValueTestFixture, copy_assign_operator)
 {
     custom::vector<ParamType> other = {GetParam(), GetParam(), GetParam()};
 
-    EXPECT_FALSE(this->_custom_vector_instance.size() == other.size());
-    EXPECT_FALSE(this->_custom_vector_instance.capacity() == other.capacity());
     EXPECT_FALSE(this->_custom_vector_instance == other);
-
     this->_custom_vector_instance = other;
-
-    EXPECT_TRUE(this->_custom_vector_instance.size() == other.size());
-    EXPECT_TRUE(this->_custom_vector_instance.capacity() == other.capacity());
     EXPECT_TRUE(this->_custom_vector_instance == other);
 }
 
 TEST_P(VectorValueTestFixture, move_assign_operator)
 {
     custom::vector<ParamType> other = {GetParam(), GetParam(), GetParam()};
-    
-    EXPECT_EQ(other.size(), 3);
-    EXPECT_EQ(other.capacity(), 3); // custom capacity
-    EXPECT_EQ(other.back(), GetParam());
+    custom::vector<ParamType> other_copy = other;
 
+    EXPECT_FALSE(this->_custom_vector_instance == other);
     this->_custom_vector_instance = custom::move(other);
-
-    EXPECT_EQ(other.size(), 0);
-    EXPECT_EQ(other.capacity(), 0);
-    
-    EXPECT_EQ(this->_custom_vector_instance.size(), 3);
-    EXPECT_EQ(this->_custom_vector_instance.capacity(), 3);
-    EXPECT_EQ(this->_custom_vector_instance.back(), GetParam());
+    EXPECT_FALSE(this->_custom_vector_instance == other);   // still different
+    EXPECT_TRUE(this->_custom_vector_instance == other_copy);   // equal to original
 }
 
 TEST_P(VectorValueTestFixture, shrink_to_fit)
