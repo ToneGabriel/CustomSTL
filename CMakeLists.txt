@@ -5,8 +5,9 @@ project(
     LANGUAGES C CXX
 )
 
-# Get googletest project
+# Get googletest/unity project
 include(cmake/fetch_googletest.cmake)
+include(cmake/fetch_unity.cmake)
 
 # Add utils
 include(cmake/internal_utils.cmake)

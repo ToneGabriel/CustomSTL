@@ -50,8 +50,8 @@ static void C_IDENTIFIER_BIND(SINGLE_NODE_NAME, destroy)(SINGLE_NODE_NAME* node)
 typedef struct DOUBLE_NODE_NAME                                                                     \
 {                                                                                                   \
     TYPE value;                                                                                     \
-    DOUBLE_NODE_NAME* next;                                                                         \
-    DOUBLE_NODE_NAME* prev;                                                                         \
+    struct DOUBLE_NODE_NAME* next;                                                                  \
+    struct DOUBLE_NODE_NAME* prev;                                                                  \
 } DOUBLE_NODE_NAME;                                                                                 \
                                                                                                     \
 static DOUBLE_NODE_NAME*    C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, create)(const TYPE* val);           \
