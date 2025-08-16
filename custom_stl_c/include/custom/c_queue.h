@@ -172,7 +172,7 @@ static bool C_IDENTIFIER_BIND(QUEUE_NAME, equals)(const QUEUE_NAME* left, const 
  *
  * This macro instantiates:
  * 
- * - A `PRIVATE_LIST` container for internal storage
+ * - A `PRIVATE_List` container for internal storage
  * 
  * - The queue API (`_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
  *                  `_insert`, `_pop`, `_peek`, `_equals`
@@ -193,7 +193,7 @@ static bool C_IDENTIFIER_BIND(QUEUE_NAME, equals)(const QUEUE_NAME* left, const 
 )                                                                                   \
                                                                                     \
 DEFINE_GENERIC_LIST(                                                                \
-    C_IDENTIFIER_BIND(QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_LIST),                      \
+    C_IDENTIFIER_BIND(QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_List),                      \
     TYPE,                                                                           \
     TYPE_REF_EQUALS_FUNC,                                                           \
     TYPE_REF_COPY_FUNC,                                                             \
@@ -202,7 +202,7 @@ DEFINE_GENERIC_LIST(                                                            
                                                                                     \
 _DEFINE_GENERIC_QUEUE_IMPL(                                                         \
     QUEUE_NAME_PUBLIC_PREFIX,                                                       \
-    C_IDENTIFIER_BIND(QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_LIST), /*same as above*/    \
+    C_IDENTIFIER_BIND(QUEUE_NAME_PUBLIC_PREFIX, PRIVATE_List), /*same as above*/    \
     TYPE                                                                            \
 )                                                                                   \
 

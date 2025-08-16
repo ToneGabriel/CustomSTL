@@ -425,14 +425,14 @@ _DEFINE_GENERIC_VECTOR_DATA(                                \
 )                                                           \
                                                             \
 _DEFINE_GENERIC_VECTOR_ITERATOR(                            \
-    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, ITERATOR), \
+    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, Iterator), \
     VECTOR_NAME_PUBLIC_PREFIX,                              \
     TYPE                                                    \
 )                                                           \
                                                             \
 _DEFINE_GENERIC_VECTOR_IMPL(                                \
     VECTOR_NAME_PUBLIC_PREFIX,                              \
-    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, ITERATOR), \
+    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, Iterator), \
     TYPE,                                                   \
     TYPE_REF_EQUALS_FUNC,                                   \
     TYPE_REF_COPY_FUNC,                                     \

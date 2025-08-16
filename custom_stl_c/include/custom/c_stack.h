@@ -172,7 +172,7 @@ static bool C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left, const 
  *
  * This macro instantiates:
  * 
- * - A `PRIVATE_VECTOR` container for internal storage
+ * - A `PRIVATE_Vector` container for internal storage
  * 
  * - The stack API (`_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
  *                  `_insert`, `_pop`, `_peek`, `_equals`
@@ -193,7 +193,7 @@ static bool C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left, const 
 )                                                                                   \
                                                                                     \
 DEFINE_GENERIC_VECTOR(                                                              \
-    C_IDENTIFIER_BIND(STACK_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR),                    \
+    C_IDENTIFIER_BIND(STACK_NAME_PUBLIC_PREFIX, PRIVATE_Vector),                    \
     TYPE,                                                                           \
     TYPE_REF_EQUALS_FUNC,                                                           \
     TYPE_REF_COPY_FUNC,                                                             \
@@ -202,7 +202,7 @@ DEFINE_GENERIC_VECTOR(                                                          
                                                                                     \
 _DEFINE_GENERIC_STACK_IMPL(                                                         \
     STACK_NAME_PUBLIC_PREFIX,                                                       \
-    C_IDENTIFIER_BIND(STACK_NAME_PUBLIC_PREFIX, PRIVATE_VECTOR), /*same as above*/  \
+    C_IDENTIFIER_BIND(STACK_NAME_PUBLIC_PREFIX, PRIVATE_Vector), /*same as above*/  \
     TYPE                                                                            \
 )                                                                                   \
 
