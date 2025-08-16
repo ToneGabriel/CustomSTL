@@ -18,12 +18,12 @@ DEFINE_GENERIC_PRIORITY_QUEUE(
 static IntPQ _custom_pq_instance;
 
 
-void setUp(void)
+void setUp()
 {
     _custom_pq_instance = IntPQ_create();
 }
 
-void tearDown(void)
+void tearDown()
 {
     IntPQ_destroy(&_custom_pq_instance);
 }
@@ -32,13 +32,13 @@ void tearDown(void)
 // Tests ==========================
 
 
-void test_default_create(void)
+void test_default_create()
 {
     TEST_ASSERT_EQUAL_UINT(0, IntPQ_size(&_custom_pq_instance));
     TEST_ASSERT_TRUE(IntPQ_empty(&_custom_pq_instance));
 }
 
-void test_copy(void)
+void test_copy()
 {
     int val = 0;
     IntPQ_insert(&_custom_pq_instance, &val);
@@ -54,7 +54,7 @@ void test_copy(void)
     IntPQ_destroy(&other);
 }
 
-void test_move(void)
+void test_move()
 {
     int val = 0;
     IntPQ_insert(&_custom_pq_instance, &val);

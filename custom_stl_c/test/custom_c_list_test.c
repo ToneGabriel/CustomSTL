@@ -17,12 +17,12 @@ DEFINE_GENERIC_LIST(
 static ListINT _custom_list_instance;
 
 
-void setUp(void)
+void setUp()
 {
     _custom_list_instance = ListINT_create();
 }
 
-void tearDown(void)
+void tearDown()
 {
     ListINT_destroy(&_custom_list_instance);
 }
@@ -31,13 +31,13 @@ void tearDown(void)
 // Tests ==========================
 
 
-void test_default_create(void)
+void test_default_create()
 {
     TEST_ASSERT_EQUAL_UINT(0, ListINT_size(&_custom_list_instance));
     TEST_ASSERT_TRUE(ListINT_empty(&_custom_list_instance));
 }
 
-void test_copy(void)
+void test_copy()
 {
     int val = 0;
     ListINT_push_back(&_custom_list_instance, &val);
@@ -53,7 +53,7 @@ void test_copy(void)
     ListINT_destroy(&other);
 }
 
-void test_move(void)
+void test_move()
 {
     int val = 0;
     ListINT_push_back(&_custom_list_instance, &val);

@@ -17,12 +17,12 @@ DEFINE_GENERIC_STACK(
 static StackINT _custom_stack_instance;
 
 
-void setUp(void)
+void setUp()
 {
     _custom_stack_instance = StackINT_create();
 }
 
-void tearDown(void)
+void tearDown()
 {
     StackINT_destroy(&_custom_stack_instance);
 }
@@ -31,13 +31,13 @@ void tearDown(void)
 // Tests ==========================
 
 
-void test_default_create(void)
+void test_default_create()
 {
     TEST_ASSERT_EQUAL_UINT(0, StackINT_size(&_custom_stack_instance));
     TEST_ASSERT_TRUE(StackINT_empty(&_custom_stack_instance));
 }
 
-void test_copy(void)
+void test_copy()
 {
     int val = 0;
     StackINT_insert(&_custom_stack_instance, &val);
@@ -53,7 +53,7 @@ void test_copy(void)
     StackINT_destroy(&other);
 }
 
-void test_move(void)
+void test_move()
 {
     int val = 0;
     StackINT_insert(&_custom_stack_instance, &val);

@@ -17,12 +17,12 @@ DEFINE_GENERIC_QUEUE(
 static QueueINT _custom_queue_instance;
 
 
-void setUp(void)
+void setUp()
 {
     _custom_queue_instance = QueueINT_create();
 }
 
-void tearDown(void)
+void tearDown()
 {
     QueueINT_destroy(&_custom_queue_instance);
 }
@@ -31,13 +31,13 @@ void tearDown(void)
 // Tests ==========================
 
 
-void test_default_create(void)
+void test_default_create()
 {
     TEST_ASSERT_EQUAL_UINT(0, QueueINT_size(&_custom_queue_instance));
     TEST_ASSERT_TRUE(QueueINT_empty(&_custom_queue_instance));
 }
 
-void test_copy(void)
+void test_copy()
 {
     int val = 0;
     QueueINT_insert(&_custom_queue_instance, &val);
@@ -53,7 +53,7 @@ void test_copy(void)
     QueueINT_destroy(&other);
 }
 
-void test_move(void)
+void test_move()
 {
     int val = 0;
     QueueINT_insert(&_custom_queue_instance, &val);
