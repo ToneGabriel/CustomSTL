@@ -364,7 +364,7 @@ static bool C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, cons
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != left, "Vector left is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != right, "Vector right is NULL");                                                            \
-    if (C_IDENTIFIER_BIND(VECTOR_NAME, size)(left) ==                                                                   \
+    if (C_IDENTIFIER_BIND(VECTOR_NAME, size)(left) !=                                                                   \
         C_IDENTIFIER_BIND(VECTOR_NAME, size)(right)) return false;                                                      \
     size_t s = C_IDENTIFIER_BIND(VECTOR_NAME, size)(left);                                                              \
     for (size_t i = 0; i < s; ++i)                                                                                      \
