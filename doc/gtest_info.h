@@ -42,3 +42,24 @@ INSTANTIATE_TYPED_TEST_SUITE_P(
                                 VectorTypeTestFixture,
                                 VectorTestTypes
                             );
+
+
+
+
+
+
+
+
+                            
+class VectorValueTestFixture : public ::testing::TestWithParam<custom::tuple<int, double, custom::string>>
+{
+
+};
+
+INSTANTIATE_TEST_SUITE_P(
+                            VectorValueTestSuite,
+                            VectorTestFixture,
+                            ::testing::Values   (
+                                                    custom::make_tuple(3, 3.5, "hello")
+                                                )   // can add more values
+                        );
