@@ -119,6 +119,10 @@ static bool C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME
 }                                                                                                                                           \
 
 
+/**
+ * @brief Default capacity used in vector _create function
+ */
+#define GENERIC_VECTOR_DEFAULT_CAPACITY 8
 
 /**
  * @def _DEFINE_GENERIC_VECTOR_IMPL
@@ -168,13 +172,17 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec
  */                                                                                                                     \
 static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)                                              \
 {                                                                                                                       \
-    _C_CUSTOM_ASSERT(0 < capacity, "Vector capacity should be greater than 0");                                         \
-    TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * capacity);                                                                 \
-    VECTOR_NAME vec = {                                                                                                 \
-        .first = arr,                                                                                                   \
-        .last = arr,                                                                                                    \
-        .final = arr + capacity                                                                                         \
-    };                                                                                                                  \
+    VECTOR_NAME vec;                                                                                                    \
+    if (0 == capacity)                                                                                                  \
+        vec.first = vec.last = vec.final = NULL;                                                                        \
+    else                                                                                                                \
+    {                                                                                                                   \
+        size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;   \
+        TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                          \
+        vec.first = arr;                                                                                                \
+        vec.last = arr;                                                                                                 \
+        vec.final = arr + newCapacity;                                                                                  \
+    }                                                                                                                   \
     return vec;                                                                                                         \
 }                                                                                                                       \
                                                                                                                         \
@@ -218,12 +226,12 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR
     _C_CUSTOM_ASSERT(NULL != source->first, "Vector source array is NULL");                                             \
     if (dest == source) return;                                                                                         \
     C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                      \
-    size_t new_capacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                             \
-    size_t new_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(source);                                                     \
-    *dest = C_IDENTIFIER_BIND(VECTOR_NAME, create)(new_capacity);                                                       \
-    for (size_t i = 0; i < new_size; ++i)                                                                               \
-        TYPE_REF_COPY_FUNC(dest->first + i, source->first+ i);                                                          \
-    dest->last = dest->first + new_size;                                                                                \
+    size_t newCapacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                              \
+    size_t newSize = C_IDENTIFIER_BIND(VECTOR_NAME, size)(source);                                                      \
+    *dest = C_IDENTIFIER_BIND(VECTOR_NAME, create)(newCapacity);                                                        \
+    for (size_t i = 0; i < newSize; ++i)                                                                                \
+        TYPE_REF_COPY_FUNC(dest->first + i, source->first + i);                                                         \
+    dest->last = dest->first + newSize;                                                                                 \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -296,12 +304,12 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TY
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->last >= vec->final)                                                                                        \
     {                                                                                                                   \
-        size_t old_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                    \
-        size_t old_cap = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(vec);                                                 \
-        size_t new_cap = old_cap + old_cap / 2 + 1;                                                                     \
-        vec->first = (TYPE*)realloc(vec->first, sizeof(TYPE) * new_cap);                                                \
-        vec->last = vec->first + old_size;                                                                              \
-        vec->final = vec->first + new_cap;                                                                              \
+        size_t oldSize = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                     \
+        size_t oldCapacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(vec);                                             \
+        size_t newCapacity = oldCapacity + oldCapacity / 2 + 1;                                                         \
+        vec->first = (TYPE*)realloc(vec->first, sizeof(TYPE) * newCapacity);                                            \
+        vec->last = vec->first + oldSize;                                                                               \
+        vec->final = vec->first + newCapacity;                                                                          \
     }                                                                                                                   \
     TYPE_REF_COPY_FUNC(vec->last++, item);                                                                              \
 }                                                                                                                       \
@@ -425,14 +433,14 @@ _DEFINE_GENERIC_VECTOR_DATA(                                \
 )                                                           \
                                                             \
 _DEFINE_GENERIC_VECTOR_ITERATOR(                            \
-    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, ITERATOR), \
+    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, Iterator), \
     VECTOR_NAME_PUBLIC_PREFIX,                              \
     TYPE                                                    \
 )                                                           \
                                                             \
 _DEFINE_GENERIC_VECTOR_IMPL(                                \
     VECTOR_NAME_PUBLIC_PREFIX,                              \
-    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, ITERATOR), \
+    C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, Iterator), \
     TYPE,                                                   \
     TYPE_REF_EQUALS_FUNC,                                   \
     TYPE_REF_COPY_FUNC,                                     \

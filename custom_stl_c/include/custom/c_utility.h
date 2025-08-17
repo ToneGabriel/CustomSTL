@@ -62,7 +62,7 @@
  *
  * This macro instantiates:
  * 
- * - The swap API (`_swap`)
+ * - The swap API (`_do_swap`)
  * 
  * @param SWAP_FUNC_NAME_PREFIX Prefix for the generated swap function name.
  * @param TYPE The data type of elements to be swapped.
@@ -74,7 +74,7 @@
     TYPE_REF_COPY_FUNC                                                                  \
 )                                                                                       \
                                                                                         \
-static void C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, swap)(TYPE* left, TYPE* right)     \
+static void C_IDENTIFIER_BIND(SWAP_FUNC_NAME_PREFIX, do_swap)(TYPE* left, TYPE* right)  \
 {                                                                                       \
     TYPE temp;                                                                          \
     TYPE_REF_COPY_FUNC(&temp, left);                                                    \
@@ -117,7 +117,7 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_up)(TYPE* arr, size_t ar
     _C_CUSTOM_ASSERT(idx < arr_size, "Heap index is greater than array size");                                  \
     while (idx > 0 && TYPE_REF_COMPARE_FUNC(&arr[idx], &arr[(idx - 1) / 2]))                                    \
     {                                                                                                           \
-        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[(idx - 1) / 2]);                  \
+        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, do_swap)(&arr[idx], &arr[(idx - 1) / 2]);               \
         idx = (idx - 1) / 2;                                                                                    \
     }                                                                                                           \
 }                                                                                                               \
@@ -143,7 +143,7 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t 
         if (right < arr_size && TYPE_REF_COMPARE_FUNC(&arr[right], &arr[smallest]))                             \
             smallest = right;                                                                                   \
         if (smallest == idx) return;                                                                            \
-        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, swap)(&arr[idx], &arr[smallest]);                       \
+        C_IDENTIFIER_BIND(HEAP_ADJUST_SWAP_HELPER_NAME, do_swap)(&arr[idx], &arr[smallest]);                    \
         idx = smallest;                                                                                         \
     }                                                                                                           \
 }                                                                                                               \
@@ -155,7 +155,7 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t 
  *
  * This macro instantiates:
  * 
- * - A `PRIVATE_SWAP_FUNC` helper for heap operations
+ * - A `PRIVATE_SwapFunc` helper for heap operations
  * 
  * - The heapify API (`_heapify_up`, `_heapify_down`)
  * 
@@ -172,14 +172,14 @@ static void C_IDENTIFIER_BIND(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t 
 )                                                                                                               \
                                                                                                                 \
 DEFINE_GENERIC_SWAP_FUNCTION(                                                                                   \
-    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC),                                       \
+    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_Swap),                                            \
     TYPE,                                                                                                       \
     TYPE_REF_COPY_FUNC                                                                                          \
 )                                                                                                               \
                                                                                                                 \
 _DEFINE_GENERIC_HEAPIFY_FUNCTIONS_IMPL(                                                                         \
     HEAP_ADJUST_NAME_PUBLIC_PREFIX,                                                                             \
-    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_SWAP_FUNC), /*same as above*/                     \
+    C_IDENTIFIER_BIND(HEAP_ADJUST_NAME_PUBLIC_PREFIX, PRIVATE_Swap), /*same as above*/                          \
     TYPE,                                                                                                       \
     TYPE_REF_COMPARE_FUNC                                                                                       \
 )                                                                                                               \
