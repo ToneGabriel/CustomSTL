@@ -14,18 +14,17 @@ DEFINE_GENERIC_VECTOR(
 )
 
 
-static VectorINT _custom_vector_instance;
-static const size_t _DEFAULT_INIT_CAPACITY = 10;
+static VectorINT g_customVectorINTInstance;
 
 
 void setUp()
 {
-    _custom_vector_instance = VectorINT_create(_DEFAULT_INIT_CAPACITY);
+    g_customVectorINTInstance = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
 }
 
 void tearDown()
 {
-    VectorINT_destroy(&_custom_vector_instance);
+    VectorINT_destroy(&g_customVectorINTInstance);
 }
 
 
@@ -34,23 +33,23 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL_UINT(0, VectorINT_size(&_custom_vector_instance));
-    TEST_ASSERT_EQUAL_UINT(_DEFAULT_INIT_CAPACITY, VectorINT_capacity(&_custom_vector_instance));
-    TEST_ASSERT_TRUE(VectorINT_empty(&_custom_vector_instance));
+    TEST_ASSERT_EQUAL_UINT(0, VectorINT_size(&g_customVectorINTInstance));
+    TEST_ASSERT_EQUAL_UINT(GENERIC_VECTOR_DEFAULT_CAPACITY, VectorINT_capacity(&g_customVectorINTInstance));
+    TEST_ASSERT_TRUE(VectorINT_empty(&g_customVectorINTInstance));
 }
 
 void test_copy()
 {
     int val = 0;
-    VectorINT_push_back(&_custom_vector_instance, &val);
-    VectorINT_push_back(&_custom_vector_instance, &val);
-    VectorINT_push_back(&_custom_vector_instance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
 
-    VectorINT other = VectorINT_create(_DEFAULT_INIT_CAPACITY);
-    TEST_ASSERT_FALSE(VectorINT_equals(&other, &_custom_vector_instance));
+    VectorINT other = VectorINT_create(0);
+    TEST_ASSERT_FALSE(VectorINT_equals(&other, &g_customVectorINTInstance));
 
-    VectorINT_copy(&other, &_custom_vector_instance);
-    TEST_ASSERT_TRUE(VectorINT_equals(&other, &_custom_vector_instance));
+    VectorINT_copy(&other, &g_customVectorINTInstance);
+    TEST_ASSERT_TRUE(VectorINT_equals(&other, &g_customVectorINTInstance));
 
     VectorINT_destroy(&other);
 }
@@ -58,19 +57,19 @@ void test_copy()
 void test_move()
 {
     int val = 0;
-    VectorINT_push_back(&_custom_vector_instance, &val);
-    VectorINT_push_back(&_custom_vector_instance, &val);
-    VectorINT_push_back(&_custom_vector_instance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
 
-    VectorINT original_copy = VectorINT_create(1);
-    VectorINT_copy(&original_copy, &_custom_vector_instance);
+    VectorINT original_copy = VectorINT_create(0);
+    VectorINT_copy(&original_copy, &g_customVectorINTInstance);
 
-    VectorINT other = VectorINT_create(_DEFAULT_INIT_CAPACITY);
-    TEST_ASSERT_FALSE(VectorINT_equals(&other, &_custom_vector_instance));
+    VectorINT other = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
+    TEST_ASSERT_FALSE(VectorINT_equals(&other, &g_customVectorINTInstance));
 
-    VectorINT_move(&other, &_custom_vector_instance);
-    TEST_ASSERT_FALSE(VectorINT_equals(&other, &_custom_vector_instance));
-    TEST_ASSERT_TRUE(VectorINT_equals(&other, &original_copy));
+    VectorINT_move(&other, &g_customVectorINTInstance);
+    TEST_ASSERT_FALSE(VectorINT_equals(&other, &g_customVectorINTInstance));   // still not equal
+    TEST_ASSERT_TRUE(VectorINT_equals(&other, &original_copy));             // equal to original
 
     VectorINT_destroy(&other);
     VectorINT_destroy(&original_copy);
