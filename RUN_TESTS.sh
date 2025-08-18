@@ -1,28 +1,30 @@
-#!/bin/sh
+#!/bin/bash
 echo "Running all tests..."
 
-echo
-echo Building tests...
-echo
-cmake -G "Ninja" -B build
-cmake --build build
+# Define build and logs folder
+BUILD_DIR="$(pwd)/build"
+BIN_DIR="$BUILD_DIR/bin"
+LOGS_DIR="$(pwd)/logs"
 
+# Create logs folder if it doesn't exist
+mkdir -p "$LOGS_DIR"
 
-cd build/bin
+# Build project tests
+echo
+echo "Building tests..."
+echo
+cmake -G "Ninja" -B "$BUILD_DIR"
+cmake --build "$BUILD_DIR"
 
+# Loop through all exe files in build/bin folder and output the results in logs folder
 echo
-echo "Starting CPP Tests with Googletest..."
-echo
-./Custom_STL_CPP_FULL_Test
-
-echo
-echo "Starting C Tests with Unity..."
-echo
-./Custom_STL_C_LIST_Test
-./Custom_STL_C_PRIORITY_QUEUE_Test
-./Custom_STL_C_QUEUE_Test
-./Custom_STL_C_STACK_Test
-./Custom_STL_C_VECTOR_Test
+for exe in "$BIN_DIR"/*.exe; do
+    if [ -f "$exe" ]; then
+        name=$(basename "$exe" .exe)
+        echo "Running $name ..."
+        "$exe" > "$LOGS_DIR/$name.txt" 2>&1
+    fi
+done
 
 echo
 echo "All tests finished."

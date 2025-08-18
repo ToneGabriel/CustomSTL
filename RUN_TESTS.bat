@@ -1,28 +1,28 @@
 @echo off
 echo Running all test...
 
+:: Define build and logs folder
+set BUILD_DIR=%~dp0build
+set BIN_DIR=%BUILD_DIR%/bin
+set LOGS_DIR=%~dp0logs
+
+:: Create logs folder if it doesn't exist
+if not exist "%LOGS_DIR%" (
+    mkdir "%LOGS_DIR%"
+)
+
+:: Build project tests
 echo.
 echo Building tests...
 echo.
-cmake -G "Ninja" -B build
-cmake --build build
+cmake -G "Ninja" -B "%BUILD_DIR%"
+cmake --build "%BUILD_DIR%"
 
-
-cd build/bin
-
-echo.
-echo Starting CPP Tests with Googletest...
-echo.
-Custom_STL_CPP_FULL_Test.exe
-
-echo.
-echo Starting C Tests with Unity...
-echo.
-Custom_STL_C_LIST_Test.exe
-Custom_STL_C_PRIORITY_QUEUE_Test.exe
-Custom_STL_C_QUEUE_Test.exe
-Custom_STL_C_STACK_Test.exe
-Custom_STL_C_VECTOR_Test.exe
+:: Loop through all exe files in build/bin folder and output the results in logs folder
+for %%F in ("%BIN_DIR%\*.exe") do (
+    echo Running %%~nxF ...
+    "%%F" > "%LOGS_DIR%\%%~nF.txt" 2>&1
+)
 
 echo.
 echo All tests finished.
