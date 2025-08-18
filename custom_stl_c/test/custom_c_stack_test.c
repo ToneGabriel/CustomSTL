@@ -14,17 +14,17 @@ DEFINE_GENERIC_STACK(
 )
 
 
-static StackINT _custom_stack_instance;
+static StackINT g_customStackINTInstance;
 
 
 void setUp()
 {
-    _custom_stack_instance = StackINT_create();
+    StackINT_initialize(&g_customStackINTInstance);
 }
 
 void tearDown()
 {
-    StackINT_destroy(&_custom_stack_instance);
+    StackINT_destroy(&g_customStackINTInstance);
 }
 
 
@@ -33,22 +33,22 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL_UINT(0, StackINT_size(&_custom_stack_instance));
-    TEST_ASSERT_TRUE(StackINT_empty(&_custom_stack_instance));
+    TEST_ASSERT_EQUAL_UINT(0, StackINT_size(&g_customStackINTInstance));
+    TEST_ASSERT_TRUE(StackINT_empty(&g_customStackINTInstance));
 }
 
 void test_copy()
 {
     int val = 0;
-    StackINT_insert(&_custom_stack_instance, &val);
-    StackINT_insert(&_custom_stack_instance, &val);
-    StackINT_insert(&_custom_stack_instance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
 
     StackINT other = StackINT_create();
-    TEST_ASSERT_FALSE(StackINT_equals(&other, &_custom_stack_instance));
+    TEST_ASSERT_FALSE(StackINT_equals(&other, &g_customStackINTInstance));
 
-    StackINT_copy(&other, &_custom_stack_instance);
-    TEST_ASSERT_TRUE(StackINT_equals(&other, &_custom_stack_instance));
+    StackINT_copy(&other, &g_customStackINTInstance);
+    TEST_ASSERT_TRUE(StackINT_equals(&other, &g_customStackINTInstance));
 
     StackINT_destroy(&other);
 }
@@ -56,18 +56,19 @@ void test_copy()
 void test_move()
 {
     int val = 0;
-    StackINT_insert(&_custom_stack_instance, &val);
-    StackINT_insert(&_custom_stack_instance, &val);
-    StackINT_insert(&_custom_stack_instance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
+    StackINT_insert(&g_customStackINTInstance, &val);
 
     StackINT original_copy = StackINT_create();
-    StackINT_copy(&original_copy, &_custom_stack_instance);
+    StackINT_copy(&original_copy, &g_customStackINTInstance);
 
     StackINT other = StackINT_create();
-    TEST_ASSERT_FALSE(StackINT_equals(&other, &_custom_stack_instance));
+    StackINT_initialize(&other);
+    TEST_ASSERT_FALSE(StackINT_equals(&other, &g_customStackINTInstance));
 
-    StackINT_move(&other, &_custom_stack_instance);
-    TEST_ASSERT_FALSE(StackINT_equals(&other, &_custom_stack_instance));
+    StackINT_move(&other, &g_customStackINTInstance);
+    TEST_ASSERT_FALSE(StackINT_equals(&other, &g_customStackINTInstance));
     TEST_ASSERT_TRUE(StackINT_equals(&other, &original_copy));
 
     StackINT_destroy(&other);
@@ -79,6 +80,8 @@ void test_move()
 
 int main()
 {
+    g_customStackINTInstance = StackINT_create();
+
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);

@@ -91,10 +91,13 @@ static bool C_IDENTIFIER_BIND(LIST_ITERATOR_NAME, equals)(LIST_ITERATOR_NAME* le
     LIST_ITERATOR_NAME,                                                                                                                 \
     NODE_NAME,                                                                                                                          \
     TYPE,                                                                                                                               \
-    TYPE_REF_EQUALS_FUNC                                                                                                                \
+    TYPE_REF_EQUALS_FUNC,                                                                                                               \
+    TYPE_REF_COPY_FUNC,                                                                                                                 \
+    TYPE_REF_DELETE_FUNC                                                                                                                \
 )                                                                                                                                       \
                                                                                                                                         \
 static LIST_NAME            C_IDENTIFIER_BIND(LIST_NAME, create)();                                                                     \
+static void                 C_IDENTIFIER_BIND(LIST_NAME, initialize)(LIST_NAME* list);                                                  \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, destroy)(LIST_NAME* list);                                                     \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, clear)(LIST_NAME* list);                                                       \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, copy)(LIST_NAME* dest, const LIST_NAME* source);                               \
@@ -137,10 +140,19 @@ static LIST_NAME C_IDENTIFIER_BIND(LIST_NAME, create)()                         
 {                                                                                                                                       \
     LIST_NAME list = {                                                                                                                  \
         .size = 0,                                                                                                                      \
-        .head = C_IDENTIFIER_BIND(NODE_NAME, create)(NULL) /*head value remains default*/                                               \
+        .head = NULL                                                                                                                    \
     };                                                                                                                                  \
-    list.head->next = list.head->prev = list.head;                                                                                      \
     return list;                                                                                                                        \
+}                                                                                                                                       \
+                                                                                                                                        \
+static void C_IDENTIFIER_BIND(LIST_NAME, initialize)(LIST_NAME* list)                                                                   \
+{                                                                                                                                       \
+    _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                     \
+    if (NULL != list->head)                                                                                                             \
+        C_IDENTIFIER_BIND(LIST_NAME, destroy)(list);                                                                                    \
+    list->size = 0;                                                                                                                     \
+    list->head = C_IDENTIFIER_BIND(NODE_NAME, create)();    /*head value remains default*/                                              \
+    list->head->next = list->head->prev = list->head;                                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
 static void C_IDENTIFIER_BIND(LIST_NAME, destroy)(LIST_NAME* list)                                                                      \
@@ -165,7 +177,9 @@ static void C_IDENTIFIER_BIND(LIST_NAME, copy)(LIST_NAME* dest, const LIST_NAME*
     _C_CUSTOM_ASSERT(NULL != dest, "List dest is NULL");                                                                                \
     _C_CUSTOM_ASSERT(NULL != source, "List source is NULL");                                                                            \
     if (dest == source) return;                                                                                                         \
-    C_IDENTIFIER_BIND(LIST_NAME, clear)(dest);                                                                                          \
+    C_IDENTIFIER_BIND(LIST_NAME, destroy)(dest);                                                                                        \
+    if (NULL == source->head) return;                                                                                                   \
+    C_IDENTIFIER_BIND(LIST_NAME, initialize)(dest);                                                                                     \
     for (NODE_NAME* temp = source->head->next; dest->size < source->size; temp = temp->next)                                            \
         C_IDENTIFIER_BIND(LIST_NAME, push_back)(dest, &temp->value);                                                                    \
 }                                                                                                                                       \
@@ -176,6 +190,7 @@ static void C_IDENTIFIER_BIND(LIST_NAME, move)(LIST_NAME* dest, LIST_NAME* sourc
     _C_CUSTOM_ASSERT(NULL != source, "List source is NULL");                                                                            \
     if (dest == source) return;                                                                                                         \
     C_IDENTIFIER_BIND(LIST_NAME, destroy)(dest);                                                                                        \
+    if (NULL == source->head) return;                                                                                                   \
     *dest = *source;                                                                                                                    \
     source->size = 0;                                                                                                                   \
     source->head = NULL;                                                                                                                \
@@ -196,14 +211,16 @@ static bool C_IDENTIFIER_BIND(LIST_NAME, empty)(const LIST_NAME* list)          
 static void C_IDENTIFIER_BIND(LIST_NAME, push_back)(LIST_NAME* list, const TYPE* item)                                                  \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                     \
-    NODE_NAME* new_node = C_IDENTIFIER_BIND(NODE_NAME, create)(item);                                                                   \
+    NODE_NAME* new_node = C_IDENTIFIER_BIND(NODE_NAME, create)();                                                                       \
+    if (NULL != item) TYPE_REF_COPY_FUNC(&new_node->value, item);                                                                       \
     C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_link_node_before)(list, list->head, new_node);                                                 \
 }                                                                                                                                       \
                                                                                                                                         \
 static void C_IDENTIFIER_BIND(LIST_NAME, push_front)(LIST_NAME* list, const TYPE* item)                                                 \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                     \
-    NODE_NAME* new_node = C_IDENTIFIER_BIND(NODE_NAME, create)(item);                                                                   \
+    NODE_NAME* new_node = C_IDENTIFIER_BIND(NODE_NAME, create)();                                                                       \
+    if (NULL != item) TYPE_REF_COPY_FUNC(&new_node->value, item);                                                                       \
     C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_link_node_before)(list, list->head->next, new_node);                                           \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -213,6 +230,7 @@ static void C_IDENTIFIER_BIND(LIST_NAME, pop_back)(LIST_NAME* list)             
     if (0 == list->size) return;                                                                                                        \
     NODE_NAME* junk_node = list->head->prev;                                                                                            \
     C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_unlink_node)(list, junk_node);                                                                 \
+    TYPE_REF_DELETE_FUNC(&junk_node->value);                                                                                            \
     C_IDENTIFIER_BIND(NODE_NAME, destroy)(junk_node);                                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -222,6 +240,7 @@ static void C_IDENTIFIER_BIND(LIST_NAME, pop_front)(LIST_NAME* list)            
     if (0 == list->size) return;                                                                                                        \
     NODE_NAME* junk_node = list->head->next;                                                                                            \
     C_IDENTIFIER_BIND(LIST_NAME, PRIVATE_unlink_node)(list, junk_node);                                                                 \
+    TYPE_REF_DELETE_FUNC(&junk_node->value);                                                                                            \
     C_IDENTIFIER_BIND(NODE_NAME, destroy)(junk_node);                                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
@@ -270,9 +289,7 @@ static LIST_ITERATOR_NAME C_IDENTIFIER_BIND(LIST_NAME, end)(LIST_NAME* list)    
                                                                                     \
 DEFINE_GENERIC_DOUBLE_NODE(                                                         \
     C_IDENTIFIER_BIND(LIST_NAME_PUBLIC_PREFIX, PRIVATE_Node),                       \
-    TYPE,                                                                           \
-    TYPE_REF_COPY_FUNC,                                                             \
-    TYPE_REF_DELETE_FUNC                                                            \
+    TYPE                                                                            \
 )                                                                                   \
                                                                                     \
 _DEFINE_GENERIC_LIST_DATA(                                                          \
@@ -292,7 +309,9 @@ _DEFINE_GENERIC_LIST_IMPL(                                                      
     C_IDENTIFIER_BIND(LIST_NAME_PUBLIC_PREFIX, Iterator), /*same as above*/         \
     C_IDENTIFIER_BIND(LIST_NAME_PUBLIC_PREFIX, PRIVATE_Node), /*same as above*/     \
     TYPE,                                                                           \
-    TYPE_REF_EQUALS_FUNC                                                            \
+    TYPE_REF_EQUALS_FUNC,                                                           \
+    TYPE_REF_COPY_FUNC,                                                             \
+    TYPE_REF_DELETE_FUNC                                                            \
 )                                                                                   \
 
 
