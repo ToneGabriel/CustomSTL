@@ -16,17 +16,17 @@ typedef struct SINGLE_NODE_NAME                                                 
     SINGLE_NODE_NAME* next;                                                                                             \
 } SINGLE_NODE_NAME;                                                                                                     \
                                                                                                                         \
-static SINGLE_NODE_NAME*    C_IDENTIFIER_BIND(SINGLE_NODE_NAME, create)();                                              \
-static void                 C_IDENTIFIER_BIND(SINGLE_NODE_NAME, destroy)(SINGLE_NODE_NAME* node);                       \
+static SINGLE_NODE_NAME*    _C_IDENTIFIER_BIND(SINGLE_NODE_NAME, create)();                                             \
+static void                 _C_IDENTIFIER_BIND(SINGLE_NODE_NAME, destroy)(SINGLE_NODE_NAME* node);                      \
                                                                                                                         \
-static SINGLE_NODE_NAME* C_IDENTIFIER_BIND(SINGLE_NODE_NAME, create)()                                                  \
+static SINGLE_NODE_NAME* _C_IDENTIFIER_BIND(SINGLE_NODE_NAME, create)()                                                 \
 {                                                                                                                       \
     SINGLE_NODE_NAME* new_node = (SINGLE_NODE_NAME*)malloc(sizeof(SINGLE_NODE_NAME));                                   \
     new_node->next = NULL;                                                                                              \
     return new_node;                                                                                                    \
 }                                                                                                                       \
                                                                                                                         \
-static void C_IDENTIFIER_BIND(SINGLE_NODE_NAME, destroy)(SINGLE_NODE_NAME* node)                                        \
+static void _C_IDENTIFIER_BIND(SINGLE_NODE_NAME, destroy)(SINGLE_NODE_NAME* node)                                       \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != node, "Single Node is NULL");                                                              \
     free(node);                                                                                                         \
@@ -48,17 +48,17 @@ typedef struct DOUBLE_NODE_NAME                                                 
     struct DOUBLE_NODE_NAME* prev;                                                                                      \
 } DOUBLE_NODE_NAME;                                                                                                     \
                                                                                                                         \
-static DOUBLE_NODE_NAME*    C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, create)();                                              \
-static void                 C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, destroy)(DOUBLE_NODE_NAME* node);                       \
+static DOUBLE_NODE_NAME*    _C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, create)();                                             \
+static void                 _C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, destroy)(DOUBLE_NODE_NAME* node);                      \
                                                                                                                         \
-static DOUBLE_NODE_NAME* C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, create)()                                                  \
+static DOUBLE_NODE_NAME* _C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, create)()                                                 \
 {                                                                                                                       \
     DOUBLE_NODE_NAME* new_node = (DOUBLE_NODE_NAME*)malloc(sizeof(DOUBLE_NODE_NAME));                                   \
     new_node->next = new_node->prev = NULL;                                                                             \
     return new_node;                                                                                                    \
 }                                                                                                                       \
                                                                                                                         \
-static void C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, destroy)(DOUBLE_NODE_NAME* node)                                        \
+static void _C_IDENTIFIER_BIND(DOUBLE_NODE_NAME, destroy)(DOUBLE_NODE_NAME* node)                                       \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != node, "Double Node is NULL");                                                              \
     free(node);                                                                                                         \

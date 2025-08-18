@@ -51,7 +51,18 @@ _C_IDENTIFIER_BIND_IMPL_SELECTOR_HELPER(        \
 )
 
 // Macro to bind 2 to 5 args
-#define C_IDENTIFIER_BIND(...) _C_IDENTIFIER_BIND_IMPL_SELECTOR(__VA_ARGS__)(__VA_ARGS__)
+#define _C_IDENTIFIER_BIND(...) _C_IDENTIFIER_BIND_IMPL_SELECTOR(__VA_ARGS__)(__VA_ARGS__)
+
+
+// List of identifiers used to generate struct and function names via `_C_IDENTIFIER_BIND`
+#define _C_IDENTIFIER_PRIVATE       PRIVATE
+#define _C_IDENTIFIER_SWAP          Swap
+#define _C_IDENTIFIER_HEAP          Heap
+#define _C_IDENTIFIER_ITERATOR      Iterator
+#define _C_IDENTIFIER_VECTOR        Vector
+#define _C_IDENTIFIER_SINGLE_NODE   SingleNode
+#define _C_IDENTIFIER_DOUBLE_NODE   DoubleNode
+#define _C_IDENTIFIER_LIST          List
 
 
 #endif  // _C_STLCORE_H

@@ -17,10 +17,10 @@ typedef struct                                                                  
     TYPE_2 second;                                                              \
 } PAIR_NAME;                                                                    \
                                                                                 \
-static PAIR_NAME    C_IDENTIFIER_BIND(PAIR_NAME, create)();                     \
-static void         C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair);     \
+static PAIR_NAME    _C_IDENTIFIER_BIND(PAIR_NAME, create)();                    \
+static void         _C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair);    \
                                                                                 \
-static PAIR_NAME C_IDENTIFIER_BIND(PAIR_NAME, create)()                         \
+static PAIR_NAME _C_IDENTIFIER_BIND(PAIR_NAME, create)()                        \
 {                                                                               \
     PAIR_NAME pair = {                                                          \
         .first,                                                                 \
@@ -29,7 +29,7 @@ static PAIR_NAME C_IDENTIFIER_BIND(PAIR_NAME, create)()                         
     return pair;                                                                \
 }                                                                               \
                                                                                 \
-static void C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair)              \
+static void _C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair)             \
 {                                                                               \
     _C_CUSTOM_ASSERT(NULL != pair, "Pair is NULL");                             \
 }                                                                               \
