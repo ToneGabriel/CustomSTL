@@ -19,7 +19,7 @@ static StackINT g_customStackINTInstance;
 
 void setUp()
 {
-    StackINT_initialize(&g_customStackINTInstance);
+    g_customStackINTInstance = StackINT_create();
 }
 
 void tearDown()
@@ -64,7 +64,6 @@ void test_move()
     StackINT_copy(&original_copy, &g_customStackINTInstance);
 
     StackINT other = StackINT_create();
-    StackINT_initialize(&other);
     TEST_ASSERT_FALSE(StackINT_equals(&other, &g_customStackINTInstance));
 
     StackINT_move(&other, &g_customStackINTInstance);
@@ -80,8 +79,6 @@ void test_move()
 
 int main()
 {
-    g_customStackINTInstance = StackINT_create();
-
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);

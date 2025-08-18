@@ -20,7 +20,7 @@ static IntPQ g_customIntPQInstance;
 
 void setUp()
 {
-    IntPQ_initialize(&g_customIntPQInstance);
+    g_customIntPQInstance = IntPQ_create();
 }
 
 void tearDown()
@@ -65,7 +65,6 @@ void test_move()
     IntPQ_copy(&original_copy, &g_customIntPQInstance);
 
     IntPQ other = IntPQ_create();
-    IntPQ_initialize(&other);
     TEST_ASSERT_FALSE(IntPQ_equals(&other, &g_customIntPQInstance));
 
     IntPQ_move(&other, &g_customIntPQInstance);
@@ -81,8 +80,6 @@ void test_move()
 
 int main()
 {
-    g_customIntPQInstance = IntPQ_create();
-
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);

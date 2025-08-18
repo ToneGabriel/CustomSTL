@@ -19,7 +19,7 @@ static VectorINT g_customVectorINTInstance;
 
 void setUp()
 {
-    VectorINT_initialize(&g_customVectorINTInstance, GENERIC_VECTOR_DEFAULT_CAPACITY);
+    g_customVectorINTInstance = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
 }
 
 void tearDown()
@@ -45,7 +45,7 @@ void test_copy()
     VectorINT_push_back(&g_customVectorINTInstance, &val);
     VectorINT_push_back(&g_customVectorINTInstance, &val);
 
-    VectorINT other = VectorINT_create();
+    VectorINT other = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
     TEST_ASSERT_FALSE(VectorINT_equals(&other, &g_customVectorINTInstance));
 
     VectorINT_copy(&other, &g_customVectorINTInstance);
@@ -61,11 +61,10 @@ void test_move()
     VectorINT_push_back(&g_customVectorINTInstance, &val);
     VectorINT_push_back(&g_customVectorINTInstance, &val);
 
-    VectorINT original_copy = VectorINT_create();
+    VectorINT original_copy = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
     VectorINT_copy(&original_copy, &g_customVectorINTInstance);
 
-    VectorINT other = VectorINT_create();
-    VectorINT_initialize(&other, GENERIC_VECTOR_DEFAULT_CAPACITY);
+    VectorINT other = VectorINT_create(GENERIC_VECTOR_DEFAULT_CAPACITY);
     TEST_ASSERT_FALSE(VectorINT_equals(&other, &g_customVectorINTInstance));
 
     VectorINT_move(&other, &g_customVectorINTInstance);
@@ -81,8 +80,6 @@ void test_move()
 
 int main()
 {
-    g_customVectorINTInstance = VectorINT_create();
-
     UNITY_BEGIN();
 
     RUN_TEST(test_default_create);

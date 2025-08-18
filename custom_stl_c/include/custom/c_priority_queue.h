@@ -36,7 +36,6 @@ typedef struct                                                                  
 } PQ_NAME;                                                                                                                              \
                                                                                                                                         \
 static PQ_NAME  C_IDENTIFIER_BIND(PQ_NAME, create)();                                                                                   \
-static void     C_IDENTIFIER_BIND(PQ_NAME, initialize)(PQ_NAME* pq);                                                                    \
 static void     C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq);                                                                       \
 static void     C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq);                                                                         \
 static void     C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source);                                                 \
@@ -49,25 +48,15 @@ static TYPE*    C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq);                  
 static bool     C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right);                                          \
                                                                                                                                         \
 /**                                                                                                                                     \
- * @brief Creates new priority queue. Call `_initialize` or `_copy`/`_move`.                                                            \
+ * @brief Creates new priority queue. Initialize internal vector.                                                                       \
  * @return A new instance of PQ_NAME.                                                                                                   \
  */                                                                                                                                     \
 static PQ_NAME C_IDENTIFIER_BIND(PQ_NAME, create)()                                                                                     \
 {                                                                                                                                       \
     PQ_NAME pq = {                                                                                                                      \
-        .vec = C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, create)()                                                                       \
+        .vec = C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, create)(GENERIC_VECTOR_DEFAULT_CAPACITY)                                        \
     };                                                                                                                                  \
     return pq;                                                                                                                          \
-}                                                                                                                                       \
-                                                                                                                                        \
-/**                                                                                                                                     \
- * @brief Initialize internal vector.                                                                                                   \
- * @param pq Pointer to the priority queue.                                                                                             \
- */                                                                                                                                     \
-static void C_IDENTIFIER_BIND(PQ_NAME, initialize)(PQ_NAME* pq)                                                                         \
-{                                                                                                                                       \
-    _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, initialize)(&pq->vec, GENERIC_VECTOR_DEFAULT_CAPACITY);                                    \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -208,7 +197,7 @@ static bool C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAM
  * 
  * - A `PRIVATE_Vector` container for internal storage
  * 
- * - The priority queue API (   `_create`, `_initialize`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
+ * - The priority queue API (   `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
  *                              `_insert`, `_pop`, `_peek`, `_equals`
  *                          )
  *

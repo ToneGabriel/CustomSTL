@@ -147,8 +147,7 @@ static bool C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME
     TYPE_REF_DELETE_FUNC                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
-static VECTOR_NAME          C_IDENTIFIER_BIND(VECTOR_NAME, create)();                                                   \
-static void                 C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(VECTOR_NAME* vec, size_t capacity);              \
+static VECTOR_NAME          C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity);                                    \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                  \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec);                                    \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source);         \
@@ -167,33 +166,20 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, begin)(VECTOR_NAME* v
 static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec);                                      \
                                                                                                                         \
 /**                                                                                                                     \
- * @brief Creates a vector struct with NULL fields.                                                                     \
+ * @brief Creates a vector struct and allocates dynamic array.                                                          \
+ * @param capacity Initial capacity of the vector.                                                                      \
  * @return A new instance of VECTOR_NAME.                                                                               \
  */                                                                                                                     \
-static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)()                                                             \
+static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)                                              \
 {                                                                                                                       \
-    VECTOR_NAME vec = {                                                                                                 \
-        .first = NULL,                                                                                                  \
-        .last = NULL,                                                                                                   \
-        .final = NULL                                                                                                   \
-    };                                                                                                                  \
-    return vec;                                                                                                         \
-}                                                                                                                       \
-                                                                                                                        \
-/**                                                                                                                     \
- * @brief Allocates a vector with an initial capacity. Old is destroyed.                                                \
- * @param capacity Initial capacity of the vector.                                                                      \
- */                                                                                                                     \
-static void C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(VECTOR_NAME* vec, size_t capacity)                               \
-{                                                                                                                       \
-    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
-    if (NULL != vec->first)                                                                                             \
-        C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(vec);                                                                   \
     size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;       \
     TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                              \
-    vec->first = arr;                                                                                                   \
-    vec->last = arr;                                                                                                    \
-    vec->final = arr + newCapacity;                                                                                     \
+    VECTOR_NAME vec = {                                                                                                 \
+        .first = arr,                                                                                                   \
+        .last = arr,                                                                                                    \
+        .final = arr + newCapacity                                                                                      \
+    };                                                                                                                  \
+    return vec;                                                                                                         \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -218,6 +204,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec)           
 static void C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec)                                                     \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                        \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
         TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
@@ -238,7 +225,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR
     if (NULL == source->first) return;                                                                                  \
     size_t newCapacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                              \
     size_t newSize = C_IDENTIFIER_BIND(VECTOR_NAME, size)(source);                                                      \
-    C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(dest, newCapacity);                                                      \
+    *dest = C_IDENTIFIER_BIND(VECTOR_NAME, create)(newCapacity);                                                        \
     for (size_t i = 0; i < newSize; ++i)                                                                                \
         TYPE_REF_COPY_FUNC(dest->first + i, source->first + i);                                                         \
     dest->last = dest->first + newSize;                                                                                 \
@@ -312,6 +299,7 @@ static bool C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec)       
 static void C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item)                               \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    if (NULL == vec->first) return;                                                                                     \
     if (vec->last >= vec->final)                                                                                        \
     {                                                                                                                   \
         size_t oldSize = C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                     \
@@ -343,7 +331,7 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)          
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)                                            \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
-    _C_CUSTOM_ASSERT(vec->first == vec->last, "Vector is empty");                                                       \
+    if (vec->first == vec->last) return NULL;                                                                           \
     return vec->first;                                                                                                  \
 }                                                                                                                       \
                                                                                                                         \
@@ -355,7 +343,7 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)    
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)                                             \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
-    _C_CUSTOM_ASSERT(vec->first == vec->last, "Vector is empty");                                                       \
+    if (vec->first == vec->last) return NULL;                                                                           \
     return vec->last;                                                                                                   \
 }                                                                                                                       \
                                                                                                                         \
@@ -368,7 +356,7 @@ static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)     
 static TYPE* C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index)                                 \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
-    _C_CUSTOM_ASSERT(vec->first + index < vec->last, "Index out of bounds");                                            \
+    if (vec->first + index < vec->last) return NULL;                                                                    \
     return vec->first + index;                                                                                          \
 }                                                                                                                       \
                                                                                                                         \
@@ -418,7 +406,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec
  *
  * This macro instantiates:
  * 
- * - The vector API (   `_create`, `_initialize`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
+ * - The vector API (   `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
  *                      `_push_back`, `_pop_back`, `_element_front`, `_element_back`, `_element_at`, `_equals`,
  *                      `_begin`, `_end`
  *                  )
