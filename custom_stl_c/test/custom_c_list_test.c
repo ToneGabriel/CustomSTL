@@ -19,7 +19,7 @@ static ListINT g_customListINTInstance;
 
 void setUp()
 {
-    ListINT_initialize(&g_customListINTInstance);
+    g_customListINTInstance = ListINT_create();
 }
 
 void tearDown()
@@ -64,7 +64,6 @@ void test_move()
     ListINT_copy(&original_copy, &g_customListINTInstance);
 
     ListINT other = ListINT_create();
-    ListINT_initialize(&other);
     TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customListINTInstance));
 
     ListINT_move(&other, &g_customListINTInstance);
@@ -80,8 +79,6 @@ void test_move()
 
 int main()
 {
-    g_customListINTInstance = ListINT_create();
-
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);

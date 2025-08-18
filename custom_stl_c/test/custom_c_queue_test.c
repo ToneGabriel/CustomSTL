@@ -19,7 +19,7 @@ static QueueINT g_customQueueINTInstance;
 
 void setUp()
 {
-    QueueINT_initialize(&g_customQueueINTInstance);
+    g_customQueueINTInstance = QueueINT_create();
 }
 
 void tearDown()
@@ -64,7 +64,6 @@ void test_move()
     QueueINT_copy(&original_copy, &g_customQueueINTInstance);
 
     QueueINT other = QueueINT_create();
-    QueueINT_initialize(&other);
     TEST_ASSERT_FALSE(QueueINT_equals(&other, &g_customQueueINTInstance));
 
     QueueINT_move(&other, &g_customQueueINTInstance);
@@ -80,8 +79,6 @@ void test_move()
 
 int main()
 {
-    g_customQueueINTInstance = QueueINT_create();
-
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);

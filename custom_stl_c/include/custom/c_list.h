@@ -97,7 +97,6 @@ static bool C_IDENTIFIER_BIND(LIST_ITERATOR_NAME, equals)(LIST_ITERATOR_NAME* le
 )                                                                                                                                       \
                                                                                                                                         \
 static LIST_NAME            C_IDENTIFIER_BIND(LIST_NAME, create)();                                                                     \
-static void                 C_IDENTIFIER_BIND(LIST_NAME, initialize)(LIST_NAME* list);                                                  \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, destroy)(LIST_NAME* list);                                                     \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, clear)(LIST_NAME* list);                                                       \
 static void                 C_IDENTIFIER_BIND(LIST_NAME, copy)(LIST_NAME* dest, const LIST_NAME* source);                               \
@@ -140,19 +139,10 @@ static LIST_NAME C_IDENTIFIER_BIND(LIST_NAME, create)()                         
 {                                                                                                                                       \
     LIST_NAME list = {                                                                                                                  \
         .size = 0,                                                                                                                      \
-        .head = NULL                                                                                                                    \
+        .head = C_IDENTIFIER_BIND(NODE_NAME, create)()  /*head value remains default*/                                                  \
     };                                                                                                                                  \
+    list.head->next = list.head->prev = list.head;                                                                                      \
     return list;                                                                                                                        \
-}                                                                                                                                       \
-                                                                                                                                        \
-static void C_IDENTIFIER_BIND(LIST_NAME, initialize)(LIST_NAME* list)                                                                   \
-{                                                                                                                                       \
-    _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                     \
-    if (NULL != list->head)                                                                                                             \
-        C_IDENTIFIER_BIND(LIST_NAME, destroy)(list);                                                                                    \
-    list->size = 0;                                                                                                                     \
-    list->head = C_IDENTIFIER_BIND(NODE_NAME, create)();    /*head value remains default*/                                              \
-    list->head->next = list->head->prev = list->head;                                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
 static void C_IDENTIFIER_BIND(LIST_NAME, destroy)(LIST_NAME* list)                                                                      \
@@ -179,7 +169,7 @@ static void C_IDENTIFIER_BIND(LIST_NAME, copy)(LIST_NAME* dest, const LIST_NAME*
     if (dest == source) return;                                                                                                         \
     C_IDENTIFIER_BIND(LIST_NAME, destroy)(dest);                                                                                        \
     if (NULL == source->head) return;                                                                                                   \
-    C_IDENTIFIER_BIND(LIST_NAME, initialize)(dest);                                                                                     \
+    *dest = C_IDENTIFIER_BIND(LIST_NAME, create)();                                                                                     \
     for (NODE_NAME* temp = source->head->next; dest->size < source->size; temp = temp->next)                                            \
         C_IDENTIFIER_BIND(LIST_NAME, push_back)(dest, &temp->value);                                                                    \
 }                                                                                                                                       \
