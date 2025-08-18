@@ -31,6 +31,7 @@ typedef struct                                                                  
 } QUEUE_NAME;                                                                                               \
                                                                                                             \
 static QUEUE_NAME   C_IDENTIFIER_BIND(QUEUE_NAME, create)();                                                \
+static void         C_IDENTIFIER_BIND(QUEUE_NAME, initialize)(QUEUE_NAME* queue);                           \
 static void         C_IDENTIFIER_BIND(QUEUE_NAME, destroy)(QUEUE_NAME* queue);                              \
 static void         C_IDENTIFIER_BIND(QUEUE_NAME, clear)(QUEUE_NAME* queue);                                \
 static void         C_IDENTIFIER_BIND(QUEUE_NAME, copy)(QUEUE_NAME* dest, const QUEUE_NAME* source);        \
@@ -43,7 +44,7 @@ static TYPE*        C_IDENTIFIER_BIND(QUEUE_NAME, peek)(QUEUE_NAME* queue);     
 static bool         C_IDENTIFIER_BIND(QUEUE_NAME, equals)(const QUEUE_NAME* left, const QUEUE_NAME* right); \
                                                                                                             \
 /**                                                                                                         \
- * @brief Creates and initializes a new queue.                                                              \
+ * @brief Creates a new queue. Call `_initialize` or `_copy`/`_move`.                                       \
  * @return A new instance of QUEUE_NAME.                                                                    \
  */                                                                                                         \
 static QUEUE_NAME C_IDENTIFIER_BIND(QUEUE_NAME, create)()                                                   \
@@ -52,6 +53,16 @@ static QUEUE_NAME C_IDENTIFIER_BIND(QUEUE_NAME, create)()                       
         .list = C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, create)()                                         \
     };                                                                                                      \
     return queue;                                                                                           \
+}                                                                                                           \
+                                                                                                            \
+/**                                                                                                         \
+ * @brief Initialize internal list.                                                                         \
+ * @param queue Pointer to the queue.                                                                       \
+ */                                                                                                         \
+static void C_IDENTIFIER_BIND(QUEUE_NAME, initialize)(QUEUE_NAME* queue)                                    \
+{                                                                                                           \
+    _C_CUSTOM_ASSERT(NULL != queue, "Queue is NULL");                                                       \
+    C_IDENTIFIER_BIND(QUEUE_LIST_HELPER_NAME, initialize)(&queue->list);                                    \
 }                                                                                                           \
                                                                                                             \
 /**                                                                                                         \

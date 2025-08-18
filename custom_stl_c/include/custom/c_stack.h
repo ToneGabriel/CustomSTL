@@ -44,7 +44,7 @@ static TYPE*        C_IDENTIFIER_BIND(STACK_NAME, peek)(STACK_NAME* stack);     
 static bool         C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left, const STACK_NAME* right); \
                                                                                                             \
 /**                                                                                                         \
- * @brief Creates and initializes a new stack.                                                              \
+ * @brief Creates a new stack. Call `_initialize` or `_copy`/`_move`.                                       \
  * @return A new instance of STACK_NAME.                                                                    \
  */                                                                                                         \
 static STACK_NAME C_IDENTIFIER_BIND(STACK_NAME, create)()                                                   \
@@ -55,6 +55,10 @@ static STACK_NAME C_IDENTIFIER_BIND(STACK_NAME, create)()                       
     return stack;                                                                                           \
 }                                                                                                           \
                                                                                                             \
+/**                                                                                                         \
+ * @brief Initialize internal vector.                                                                       \
+ * @param stack Pointer to the stack.                                                                       \
+ */                                                                                                         \
 static void C_IDENTIFIER_BIND(STACK_NAME, initialize)(STACK_NAME* stack)                                    \
 {                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
