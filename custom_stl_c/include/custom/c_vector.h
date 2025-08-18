@@ -418,7 +418,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec
  *
  * This macro instantiates:
  * 
- * - The vector API (   `_initialize`, `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
+ * - The vector API (   `_create`, `_initialize`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
  *                      `_push_back`, `_pop_back`, `_element_front`, `_element_back`, `_element_at`, `_equals`,
  *                      `_begin`, `_end`
  *                  )

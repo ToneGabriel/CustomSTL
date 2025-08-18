@@ -31,6 +31,7 @@ typedef struct                                                                  
 } STACK_NAME;                                                                                               \
                                                                                                             \
 static STACK_NAME   C_IDENTIFIER_BIND(STACK_NAME, create)();                                                \
+static void         C_IDENTIFIER_BIND(STACK_NAME, initialize)(STACK_NAME* stack);                           \
 static void         C_IDENTIFIER_BIND(STACK_NAME, destroy)(STACK_NAME* stack);                              \
 static void         C_IDENTIFIER_BIND(STACK_NAME, clear)(STACK_NAME* stack);                                \
 static void         C_IDENTIFIER_BIND(STACK_NAME, copy)(STACK_NAME* dest, const STACK_NAME* source);        \
@@ -49,9 +50,15 @@ static bool         C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left
 static STACK_NAME C_IDENTIFIER_BIND(STACK_NAME, create)()                                                   \
 {                                                                                                           \
     STACK_NAME stack = {                                                                                    \
-        .vec = C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, create)(8)                                       \
+        .vec = C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, create)()                                        \
     };                                                                                                      \
     return stack;                                                                                           \
+}                                                                                                           \
+                                                                                                            \
+static void C_IDENTIFIER_BIND(STACK_NAME, initialize)(STACK_NAME* stack)                                    \
+{                                                                                                           \
+    _C_CUSTOM_ASSERT(NULL != stack, "Stack is NULL");                                                       \
+    C_IDENTIFIER_BIND(STACK_VECTOR_HELPER_NAME, initialize)(&stack->vec, GENERIC_VECTOR_DEFAULT_CAPACITY);  \
 }                                                                                                           \
                                                                                                             \
 /**                                                                                                         \
@@ -174,7 +181,7 @@ static bool C_IDENTIFIER_BIND(STACK_NAME, equals)(const STACK_NAME* left, const 
  * 
  * - A `PRIVATE_Vector` container for internal storage
  * 
- * - The stack API (`_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
+ * - The stack API (`_create`, `_initialize`, `_destroy`, `_clear`, `_copy`, `_move`, `_size`, `_empty`,
  *                  `_insert`, `_pop`, `_peek`, `_equals`
  *                  )
  *
