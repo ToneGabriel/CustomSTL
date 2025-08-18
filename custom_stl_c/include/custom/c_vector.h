@@ -147,7 +147,8 @@ static bool C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME
     TYPE_REF_DELETE_FUNC                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
-static VECTOR_NAME          C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity);                                    \
+static VECTOR_NAME          C_IDENTIFIER_BIND(VECTOR_NAME, create)();                                                   \
+static void                 C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(VECTOR_NAME* vec, size_t capacity);              \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                  \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec);                                    \
 static void                 C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source);         \
@@ -166,24 +167,33 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, begin)(VECTOR_NAME* v
 static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec);                                      \
                                                                                                                         \
 /**                                                                                                                     \
- * @brief Creates a vector with an initial capacity.                                                                    \
- * @param capacity Initial capacity of the vector.                                                                      \
+ * @brief Creates a vector struct with NULL fields.                                                                     \
  * @return A new instance of VECTOR_NAME.                                                                               \
  */                                                                                                                     \
-static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)                                              \
+static VECTOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, create)()                                                             \
 {                                                                                                                       \
-    VECTOR_NAME vec;                                                                                                    \
-    if (0 == capacity)                                                                                                  \
-        vec.first = vec.last = vec.final = NULL;                                                                        \
-    else                                                                                                                \
-    {                                                                                                                   \
-        size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;   \
-        TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                          \
-        vec.first = arr;                                                                                                \
-        vec.last = arr;                                                                                                 \
-        vec.final = arr + newCapacity;                                                                                  \
-    }                                                                                                                   \
+    VECTOR_NAME vec = {                                                                                                 \
+        .first = NULL,                                                                                                  \
+        .last = NULL,                                                                                                   \
+        .final = NULL                                                                                                   \
+    };                                                                                                                  \
     return vec;                                                                                                         \
+}                                                                                                                       \
+                                                                                                                        \
+/**                                                                                                                     \
+ * @brief Allocates a vector with an initial capacity. Old is destroyed.                                                \
+ * @param capacity Initial capacity of the vector.                                                                      \
+ */                                                                                                                     \
+static void C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(VECTOR_NAME* vec, size_t capacity)                               \
+{                                                                                                                       \
+    _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
+    if (NULL != vec->first)                                                                                             \
+        C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(vec);                                                                   \
+    size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;       \
+    TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                              \
+    vec->first = arr;                                                                                                   \
+    vec->last = arr;                                                                                                    \
+    vec->final = arr + newCapacity;                                                                                     \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -223,12 +233,12 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
-    _C_CUSTOM_ASSERT(NULL != source->first, "Vector source array is NULL");                                             \
     if (dest == source) return;                                                                                         \
     C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                      \
+    if (NULL == source->first) return;                                                                                  \
     size_t newCapacity = C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                              \
     size_t newSize = C_IDENTIFIER_BIND(VECTOR_NAME, size)(source);                                                      \
-    *dest = C_IDENTIFIER_BIND(VECTOR_NAME, create)(newCapacity);                                                        \
+    C_IDENTIFIER_BIND(VECTOR_NAME, initialize)(dest, newCapacity);                                                      \
     for (size_t i = 0; i < newSize; ++i)                                                                                \
         TYPE_REF_COPY_FUNC(dest->first + i, source->first + i);                                                         \
     dest->last = dest->first + newSize;                                                                                 \
@@ -243,9 +253,9 @@ static void C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME*
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
-    _C_CUSTOM_ASSERT(NULL != source->first, "Vector source array is NULL");                                             \
     if (dest == source) return;                                                                                         \
     C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                      \
+    if (NULL == source->first) return;                                                                                  \
     *dest = *source;                                                                                                    \
     source->first = source->last = source->final = NULL;                                                                \
 }                                                                                                                       \
@@ -408,7 +418,7 @@ static VECTOR_ITERATOR_NAME C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec
  *
  * This macro instantiates:
  * 
- * - The vector API (   `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
+ * - The vector API (   `_initialize`, `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
  *                      `_push_back`, `_pop_back`, `_element_front`, `_element_back`, `_element_at`, `_equals`,
  *                      `_begin`, `_end`
  *                  )
