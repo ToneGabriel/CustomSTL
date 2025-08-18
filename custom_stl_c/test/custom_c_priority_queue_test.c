@@ -15,17 +15,17 @@ DEFINE_GENERIC_PRIORITY_QUEUE(
 )
 
 
-static IntPQ _custom_pq_instance;
+static IntPQ g_customIntPQInstance;
 
 
 void setUp()
 {
-    _custom_pq_instance = IntPQ_create();
+    IntPQ_initialize(&g_customIntPQInstance);
 }
 
 void tearDown()
 {
-    IntPQ_destroy(&_custom_pq_instance);
+    IntPQ_destroy(&g_customIntPQInstance);
 }
 
 
@@ -34,22 +34,22 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL_UINT(0, IntPQ_size(&_custom_pq_instance));
-    TEST_ASSERT_TRUE(IntPQ_empty(&_custom_pq_instance));
+    TEST_ASSERT_EQUAL_UINT(0, IntPQ_size(&g_customIntPQInstance));
+    TEST_ASSERT_TRUE(IntPQ_empty(&g_customIntPQInstance));
 }
 
 void test_copy()
 {
     int val = 0;
-    IntPQ_insert(&_custom_pq_instance, &val);
-    IntPQ_insert(&_custom_pq_instance, &val);
-    IntPQ_insert(&_custom_pq_instance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
 
     IntPQ other = IntPQ_create();
-    TEST_ASSERT_FALSE(IntPQ_equals(&other, &_custom_pq_instance));
+    TEST_ASSERT_FALSE(IntPQ_equals(&other, &g_customIntPQInstance));
 
-    IntPQ_copy(&other, &_custom_pq_instance);
-    TEST_ASSERT_TRUE(IntPQ_equals(&other, &_custom_pq_instance));
+    IntPQ_copy(&other, &g_customIntPQInstance);
+    TEST_ASSERT_TRUE(IntPQ_equals(&other, &g_customIntPQInstance));
 
     IntPQ_destroy(&other);
 }
@@ -57,18 +57,19 @@ void test_copy()
 void test_move()
 {
     int val = 0;
-    IntPQ_insert(&_custom_pq_instance, &val);
-    IntPQ_insert(&_custom_pq_instance, &val);
-    IntPQ_insert(&_custom_pq_instance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
+    IntPQ_insert(&g_customIntPQInstance, &val);
 
     IntPQ original_copy = IntPQ_create();
-    IntPQ_copy(&original_copy, &_custom_pq_instance);
+    IntPQ_copy(&original_copy, &g_customIntPQInstance);
 
     IntPQ other = IntPQ_create();
-    TEST_ASSERT_FALSE(IntPQ_equals(&other, &_custom_pq_instance));
+    IntPQ_initialize(&other);
+    TEST_ASSERT_FALSE(IntPQ_equals(&other, &g_customIntPQInstance));
 
-    IntPQ_move(&other, &_custom_pq_instance);
-    TEST_ASSERT_FALSE(IntPQ_equals(&other, &_custom_pq_instance));
+    IntPQ_move(&other, &g_customIntPQInstance);
+    TEST_ASSERT_FALSE(IntPQ_equals(&other, &g_customIntPQInstance));
     TEST_ASSERT_TRUE(IntPQ_equals(&other, &original_copy));
 
     IntPQ_destroy(&other);
@@ -80,6 +81,8 @@ void test_move()
 
 int main()
 {
+    g_customIntPQInstance = IntPQ_create();
+
     UNITY_BEGIN();
     
     RUN_TEST(test_default_create);
