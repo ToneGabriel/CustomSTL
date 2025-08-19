@@ -15,10 +15,3 @@ include(cmake/internal_utils.cmake)
 # Configure C and C++ STL
 add_subdirectory(custom_stl_c)
 add_subdirectory(custom_stl_cpp)
-
-
-# CPack settings
-# set(CPACK_GENERATOR "ZIP")
-# set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-# set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-# include(CPack)
