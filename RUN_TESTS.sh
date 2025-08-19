@@ -18,9 +18,9 @@ cmake --build "$BUILD_DIR"
 
 # Loop through all exe files in build/bin folder and output the results in logs folder
 echo
-for exe in "$BIN_DIR"/*.exe; do
+for exe in "$BIN_DIR"/*; do
     if [ -f "$exe" ]; then
-        name=$(basename "$exe" .exe)
+        name=$(basename "$exe")
         echo "Running $name ..."
         "$exe" > "$LOGS_DIR/$name.txt" 2>&1
     fi
