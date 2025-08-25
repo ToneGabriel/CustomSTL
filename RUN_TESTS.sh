@@ -28,3 +28,4 @@ done
 
 echo
 echo "All tests finished."
+read -p "Press Enter to continue..."
