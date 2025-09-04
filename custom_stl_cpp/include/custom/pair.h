@@ -24,32 +24,35 @@ protected:
     // Constructor Helpers
 
     // (H1) Helper for (5)
-    template<class Tuple1, class Tuple2, size_t... Indexes1, size_t... Indexes2>
-    constexpr pair(Tuple1&& val1, Tuple2&& val2, index_sequence<Indexes1...>, index_sequence<Indexes2...>)
-        :   first(get<Indexes1>(custom::forward<Tuple1>(val1))...),
-            second(get<Indexes2>(custom::forward<Tuple2>(val2))...) { /*Empty*/ }
+    template<class Tuple1, class Tuple2, size_t... Indices1, size_t... Indices2>
+    constexpr pair(Tuple1& t1, Tuple2& t2, index_sequence<Indices1...>, index_sequence<Indices2...>)
+        :   first(get<Indices1>(custom::forward<Tuple1>(t1))...),
+            second(get<Indices2>(custom::forward<Tuple2>(t2))...) { /*Empty*/ }
 
 public:
     // Constructors
 
     // (0) Default constructor
-    template<enable_if_t<conjunction_v< is_default_constructible<Type1>,
-                                        is_default_constructible<Type2>>, bool> = true>
-    constexpr explicit(!conjunction_v<  is_implicitly_default_constructible<Type1>,
-                                        is_implicitly_default_constructible<Type2>>)
+    template<class Other1 = Type1, class Other2 = Type2,
+    enable_if_t<conjunction_v<  is_default_constructible<Other1>,
+                                is_default_constructible<Other2>>, bool> = true>
+    constexpr explicit(!conjunction_v<  is_implicitly_default_constructible<Other1>,
+                                        is_implicitly_default_constructible<Other2>>)
     pair()
-    noexcept(is_nothrow_default_constructible_v<Type1> && is_nothrow_default_constructible_v<Type2>)
-        : first(), second() { /*Empty*/ }
+    noexcept(is_nothrow_default_constructible_v<Other1> && is_nothrow_default_constructible_v<Other2>)
+        :   first(),
+            second() { /*Empty*/ }
 
     // (1) Copy components constructor
     template<class Other1 = Type1, class Other2 = Type2,
-    enable_if_t<conjunction_v<  is_constructible<Type1, const Other1&>,
-                                is_constructible<Type2, const Other2&>>, bool> = true>
-    constexpr explicit(!conjunction_v<  is_convertible<const Other1&, Type1>,
-                                        is_convertible<const Other2&, Type2>>)
-    pair(const Other1& val1, const Other2& val2)
-    noexcept(is_nothrow_constructible_v<Type1, const Other1&> && is_nothrow_constructible_v<Type2, const Other2&>)
-        : first(val1), second(val2) { /*Empty*/ }
+    enable_if_t<conjunction_v<  is_copy_constructible<Other1>,
+                                is_copy_constructible<Other2>>, bool> = true>
+    constexpr explicit(!conjunction_v<  is_convertible<const Other1&, Other1>,
+                                        is_convertible<const Other2&, Other2>>)
+    pair(const Type1& val1, const Type2& val2)
+    noexcept(is_nothrow_copy_constructible_v<Other1> && is_nothrow_copy_constructible_v<Other2>)
+        :   first(val1),
+            second(val2) { /*Empty*/ }
 
     // (2) Move components constructor
     template<class Other1 = Type1, class Other2 = Type2,
@@ -59,7 +62,8 @@ public:
                                         is_convertible<Other2, Type2>>)
     pair(Other1&& val1, Other2&& val2)
     noexcept(is_nothrow_constructible_v<Type1, Other1> && is_nothrow_constructible_v<Type2, Other2>)
-        : first(custom::forward<Other1>(val1)), second(custom::forward<Other2>(val2)) { /*Empty*/ }
+        :   first(custom::forward<Other1>(val1)),
+            second(custom::forward<Other2>(val2)) { /*Empty*/ }
 
     // (3) Copy pair constructor
     template<class Other1, class Other2,
@@ -69,7 +73,8 @@ public:
                                         is_convertible<const Other2&, Type2>>)
     pair(const pair<Other1, Other2>& other)
     noexcept(is_nothrow_constructible_v<Type1, const Other1&> && is_nothrow_constructible_v<Type2, const Other2&>)
-        : first(other.first), second(other.second) { /*Empty*/ }
+        :   first(other.first),
+            second(other.second) { /*Empty*/ }
 
     // (4) Move pair constructor
     template<class Other1, class Other2,
@@ -84,11 +89,8 @@ public:
 
     // (5) Piecewise constructor
     template<class... Types1, class... Types2>
-    constexpr pair(piecewise_construct_t, tuple<Types1...>&& val1, tuple<Types2...>&& val2)
-        : pair( custom::move(val1),
-                custom::move(val2),
-                index_sequence_for<Types1...>{},
-                index_sequence_for<Types2...>{}) { /*Empty*/ }   // Uses (H1)
+    constexpr pair(piecewise_construct_t, tuple<Types1...> t1, tuple<Types2...> t2)
+        : pair(t1, t2, index_sequence_for<Types1...>{}, index_sequence_for<Types2...>{}) { /*Empty*/ }   // Uses (H1)
 
     pair(const pair&)   = default;
     pair(pair&&)        = default;
