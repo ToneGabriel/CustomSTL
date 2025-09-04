@@ -315,7 +315,10 @@ public:
                     detail::_Refwrap_Has_Constructor_From<type, Base>>, bool> = true>
     constexpr reference_wrapper(Base&& val)
     noexcept(noexcept(detail::_Refwrap_Constructor_Func<type>(custom::declval<Base>())))
-        : _ptr(&static_cast<Base&&>(val)) { /*Empty*/ }
+    {
+        type& ref   = std::forward<Base>(val);
+        _ptr        = std::addressof(ref);
+    }
 
     template<class... Args>
     constexpr auto operator()(Args&&... args) const

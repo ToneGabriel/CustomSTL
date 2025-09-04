@@ -7,7 +7,7 @@ CUSTOM_BEGIN
 
 // pair prototype
 template<class First, class Second>
-class pair;
+struct pair;
 
 // tuple prototype
 template<class... Types>
@@ -109,6 +109,32 @@ struct _Is_Tuple_Constructible : _Is_Tuple_Constructible_Impl<tuple_size_v<Tuple
 template<class Tuple, class... Args>
 constexpr bool _Is_Tuple_Constructible_v = _Is_Tuple_Constructible<Tuple, Args...>::value;
 
+// _Tuple_Conditional_Explicit
+template<bool SameSize, class Tuple, class... Args>
+struct _Tuple_Conditional_Explicit_Impl : false_type {};
+
+template<class... Types, class... Args>
+struct _Tuple_Conditional_Explicit_Impl<true, tuple<Types...>, Args...> : negation<conjunction<is_convertible<Types, Args>...>> {};
+
+template<class Tuple, class... Args>
+struct _Tuple_Conditional_Explicit : _Tuple_Conditional_Explicit_Impl<tuple_size_v<Tuple> == sizeof...(Args), Tuple, Args...> {};
+
+template<class Tuple, class... Args>
+constexpr bool _Tuple_Conditional_Explicit_v = _Tuple_Conditional_Explicit<Tuple, Args...>::value;
+
+// _Is_Tuple_Nothrow_Constructible
+template<bool SameSize, class Tuple, class... Args>
+struct _Is_Tuple_Nothrow_Constructible_Impl : false_type {};
+
+template<class... Types, class... Args>
+struct _Is_Tuple_Nothrow_Constructible_Impl<true, tuple<Types...>, Args...> : conjunction<is_nothrow_constructible<Types, Args>...> {};
+
+template<class Tuple, class... Args>
+struct _Is_Tuple_Nothrow_Constructible : _Is_Tuple_Nothrow_Constructible_Impl<tuple_size_v<Tuple> == sizeof...(Args), Tuple, Args...> {};
+
+template<class Tuple, class... Args>
+constexpr bool _Is_Tuple_Nothrow_Constructible_v = _Is_Tuple_Nothrow_Constructible<Tuple, Args...>::value;
+
 // _Is_Tuple_Assignable
 template<bool SameSize, class Tuple, class... Args>
 struct _Is_Tuple_Assignable_Impl : false_type {};
@@ -121,6 +147,19 @@ struct _Is_Tuple_Assignable : _Is_Tuple_Assignable_Impl<tuple_size_v<Tuple> == s
 
 template<class Tuple, class... Args>
 constexpr bool _Is_Tuple_Assignable_v = _Is_Tuple_Assignable<Tuple, Args...>::value;
+
+// _Is_Tuple_Nothrow_Assignable
+template<bool SameSize, class Tuple, class... Args>
+struct _Is_Tuple_Nothrow_Assignable_Impl : false_type {};
+
+template<class... Types, class... Args>
+struct _Is_Tuple_Nothrow_Assignable_Impl<true, tuple<Types...>, Args...> : conjunction<is_nothrow_assignable<Types&, Args>...> {};
+
+template<class Tuple, class... Args>
+struct _Is_Tuple_Nothrow_Assignable : _Is_Tuple_Nothrow_Assignable_Impl<tuple_size_v<Tuple> == sizeof...(Args), Tuple, Args...> {};
+
+template<class Tuple, class... Args>
+constexpr bool _Is_Tuple_Nothrow_Assignable_v = _Is_Tuple_Nothrow_Assignable<Tuple, Args...>::value;
 
 // _Is_Tuple_Convertible
 template<class ThisTuple, class OtherTuple, class... OtherTypes>
@@ -188,26 +227,25 @@ protected:
 	// Constructor Helper
 
 	template<class Tag, enable_if_t<is_same_v<Tag, detail::_Tuple_Exact_Args_t>, bool> = true>
-	tuple(Tag) { /*Empty*/ }
+	constexpr tuple(Tag) noexcept { /*Empty*/ }
 
 public:
 	// Constructors
 
-	tuple()				= default;
-	tuple(const tuple&) = default;
-	tuple(tuple&&)		= default;
-	~tuple()			= default;
+	constexpr tuple() noexcept				= default;
+	constexpr tuple(const tuple&)			= default;
+	constexpr tuple(tuple&&) noexcept		= default;
 
 public:
 	// Operators
 
-	tuple& operator=(const tuple&) 	= default;
-	tuple& operator=(tuple&&) 		= default;
+	constexpr tuple& operator=(const tuple&)		= default;
+	constexpr tuple& operator=(tuple&&) noexcept	= default;
 
 public:
 	// Helpers
 
-	bool _equals(const tuple&) const
+	constexpr bool _equals(const tuple&) const noexcept
 	{
         return true;
     }
@@ -254,19 +292,25 @@ protected:
 	// Construction Helpers
 
 	// (H1) Helper for (1), (H2)
-	template<class Tag, class _This, class... _Rest, enable_if_t<is_same_v<Tag, detail::_Tuple_Exact_Args_t>, bool> = true>
-	tuple(Tag, _This&& first, _Rest&&...rest)
-		: _Base(detail::_Tuple_Exact_Args_t{}, custom::forward<_Rest>(rest)...), _ThisVal(custom::forward<_This>(first)) { /*Empty*/ }
-	
+	template<class Tag, class _This, class... _Rest,
+	enable_if_t<is_same_v<Tag, detail::_Tuple_Exact_Args_t>, bool> = true>
+	constexpr tuple(Tag, _This&& first, _Rest&&...rest)
+		: 	_Base(detail::_Tuple_Exact_Args_t{}, custom::forward<_Rest>(rest)...),
+			_ThisVal(custom::forward<_This>(first)) { /*Empty*/ }
+
 	// (H2) Helper for (H3), Uses (H1)
-	template<class Tag, class Tuple, size_t... Indices, enable_if_t<is_same_v<Tag, detail::_Tuple_Unpack_t>, bool> = true>
-	tuple(Tag, Tuple&& other, index_sequence<Indices...>)
-		: tuple(detail::_Tuple_Exact_Args_t{}, custom::get<Indices>(custom::forward<Tuple>(other))...) { /*Empty*/ }
+	template<class Tag, class Tuple, size_t... Indices,
+	enable_if_t<is_same_v<Tag, detail::_Tuple_Unpack_t>, bool> = true>
+	constexpr tuple(Tag, Tuple&& other, index_sequence<Indices...>)
+		: tuple(detail::_Tuple_Exact_Args_t{},
+				custom::get<Indices>(custom::forward<Tuple>(other))...) { /*Empty*/ }
 
 	// (H3) Helper for (2), (3), Uses (H2)
-	template<class Tag, class Tuple, enable_if_t<is_same_v<Tag, detail::_Tuple_Unpack_t>, bool> = true>
-	tuple(Tag, Tuple&& other)
-		: tuple(detail::_Tuple_Unpack_t{}, custom::forward<Tuple>(other),
+	template<class Tag, class Tuple,
+	enable_if_t<is_same_v<Tag, detail::_Tuple_Unpack_t>, bool> = true>
+	constexpr tuple(Tag, Tuple&& other)
+		: tuple(detail::_Tuple_Unpack_t{},
+				custom::forward<Tuple>(other),
 				make_index_sequence<tuple_size_v<remove_reference_t<Tuple>>>{}) { /*Empty*/ }
 
 public:
@@ -275,44 +319,61 @@ public:
 	// (0) Default constructor
 	template<class _This = This,
 	enable_if_t<conjunction_v<is_default_constructible<_This>, is_default_constructible<Rest>...>, bool> = true>
+	constexpr explicit(!conjunction_v<is_implicitly_default_constructible<_This>, is_implicitly_default_constructible<Rest>...>)
 	tuple()
+	noexcept(conjunction_v<is_nothrow_default_constructible<_This>, is_nothrow_default_constructible<Rest>...>)
 		: _Base(), _ThisVal() { /*Empty*/ }
 
 	// (1) Copy/Move obj constructor, Uses (H1)
 	template<class _This = This, class... _Rest,
 	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, _This, _Rest...>, bool> = true>
+	constexpr explicit(detail::_Tuple_Conditional_Explicit_v<tuple, _This, _Rest...>)
 	tuple(_This&& first, _Rest&&... rest)
-		: tuple(detail::_Tuple_Exact_Args_t{}, custom::forward<_This>(first), custom::forward<_Rest>(rest)...) { /*Empty*/ }
+	noexcept(detail::_Is_Tuple_Nothrow_Constructible_v<tuple, _This, _Rest...>)
+		: tuple(detail::_Tuple_Exact_Args_t{},
+				custom::forward<_This>(first),
+				custom::forward<_Rest>(rest)...) { /*Empty*/ }
 
 	// (2) Copy convertible constructor, Uses (H3)
 	template<class... OtherTypes,
 	enable_if_t<conjunction_v<	detail::_Is_Tuple_Constructible<tuple, const OtherTypes&...>,
 								detail::_Is_Tuple_Convertible<tuple, const tuple<OtherTypes...>&, OtherTypes...>>, bool> = true>
+	constexpr explicit(detail::_Tuple_Conditional_Explicit_v<tuple, const OtherTypes&...>)
 	tuple(const tuple<OtherTypes...>& other)
+	noexcept(detail::_Is_Tuple_Nothrow_Constructible_v<tuple, const OtherTypes&...>)
 		: tuple(detail::_Tuple_Unpack_t{}, other) { /*Empty*/ }
 
 	// (3) Move convertible constructor, Uses (H3)
 	template<class... OtherTypes,
 	enable_if_t<conjunction_v<	detail::_Is_Tuple_Constructible<tuple, OtherTypes...>,
 								detail::_Is_Tuple_Convertible<tuple, tuple<OtherTypes...>, OtherTypes...>>, bool> = true>
+	constexpr explicit(detail::_Tuple_Conditional_Explicit_v<tuple, OtherTypes...>)
 	tuple(tuple<OtherTypes...>&& other)
+	noexcept(detail::_Is_Tuple_Nothrow_Constructible_v<tuple, OtherTypes...>)
 		: tuple(detail::_Tuple_Unpack_t{}, custom::move(other)) { /*Empty*/ }
 
 	// (4) pair copy constructor, Uses (H1)
-	template<class first, class second,
-    enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, const first&, const second&>, bool> = true>
-    tuple(const pair<first, second>& pair)
-		: tuple(detail::_Tuple_Exact_Args_t{}, pair.first, pair.second) { /*Empty*/ }
+    template<class First, class Second,
+	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, const First&, const Second&>, bool> = true>
+    constexpr explicit(detail::_Tuple_Conditional_Explicit_v<tuple, const First&, const Second&>)
+	tuple(const pair<First, Second>& pair)
+	noexcept(detail::_Is_Tuple_Nothrow_Constructible_v<tuple, const First&, const Second&>)
+		: tuple(detail::_Tuple_Exact_Args_t{},
+				pair.first,
+				pair.second) { /*Empty*/ }
 
 	// (5) pair move constructor, // Uses (H1)
-    template<class first, class second,
-	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, first, second>, bool> = true>
-	tuple(pair<first, second>&& pair)
-        : tuple(detail::_Tuple_Exact_Args_t{}, custom::move(pair.first), custom::move(pair.second)) { /*Empty*/ }
+    template<class First, class Second,
+	enable_if_t<detail::_Is_Tuple_Constructible_v<tuple, First, Second>, bool> = true>
+    constexpr explicit(detail::_Tuple_Conditional_Explicit_v<tuple, First, Second>)
+	tuple(pair<First, Second>&& pair)
+	noexcept(detail::_Is_Tuple_Nothrow_Constructible_v<tuple, First, Second>)
+        : tuple(detail::_Tuple_Exact_Args_t{},
+				custom::move(pair.first),
+				custom::move(pair.second)) { /*Empty*/ }
 
-	tuple(const tuple&) = default;
-	tuple(tuple&&)		= default;
-    ~tuple()            = default;
+	tuple(const tuple&) 	= default;
+	tuple(tuple&&) noexcept	= default;
 
 public:
 	// Operators
@@ -321,7 +382,7 @@ public:
     template<class... OtherTypes,
 	enable_if_t<conjunction_v<	negation<is_same<tuple, tuple<OtherTypes...>>>,
                             	detail::_Is_Tuple_Assignable<tuple, const OtherTypes&...>>, bool> = true>
-    tuple& operator=(const tuple<OtherTypes...>& other)
+    constexpr tuple& operator=(const tuple<OtherTypes...>& other)
 	{
         _ThisVal 		= other._ThisVal;
         _get_rest()   	= other._get_rest();
@@ -333,7 +394,8 @@ public:
     template<class... OtherTypes,
 	enable_if_t<conjunction_v<	negation<is_same<tuple, tuple<OtherTypes...>>>,
                               	detail::_Is_Tuple_Assignable<tuple, OtherTypes...>>, bool> = true>
-    tuple& operator=(tuple<OtherTypes...>&& other)
+    constexpr tuple& operator=(tuple<OtherTypes...>&& other)
+	noexcept(detail::_Is_Tuple_Nothrow_Assignable_v<tuple, OtherTypes...>)
 	{
         _ThisVal 		= custom::forward<typename tuple<OtherTypes...>::_This_Type>(other._ThisVal);
         _get_rest()   	= custom::forward<typename tuple<OtherTypes...>::_Base>(other._get_rest());
@@ -341,9 +403,9 @@ public:
         return *this;
     }
 
-	template<class first, class second,
-	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, const first&, const second&>, bool> = true>
-	tuple& operator=(const pair<first, second>& pair)
+	template<class First, class Second,
+	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, const First&, const Second&>, bool> = true>
+	constexpr tuple& operator=(const pair<First, Second>& pair)
 	{
 		_ThisVal				= pair.first;
 		_get_rest()._ThisVal	= pair.second;
@@ -351,12 +413,13 @@ public:
 		return *this;
 	}
 
-	template<class first, class second,
-	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, first, second>, bool> = true>
-	tuple& operator=(pair<first, second>&& pair)
+	template<class First, class Second,
+	enable_if_t<detail::_Is_Tuple_Assignable_v<tuple, First, Second>, bool> = true>
+	constexpr tuple& operator=(pair<First, Second>&& pair)
+	noexcept(detail::_Is_Tuple_Nothrow_Assignable_v<tuple, First, Second>)
 	{
-		_ThisVal				= custom::forward<first>(pair.first);
-		_get_rest()._ThisVal	= custom::forward<second>(pair.second);
+		_ThisVal				= custom::forward<First>(pair.first);
+		_get_rest()._ThisVal	= custom::forward<Second>(pair.second);
 
 		return *this;
 	}
@@ -368,18 +431,18 @@ public:
 public:
 	// Helpers
 
-    _Base& _get_rest() noexcept	// get reference to rest of elements
+    constexpr _Base& _get_rest() noexcept	// get reference to rest of elements
 	{
         return *this;
     }
 
-    const _Base& _get_rest() const noexcept
+    constexpr const _Base& _get_rest() const noexcept
 	{
         return *this;
     }
 
 	template<class... OtherTypes>
-    bool _equals(const tuple<OtherTypes...>& other) const
+    constexpr bool _equals(const tuple<OtherTypes...>& other) const noexcept
 	{
         return _ThisVal == other._ThisVal && _Base::_equals(other._get_rest());
     }
