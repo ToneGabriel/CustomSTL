@@ -10,4 +10,5 @@ create_executable(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE}
     test/custom_thread_test.cpp
     test/custom_vector_test.cpp
     test/custom_unordered_map_test.cpp
+    test/custom_unordered_set_test.cpp
 )
