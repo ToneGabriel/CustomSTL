@@ -318,10 +318,13 @@ public:
 
 	// (0) Default constructor
 	template<class _This = This,
-	enable_if_t<conjunction_v<is_default_constructible<_This>, is_default_constructible<Rest>...>, bool> = true>
-	constexpr explicit(!conjunction_v<is_implicitly_default_constructible<_This>, is_implicitly_default_constructible<Rest>...>)
+	enable_if_t<conjunction_v<	is_default_constructible<_This>,
+								is_default_constructible<Rest>...>, bool> = true>
+	constexpr explicit(!conjunction_v<	is_implicitly_default_constructible<_This>,
+										is_implicitly_default_constructible<Rest>...>)
 	tuple()
-	noexcept(conjunction_v<is_nothrow_default_constructible<_This>, is_nothrow_default_constructible<Rest>...>)
+	noexcept(conjunction_v<	is_nothrow_default_constructible<_This>,
+							is_nothrow_default_constructible<Rest>...>)
 		: _Base(), _ThisVal() { /*Empty*/ }
 
 	// (1) Copy/Move obj constructor, Uses (H1)
