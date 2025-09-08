@@ -1,3 +1,15 @@
+enable_testing()
+set(SCRIPTS_PATH "${CMAKE_SOURCE_DIR}/scripts")
+set(INTERNAL_SCRIPTS_PATH "${SCRIPTS_PATH}/internal")
+set(TEST_LOGS_PATH "${CMAKE_SOURCE_DIR}/logs/tests")
+file(MAKE_DIRECTORY ${TEST_LOGS_PATH})
+
+if(WIN32)
+    set(RUN_AND_OUTPUT_SCRIPT_NAME run_and_output.bat)
+else()
+    set(RUN_AND_OUTPUT_SCRIPT_NAME run_and_output.sh)
+endif()
+
 
 function(_set_default_output_directories target)
     set_target_properties(${target}
@@ -6,7 +18,7 @@ function(_set_default_output_directories target)
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
         ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     )
-endfunction(_set_default_output_directories)
+endfunction()
 
 
 function(_create_language_compile_feature_name lang std out_std_keyword)
@@ -17,7 +29,7 @@ function(_create_language_compile_feature_name lang std out_std_keyword)
     else()
         message(FATAL_ERROR "Unsupported language: ${lang}")
     endif()
-endfunction(_create_language_compile_feature_name)
+endfunction()
 
 
 # create_library(libname, libtype, lang, std, defs, incs)
@@ -33,13 +45,12 @@ function(create_interface_library libname lang std defs incs)
     set(compile_feature_name "")
 
     add_library(${libname} INTERFACE)
-    _set_default_output_directories(${libname})
     _create_language_compile_feature_name(${lang} ${std} compile_feature_name)
 
     target_compile_features(${libname} INTERFACE ${compile_feature_name})
     target_compile_definitions(${libname} INTERFACE ${defs})
     target_include_directories(${libname} INTERFACE ${incs})
-endfunction(create_interface_library)
+endfunction()
 
 
 # create_library(libname, libtype, lang, std, defs, incs, srcs...)
@@ -70,7 +81,7 @@ function(create_library libname libtype lang std defs incs)
     else()
         message(FATAL_ERROR "Unsupported library type: ${libtype}")
     endif()
-endfunction(create_library)
+endfunction()
 
 
 # create_executable(exename, libs, src...)
@@ -83,4 +94,12 @@ function(create_executable exename libs)
     add_executable(${exename} ${ARGN})
     _set_default_output_directories(${exename})
     target_link_libraries(${exename} PRIVATE ${libs})
-endfunction(create_executable)
+endfunction()
+
+
+function(create_ctest exename)
+    add_test(
+        NAME ${exename}
+        COMMAND "${INTERNAL_SCRIPTS_PATH}/${RUN_AND_OUTPUT_SCRIPT_NAME}" $<TARGET_FILE:${exename}> "${TEST_LOGS_PATH}/${exename}.log"
+    )
+endfunction()
