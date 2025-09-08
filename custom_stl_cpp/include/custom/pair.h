@@ -39,7 +39,8 @@ public:
     constexpr explicit(!conjunction_v<  is_implicitly_default_constructible<Other1>,
                                         is_implicitly_default_constructible<Other2>>)
     pair()
-    noexcept(conjunction_v<is_nothrow_default_constructible<Other1>, is_nothrow_default_constructible<Other2>>)
+    noexcept(conjunction_v< is_nothrow_default_constructible<Other1>,
+                            is_nothrow_default_constructible<Other2>>)
         :   first(),
             second() { /*Empty*/ }
 
@@ -50,7 +51,8 @@ public:
     constexpr explicit(!conjunction_v<  is_convertible<const Other1&, Other1>,
                                         is_convertible<const Other2&, Other2>>)
     pair(const Type1& val1, const Type2& val2)
-    noexcept(conjunction_v<is_nothrow_copy_constructible<Other1>, is_nothrow_copy_constructible<Other2>>)
+    noexcept(conjunction_v< is_nothrow_copy_constructible<Other1>,
+                            is_nothrow_copy_constructible<Other2>>)
         :   first(val1),
             second(val2) { /*Empty*/ }
 
@@ -61,7 +63,8 @@ public:
     constexpr explicit(!conjunction_v<  is_convertible<Other1, Type1>,
                                         is_convertible<Other2, Type2>>)
     pair(Other1&& val1, Other2&& val2)
-    noexcept(conjunction_v<is_nothrow_constructible<Type1, Other1>, is_nothrow_constructible<Type2, Other2>>)
+    noexcept(conjunction_v< is_nothrow_constructible<Type1, Other1>,
+                            is_nothrow_constructible<Type2, Other2>>)
         :   first(custom::forward<Other1>(val1)),
             second(custom::forward<Other2>(val2)) { /*Empty*/ }
 
@@ -72,7 +75,8 @@ public:
     constexpr explicit(!conjunction_v<  is_convertible<const Other1&, Type1>,
                                         is_convertible<const Other2&, Type2>>)
     pair(const pair<Other1, Other2>& other)
-    noexcept(conjunction_v<is_nothrow_constructible<Type1, const Other1&>, is_nothrow_constructible<Type2, const Other2&>>)
+    noexcept(conjunction_v< is_nothrow_constructible<Type1, const Other1&>,
+                            is_nothrow_constructible<Type2, const Other2&>>)
         :   first(other.first),
             second(other.second) { /*Empty*/ }
 
@@ -83,14 +87,15 @@ public:
     constexpr explicit(!conjunction_v<  is_convertible<Other1, Type1>,
                                         is_convertible<Other2, Type2>>)
     pair(pair<Other1, Other2>&& other)
-    noexcept(conjunction_v<is_nothrow_constructible<Type1, Other1>, is_nothrow_constructible<Type2, Other2>>)
+    noexcept(conjunction_v< is_nothrow_constructible<Type1, Other1>,
+                            is_nothrow_constructible<Type2, Other2>>)
         :   first(custom::forward<Other1>(other.first)),
             second(custom::forward<Other2>(other.second)) { /*Empty*/ }
 
-    // (5) Piecewise constructor
+    // (5) Piecewise constructor. Uses (H1)
     template<class... Types1, class... Types2>
     constexpr pair(piecewise_construct_t, tuple<Types1...> t1, tuple<Types2...> t2)
-        : pair(t1, t2, index_sequence_for<Types1...>{}, index_sequence_for<Types2...>{}) { /*Empty*/ }   // Uses (H1)
+        : pair(t1, t2, index_sequence_for<Types1...>{}, index_sequence_for<Types2...>{}) { /*Empty*/ }
 
     pair(const pair&)   = default;
     pair(pair&&)        = default;
@@ -104,7 +109,8 @@ public:
                                 is_assignable<Type1&, const Other1&>,
                                 is_assignable<Type2&, const Other2&>>, bool> = true>
     constexpr pair& operator=(const pair<Other1, Other2>& other)
-    noexcept(conjunction_v<is_nothrow_assignable<Type1&, const Other1&>, is_nothrow_assignable<Type2&, const Other2&>>)
+    noexcept(conjunction_v< is_nothrow_assignable<Type1&, const Other1&>,
+                            is_nothrow_assignable<Type2&, const Other2&>>)
     {
         first  = other.first;
         second = other.second;
@@ -117,7 +123,8 @@ public:
                                 is_assignable<Type1&, Other1>,
                                 is_assignable<Type2&, Other2>>, bool> = true>
     constexpr pair& operator=(pair<Other1, Other2>&& other)
-    noexcept(conjunction_v<is_nothrow_assignable<Type1&, Other1>, is_nothrow_assignable<Type2&, Other2>>)
+    noexcept(conjunction_v< is_nothrow_assignable<Type1&, Other1>,
+                            is_nothrow_assignable<Type2&, Other2>>)
     {
         first  = custom::forward<Other1>(other.first);
         second = custom::forward<Other2>(other.second);

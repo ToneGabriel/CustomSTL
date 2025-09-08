@@ -1,6 +1,6 @@
 # CustomSTL
 
-**Version: 1.0.3-beta**
+**Version: 1.0.4-beta**
 
 **CustomSTL** is a dual-library project that implements core features of the C++ Standard Template Library (STL) in both **C** and **C++**.  
 It provides equivalent functionality for common data structures and algorithms, making it easier to learn, compare or integrate in hybrid C/C++ environments.
@@ -124,7 +124,10 @@ cmake -G "Ninja" -B build
 
 # Build the project
 cmake --build build
+
+# Run tests
+ctest --test-dir build
 ```
 
-Or simply run the script `RUN_TESTS` and the build is done automatically.   
-The results can be found in `logs` folder.
+Or simply run the script `scripts/RUN_TESTS` and the build is done automatically.   
+The results can be found in `logs/tests` folder.
