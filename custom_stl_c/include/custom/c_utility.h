@@ -47,10 +47,10 @@
 
 /**
  * @def DEFAULT_TYPE_REF_DELETE
- * @brief Default delete operation. Does nothing for trivial types.
+ * @brief Default delete operation. Does nothing for trivial types (expands to given expression).
  * @param TARGET_REF Target object pointer to a value to be deleted.
  */
-#define DEFAULT_TYPE_REF_DELETE(TARGET_REF)
+#define DEFAULT_TYPE_REF_DELETE(TARGET_REF) (TARGET_REF)
 
 
 // =====================================================================================================================
@@ -66,7 +66,7 @@
  * 
  * @param SWAP_FUNC_NAME_PREFIX Prefix for the generated swap function name.
  * @param TYPE The data type of elements to be swapped.
- * @param TYPE_REF_COPY_FUNC Function used to copy elements by reference.
+ * @param TYPE_REF_COPY_FUNC Function used to copy/move elements by reference.
  */
 #define DEFINE_GENERIC_SWAP_FUNCTION(                                                   \
     SWAP_FUNC_NAME_PREFIX,                                                              \

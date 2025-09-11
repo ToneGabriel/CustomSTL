@@ -344,7 +344,7 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)    
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return NULL;                                                                           \
-    return vec->last;                                                                                                   \
+    return vec->last - 1;                                                                                               \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -356,7 +356,7 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)    
 static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index)                                \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
-    if (vec->first + index < vec->last) return NULL;                                                                    \
+    if (vec->first + index >= vec->last) return NULL;                                                                   \
     return vec->first + index;                                                                                          \
 }                                                                                                                       \
                                                                                                                         \

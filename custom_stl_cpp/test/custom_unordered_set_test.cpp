@@ -5,7 +5,11 @@
 #include "custom/unordered_set.h"   // unit to be tested
 
 
-class UnorderedSetTestFixture : public ::testing::Test
+// IMPORTANT
+// Prefix all suites and fixtures with "CustomUnorderedSet_". Used in ctest run.
+
+
+class CustomUnorderedSet_Operations : public ::testing::Test
 {
 protected:
     custom::unordered_set<custom::string> _custom_uset_instance;
@@ -23,10 +27,10 @@ protected:
     {
         _custom_uset_instance.clear();
     }
-};  // END UnorderedSetTestFixture
+};  // END CustomUnorderedSet_Operations
 
 
-TEST_F(UnorderedSetTestFixture, copy_assign_operator)
+TEST_F(CustomUnorderedSet_Operations, copy_assign_operator)
 {
     custom::unordered_set<custom::string> other;
 
@@ -36,7 +40,7 @@ TEST_F(UnorderedSetTestFixture, copy_assign_operator)
 }
 
 
-TEST_F(UnorderedSetTestFixture, move_assign_operator)
+TEST_F(CustomUnorderedSet_Operations, move_assign_operator)
 {
     custom::unordered_set<custom::string> other;
     other.emplace("Some");
@@ -52,7 +56,7 @@ TEST_F(UnorderedSetTestFixture, move_assign_operator)
 }
 
 
-TEST_F(UnorderedSetTestFixture, clear)
+TEST_F(CustomUnorderedSet_Operations, clear)
 {
     EXPECT_FALSE(this->_custom_uset_instance.empty());
 
@@ -62,14 +66,14 @@ TEST_F(UnorderedSetTestFixture, clear)
 }
 
 
-TEST_F(UnorderedSetTestFixture, find)
+TEST_F(CustomUnorderedSet_Operations, find)
 {
     EXPECT_NE(this->_custom_uset_instance.find("Default"), this->_custom_uset_instance.end());  // "Default" is found
     EXPECT_EQ(this->_custom_uset_instance.find("NotFound"), this->_custom_uset_instance.end()); // NotFound is not found
 }
 
 
-TEST_F(UnorderedSetTestFixture, contains)
+TEST_F(CustomUnorderedSet_Operations, contains)
 {
     EXPECT_TRUE(this->_custom_uset_instance.contains("Default"));   // "Default" is found
     EXPECT_FALSE(this->_custom_uset_instance.contains("NotFound")); // NotFound is not found
