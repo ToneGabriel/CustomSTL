@@ -83,15 +83,18 @@ function(create_library libname libtype lang std defs incs)
 endfunction()
 
 
-# create_executable(exename libs src...)
+# create_executable(exename defs libs src...)
+# defs - "VAR1=3;VAR2;VAR3=\"str\""
 # libs - "lib1;lib2;..."
-function(create_executable exename libs)
+function(create_executable exename defs libs)
     # exename   -> target name
+    # defs      -> list of compile definitions
     # libs      -> list of library names
     # ${ARGN}   -> source files
 
     add_executable(${exename} ${ARGN})
     _set_default_output_directories(${exename})
+    target_compile_definitions(${exename} PRIVATE ${defs})
     target_link_libraries(${exename} PRIVATE ${libs})
 endfunction()
 
