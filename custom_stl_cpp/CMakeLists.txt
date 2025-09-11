@@ -11,4 +11,9 @@ create_executable(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE}
     test/custom_unordered_map_test.cpp
     test/custom_unordered_set_test.cpp
 )
-create_ctest(${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE})
+
+# ====================================================================================
+create_ctest(Custom_STL_CPP_THREAD_Tests ${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} --gtest_filter=CustomThread_*)
+create_ctest(Custom_STL_CPP_VECTOR_Tests ${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} --gtest_filter=CustomVector_*)
+create_ctest(Custom_STL_CPP_UNORDERED_MAP_Tests ${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} --gtest_filter=CustomUnorderedMap_*)
+create_ctest(Custom_STL_CPP_UNORDERED_SET_Tests ${CUSTOM_STL_CPP_FULL_TEST_EXECUTABLE} --gtest_filter=CustomUnorderedSet_*)

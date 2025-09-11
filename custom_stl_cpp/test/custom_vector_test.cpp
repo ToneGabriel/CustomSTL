@@ -6,8 +6,11 @@
 #include "custom/vector.h"   // unit to be tested
 
 
+// IMPORTANT
+// Prefix all suites and fixtures with "CustomVector_". Used in ctest run.
 
-TEST(VectorInitTests, default_init)
+
+TEST(CustomVector_Init, default_init)
 {
     custom::vector<int> custom_vector_instance;
     EXPECT_EQ(custom_vector_instance.size(), 0);
@@ -15,7 +18,7 @@ TEST(VectorInitTests, default_init)
 }
 
 
-TEST(VectorInitTests, custom_capacity_default_value_init)
+TEST(CustomVector_Init, custom_capacity_default_value_init)
 {
     int custom_capacity = 5;
     auto custom_vector_instance = custom::vector<int>(custom_capacity);
@@ -26,7 +29,7 @@ TEST(VectorInitTests, custom_capacity_default_value_init)
 }
 
 
-TEST(VectorInitTests, custom_capacity_given_value_init)
+TEST(CustomVector_Init, custom_capacity_given_value_init)
 {
     int custom_capacity = 5;
     int custom_value = 10;
@@ -38,7 +41,7 @@ TEST(VectorInitTests, custom_capacity_given_value_init)
 }
 
 
-TEST(VectorInitTests, copy_init)
+TEST(CustomVector_Init, copy_init)
 {
     custom::vector<int> custom_vector_instance {0, 1, 2, 3};
     custom::vector<int> custom_vector_instance_copy = custom_vector_instance;
@@ -46,7 +49,7 @@ TEST(VectorInitTests, copy_init)
 }
 
 
-TEST(VectorInitTests, move_init)
+TEST(CustomVector_Init, move_init)
 {
     custom::vector<int> custom_vector_instance {0, 1, 2, 3};
     custom::vector<int> custom_vector_instance_copy = custom_vector_instance;
@@ -60,7 +63,7 @@ TEST(VectorInitTests, move_init)
 // ===========================================================================================
 
 
-class VectorTestFixture : public ::testing::Test
+class CustomVector_Operations : public ::testing::Test
 {
 protected:
     custom::vector<int> _custom_vector_instance;
@@ -78,10 +81,10 @@ protected:
     {
         // empty
     }
-};  // END VectorTestFixture
+};  // END CustomVector_Operations
 
 
-TEST_F(VectorTestFixture, copy_assign_operator)
+TEST_F(CustomVector_Operations, copy_assign_operator)
 {
     custom::vector<int> other;
 
@@ -91,7 +94,7 @@ TEST_F(VectorTestFixture, copy_assign_operator)
 }
 
 
-TEST_F(VectorTestFixture, move_assign_operator)
+TEST_F(CustomVector_Operations, move_assign_operator)
 {
     custom::vector<int> other = {0, 0, 0, 0};
     custom::vector<int> other_copy = other;
@@ -103,7 +106,7 @@ TEST_F(VectorTestFixture, move_assign_operator)
 }
 
 
-TEST_F(VectorTestFixture, reserve_more_than_size)
+TEST_F(CustomVector_Operations, reserve_more_than_size)
 {
     int custom_capacity = 5;
     int back_value = this->_custom_vector_instance.back();
@@ -119,7 +122,7 @@ TEST_F(VectorTestFixture, reserve_more_than_size)
 }
 
 
-TEST_F(VectorTestFixture, reserve_less_than_size)
+TEST_F(CustomVector_Operations, reserve_less_than_size)
 {
     int custom_capacity = 2;
     int back_value = this->_custom_vector_instance.back();
@@ -135,7 +138,7 @@ TEST_F(VectorTestFixture, reserve_less_than_size)
 }
 
 
-TEST_F(VectorTestFixture, realloc_default)
+TEST_F(CustomVector_Operations, realloc_default)
 {
     int custom_capacity = 5;
 
@@ -150,7 +153,7 @@ TEST_F(VectorTestFixture, realloc_default)
 }
 
 
-TEST_F(VectorTestFixture, realloc_copy)
+TEST_F(CustomVector_Operations, realloc_copy)
 {
     int custom_capacity = 5;
     int custom_value = 10;
@@ -166,7 +169,7 @@ TEST_F(VectorTestFixture, realloc_copy)
 }
 
 
-TEST_F(VectorTestFixture, resize_less_than_size)
+TEST_F(CustomVector_Operations, resize_less_than_size)
 {
     int custom_size = 2;
 
@@ -180,7 +183,7 @@ TEST_F(VectorTestFixture, resize_less_than_size)
 }
 
 
-TEST_F(VectorTestFixture, resize_more_than_size_default)
+TEST_F(CustomVector_Operations, resize_more_than_size_default)
 {
     int custom_size = 4;
 
@@ -195,7 +198,7 @@ TEST_F(VectorTestFixture, resize_more_than_size_default)
 }
 
 
-TEST_F(VectorTestFixture, resize_more_than_size_copy)
+TEST_F(CustomVector_Operations, resize_more_than_size_copy)
 {
     int custom_size = 4;
     int custom_value = 10;
@@ -211,7 +214,7 @@ TEST_F(VectorTestFixture, resize_more_than_size_copy)
 }
 
 
-TEST_F(VectorTestFixture, shrink_to_fit)
+TEST_F(CustomVector_Operations, shrink_to_fit)
 {
     EXPECT_EQ(this->_custom_vector_instance.size(), 3);
     EXPECT_EQ(this->_custom_vector_instance.capacity(), 8); // default
@@ -223,7 +226,7 @@ TEST_F(VectorTestFixture, shrink_to_fit)
 }
 
 
-TEST_F(VectorTestFixture, push_back_copy)
+TEST_F(CustomVector_Operations, push_back_copy)
 {
     auto custom_value = 111;
     auto prev_vector_size = this->_custom_vector_instance.size();
@@ -235,7 +238,7 @@ TEST_F(VectorTestFixture, push_back_copy)
 }
 
 
-TEST_F(VectorTestFixture, pop_back)
+TEST_F(CustomVector_Operations, pop_back)
 {
     EXPECT_EQ(this->_custom_vector_instance.size(), 3);
 
@@ -245,7 +248,7 @@ TEST_F(VectorTestFixture, pop_back)
 }
 
 
-TEST_F(VectorTestFixture, clear)
+TEST_F(CustomVector_Operations, clear)
 {
     EXPECT_EQ(this->_custom_vector_instance.size(), 3);
     EXPECT_EQ(this->_custom_vector_instance.capacity(), 8);
@@ -259,13 +262,13 @@ TEST_F(VectorTestFixture, clear)
 }
 
 
-TEST_F(VectorTestFixture, at_index)
+TEST_F(CustomVector_Operations, at_index)
 {
     EXPECT_EQ(this->_custom_vector_instance.at(0), 1);
 }
 
 
-TEST_F(VectorTestFixture, at_index_throw)
+TEST_F(CustomVector_Operations, at_index_throw)
 {
     this->_custom_vector_instance.clear();
     EXPECT_TRUE(this->_custom_vector_instance.empty());
@@ -273,13 +276,13 @@ TEST_F(VectorTestFixture, at_index_throw)
 }
 
 
-TEST_F(VectorTestFixture, operator_index)
+TEST_F(CustomVector_Operations, operator_index)
 {
     EXPECT_EQ(this->_custom_vector_instance[0], 1);
 }
 
 
-TEST_F(VectorTestFixture, operator_index_death)
+TEST_F(CustomVector_Operations, operator_index_death)
 {
     this->_custom_vector_instance.clear();
     EXPECT_TRUE(this->_custom_vector_instance.empty());

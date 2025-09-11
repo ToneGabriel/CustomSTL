@@ -5,10 +5,12 @@
 #include "custom/chrono.h"
 #include "custom/thread.h"   // unit to be tested
 
-// custom::thread and custom::this_thread tests
-// =============================================================================
 
-class ThreadTestFixture : public ::testing::Test
+// IMPORTANT
+// Prefix all suites and fixtures with "CustomThread_". Used in ctest run.
+
+
+class CustomThread_Thread_Operations : public ::testing::Test
 {
 protected:
     custom::thread _custom_thread_instance_1;
@@ -34,21 +36,24 @@ protected:
 private:
 
     static void _test_thread_func() { /*Empty*/ }
-};  // ThreadTestFixture
+};  // CustomThread_Thread_Operations
 
-TEST_F(ThreadTestFixture, different_thread_id)
+
+TEST_F(CustomThread_Thread_Operations, different_thread_id)
 {
     EXPECT_NE(  this->_custom_thread_instance_1.get_id(),
                 this->_custom_thread_instance_2.get_id());
 }
 
-TEST_F(ThreadTestFixture, joinable_after_init)
+
+TEST_F(CustomThread_Thread_Operations, joinable_after_init)
 {
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
 }
 
-TEST_F(ThreadTestFixture, throw_on_join_after_detach)
+
+TEST_F(CustomThread_Thread_Operations, throw_on_join_after_detach)
 {
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
@@ -60,7 +65,8 @@ TEST_F(ThreadTestFixture, throw_on_join_after_detach)
     EXPECT_THROW(this->_custom_thread_instance_2.join(), std::system_error);
 }
 
-TEST_F(ThreadTestFixture, throw_on_join_after_join)
+
+TEST_F(CustomThread_Thread_Operations, throw_on_join_after_join)
 {
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
@@ -72,7 +78,8 @@ TEST_F(ThreadTestFixture, throw_on_join_after_join)
     EXPECT_THROW(this->_custom_thread_instance_2.join(), std::system_error);
 }
 
-TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
+
+TEST_F(CustomThread_Thread_Operations, throw_on_detach_after_detach)
 {
     this->_custom_thread_instance_1.detach();
     this->_custom_thread_instance_2.detach();
@@ -84,7 +91,8 @@ TEST_F(ThreadTestFixture, throw_on_detach_after_detach)
     EXPECT_THROW(this->_custom_thread_instance_2.detach(), std::system_error);
 }
 
-TEST_F(ThreadTestFixture, throw_on_detach_after_join)
+
+TEST_F(CustomThread_Thread_Operations, throw_on_detach_after_join)
 {
     this->_custom_thread_instance_1.join();
     this->_custom_thread_instance_2.join();
@@ -96,14 +104,16 @@ TEST_F(ThreadTestFixture, throw_on_detach_after_join)
     EXPECT_THROW(this->_custom_thread_instance_2.detach(), std::system_error);
 }
 
-TEST_F(ThreadTestFixture, no_throw_on_self_assignment)
+
+TEST_F(CustomThread_Thread_Operations, no_throw_on_self_assignment)
 {
     // nothing happens
     EXPECT_NO_THROW(this->_custom_thread_instance_1 =
                     custom::move(this->_custom_thread_instance_1));
 }
 
-TEST_F(ThreadTestFixture, no_throw_ownership_transfer_on_move_assignment)
+
+TEST_F(CustomThread_Thread_Operations, no_throw_ownership_transfer_on_move_assignment)
 {
     custom::thread::id initial_t2_id = this->_custom_thread_instance_2.get_id();
     this->_custom_thread_instance_1.join();
@@ -120,7 +130,8 @@ TEST_F(ThreadTestFixture, no_throw_ownership_transfer_on_move_assignment)
     EXPECT_EQ(this->_custom_thread_instance_2.get_id(), custom::thread::id());
 }
 
-TEST_F(ThreadTestFixture, death_on_move_assignment_when_joinable)
+
+TEST_F(CustomThread_Thread_Operations, death_on_move_assignment_when_joinable)
 {
     EXPECT_TRUE(this->_custom_thread_instance_1.joinable());
     EXPECT_TRUE(this->_custom_thread_instance_2.joinable());
@@ -130,7 +141,8 @@ TEST_F(ThreadTestFixture, death_on_move_assignment_when_joinable)
                                 "");
 }
 
-TEST_F(ThreadTestFixture, get_id)
+
+TEST_F(CustomThread_Thread_Operations, get_id)
 {
     this->_custom_thread_instance_1.join();
 
@@ -138,26 +150,30 @@ TEST_F(ThreadTestFixture, get_id)
     EXPECT_NE(this->_custom_thread_instance_2.get_id(), custom::thread::id());
 }
 
-TEST_F(ThreadTestFixture, this_thread_get_id)
+
+TEST_F(CustomThread_Thread_Operations, this_thread_get_id)
 {
     EXPECT_NE(custom::this_thread::get_id(), custom::thread::id());
     EXPECT_NE(custom::this_thread::get_id(), this->_custom_thread_instance_1.get_id());
     EXPECT_NE(custom::this_thread::get_id(), this->_custom_thread_instance_2.get_id());
 }
 
+
 // Thread time tests
 // =============================================================================
 
-class ThisThreadTimeTestFixture : public ::testing::TestWithParam<int>
+
+class CustomThread_ThisThread_Operations : public ::testing::TestWithParam<int>
 {
 protected:
     using _clock = typename custom::chrono::steady_clock;
     using _milli = typename custom::chrono::milliseconds;
 
     static constexpr int _MS_TOLERANCE = 20;
-};  // END ThisThreadTimeTestFixture
+};  // END CustomThread_ThisThread_Operations
 
-TEST_P(ThisThreadTimeTestFixture, sleep_for_duration_ms)
+
+TEST_P(CustomThread_ThisThread_Operations, sleep_for_duration_ms)
 {
     // if time is <= 0 then it sleeps for 0
     int ms_to_sleep = GetParam();
@@ -172,7 +188,8 @@ TEST_P(ThisThreadTimeTestFixture, sleep_for_duration_ms)
     EXPECT_LE(duration.count(), ms_to_check + _MS_TOLERANCE);
 }
 
-TEST_P(ThisThreadTimeTestFixture, sleep_until_duration_ms)
+
+TEST_P(CustomThread_ThisThread_Operations, sleep_until_duration_ms)
 {
     // if time is <= 0 then it sleeps for 0
     int ms_to_sleep = GetParam();
@@ -187,9 +204,10 @@ TEST_P(ThisThreadTimeTestFixture, sleep_until_duration_ms)
     EXPECT_LE(duration.count(), ms_to_check + _MS_TOLERANCE);
 }
 
+
 INSTANTIATE_TEST_SUITE_P(
-                            ThisThreadTimeTestSuite,
-                            ThisThreadTimeTestFixture,
+                            CustomThread_ThisThread_Operations_Suite,
+                            CustomThread_ThisThread_Operations,
                             ::testing::Values(
                                                 300,
                                                 0,
