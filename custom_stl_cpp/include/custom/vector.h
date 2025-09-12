@@ -363,11 +363,8 @@ public:
 	// Allocate memory and move values if needed
 	constexpr void reserve(const size_t newCapacity)
 	{
-		if (newCapacity < size())
-			_data._Last = _data._First + newCapacity;
-
+		size_t newSize 			= std::min(newCapacity, size());
 		value_type* newArray 	= _alloc.allocate(newCapacity);
-		size_t newSize			= size();
 
 		for (size_t i = 0; i < newSize; ++i)
 			_Alloc_Traits::construct(_alloc, &newArray[i], custom::move(_data._First[i]));
