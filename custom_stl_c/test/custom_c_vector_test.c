@@ -87,7 +87,7 @@ void test_clear()
     TEST_ASSERT_TRUE_MESSAGE(VectorINT_empty(&g_customVectorINTInstance), "Vector should be empty");
 }
 
-void test_push_back()
+void test_push_back_without_realloc()
 {
     int val = 0;
     VectorINT_push_back(&g_customVectorINTInstance, &val);
@@ -99,8 +99,20 @@ void test_push_back()
     VectorINT_push_back(&g_customVectorINTInstance, &val);
     VectorINT_push_back(&g_customVectorINTInstance, &val);
     TEST_ASSERT_EQUAL_MESSAGE(GENERIC_VECTOR_DEFAULT_CAPACITY, VectorINT_capacity(&g_customVectorINTInstance), "Vector capacity should NOT increase");
+}
 
+void test_push_back_with_realloc()
+{
+    int val = 0;
     VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);
+    VectorINT_push_back(&g_customVectorINTInstance, &val);  // add 1 more
     TEST_ASSERT_TRUE_MESSAGE(GENERIC_VECTOR_DEFAULT_CAPACITY < VectorINT_capacity(&g_customVectorINTInstance), "Vector capacity should increase");
 }
 
@@ -138,7 +150,8 @@ int main()
     RUN_TEST(test_copy);
     RUN_TEST(test_move);
     RUN_TEST(test_clear);
-    RUN_TEST(test_push_back);
+    RUN_TEST(test_push_back_without_realloc);
+    RUN_TEST(test_push_back_with_realloc);
     RUN_TEST(test_pop_back);
     RUN_TEST(test_element_check);
 

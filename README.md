@@ -1,6 +1,6 @@
 # CustomSTL
 
-**Version: 1.0.6-beta**
+**Version: 1.0.7-beta**
 
 **CustomSTL** is a dual-library project that implements core features of the C++ Standard Template Library (STL) in both **C** and **C++**.  
 It provides equivalent functionality for common data structures and algorithms, making it easier to learn, compare or integrate in hybrid C/C++ environments.
@@ -82,7 +82,7 @@ int main()
 <details>
 <summary><b>C Headers</b></summary>
 
-- `c_list` - `c_vector` - `c_queue` - `c_priority_queue` - `c_stack`
+- `c_list` - `c_vector` - `c_queue` - `c_priority_queue` - `c_stack` - `c_pair`
 - `c_utility`
 
 </details>
