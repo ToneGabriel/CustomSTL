@@ -59,7 +59,7 @@ create_executable(
     ${CUSTOM_STL_C_PAIR_TEST_EXECUTABLE}
     ""
     "${CUSTOM_STL_C_LIBRARY};unity"
-    test/custom_c_stack_test.c
+    test/custom_c_pair_test.c
 )
 
 # ====================================================================================

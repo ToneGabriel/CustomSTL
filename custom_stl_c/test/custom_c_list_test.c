@@ -33,8 +33,8 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL_UINT(0, ListINT_size(&g_customListINTInstance));
-    TEST_ASSERT_TRUE(ListINT_empty(&g_customListINTInstance));
+    TEST_ASSERT_TRUE_MESSAGE(ListINT_empty(&g_customListINTInstance), "List should be empty");
+    TEST_ASSERT_EQUAL_MESSAGE(0, ListINT_size(&g_customListINTInstance), "Initial size should be 0");
 }
 
 void test_copy()
@@ -45,10 +45,10 @@ void test_copy()
     ListINT_push_back(&g_customListINTInstance, &val);
 
     ListINT other = ListINT_create();
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customListINTInstance));
+    TEST_ASSERT_FALSE_MESSAGE(ListINT_equals(&other, &g_customListINTInstance), "Other list should NOT be equal to original");
 
     ListINT_copy(&other, &g_customListINTInstance);
-    TEST_ASSERT_TRUE(ListINT_equals(&other, &g_customListINTInstance));
+    TEST_ASSERT_TRUE_MESSAGE(ListINT_equals(&other, &g_customListINTInstance), "Other list should be equal to original");
 
     ListINT_destroy(&other);
 }
@@ -64,11 +64,11 @@ void test_move()
     ListINT_copy(&original_copy, &g_customListINTInstance);
 
     ListINT other = ListINT_create();
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customListINTInstance));
+    TEST_ASSERT_FALSE_MESSAGE(ListINT_equals(&other, &g_customListINTInstance), "Other list should NOT be equal to original");
 
     ListINT_move(&other, &g_customListINTInstance);
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customListINTInstance));
-    TEST_ASSERT_TRUE(ListINT_equals(&other, &original_copy));
+    TEST_ASSERT_FALSE_MESSAGE(ListINT_equals(&other, &g_customListINTInstance), "Other list should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(ListINT_equals(&other, &original_copy), "Other list should be equal to original copy");
 
     ListINT_destroy(&other);
     ListINT_destroy(&original_copy);

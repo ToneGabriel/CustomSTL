@@ -39,45 +39,39 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL(1, g_customPairINTAndDoubleInstance.first);
-    TEST_ASSERT_EQUAL(1.0, g_customPairINTAndDoubleInstance.second);
+    TEST_ASSERT_EQUAL_MESSAGE(1, g_customPairINTAndDoubleInstance.first, "First value should be equal to the first constructor argument");
+    TEST_ASSERT_EQUAL_MESSAGE(1.0, g_customPairINTAndDoubleInstance.second, "Second value should be equal to the second constructor argument");
 }
 
 void test_copy()
 {
-    int val = 0;
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
+    int val1 = 0;
+    double val2 = 0.0;
+    PairINTAndDOUBLE other = PairINTAndDOUBLE_create(&val1, &val2);
+    TEST_ASSERT_FALSE_MESSAGE(PairINTAndDOUBLE_equals(&other, &g_customPairINTAndDoubleInstance), "Other pair should NOT be equal to original");
 
-    PairINTAndDOUBLE other = PairINTAndDOUBLE_create();
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customPairINTAndDoubleInstance));
+    PairINTAndDOUBLE_copy(&other, &g_customPairINTAndDoubleInstance);
+    TEST_ASSERT_TRUE_MESSAGE(PairINTAndDOUBLE_equals(&other, &g_customPairINTAndDoubleInstance), "Other pair should be equal to original");
 
-    ListINT_copy(&other, &g_customPairINTAndDoubleInstance);
-    TEST_ASSERT_TRUE(ListINT_equals(&other, &g_customPairINTAndDoubleInstance));
-
-    ListINT_destroy(&other);
+    PairINTAndDOUBLE_destroy(&other);
 }
 
 void test_move()
 {
-    int val = 0;
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
-    ListINT_push_back(&g_customPairINTAndDoubleInstance, &val);
+    int val1 = 0;
+    double val2 = 0.0;
+    PairINTAndDOUBLE original_copy = PairINTAndDOUBLE_create(&val1, &val2);
+    PairINTAndDOUBLE_copy(&original_copy, &g_customPairINTAndDoubleInstance);
 
-    ListINT original_copy = ListINT_create();
-    ListINT_copy(&original_copy, &g_customPairINTAndDoubleInstance);
+    PairINTAndDOUBLE other = PairINTAndDOUBLE_create(&val1, &val2);
+    TEST_ASSERT_FALSE_MESSAGE(PairINTAndDOUBLE_equals(&other, &g_customPairINTAndDoubleInstance), "Other pair should NOT be equal to original");
 
-    ListINT other = ListINT_create();
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customPairINTAndDoubleInstance));
+    PairINTAndDOUBLE_move(&other, &g_customPairINTAndDoubleInstance);
+    TEST_ASSERT_FALSE_MESSAGE(PairINTAndDOUBLE_equals(&other, &g_customPairINTAndDoubleInstance), "Other pair should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(PairINTAndDOUBLE_equals(&other, &original_copy), "Other pair should be equal to original copy");
 
-    ListINT_move(&other, &g_customPairINTAndDoubleInstance);
-    TEST_ASSERT_FALSE(ListINT_equals(&other, &g_customPairINTAndDoubleInstance));
-    TEST_ASSERT_TRUE(ListINT_equals(&other, &original_copy));
-
-    ListINT_destroy(&other);
-    ListINT_destroy(&original_copy);
+    PairINTAndDOUBLE_destroy(&other);
+    PairINTAndDOUBLE_destroy(&original_copy);
 }
 
 
