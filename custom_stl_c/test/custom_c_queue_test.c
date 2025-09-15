@@ -33,8 +33,8 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_EQUAL_UINT(0, QueueINT_size(&g_customQueueINTInstance));
-    TEST_ASSERT_TRUE(QueueINT_empty(&g_customQueueINTInstance));
+    TEST_ASSERT_TRUE_MESSAGE(QueueINT_empty(&g_customQueueINTInstance), "Queue should be empty");
+    TEST_ASSERT_EQUAL_MESSAGE(0, QueueINT_size(&g_customQueueINTInstance), "Initial size should be 0");
 }
 
 void test_copy()
@@ -45,10 +45,10 @@ void test_copy()
     QueueINT_insert(&g_customQueueINTInstance, &val);
 
     QueueINT other = QueueINT_create();
-    TEST_ASSERT_FALSE(QueueINT_equals(&other, &g_customQueueINTInstance));
+    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should NOT be equal to original");
 
     QueueINT_copy(&other, &g_customQueueINTInstance);
-    TEST_ASSERT_TRUE(QueueINT_equals(&other, &g_customQueueINTInstance));
+    TEST_ASSERT_TRUE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should be equal to original");
 
     QueueINT_destroy(&other);
 }
@@ -64,11 +64,11 @@ void test_move()
     QueueINT_copy(&original_copy, &g_customQueueINTInstance);
 
     QueueINT other = QueueINT_create();
-    TEST_ASSERT_FALSE(QueueINT_equals(&other, &g_customQueueINTInstance));
+    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should NOT be equal to original");
 
     QueueINT_move(&other, &g_customQueueINTInstance);
-    TEST_ASSERT_FALSE(QueueINT_equals(&other, &g_customQueueINTInstance));
-    TEST_ASSERT_TRUE(QueueINT_equals(&other, &original_copy));
+    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(QueueINT_equals(&other, &original_copy),"Other queue should be equal to original copy");
 
     QueueINT_destroy(&other);
     QueueINT_destroy(&original_copy);
