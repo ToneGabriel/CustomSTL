@@ -35,26 +35,26 @@ typedef struct                                                                  
     PQ_VECTOR_HELPER_NAME vec;                                                                                                          \
 } PQ_NAME;                                                                                                                              \
                                                                                                                                         \
-static PQ_NAME  _C_IDENTIFIER_BIND(PQ_NAME, create)();                                                                                  \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq);                                                                      \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq);                                                                        \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source);                                                \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source);                                                      \
-static size_t   _C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq);                                                                         \
-static bool     _C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq);                                                                        \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item);                                                     \
-static void     _C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq);                                                                          \
-static TYPE*    _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq);                                                                         \
-static bool     _C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right);                                         \
+static PQ_NAME  _C_PUBLIC_MEMBER(PQ_NAME, create)();                                                                                    \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, destroy)(PQ_NAME* pq);                                                                        \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, clear)(PQ_NAME* pq);                                                                          \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source);                                                  \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source);                                                        \
+static size_t   _C_PUBLIC_MEMBER(PQ_NAME, size)(PQ_NAME* pq);                                                                           \
+static bool     _C_PUBLIC_MEMBER(PQ_NAME, empty)(PQ_NAME* pq);                                                                          \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item);                                                       \
+static void     _C_PUBLIC_MEMBER(PQ_NAME, pop)(PQ_NAME* pq);                                                                            \
+static TYPE*    _C_PUBLIC_MEMBER(PQ_NAME, peek)(PQ_NAME* pq);                                                                           \
+static bool     _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right);                                           \
                                                                                                                                         \
 /**                                                                                                                                     \
  * @brief Creates new priority queue. Initialize internal vector.                                                                       \
  * @return A new instance of PQ_NAME.                                                                                                   \
  */                                                                                                                                     \
-static PQ_NAME _C_IDENTIFIER_BIND(PQ_NAME, create)()                                                                                    \
+static PQ_NAME _C_PUBLIC_MEMBER(PQ_NAME, create)()                                                                                      \
 {                                                                                                                                       \
     PQ_NAME pq = {                                                                                                                      \
-        .vec = _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, create)(GENERIC_VECTOR_DEFAULT_CAPACITY)                                       \
+        .vec = _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, create)(GENERIC_VECTOR_DEFAULT_CAPACITY)                                         \
     };                                                                                                                                  \
     return pq;                                                                                                                          \
 }                                                                                                                                       \
@@ -63,20 +63,20 @@ static PQ_NAME _C_IDENTIFIER_BIND(PQ_NAME, create)()                            
  * @brief Destroys the priority queue and its internal data.                                                                            \
  * @param pq Pointer to the priority queue.                                                                                             \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, destroy)(PQ_NAME* pq)                                                                           \
+static void _C_PUBLIC_MEMBER(PQ_NAME, destroy)(PQ_NAME* pq)                                                                             \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, destroy)(&pq->vec);                                                                       \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, destroy)(&pq->vec);                                                                         \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
  * @brief Clears all elements from the priority queue without destroying it.                                                            \
  * @param pq Pointer to the priority queue.                                                                                             \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq)                                                                             \
+static void _C_PUBLIC_MEMBER(PQ_NAME, clear)(PQ_NAME* pq)                                                                               \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, clear)(&pq->vec);                                                                         \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, clear)(&pq->vec);                                                                           \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -84,11 +84,11 @@ static void _C_IDENTIFIER_BIND(PQ_NAME, clear)(PQ_NAME* pq)                     
  * @param dest Destination pq pointer.                                                                                                  \
  * @param source Source pq pointer.                                                                                                     \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source)                                                     \
+static void _C_PUBLIC_MEMBER(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* source)                                                       \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "PQ dest is NULL");                                                                                  \
     _C_CUSTOM_ASSERT(NULL != source, "PQ source is NULL");                                                                              \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, copy)(&dest->vec, &source->vec);                                                          \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, copy)(&dest->vec, &source->vec);                                                            \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -96,11 +96,11 @@ static void _C_IDENTIFIER_BIND(PQ_NAME, copy)(PQ_NAME* dest, const PQ_NAME* sour
  * @param dest Destination pq pointer.                                                                                                  \
  * @param source Source pq pointer.                                                                                                     \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source)                                                           \
+static void _C_PUBLIC_MEMBER(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source)                                                             \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "PQ dest is NULL");                                                                                  \
     _C_CUSTOM_ASSERT(NULL != source, "PQ source is NULL");                                                                              \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, move)(&dest->vec, &source->vec);                                                          \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, move)(&dest->vec, &source->vec);                                                            \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -108,10 +108,10 @@ static void _C_IDENTIFIER_BIND(PQ_NAME, move)(PQ_NAME* dest, PQ_NAME* source)   
  * @param pq Pointer to the priority queue.                                                                                             \
  * @return The number of elements.                                                                                                      \
  */                                                                                                                                     \
-static size_t _C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq)                                                                            \
+static size_t _C_PUBLIC_MEMBER(PQ_NAME, size)(PQ_NAME* pq)                                                                              \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec);                                                                   \
+    return _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec);                                                                     \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -119,10 +119,10 @@ static size_t _C_IDENTIFIER_BIND(PQ_NAME, size)(PQ_NAME* pq)                    
  * @param pq Pointer to the priority queue.                                                                                             \
  * @return `true` if empty, `false` otherwise.                                                                                          \
  */                                                                                                                                     \
-static bool _C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq)                                                                             \
+static bool _C_PUBLIC_MEMBER(PQ_NAME, empty)(PQ_NAME* pq)                                                                               \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec);                                                                  \
+    return _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec);                                                                    \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -131,14 +131,14 @@ static bool _C_IDENTIFIER_BIND(PQ_NAME, empty)(PQ_NAME* pq)                     
  * @param pq Pointer to the priority queue.                                                                                             \
  * @param item Pointer to the element to insert.                                                                                        \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)                                                          \
+static void _C_PUBLIC_MEMBER(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)                                                            \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, push_back)(&pq->vec, item);                                                               \
-    _C_IDENTIFIER_BIND(PQ_HEAPIFY_HELPER_NAME, heapify_up)(                                                                             \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                      \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                      \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1);                                                                 \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, push_back)(&pq->vec, item);                                                                 \
+    _C_PUBLIC_MEMBER(PQ_HEAPIFY_HELPER_NAME, heapify_up)(                                                                               \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                        \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                        \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1);                                                                   \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -146,18 +146,18 @@ static void _C_IDENTIFIER_BIND(PQ_NAME, insert)(PQ_NAME* pq, const TYPE* item)  
  * Performs a heapify-down after removal to maintain heap order.                                                                        \
  * @param pq Pointer to the priority queue.                                                                                             \
  */                                                                                                                                     \
-static void _C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq)                                                                               \
+static void _C_PUBLIC_MEMBER(PQ_NAME, pop)(PQ_NAME* pq)                                                                                 \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    if (_C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec)) return;                                                             \
+    if (_C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec)) return;                                                               \
     TYPE_REF_COPY_FUNC(                                                                                                                 \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, 0),                                                             \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1)  \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, 0),                                                               \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1)      \
     );                                                                                                                                  \
-    _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, pop_back)(&pq->vec);                                                                      \
-    _C_IDENTIFIER_BIND(PQ_HEAPIFY_HELPER_NAME, heapify_down)(                                                                           \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                      \
-        _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                      \
+    _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, pop_back)(&pq->vec);                                                                        \
+    _C_PUBLIC_MEMBER(PQ_HEAPIFY_HELPER_NAME, heapify_down)(                                                                             \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, data)(&pq->vec),                                                                        \
+        _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec),                                                                        \
         0                                                                                                                               \
     );                                                                                                                                  \
 }                                                                                                                                       \
@@ -167,10 +167,10 @@ static void _C_IDENTIFIER_BIND(PQ_NAME, pop)(PQ_NAME* pq)                       
  * @param pq Pointer to the priority queue.                                                                                             \
  * @return Pointer to the top element.                                                                                                  \
  */                                                                                                                                     \
-static TYPE* _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                                                                             \
+static TYPE* _C_PUBLIC_MEMBER(PQ_NAME, peek)(PQ_NAME* pq)                                                                               \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
-    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, element_front)(&pq->vec);                                                          \
+    return _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, element_front)(&pq->vec);                                                            \
 }                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -179,11 +179,11 @@ static TYPE* _C_IDENTIFIER_BIND(PQ_NAME, peek)(PQ_NAME* pq)                     
  * @param right Right-hand side pointer to a pq.                                                                                        \
  * @return `true` if equal, `false` otherwise.                                                                                          \
  */                                                                                                                                     \
-static bool _C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right)                                              \
+static bool _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME* right)                                                \
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != left, "PQ left is NULL");                                                                                  \
     _C_CUSTOM_ASSERT(NULL != right, "PQ right is NULL");                                                                                \
-    return _C_IDENTIFIER_BIND(PQ_VECTOR_HELPER_NAME, equals)(&left->vec, &right->vec);                                                  \
+    return _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, equals)(&left->vec, &right->vec);                                                    \
 }                                                                                                                                       \
 
 
@@ -218,14 +218,14 @@ static bool _C_IDENTIFIER_BIND(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NA
 )                                                                                                                           \
                                                                                                                             \
 DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                                           \
-    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_PRIVATE, _C_IDENTIFIER_HEAP),                       \
+    _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Heap),                                                             \
     TYPE,                                                                                                                   \
     TYPE_REF_COMPARE_FUNC,                                                                                                  \
     TYPE_REF_COPY_FUNC                                                                                                      \
 )                                                                                                                           \
                                                                                                                             \
 DEFINE_GENERIC_VECTOR(                                                                                                      \
-    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_PRIVATE, _C_IDENTIFIER_VECTOR),                     \
+    _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Vector),                                                           \
     TYPE,                                                                                                                   \
     TYPE_REF_EQUALS_FUNC,                                                                                                   \
     TYPE_REF_COPY_FUNC,                                                                                                     \
@@ -234,8 +234,8 @@ DEFINE_GENERIC_VECTOR(                                                          
                                                                                                                             \
 _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                        \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                                                      \
-    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_PRIVATE, _C_IDENTIFIER_HEAP), /*same as above*/     \
-    _C_IDENTIFIER_BIND(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_PRIVATE, _C_IDENTIFIER_VECTOR), /*same as above*/   \
+    _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Heap), /*same as above*/                                           \
+    _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Vector), /*same as above*/                                         \
     TYPE,                                                                                                                   \
     TYPE_REF_COPY_FUNC                                                                                                      \
 )                                                                                                                           \

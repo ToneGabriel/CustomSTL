@@ -23,13 +23,13 @@ typedef struct                                                                  
     TYPE_2 second;                                                                                          \
 } PAIR_NAME;                                                                                                \
                                                                                                             \
-static PAIR_NAME    _C_IDENTIFIER_BIND(PAIR_NAME, create)(const TYPE_1* first, const TYPE_2* second);       \
-static void         _C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair);                                \
-static void         _C_IDENTIFIER_BIND(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* source);          \
-static void         _C_IDENTIFIER_BIND(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source);                \
-static bool         _C_IDENTIFIER_BIND(PAIR_NAME, equals)(const PAIR_NAME* left, const PAIR_NAME* right);   \
+static PAIR_NAME    _C_PUBLIC_MEMBER(PAIR_NAME, create)(const TYPE_1* first, const TYPE_2* second);         \
+static void         _C_PUBLIC_MEMBER(PAIR_NAME, destroy)(PAIR_NAME* pair);                                  \
+static void         _C_PUBLIC_MEMBER(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* source);            \
+static void         _C_PUBLIC_MEMBER(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source);                  \
+static bool         _C_PUBLIC_MEMBER(PAIR_NAME, equals)(const PAIR_NAME* left, const PAIR_NAME* right);     \
                                                                                                             \
-static PAIR_NAME _C_IDENTIFIER_BIND(PAIR_NAME, create)(const TYPE_1* first, const TYPE_2* second)           \
+static PAIR_NAME _C_PUBLIC_MEMBER(PAIR_NAME, create)(const TYPE_1* first, const TYPE_2* second)             \
 {                                                                                                           \
     PAIR_NAME pair = {};                                                                                    \
     TYPE_1_REF_COPY_FUNC(&pair.first, first);                                                               \
@@ -37,14 +37,14 @@ static PAIR_NAME _C_IDENTIFIER_BIND(PAIR_NAME, create)(const TYPE_1* first, cons
     return pair;                                                                                            \
 }                                                                                                           \
                                                                                                             \
-static void _C_IDENTIFIER_BIND(PAIR_NAME, destroy)(PAIR_NAME* pair)                                         \
+static void _C_PUBLIC_MEMBER(PAIR_NAME, destroy)(PAIR_NAME* pair)                                           \
 {                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != pair, "Pair is NULL");                                                         \
     TYPE_1_REF_DELETE_FUNC(&pair->first);                                                                   \
     TYPE_2_REF_DELETE_FUNC(&pair->second);                                                                  \
 }                                                                                                           \
                                                                                                             \
-static void _C_IDENTIFIER_BIND(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* source)                   \
+static void _C_PUBLIC_MEMBER(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* source)                     \
 {                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != dest, "Pair dest is NULL");                                                    \
     _C_CUSTOM_ASSERT(NULL != source, "Pair source is NULL");                                                \
@@ -53,7 +53,7 @@ static void _C_IDENTIFIER_BIND(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME
     TYPE_2_REF_COPY_FUNC(&dest->second, &source->second);                                                   \
 }                                                                                                           \
                                                                                                             \
-static void _C_IDENTIFIER_BIND(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source)                         \
+static void _C_PUBLIC_MEMBER(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source)                           \
 {                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != dest, "Pair dest is NULL");                                                    \
     _C_CUSTOM_ASSERT(NULL != source, "Pair source is NULL");                                                \
@@ -62,7 +62,7 @@ static void _C_IDENTIFIER_BIND(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* sour
     TYPE_2_REF_MOVE_FUNC(&dest->second, &source->second);                                                   \
 }                                                                                                           \
                                                                                                             \
-static bool _C_IDENTIFIER_BIND(PAIR_NAME, equals)(const PAIR_NAME* left, const PAIR_NAME* right)            \
+static bool _C_PUBLIC_MEMBER(PAIR_NAME, equals)(const PAIR_NAME* left, const PAIR_NAME* right)              \
 {                                                                                                           \
     return false;                                                                                           \
 }                                                                                                           \

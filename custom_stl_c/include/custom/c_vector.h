@@ -34,19 +34,19 @@ typedef struct                                                                  
     VECTOR_NAME* vec;                                                                                                                       \
 } VECTOR_ITERATOR_NAME;                                                                                                                     \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec);                              \
-static void                     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter);                        \
-static VECTOR_ITERATOR_NAME     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter);                       \
-static void                     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);         \
-static VECTOR_ITERATOR_NAME     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);            \
-static void                     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter);                        \
-static VECTOR_ITERATOR_NAME     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter);                       \
-static void                     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);         \
-static VECTOR_ITERATOR_NAME     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);            \
-static TYPE*                    _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter);                                \
-static bool                     _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right);  \
+static VECTOR_ITERATOR_NAME     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec);                                \
+static void                     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter);                          \
+static VECTOR_ITERATOR_NAME     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter);                         \
+static void                     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);           \
+static VECTOR_ITERATOR_NAME     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);              \
+static void                     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter);                          \
+static VECTOR_ITERATOR_NAME     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter);                         \
+static void                     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);           \
+static VECTOR_ITERATOR_NAME     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff);              \
+static TYPE*                    _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter);                                  \
+static bool                     _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right);    \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec)                                   \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, create)(TYPE* ptr, VECTOR_NAME* vec)                                     \
 {                                                                                                                                           \
     VECTOR_ITERATOR_NAME iter = {                                                                                                           \
         .ptr = ptr,                                                                                                                         \
@@ -55,65 +55,65 @@ static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(TYP
     return iter;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static void _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter)                                             \
+static void _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_increment)(VECTOR_ITERATOR_NAME* iter)                                               \
 {                                                                                                                                           \
     _C_CUSTOM_ASSERT(iter->ptr < iter->vec->last, "Cannot increment end iterator.");                                                        \
     ++iter->ptr;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter)                            \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, post_increment)(VECTOR_ITERATOR_NAME* iter)                              \
 {                                                                                                                                           \
     VECTOR_ITERATOR_NAME temp = *iter;                                                                                                      \
-    _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_increment)(iter);                                                                          \
+    _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_increment)(iter);                                                                            \
     return temp;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static void _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                              \
+static void _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, increment_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                                \
 {                                                                                                                                           \
     _C_CUSTOM_ASSERT(iter->ptr + diff < iter->vec->last, "Cannot increment end iterator.");                                                 \
     iter->ptr += diff;                                                                                                                      \
 }                                                                                                                                           \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                 \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, increment)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                   \
 {                                                                                                                                           \
     VECTOR_ITERATOR_NAME temp = *iter;                                                                                                      \
-    _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, increment_by)(&temp, diff);                                                                    \
+    _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, increment_by)(&temp, diff);                                                                      \
     return temp;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static void _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter)                                             \
+static void _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_decrement)(VECTOR_ITERATOR_NAME* iter)                                               \
 {                                                                                                                                           \
     _C_CUSTOM_ASSERT(iter->ptr > iter->vec->first, "Cannot decrement begin iterator.");                                                     \
     --iter->ptr;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter)                            \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, post_decrement)(VECTOR_ITERATOR_NAME* iter)                              \
 {                                                                                                                                           \
     VECTOR_ITERATOR_NAME temp = *iter;                                                                                                      \
-    _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, pre_decrement)(iter);                                                                          \
+    _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, pre_decrement)(iter);                                                                            \
     return temp;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static void _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                              \
+static void _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, decrement_by)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                                \
 {                                                                                                                                           \
     _C_CUSTOM_ASSERT(iter->ptr + diff > iter->vec->first, "Cannot decrement begin iterator.");                                              \
     iter->ptr -= diff;                                                                                                                      \
 }                                                                                                                                           \
                                                                                                                                             \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                 \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, decrement)(VECTOR_ITERATOR_NAME* iter, ptrdiff_t diff)                   \
 {                                                                                                                                           \
     VECTOR_ITERATOR_NAME temp = *iter;                                                                                                      \
-    _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, decrement_by)(&temp, diff);                                                                    \
+    _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, decrement_by)(&temp, diff);                                                                      \
     return temp;                                                                                                                            \
 }                                                                                                                                           \
                                                                                                                                             \
-static TYPE* _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter)                                                    \
+static TYPE* _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, deref)(VECTOR_ITERATOR_NAME* iter)                                                      \
 {                                                                                                                                           \
     _C_CUSTOM_ASSERT(iter->ptr < iter->vec->last, "Cannot dereference end iterator.");                                                      \
     return iter->ptr;                                                                                                                       \
 }                                                                                                                                           \
                                                                                                                                             \
-static bool _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right)                       \
+static bool _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME* left, VECTOR_ITERATOR_NAME* right)                         \
 {                                                                                                                                           \
     return left->ptr == right->ptr;                                                                                                         \
 }                                                                                                                                           \
@@ -147,30 +147,30 @@ static bool _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAM
     TYPE_REF_DELETE_FUNC                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
-static VECTOR_NAME          _C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity);                                   \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                 \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec);                                   \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source);        \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME* source);              \
-static TYPE*                _C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec);                              \
-static size_t               _C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec);                              \
-static size_t               _C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(const VECTOR_NAME* vec);                          \
-static bool                 _C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec);                             \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item);             \
-static void                 _C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec);                                \
-static TYPE*                _C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec);                           \
-static TYPE*                _C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec);                            \
-static TYPE*                _C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index);                \
-static bool                 _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, const VECTOR_NAME* right); \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, begin)(VECTOR_NAME* vec);                                   \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec);                                     \
+static VECTOR_NAME          _C_PUBLIC_MEMBER(VECTOR_NAME, create)(size_t capacity);                                     \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                   \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, clear)(VECTOR_NAME* vec);                                     \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source);          \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME* source);                \
+static TYPE*                _C_PUBLIC_MEMBER(VECTOR_NAME, data)(const VECTOR_NAME* vec);                                \
+static size_t               _C_PUBLIC_MEMBER(VECTOR_NAME, size)(const VECTOR_NAME* vec);                                \
+static size_t               _C_PUBLIC_MEMBER(VECTOR_NAME, capacity)(const VECTOR_NAME* vec);                            \
+static bool                 _C_PUBLIC_MEMBER(VECTOR_NAME, empty)(const VECTOR_NAME* vec);                               \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item);               \
+static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, pop_back)(VECTOR_NAME* vec);                                  \
+static TYPE*                _C_PUBLIC_MEMBER(VECTOR_NAME, element_front)(VECTOR_NAME* vec);                             \
+static TYPE*                _C_PUBLIC_MEMBER(VECTOR_NAME, element_back)(VECTOR_NAME* vec);                              \
+static TYPE*                _C_PUBLIC_MEMBER(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index);                  \
+static bool                 _C_PUBLIC_MEMBER(VECTOR_NAME, equals)(const VECTOR_NAME* left, const VECTOR_NAME* right);   \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, begin)(VECTOR_NAME* vec);                                     \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, end)(VECTOR_NAME* vec);                                       \
                                                                                                                         \
 /**                                                                                                                     \
  * @brief Creates a vector struct and allocates dynamic array.                                                          \
  * @param capacity Initial capacity of the vector.                                                                      \
  * @return A new instance of VECTOR_NAME.                                                                               \
  */                                                                                                                     \
-static VECTOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)                                             \
+static VECTOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, create)(size_t capacity)                                               \
 {                                                                                                                       \
     size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;       \
     TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                              \
@@ -186,11 +186,11 @@ static VECTOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, create)(size_t capacity)     
  * @brief Destroys a vector and releases allocated memory.                                                              \
  * @param vec Pointer to the vector.                                                                                    \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec)                                                  \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(VECTOR_NAME* vec)                                                    \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (NULL == vec->first) return;                                                                                     \
-    size_t vec_size = _C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                       \
+    size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
         TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
     free(vec->first);                                                                                                   \
@@ -201,11 +201,11 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(VECTOR_NAME* vec)          
  * @brief Clears the vector contents but retains capacity.                                                              \
  * @param vec Pointer to the vector.                                                                                    \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec)                                                    \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, clear)(VECTOR_NAME* vec)                                                      \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (NULL == vec->first) return;                                                                                     \
-    size_t vec_size = _C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                       \
+    size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
         TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
     vec->last = vec->first;                                                                                             \
@@ -216,16 +216,16 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, clear)(VECTOR_NAME* vec)            
  * @param dest Destination vector pointer.                                                                              \
  * @param source Source vector pointer.                                                                                 \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source)                         \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source)                           \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
     if (dest == source) return;                                                                                         \
-    _C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                     \
+    _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(dest);                                                                       \
     if (NULL == source->first) return;                                                                                  \
-    size_t newCapacity = _C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(source);                                             \
-    size_t newSize = _C_IDENTIFIER_BIND(VECTOR_NAME, size)(source);                                                     \
-    *dest = _C_IDENTIFIER_BIND(VECTOR_NAME, create)(newCapacity);                                                       \
+    size_t newCapacity = _C_PUBLIC_MEMBER(VECTOR_NAME, capacity)(source);                                               \
+    size_t newSize = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(source);                                                       \
+    *dest = _C_PUBLIC_MEMBER(VECTOR_NAME, create)(newCapacity);                                                         \
     for (size_t i = 0; i < newSize; ++i)                                                                                \
         TYPE_REF_COPY_FUNC(dest->first + i, source->first + i);                                                         \
     dest->last = dest->first + newSize;                                                                                 \
@@ -236,12 +236,12 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTO
  * @param dest Destination vector pointer.                                                                              \
  * @param source Source vector pointer.                                                                                 \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME* source)                               \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME* source)                                 \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != dest, "Vector dest is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != source, "Vector source is NULL");                                                          \
     if (dest == source) return;                                                                                         \
-    _C_IDENTIFIER_BIND(VECTOR_NAME, destroy)(dest);                                                                     \
+    _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(dest);                                                                       \
     if (NULL == source->first) return;                                                                                  \
     *dest = *source;                                                                                                    \
     source->first = source->last = source->final = NULL;                                                                \
@@ -252,7 +252,7 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, move)(VECTOR_NAME* dest, VECTOR_NAME
  * @param vec Pointer to vector.                                                                                        \
  * @return Pointer to the data array.                                                                                   \
  */                                                                                                                     \
-static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec)                                              \
+static TYPE* _C_PUBLIC_MEMBER(VECTOR_NAME, data)(const VECTOR_NAME* vec)                                                \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->first;                                                                                                  \
@@ -263,7 +263,7 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, data)(const VECTOR_NAME* vec)      
  * @param vec Pointer to vector.                                                                                        \
  * @return Number of elements.                                                                                          \
  */                                                                                                                     \
-static size_t _C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec)                                             \
+static size_t _C_PUBLIC_MEMBER(VECTOR_NAME, size)(const VECTOR_NAME* vec)                                               \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->last - vec->first;                                                                                      \
@@ -274,7 +274,7 @@ static size_t _C_IDENTIFIER_BIND(VECTOR_NAME, size)(const VECTOR_NAME* vec)     
  * @param vec Pointer to vector.                                                                                        \
  * @return Current capacity.                                                                                            \
  */                                                                                                                     \
-static size_t _C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(const VECTOR_NAME* vec)                                         \
+static size_t _C_PUBLIC_MEMBER(VECTOR_NAME, capacity)(const VECTOR_NAME* vec)                                           \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->final - vec->first;                                                                                     \
@@ -285,7 +285,7 @@ static size_t _C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(const VECTOR_NAME* vec) 
  * @param vec Pointer to vector.                                                                                        \
  * @return `true` if empty, `false` otherwise.                                                                          \
  */                                                                                                                     \
-static bool _C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec)                                              \
+static bool _C_PUBLIC_MEMBER(VECTOR_NAME, empty)(const VECTOR_NAME* vec)                                                \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     return vec->last == vec->first;                                                                                     \
@@ -296,14 +296,14 @@ static bool _C_IDENTIFIER_BIND(VECTOR_NAME, empty)(const VECTOR_NAME* vec)      
  * @param vec Pointer to vector.                                                                                        \
  * @param item Pointer to item to push.                                                                                 \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item)                              \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYPE* item)                                \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (NULL == vec->first) return;                                                                                     \
     if (vec->last >= vec->final)                                                                                        \
     {                                                                                                                   \
-        size_t oldSize = _C_IDENTIFIER_BIND(VECTOR_NAME, size)(vec);                                                    \
-        size_t oldCapacity = _C_IDENTIFIER_BIND(VECTOR_NAME, capacity)(vec);                                            \
+        size_t oldSize = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                      \
+        size_t oldCapacity = _C_PUBLIC_MEMBER(VECTOR_NAME, capacity)(vec);                                              \
         size_t newCapacity = oldCapacity + oldCapacity / 2 + 1;                                                         \
         vec->first = (TYPE*)realloc(vec->first, sizeof(TYPE) * newCapacity);                                            \
         vec->last = vec->first + oldSize;                                                                               \
@@ -316,7 +316,7 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const T
  * @brief Removes the last element from the vector.                                                                     \
  * @param vec Pointer to vector.                                                                                        \
  */                                                                                                                     \
-static void _C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)                                                 \
+static void _C_PUBLIC_MEMBER(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)                                                   \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return;                                                                                \
@@ -328,7 +328,7 @@ static void _C_IDENTIFIER_BIND(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)         
  * @param vec Pointer to vector.                                                                                        \
  * @return Pointer to the first element.                                                                                \
  */                                                                                                                     \
-static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)                                           \
+static TYPE* _C_PUBLIC_MEMBER(VECTOR_NAME, element_front)(VECTOR_NAME* vec)                                             \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return NULL;                                                                           \
@@ -340,7 +340,7 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_front)(VECTOR_NAME* vec)   
  * @param vec Pointer to vector.                                                                                        \
  * @return Pointer to the last element.                                                                                 \
  */                                                                                                                     \
-static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)                                            \
+static TYPE* _C_PUBLIC_MEMBER(VECTOR_NAME, element_back)(VECTOR_NAME* vec)                                              \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return NULL;                                                                           \
@@ -353,7 +353,7 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_back)(VECTOR_NAME* vec)    
  * @param index Position of the element to get.                                                                         \
  * @return Pointer to the element at index.                                                                             \
  */                                                                                                                     \
-static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index)                                \
+static TYPE* _C_PUBLIC_MEMBER(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_t index)                                  \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first + index >= vec->last) return NULL;                                                                   \
@@ -366,13 +366,13 @@ static TYPE* _C_IDENTIFIER_BIND(VECTOR_NAME, element_at)(VECTOR_NAME* vec, size_
  * @param right Right-hand side pointer to a vector.                                                                    \
  * @return `true` if equal, `false` otherwise.                                                                          \
  */                                                                                                                     \
-static bool _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, const VECTOR_NAME* right)                  \
+static bool _C_PUBLIC_MEMBER(VECTOR_NAME, equals)(const VECTOR_NAME* left, const VECTOR_NAME* right)                    \
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != left, "Vector left is NULL");                                                              \
     _C_CUSTOM_ASSERT(NULL != right, "Vector right is NULL");                                                            \
-    if (_C_IDENTIFIER_BIND(VECTOR_NAME, size)(left) !=                                                                  \
-        _C_IDENTIFIER_BIND(VECTOR_NAME, size)(right)) return false;                                                     \
-    size_t s = _C_IDENTIFIER_BIND(VECTOR_NAME, size)(left);                                                             \
+    if (_C_PUBLIC_MEMBER(VECTOR_NAME, size)(left) !=                                                                    \
+        _C_PUBLIC_MEMBER(VECTOR_NAME, size)(right)) return false;                                                       \
+    size_t s = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(left);                                                               \
     for (size_t i = 0; i < s; ++i)                                                                                      \
         if (!TYPE_REF_EQUALS_FUNC(left->first + i, right->first + i)) return false;                                     \
     return true;                                                                                                        \
@@ -383,9 +383,9 @@ static bool _C_IDENTIFIER_BIND(VECTOR_NAME, equals)(const VECTOR_NAME* left, con
  * @param vec Pointer to vector.                                                                                        \
  * @return A new instance of VECTOR_ITERATOR_NAME.                                                                      \
  */                                                                                                                     \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, begin)(VECTOR_NAME* vec)                                    \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, begin)(VECTOR_NAME* vec)                                      \
 {                                                                                                                       \
-    VECTOR_ITERATOR_NAME iter = _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(vec->first, vec);                      \
+    VECTOR_ITERATOR_NAME iter = _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, create)(vec->first, vec);                        \
     return iter;                                                                                                        \
 }                                                                                                                       \
                                                                                                                         \
@@ -394,9 +394,9 @@ static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, begin)(VECTOR_NAME* 
  * @param vec Pointer to vector.                                                                                        \
  * @return A new instance of VECTOR_ITERATOR_NAME.                                                                      \
  */                                                                                                                     \
-static VECTOR_ITERATOR_NAME _C_IDENTIFIER_BIND(VECTOR_NAME, end)(VECTOR_NAME* vec)                                      \
+static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, end)(VECTOR_NAME* vec)                                        \
 {                                                                                                                       \
-    VECTOR_ITERATOR_NAME iter = _C_IDENTIFIER_BIND(VECTOR_ITERATOR_NAME, create)(vec->last, vec);                       \
+    VECTOR_ITERATOR_NAME iter = _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, create)(vec->last, vec);                         \
     return iter;                                                                                                        \
 }                                                                                                                       \
 
@@ -431,14 +431,14 @@ _DEFINE_GENERIC_VECTOR_DATA(                                                    
 )                                                                                               \
                                                                                                 \
 _DEFINE_GENERIC_VECTOR_ITERATOR(                                                                \
-    _C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_ITERATOR),                      \
+    _C_PUBLIC_MEMBER(VECTOR_NAME_PUBLIC_PREFIX, Iterator),                                      \
     VECTOR_NAME_PUBLIC_PREFIX,                                                                  \
     TYPE                                                                                        \
 )                                                                                               \
                                                                                                 \
 _DEFINE_GENERIC_VECTOR_IMPL(                                                                    \
     VECTOR_NAME_PUBLIC_PREFIX,                                                                  \
-    _C_IDENTIFIER_BIND(VECTOR_NAME_PUBLIC_PREFIX, _C_IDENTIFIER_ITERATOR),  /*same as above*/   \
+    _C_PUBLIC_MEMBER(VECTOR_NAME_PUBLIC_PREFIX, Iterator),  /*same as above*/                   \
     TYPE,                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                       \
     TYPE_REF_COPY_FUNC,                                                                         \
