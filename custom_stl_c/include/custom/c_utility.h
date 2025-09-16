@@ -5,52 +5,49 @@
 #include "custom/_c_stlcore.h"
 
 
-/**
- * @def DEFAULT_TYPE_REF_LESS
- * @brief Default less-than comparator for type references.
- * @param LEFT_REF Left-hand side pointer to a value.
- * @param RIGHT_REF Right-hand side pointer to a value.
- */
-#define DEFAULT_TYPE_REF_LESS(LEFT_REF, RIGHT_REF) (*(LEFT_REF) < *(RIGHT_REF))
-
-/**
- * @def DEFAULT_TYPE_REF_GREATER
- * @brief Default greater-than comparator for type references.
- * @param LEFT_REF Left-hand side pointer to a value.
- * @param RIGHT_REF Right-hand side pointer to a value.
- */
-#define DEFAULT_TYPE_REF_GREATER(LEFT_REF, RIGHT_REF) (*(LEFT_REF) > *(RIGHT_REF))
-
-/**
- * @def DEFAULT_TYPE_REF_EQUALS
- * @brief Default equality comparator for type references.
- * @param LEFT_REF Left-hand side pointer to a value.
- * @param RIGHT_REF Right-hand side pointer to a value.
- */
-#define DEFAULT_TYPE_REF_EQUALS(LEFT_REF, RIGHT_REF) (*(LEFT_REF) == *(RIGHT_REF))
-
-/**
- * @def DEFAULT_TYPE_REF_COPY
- * @brief Default copy operation between two references.
- * @param DEST_REF Destination side pointer to a value.
- * @param SRC_REF Source side pointer to a value.
- */
-#define DEFAULT_TYPE_REF_COPY(DEST_REF, SRC_REF) (*(DEST_REF) = *(SRC_REF))
-
-/**
- * @def DEFAULT_TYPE_REF_MOVE
- * @brief Default move operation between two references.
- * @param DEST_REF Destination side pointer to a value.
- * @param SRC_REF Source side pointer to a value.
- */
-#define DEFAULT_TYPE_REF_MOVE(DEST_REF, SRC_REF) (*(DEST_REF) = *(SRC_REF))
-
-/**
- * @def DEFAULT_TYPE_REF_DESTROY
- * @brief Default delete operation. Does nothing for trivial types (expands to given expression).
- * @param TARGET_REF Target object pointer to a value to be deleted.
- */
-#define DEFAULT_TYPE_REF_DESTROY(TARGET_REF) (TARGET_REF)
+#define DEFINE_DEFAULT_TYPE_OPERATIONS(TYPE, ALIAS)                                                                 \
+typedef TYPE ALIAS;                                                                                                 \
+                                                                                                                    \
+static ALIAS    _C_PUBLIC_MEMBER(ALIAS, create)();                                                                  \
+static void     _C_PUBLIC_MEMBER(ALIAS, destroy)(ALIAS* target);                                                    \
+static void     _C_PUBLIC_MEMBER(ALIAS, copy)(ALIAS* dest, const ALIAS* src);                                       \
+static void     _C_PUBLIC_MEMBER(ALIAS, move)(ALIAS* dest, ALIAS* src);                                             \
+static bool     _C_PUBLIC_MEMBER(ALIAS, equals)(const ALIAS* left, const ALIAS* right);                             \
+static bool     _C_PUBLIC_MEMBER(ALIAS, less)(const ALIAS* left, const ALIAS* right);                               \
+static bool     _C_PUBLIC_MEMBER(ALIAS, greater)(const ALIAS* left, const ALIAS* right);                            \
+                                                                                                                    \
+static ALIAS _C_PUBLIC_MEMBER(ALIAS, create)()                                                                      \
+{                                                                                                                   \
+    ALIAS ret = {0};                                                                                                \
+    return ret;                                                                                                     \
+}                                                                                                                   \
+                                                                                                                    \
+static void _C_PUBLIC_MEMBER(ALIAS, destroy)(ALIAS* target) { /*Empty*/ }                                           \
+                                                                                                                    \
+static void _C_PUBLIC_MEMBER(ALIAS, copy)(ALIAS* dest, const ALIAS* src)                                            \
+{                                                                                                                   \
+    *dest = *src;                                                                                                   \
+}                                                                                                                   \
+                                                                                                                    \
+static void _C_PUBLIC_MEMBER(ALIAS, move)(ALIAS* dest, ALIAS* src)                                                  \
+{                                                                                                                   \
+    *dest = *src;                                                                                                   \
+}                                                                                                                   \
+                                                                                                                    \
+static bool _C_PUBLIC_MEMBER(ALIAS, equals)(const ALIAS* left, const ALIAS* right)                                  \
+{                                                                                                                   \
+    return *left == *right;                                                                                         \
+}                                                                                                                   \
+                                                                                                                    \
+static bool _C_PUBLIC_MEMBER(ALIAS, less)(const ALIAS* left, const ALIAS* right)                                    \
+{                                                                                                                   \
+    return *left < *right;                                                                                          \
+}                                                                                                                   \
+                                                                                                                    \
+static bool _C_PUBLIC_MEMBER(ALIAS, greater)(const ALIAS* left, const ALIAS* right)                                 \
+{                                                                                                                   \
+    return *left > *right;                                                                                          \
+}                                                                                                                   \
 
 
 // =====================================================================================================================
@@ -66,20 +63,18 @@
  * 
  * @param SWAP_FUNC_NAME_PREFIX Prefix for the generated swap function name.
  * @param TYPE The data type of elements to be swapped.
- * @param TYPE_REF_COPY_FUNC Function used to copy/move elements by reference.
  */
 #define DEFINE_GENERIC_SWAP_FUNCTION(                                                   \
     SWAP_FUNC_NAME_PREFIX,                                                              \
-    TYPE,                                                                               \
-    TYPE_REF_COPY_FUNC                                                                  \
+    TYPE                                                                                \
 )                                                                                       \
                                                                                         \
 static void _C_PUBLIC_MEMBER(SWAP_FUNC_NAME_PREFIX, do_swap)(TYPE* left, TYPE* right)   \
 {                                                                                       \
     TYPE temp;                                                                          \
-    TYPE_REF_COPY_FUNC(&temp, left);                                                    \
-    TYPE_REF_COPY_FUNC(left, right);                                                    \
-    TYPE_REF_COPY_FUNC(right, &temp);                                                   \
+    _C_PUBLIC_MEMBER(TYPE, move)(&temp, left);                                          \
+    _C_PUBLIC_MEMBER(TYPE, move)(left, right);                                          \
+    _C_PUBLIC_MEMBER(TYPE, move)(right, &temp);                                         \
 }                                                                                       \
 
 
@@ -162,19 +157,16 @@ static void _C_PUBLIC_MEMBER(HEAP_ADJUST_NAME, heapify_down)(TYPE* arr, size_t a
  * @param HEAP_ADJUST_NAME_PUBLIC_PREFIX Public name prefix for heapify functions.
  * @param TYPE The data type in the heap.
  * @param TYPE_REF_COMPARE_FUNC A comparison function used for heap ordering.
- * @param TYPE_REF_COPY_FUNC A copy function used for swapping values.
  */
 #define DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                               \
     HEAP_ADJUST_NAME_PUBLIC_PREFIX,                                                                                     \
     TYPE,                                                                                                               \
-    TYPE_REF_COMPARE_FUNC,                                                                                              \
-    TYPE_REF_COPY_FUNC                                                                                                  \
+    TYPE_REF_COMPARE_FUNC                                                                                               \
 )                                                                                                                       \
                                                                                                                         \
 DEFINE_GENERIC_SWAP_FUNCTION(                                                                                           \
     _C_PRIVATE_MEMBER(HEAP_ADJUST_NAME_PUBLIC_PREFIX, Swap),                                                            \
-    TYPE,                                                                                                               \
-    TYPE_REF_COPY_FUNC                                                                                                  \
+    TYPE                                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
 _DEFINE_GENERIC_HEAPIFY_FUNCTIONS_IMPL(                                                                                 \

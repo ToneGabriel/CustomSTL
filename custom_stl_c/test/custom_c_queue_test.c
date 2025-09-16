@@ -5,26 +5,21 @@
 // Setup ==========================
 
 
-DEFINE_GENERIC_QUEUE(
-    QueueINT,
-    int,
-    DEFAULT_TYPE_REF_EQUALS,
-    DEFAULT_TYPE_REF_COPY,
-    DEFAULT_TYPE_REF_DESTROY
-)
+DEFINE_DEFAULT_TYPE_OPERATIONS(unsigned int, myuint_t)
+DEFINE_GENERIC_QUEUE(QueueUINT, myuint_t)
 
 
-static QueueINT g_customQueueINTInstance;
+static QueueUINT g_customQueueUINTInstance;
 
 
 void setUp()
 {
-    g_customQueueINTInstance = QueueINT_create();
+    g_customQueueUINTInstance = QueueUINT_create();
 }
 
 void tearDown()
 {
-    QueueINT_destroy(&g_customQueueINTInstance);
+    QueueUINT_destroy(&g_customQueueUINTInstance);
 }
 
 
@@ -33,45 +28,45 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_TRUE_MESSAGE(QueueINT_empty(&g_customQueueINTInstance), "Queue should be empty");
-    TEST_ASSERT_EQUAL_MESSAGE(0, QueueINT_size(&g_customQueueINTInstance), "Initial size should be 0");
+    TEST_ASSERT_TRUE_MESSAGE(QueueUINT_empty(&g_customQueueUINTInstance), "Queue should be empty");
+    TEST_ASSERT_EQUAL_MESSAGE(0, QueueUINT_size(&g_customQueueUINTInstance), "Initial size should be 0");
 }
 
 void test_copy()
 {
-    int val = 0;
-    QueueINT_insert(&g_customQueueINTInstance, &val);
-    QueueINT_insert(&g_customQueueINTInstance, &val);
-    QueueINT_insert(&g_customQueueINTInstance, &val);
+    myuint_t val = 0;
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
 
-    QueueINT other = QueueINT_create();
-    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should NOT be equal to original");
+    QueueUINT other = QueueUINT_create();
+    TEST_ASSERT_FALSE_MESSAGE(QueueUINT_equals(&other, &g_customQueueUINTInstance), "Other queue should NOT be equal to original");
 
-    QueueINT_copy(&other, &g_customQueueINTInstance);
-    TEST_ASSERT_TRUE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should be equal to original");
+    QueueUINT_copy(&other, &g_customQueueUINTInstance);
+    TEST_ASSERT_TRUE_MESSAGE(QueueUINT_equals(&other, &g_customQueueUINTInstance), "Other queue should be equal to original");
 
-    QueueINT_destroy(&other);
+    QueueUINT_destroy(&other);
 }
 
 void test_move()
 {
-    int val = 0;
-    QueueINT_insert(&g_customQueueINTInstance, &val);
-    QueueINT_insert(&g_customQueueINTInstance, &val);
-    QueueINT_insert(&g_customQueueINTInstance, &val);
+    myuint_t val = 0;
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
+    QueueUINT_insert(&g_customQueueUINTInstance, &val);
 
-    QueueINT original_copy = QueueINT_create();
-    QueueINT_copy(&original_copy, &g_customQueueINTInstance);
+    QueueUINT original_copy = QueueUINT_create();
+    QueueUINT_copy(&original_copy, &g_customQueueUINTInstance);
 
-    QueueINT other = QueueINT_create();
-    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should NOT be equal to original");
+    QueueUINT other = QueueUINT_create();
+    TEST_ASSERT_FALSE_MESSAGE(QueueUINT_equals(&other, &g_customQueueUINTInstance), "Other queue should NOT be equal to original");
 
-    QueueINT_move(&other, &g_customQueueINTInstance);
-    TEST_ASSERT_FALSE_MESSAGE(QueueINT_equals(&other, &g_customQueueINTInstance), "Other queue should STILL NOT be equal to original");
-    TEST_ASSERT_TRUE_MESSAGE(QueueINT_equals(&other, &original_copy),"Other queue should be equal to original copy");
+    QueueUINT_move(&other, &g_customQueueUINTInstance);
+    TEST_ASSERT_FALSE_MESSAGE(QueueUINT_equals(&other, &g_customQueueUINTInstance), "Other queue should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(QueueUINT_equals(&other, &original_copy),"Other queue should be equal to original copy");
 
-    QueueINT_destroy(&other);
-    QueueINT_destroy(&original_copy);
+    QueueUINT_destroy(&other);
+    QueueUINT_destroy(&original_copy);
 }
 
 

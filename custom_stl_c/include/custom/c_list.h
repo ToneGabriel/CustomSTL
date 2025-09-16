@@ -90,10 +90,7 @@ static bool _C_PUBLIC_MEMBER(LIST_ITERATOR_NAME, equals)(LIST_ITERATOR_NAME* lef
     LIST_NAME,                                                                                                                                              \
     LIST_ITERATOR_NAME,                                                                                                                                     \
     NODE_NAME,                                                                                                                                              \
-    TYPE,                                                                                                                                                   \
-    TYPE_REF_EQUALS_FUNC,                                                                                                                                   \
-    TYPE_REF_COPY_FUNC,                                                                                                                                     \
-    TYPE_REF_DESTROY_FUNC                                                                                                                                   \
+    TYPE                                                                                                                                                    \
 )                                                                                                                                                           \
                                                                                                                                                             \
 static LIST_NAME            _C_PUBLIC_MEMBER(LIST_NAME, create)();                                                                                          \
@@ -202,7 +199,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, push_back)(LIST_NAME* list, const TYPE* 
 {                                                                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                                         \
     NODE_NAME* new_node = _C_PUBLIC_MEMBER(NODE_NAME, create)();                                                                                            \
-    if (NULL != item) TYPE_REF_COPY_FUNC(&new_node->value, item);                                                                                           \
+    if (NULL != item) _C_PUBLIC_MEMBER(TYPE, copy)(&new_node->value, item);                                                                                 \
     _C_PRIVATE_MEMBER(LIST_NAME, link_node_before)(list, list->head, new_node);                                                                             \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -210,7 +207,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, push_front)(LIST_NAME* list, const TYPE*
 {                                                                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != list, "List is NULL");                                                                                                         \
     NODE_NAME* new_node = _C_PUBLIC_MEMBER(NODE_NAME, create)();                                                                                            \
-    if (NULL != item) TYPE_REF_COPY_FUNC(&new_node->value, item);                                                                                           \
+    if (NULL != item) _C_PUBLIC_MEMBER(TYPE, copy)(&new_node->value, item);                                                                                 \
     _C_PRIVATE_MEMBER(LIST_NAME, link_node_before)(list, list->head->next, new_node);                                                                       \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -220,7 +217,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, pop_back)(LIST_NAME* list)              
     if (0 == list->size) return;                                                                                                                            \
     NODE_NAME* junk_node = list->head->prev;                                                                                                                \
     _C_PRIVATE_MEMBER(LIST_NAME, unlink_node)(list, junk_node);                                                                                             \
-    TYPE_REF_DESTROY_FUNC(&junk_node->value);                                                                                                               \
+    _C_PUBLIC_MEMBER(TYPE, destroy)(&junk_node->value);                                                                                                     \
     _C_PUBLIC_MEMBER(NODE_NAME, destroy)(junk_node);                                                                                                        \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -230,7 +227,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, pop_front)(LIST_NAME* list)             
     if (0 == list->size) return;                                                                                                                            \
     NODE_NAME* junk_node = list->head->next;                                                                                                                \
     _C_PRIVATE_MEMBER(LIST_NAME, unlink_node)(list, junk_node);                                                                                             \
-    TYPE_REF_DESTROY_FUNC(&junk_node->value);                                                                                                               \
+    _C_PUBLIC_MEMBER(TYPE, destroy)(&junk_node->value);                                                                                                     \
     _C_PUBLIC_MEMBER(NODE_NAME, destroy)(junk_node);                                                                                                        \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -271,10 +268,7 @@ static LIST_ITERATOR_NAME _C_PUBLIC_MEMBER(LIST_NAME, end)(LIST_NAME* list)     
 
 #define DEFINE_GENERIC_LIST(                                                                                            \
     LIST_NAME_PUBLIC_PREFIX,                                                                                            \
-    TYPE,                                                                                                               \
-    TYPE_REF_EQUALS_FUNC,                                                                                               \
-    TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DESTROY_FUNC                                                                                               \
+    TYPE                                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
 DEFINE_GENERIC_DOUBLE_NODE(                                                                                             \
@@ -298,10 +292,7 @@ _DEFINE_GENERIC_LIST_IMPL(                                                      
     LIST_NAME_PUBLIC_PREFIX,                                                                                            \
     _C_PUBLIC_MEMBER(LIST_NAME_PUBLIC_PREFIX, Iterator), /*same as above*/                                              \
     _C_PRIVATE_MEMBER(LIST_NAME_PUBLIC_PREFIX, DoubleNode), /*same as above*/                                           \
-    TYPE,                                                                                                               \
-    TYPE_REF_EQUALS_FUNC,                                                                                               \
-    TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DESTROY_FUNC                                                                                               \
+    TYPE                                                                                                                \
 )                                                                                                                       \
 
 

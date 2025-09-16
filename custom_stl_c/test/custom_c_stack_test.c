@@ -5,26 +5,21 @@
 // Setup ==========================
 
 
-DEFINE_GENERIC_STACK(
-    StackINT,
-    int,
-    DEFAULT_TYPE_REF_EQUALS,
-    DEFAULT_TYPE_REF_COPY,
-    DEFAULT_TYPE_REF_DESTROY
-)
+DEFINE_DEFAULT_TYPE_OPERATIONS(unsigned int, myuint_t)
+DEFINE_GENERIC_STACK(StackUINT, myuint_t)
 
 
-static StackINT g_customStackINTInstance;
+static StackUINT g_customStackUINTInstance;
 
 
 void setUp()
 {
-    g_customStackINTInstance = StackINT_create();
+    g_customStackUINTInstance = StackUINT_create();
 }
 
 void tearDown()
 {
-    StackINT_destroy(&g_customStackINTInstance);
+    StackUINT_destroy(&g_customStackUINTInstance);
 }
 
 
@@ -33,45 +28,45 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_TRUE_MESSAGE(StackINT_empty(&g_customStackINTInstance), "Stack should be empty");
-    TEST_ASSERT_EQUAL_MESSAGE(0, StackINT_size(&g_customStackINTInstance), "Initial size should be 0");
+    TEST_ASSERT_TRUE_MESSAGE(StackUINT_empty(&g_customStackUINTInstance), "Stack should be empty");
+    TEST_ASSERT_EQUAL_MESSAGE(0, StackUINT_size(&g_customStackUINTInstance), "Initial size should be 0");
 }
 
 void test_copy()
 {
-    int val = 0;
-    StackINT_insert(&g_customStackINTInstance, &val);
-    StackINT_insert(&g_customStackINTInstance, &val);
-    StackINT_insert(&g_customStackINTInstance, &val);
+    myuint_t val = 0;
+    StackUINT_insert(&g_customStackUINTInstance, &val);
+    StackUINT_insert(&g_customStackUINTInstance, &val);
+    StackUINT_insert(&g_customStackUINTInstance, &val);
 
-    StackINT other = StackINT_create();
-    TEST_ASSERT_FALSE_MESSAGE(StackINT_equals(&other, &g_customStackINTInstance), "Other stack should NOT be equal to original");
+    StackUINT other = StackUINT_create();
+    TEST_ASSERT_FALSE_MESSAGE(StackUINT_equals(&other, &g_customStackUINTInstance), "Other stack should NOT be equal to original");
 
-    StackINT_copy(&other, &g_customStackINTInstance);
-    TEST_ASSERT_TRUE_MESSAGE(StackINT_equals(&other, &g_customStackINTInstance), "Other stack should be equal to original");
+    StackUINT_copy(&other, &g_customStackUINTInstance);
+    TEST_ASSERT_TRUE_MESSAGE(StackUINT_equals(&other, &g_customStackUINTInstance), "Other stack should be equal to original");
 
-    StackINT_destroy(&other);
+    StackUINT_destroy(&other);
 }
 
 void test_move()
 {
-    int val = 0;
-    StackINT_insert(&g_customStackINTInstance, &val);
-    StackINT_insert(&g_customStackINTInstance, &val);
-    StackINT_insert(&g_customStackINTInstance, &val);
+    myuint_t val = 0;
+    StackUINT_insert(&g_customStackUINTInstance, &val);
+    StackUINT_insert(&g_customStackUINTInstance, &val);
+    StackUINT_insert(&g_customStackUINTInstance, &val);
 
-    StackINT original_copy = StackINT_create();
-    StackINT_copy(&original_copy, &g_customStackINTInstance);
+    StackUINT original_copy = StackUINT_create();
+    StackUINT_copy(&original_copy, &g_customStackUINTInstance);
 
-    StackINT other = StackINT_create();
-    TEST_ASSERT_FALSE_MESSAGE(StackINT_equals(&other, &g_customStackINTInstance), "Other stack should NOT be equal to original");
+    StackUINT other = StackUINT_create();
+    TEST_ASSERT_FALSE_MESSAGE(StackUINT_equals(&other, &g_customStackUINTInstance), "Other stack should NOT be equal to original");
 
-    StackINT_move(&other, &g_customStackINTInstance);
-    TEST_ASSERT_FALSE_MESSAGE(StackINT_equals(&other, &g_customStackINTInstance), "Other stack should STILL NOT be equal to original");
-    TEST_ASSERT_TRUE_MESSAGE(StackINT_equals(&other, &original_copy), "Other stack should be equal to original copy");
+    StackUINT_move(&other, &g_customStackUINTInstance);
+    TEST_ASSERT_FALSE_MESSAGE(StackUINT_equals(&other, &g_customStackUINTInstance), "Other stack should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(StackUINT_equals(&other, &original_copy), "Other stack should be equal to original copy");
 
-    StackINT_destroy(&other);
-    StackINT_destroy(&original_copy);
+    StackUINT_destroy(&other);
+    StackUINT_destroy(&original_copy);
 }
 
 

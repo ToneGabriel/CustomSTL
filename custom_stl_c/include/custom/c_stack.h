@@ -49,7 +49,7 @@ static bool         _C_PUBLIC_MEMBER(STACK_NAME, equals)(const STACK_NAME* left,
 static STACK_NAME _C_PUBLIC_MEMBER(STACK_NAME, create)()                                                        \
 {                                                                                                               \
     STACK_NAME stack = {                                                                                        \
-        .vec = _C_PUBLIC_MEMBER(STACK_VECTOR_HELPER_NAME, create)(GENERIC_VECTOR_DEFAULT_CAPACITY)              \
+        .vec = _C_PUBLIC_MEMBER(STACK_VECTOR_HELPER_NAME, create)()                                             \
     };                                                                                                          \
     return stack;                                                                                               \
 }                                                                                                               \
@@ -180,24 +180,15 @@ static bool _C_PUBLIC_MEMBER(STACK_NAME, equals)(const STACK_NAME* left, const S
  *
  * @param STACK_NAME_PUBLIC_PREFIX      Public prefix (e.g. `MyStack` → `MyStack_create`)
  * @param TYPE                          The element type stored in the stack
- * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
- * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DESTROY_FUNC         Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_STACK(                                                                                       \
     STACK_NAME_PUBLIC_PREFIX,                                                                                       \
-    TYPE,                                                                                                           \
-    TYPE_REF_EQUALS_FUNC,                                                                                           \
-    TYPE_REF_COPY_FUNC,                                                                                             \
-    TYPE_REF_DESTROY_FUNC                                                                                           \
+    TYPE                                                                                                            \
 )                                                                                                                   \
                                                                                                                     \
 DEFINE_GENERIC_VECTOR(                                                                                              \
     _C_PRIVATE_MEMBER(STACK_NAME_PUBLIC_PREFIX, Vector),                                                            \
-    TYPE,                                                                                                           \
-    TYPE_REF_EQUALS_FUNC,                                                                                           \
-    TYPE_REF_COPY_FUNC,                                                                                             \
-    TYPE_REF_DESTROY_FUNC                                                                                           \
+    TYPE                                                                                                            \
 )                                                                                                                   \
                                                                                                                     \
 _DEFINE_GENERIC_STACK_IMPL(                                                                                         \

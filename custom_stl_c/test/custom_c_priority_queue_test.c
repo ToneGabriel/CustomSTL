@@ -5,27 +5,21 @@
 // Setup ==========================
 
 
-DEFINE_GENERIC_PRIORITY_QUEUE(
-    IntPQ,
-    int,
-    DEFAULT_TYPE_REF_LESS,
-    DEFAULT_TYPE_REF_EQUALS,
-    DEFAULT_TYPE_REF_COPY,
-    DEFAULT_TYPE_REF_DESTROY
-)
+DEFINE_DEFAULT_TYPE_OPERATIONS(unsigned int, myuint_t)
+DEFINE_GENERIC_PRIORITY_QUEUE(UIntPQ, myuint_t, myuint_t_less)
 
 
-static IntPQ g_customIntPQInstance;
+static UIntPQ g_customUIntPQInstance;
 
 
 void setUp()
 {
-    g_customIntPQInstance = IntPQ_create();
+    g_customUIntPQInstance = UIntPQ_create();
 }
 
 void tearDown()
 {
-    IntPQ_destroy(&g_customIntPQInstance);
+    UIntPQ_destroy(&g_customUIntPQInstance);
 }
 
 
@@ -34,45 +28,45 @@ void tearDown()
 
 void test_default_create()
 {
-    TEST_ASSERT_TRUE_MESSAGE(IntPQ_empty(&g_customIntPQInstance), "PQ should be empty");
-    TEST_ASSERT_EQUAL_MESSAGE(0, IntPQ_size(&g_customIntPQInstance), "PQ initial size should be 0");
+    TEST_ASSERT_TRUE_MESSAGE(UIntPQ_empty(&g_customUIntPQInstance), "PQ should be empty");
+    TEST_ASSERT_EQUAL_MESSAGE(0, UIntPQ_size(&g_customUIntPQInstance), "PQ initial size should be 0");
 }
 
 void test_copy()
 {
-    int val = 0;
-    IntPQ_insert(&g_customIntPQInstance, &val);
-    IntPQ_insert(&g_customIntPQInstance, &val);
-    IntPQ_insert(&g_customIntPQInstance, &val);
+    myuint_t val = 0;
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
 
-    IntPQ other = IntPQ_create();
-    TEST_ASSERT_FALSE_MESSAGE(IntPQ_equals(&other, &g_customIntPQInstance), "Other PQ should NOT be equal to original");
+    UIntPQ other = UIntPQ_create();
+    TEST_ASSERT_FALSE_MESSAGE(UIntPQ_equals(&other, &g_customUIntPQInstance), "Other PQ should NOT be equal to original");
 
-    IntPQ_copy(&other, &g_customIntPQInstance);
-    TEST_ASSERT_TRUE_MESSAGE(IntPQ_equals(&other, &g_customIntPQInstance), "Other PQ should be equal to original");
+    UIntPQ_copy(&other, &g_customUIntPQInstance);
+    TEST_ASSERT_TRUE_MESSAGE(UIntPQ_equals(&other, &g_customUIntPQInstance), "Other PQ should be equal to original");
 
-    IntPQ_destroy(&other);
+    UIntPQ_destroy(&other);
 }
 
 void test_move()
 {
-    int val = 0;
-    IntPQ_insert(&g_customIntPQInstance, &val);
-    IntPQ_insert(&g_customIntPQInstance, &val);
-    IntPQ_insert(&g_customIntPQInstance, &val);
+    myuint_t val = 0;
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
+    UIntPQ_insert(&g_customUIntPQInstance, &val);
 
-    IntPQ original_copy = IntPQ_create();
-    IntPQ_copy(&original_copy, &g_customIntPQInstance);
+    UIntPQ original_copy = UIntPQ_create();
+    UIntPQ_copy(&original_copy, &g_customUIntPQInstance);
 
-    IntPQ other = IntPQ_create();
-    TEST_ASSERT_FALSE_MESSAGE(IntPQ_equals(&other, &g_customIntPQInstance), "Other PQ should NOT be equal to original");
+    UIntPQ other = UIntPQ_create();
+    TEST_ASSERT_FALSE_MESSAGE(UIntPQ_equals(&other, &g_customUIntPQInstance), "Other PQ should NOT be equal to original");
 
-    IntPQ_move(&other, &g_customIntPQInstance);
-    TEST_ASSERT_FALSE_MESSAGE(IntPQ_equals(&other, &g_customIntPQInstance), "Other PQ should STILL NOT be equal to original");
-    TEST_ASSERT_TRUE_MESSAGE(IntPQ_equals(&other, &original_copy), "Other PQ should be equal to original copy");
+    UIntPQ_move(&other, &g_customUIntPQInstance);
+    TEST_ASSERT_FALSE_MESSAGE(UIntPQ_equals(&other, &g_customUIntPQInstance), "Other PQ should STILL NOT be equal to original");
+    TEST_ASSERT_TRUE_MESSAGE(UIntPQ_equals(&other, &original_copy), "Other PQ should be equal to original copy");
 
-    IntPQ_destroy(&other);
-    IntPQ_destroy(&original_copy);
+    UIntPQ_destroy(&other);
+    UIntPQ_destroy(&original_copy);
 }
 
 

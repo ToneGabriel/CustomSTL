@@ -8,13 +8,7 @@
 #define DEFINE_GENERIC_PAIR(                                                                                \
     PAIR_NAME,                                                                                              \
     TYPE_1,                                                                                                 \
-    TYPE_1_REF_COPY_FUNC,                                                                                   \
-    TYPE_1_REF_MOVE_FUNC,                                                                                   \
-    TYPE_1_REF_DELETE_FUNC,                                                                                 \
-    TYPE_2,                                                                                                 \
-    TYPE_2_REF_COPY_FUNC,                                                                                   \
-    TYPE_2_REF_MOVE_FUNC,                                                                                   \
-    TYPE_2_REF_DELETE_FUNC                                                                                  \
+    TYPE_2                                                                                                  \
 )                                                                                                           \
                                                                                                             \
 typedef struct                                                                                              \
@@ -32,16 +26,16 @@ static bool         _C_PUBLIC_MEMBER(PAIR_NAME, equals)(const PAIR_NAME* left, c
 static PAIR_NAME _C_PUBLIC_MEMBER(PAIR_NAME, create)(const TYPE_1* first, const TYPE_2* second)             \
 {                                                                                                           \
     PAIR_NAME pair = {};                                                                                    \
-    TYPE_1_REF_COPY_FUNC(&pair.first, first);                                                               \
-    TYPE_2_REF_COPY_FUNC(&pair.second, second);                                                             \
+    _C_PUBLIC_MEMBER(TYPE_1, copy)(&pair.first, first);                                                     \
+    _C_PUBLIC_MEMBER(TYPE_2, copy)(&pair.second, second);                                                   \
     return pair;                                                                                            \
 }                                                                                                           \
                                                                                                             \
 static void _C_PUBLIC_MEMBER(PAIR_NAME, destroy)(PAIR_NAME* pair)                                           \
 {                                                                                                           \
     _C_CUSTOM_ASSERT(NULL != pair, "Pair is NULL");                                                         \
-    TYPE_1_REF_DELETE_FUNC(&pair->first);                                                                   \
-    TYPE_2_REF_DELETE_FUNC(&pair->second);                                                                  \
+    _C_PUBLIC_MEMBER(TYPE_1, destroy)(&pair->first);                                                        \
+    _C_PUBLIC_MEMBER(TYPE_2, destroy)(&pair->second);                                                       \
 }                                                                                                           \
                                                                                                             \
 static void _C_PUBLIC_MEMBER(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* source)                     \
@@ -49,8 +43,8 @@ static void _C_PUBLIC_MEMBER(PAIR_NAME, copy)(PAIR_NAME* dest, const PAIR_NAME* 
     _C_CUSTOM_ASSERT(NULL != dest, "Pair dest is NULL");                                                    \
     _C_CUSTOM_ASSERT(NULL != source, "Pair source is NULL");                                                \
     if (dest == source) return;                                                                             \
-    TYPE_1_REF_COPY_FUNC(&dest->first, &source->first);                                                     \
-    TYPE_2_REF_COPY_FUNC(&dest->second, &source->second);                                                   \
+    _C_PUBLIC_MEMBER(TYPE_1, copy)(&dest->first, &source->first);                                           \
+    _C_PUBLIC_MEMBER(TYPE_2, copy)(&dest->second, &source->second);                                         \
 }                                                                                                           \
                                                                                                             \
 static void _C_PUBLIC_MEMBER(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source)                           \
@@ -58,15 +52,15 @@ static void _C_PUBLIC_MEMBER(PAIR_NAME, move)(PAIR_NAME* dest, PAIR_NAME* source
     _C_CUSTOM_ASSERT(NULL != dest, "Pair dest is NULL");                                                    \
     _C_CUSTOM_ASSERT(NULL != source, "Pair source is NULL");                                                \
     if (dest == source) return;                                                                             \
-    TYPE_1_REF_MOVE_FUNC(&dest->first, &source->first);                                                     \
-    TYPE_2_REF_MOVE_FUNC(&dest->second, &source->second);                                                   \
+    _C_PUBLIC_MEMBER(TYPE_1, move)(&dest->first, &source->first);                                           \
+    _C_PUBLIC_MEMBER(TYPE_2, move)(&dest->second, &source->second);                                         \
 }                                                                                                           \
                                                                                                             \
 static bool _C_PUBLIC_MEMBER(PAIR_NAME, equals)(const PAIR_NAME* left, const PAIR_NAME* right)              \
 {                                                                                                           \
-    return false;                                                                                           \
+    return  _C_PUBLIC_MEMBER(TYPE_1, equals)(&left->first, &right->first) &&                                \
+            _C_PUBLIC_MEMBER(TYPE_2, equals)(&left->second, &right->second);                                \
 }                                                                                                           \
 
-// return left->first == right->first && left->second == right->second;
 
 #endif // C_PAIR_H

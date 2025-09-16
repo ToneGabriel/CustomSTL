@@ -16,14 +16,12 @@
  * @param PQ_HEAPIFY_HELPER_NAME    Name prefix of the helper heapify functions (defined beforehand via another macro)
  * @param PQ_VECTOR_HELPER_NAME     Name prefix for the vector implementation used internally (defined beforehand via another macro)
  * @param TYPE                      Type of elements to be stored in the priority queue
- * @param TYPE_REF_COPY_FUNC        Function used to copy one `TYPE*` to another `TYPE*`
  */
 #define _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                            \
     PQ_NAME,                                                                                                                            \
     PQ_HEAPIFY_HELPER_NAME,                                                                                                             \
     PQ_VECTOR_HELPER_NAME,                                                                                                              \
-    TYPE,                                                                                                                               \
-    TYPE_REF_COPY_FUNC                                                                                                                  \
+    TYPE                                                                                                                                \
 )                                                                                                                                       \
                                                                                                                                         \
 /**                                                                                                                                     \
@@ -54,7 +52,7 @@ static bool     _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_
 static PQ_NAME _C_PUBLIC_MEMBER(PQ_NAME, create)()                                                                                      \
 {                                                                                                                                       \
     PQ_NAME pq = {                                                                                                                      \
-        .vec = _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, create)(GENERIC_VECTOR_DEFAULT_CAPACITY)                                         \
+        .vec = _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, create)()                                                                        \
     };                                                                                                                                  \
     return pq;                                                                                                                          \
 }                                                                                                                                       \
@@ -150,7 +148,7 @@ static void _C_PUBLIC_MEMBER(PQ_NAME, pop)(PQ_NAME* pq)                         
 {                                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != pq, "Priority Queue is NULL");                                                                             \
     if (_C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, empty)(&pq->vec)) return;                                                               \
-    TYPE_REF_COPY_FUNC(                                                                                                                 \
+    _C_PUBLIC_MEMBER(TYPE, move)(                                                                                                       \
         _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, 0),                                                               \
         _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, element_at)(&pq->vec, _C_PUBLIC_MEMBER(PQ_VECTOR_HELPER_NAME, size)(&pq->vec) - 1)      \
     );                                                                                                                                  \
@@ -204,40 +202,29 @@ static bool _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME
  * @param PRIORITY_QUEUE_NAME_PUBLIC_PREFIX   Public prefix (e.g. `MyPQ` → `MyPQ_create`)
  * @param TYPE                                The element type stored in the priority queue
  * @param TYPE_REF_COMPARE_FUNC               Function comparing two `TYPE*` (for priority)
- * @param TYPE_REF_EQUALS_FUNC                Function comparing two `TYPE*` for equality
- * @param TYPE_REF_COPY_FUNC                  Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DESTROY_FUNC               Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_PRIORITY_QUEUE(                                                                                      \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                                                      \
     TYPE,                                                                                                                   \
-    TYPE_REF_COMPARE_FUNC,                                                                                                  \
-    TYPE_REF_EQUALS_FUNC,                                                                                                   \
-    TYPE_REF_COPY_FUNC,                                                                                                     \
-    TYPE_REF_DESTROY_FUNC                                                                                                   \
+    TYPE_REF_COMPARE_FUNC                                                                                                   \
 )                                                                                                                           \
                                                                                                                             \
 DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                                           \
     _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Heap),                                                             \
     TYPE,                                                                                                                   \
-    TYPE_REF_COMPARE_FUNC,                                                                                                  \
-    TYPE_REF_COPY_FUNC                                                                                                      \
+    TYPE_REF_COMPARE_FUNC                                                                                                   \
 )                                                                                                                           \
                                                                                                                             \
 DEFINE_GENERIC_VECTOR(                                                                                                      \
     _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Vector),                                                           \
-    TYPE,                                                                                                                   \
-    TYPE_REF_EQUALS_FUNC,                                                                                                   \
-    TYPE_REF_COPY_FUNC,                                                                                                     \
-    TYPE_REF_DESTROY_FUNC                                                                                                   \
+    TYPE                                                                                                                    \
 )                                                                                                                           \
                                                                                                                             \
 _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                        \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                                                      \
     _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Heap), /*same as above*/                                           \
     _C_PRIVATE_MEMBER(PRIORITY_QUEUE_NAME_PUBLIC_PREFIX, Vector), /*same as above*/                                         \
-    TYPE,                                                                                                                   \
-    TYPE_REF_COPY_FUNC                                                                                                      \
+    TYPE                                                                                                                    \
 )                                                                                                                           \
 
 

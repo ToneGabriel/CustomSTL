@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 
@@ -29,6 +30,9 @@ static inline void __Assert(bool expr, const char* msg, const char* expected, co
         // assert OK - do nothing
     }
 }
+
+
+// =====================================================================================================================
 
 
 // Helper macros to bind from 1 to 9 args
@@ -63,9 +67,13 @@ _C_IDENTIFIER_BIND_IMPL_SELECTOR_HELPER(        \
 // Macro to bind 1 to 9 args
 #define _C_IDENTIFIER_BIND(...) _C_IDENTIFIER_BIND_IMPL_SELECTOR(__VA_ARGS__)(__VA_ARGS__)
 
+
+// =====================================================================================================================
+
+
 // Member identifier binders
-#define _C_PUBLIC_MEMBER(ContextName, MemberName) _C_IDENTIFIER_BIND(ContextName, MemberName)
-#define _C_PRIVATE_MEMBER(ContextName, MemberName) _C_IDENTIFIER_BIND(ContextName, PRIVATE, MemberName)
+#define _C_PUBLIC_MEMBER(ContextName, MemberName)   _C_IDENTIFIER_BIND(ContextName, MemberName)
+#define _C_PRIVATE_MEMBER(ContextName, MemberName)  _C_IDENTIFIER_BIND(ContextName, PRIVATE, MemberName)
 
 
 #endif  // _C_STLCORE_H

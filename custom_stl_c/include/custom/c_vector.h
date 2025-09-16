@@ -134,20 +134,15 @@ static bool _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME*
  * @param VECTOR_NAME               Public-facing name prefix for struct and functions
  * @param VECTOR_ITERATOR_NAME      Public-facing name prefix for iterator struct and functions
  * @param TYPE                      Type of elements to be stored in the vector.
- * @param TYPE_REF_EQUALS_FUNC      Function comparing two `TYPE*` for equality.
- * @param TYPE_REF_COPY_FUNC        Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DESTROY_FUNC      Function that deletes/frees the internal data of a `TYPE*`
  */
 #define _DEFINE_GENERIC_VECTOR_IMPL(                                                                                    \
     VECTOR_NAME,                                                                                                        \
     VECTOR_ITERATOR_NAME,                                                                                               \
-    TYPE,                                                                                                               \
-    TYPE_REF_EQUALS_FUNC,                                                                                               \
-    TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DESTROY_FUNC                                                                                               \
+    TYPE                                                                                                                \
 )                                                                                                                       \
                                                                                                                         \
-static VECTOR_NAME          _C_PUBLIC_MEMBER(VECTOR_NAME, create)(size_t capacity);                                     \
+static VECTOR_NAME          _C_PUBLIC_MEMBER(VECTOR_NAME, create)();                                                    \
+static VECTOR_NAME          _C_PUBLIC_MEMBER(VECTOR_NAME, create_capacity)(size_t capacity);                            \
 static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(VECTOR_NAME* vec);                                   \
 static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, clear)(VECTOR_NAME* vec);                                     \
 static void                 _C_PUBLIC_MEMBER(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_NAME* source);          \
@@ -166,11 +161,20 @@ static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, begin)(VECTOR_NAME* ve
 static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, end)(VECTOR_NAME* vec);                                       \
                                                                                                                         \
 /**                                                                                                                     \
+ * @brief Creates a vector struct and allocates dynamic array with default capacity.                                    \
+ * @return A new instance of VECTOR_NAME.                                                                               \
+ */                                                                                                                     \
+static VECTOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, create)()                                                              \
+{                                                                                                                       \
+    return _C_PUBLIC_MEMBER(VECTOR_NAME, create_capacity)(GENERIC_VECTOR_DEFAULT_CAPACITY);                             \
+}                                                                                                                       \
+                                                                                                                        \
+/**                                                                                                                     \
  * @brief Creates a vector struct and allocates dynamic array.                                                          \
  * @param capacity Initial capacity of the vector.                                                                      \
  * @return A new instance of VECTOR_NAME.                                                                               \
  */                                                                                                                     \
-static VECTOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, create)(size_t capacity)                                               \
+static VECTOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, create_capacity)(size_t capacity)                                      \
 {                                                                                                                       \
     size_t newCapacity = capacity > GENERIC_VECTOR_DEFAULT_CAPACITY ? capacity : GENERIC_VECTOR_DEFAULT_CAPACITY;       \
     TYPE* arr = (TYPE*)malloc(sizeof(TYPE) * newCapacity);                                                              \
@@ -192,7 +196,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(VECTOR_NAME* vec)            
     if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
-        TYPE_REF_DESTROY_FUNC(vec->first + i);                                                                          \
+        _C_PUBLIC_MEMBER(TYPE, destroy)(vec->first + i);                                                                \
     free(vec->first);                                                                                                   \
     vec->first = vec->last = vec->final = NULL;                                                                         \
 }                                                                                                                       \
@@ -207,7 +211,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, clear)(VECTOR_NAME* vec)              
     if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
-        TYPE_REF_DESTROY_FUNC(vec->first + i);                                                                          \
+        _C_PUBLIC_MEMBER(TYPE, destroy)(vec->first + i);                                                                \
     vec->last = vec->first;                                                                                             \
 }                                                                                                                       \
                                                                                                                         \
@@ -225,9 +229,9 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, copy)(VECTOR_NAME* dest, const VECTOR_
     if (NULL == source->first) return;                                                                                  \
     size_t newCapacity = _C_PUBLIC_MEMBER(VECTOR_NAME, capacity)(source);                                               \
     size_t newSize = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(source);                                                       \
-    *dest = _C_PUBLIC_MEMBER(VECTOR_NAME, create)(newCapacity);                                                         \
+    *dest = _C_PUBLIC_MEMBER(VECTOR_NAME, create_capacity)(newCapacity);                                                \
     for (size_t i = 0; i < newSize; ++i)                                                                                \
-        TYPE_REF_COPY_FUNC(dest->first + i, source->first + i);                                                         \
+        _C_PUBLIC_MEMBER(TYPE, copy)(dest->first + i, source->first + i);                                               \
     dest->last = dest->first + newSize;                                                                                 \
 }                                                                                                                       \
                                                                                                                         \
@@ -309,7 +313,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, push_back)(VECTOR_NAME* vec, const TYP
         vec->last = vec->first + oldSize;                                                                               \
         vec->final = vec->first + newCapacity;                                                                          \
     }                                                                                                                   \
-    TYPE_REF_COPY_FUNC(vec->last++, item);                                                                              \
+    _C_PUBLIC_MEMBER(TYPE, copy)(vec->last++, item);                                                                    \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -320,7 +324,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)           
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return;                                                                                \
-    TYPE_REF_DESTROY_FUNC(--vec->last);                                                                                 \
+    _C_PUBLIC_MEMBER(TYPE, destroy)(--vec->last);                                                                       \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -374,7 +378,7 @@ static bool _C_PUBLIC_MEMBER(VECTOR_NAME, equals)(const VECTOR_NAME* left, const
         _C_PUBLIC_MEMBER(VECTOR_NAME, size)(right)) return false;                                                       \
     size_t s = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(left);                                                               \
     for (size_t i = 0; i < s; ++i)                                                                                      \
-        if (!TYPE_REF_EQUALS_FUNC(left->first + i, right->first + i)) return false;                                     \
+        if (!_C_PUBLIC_MEMBER(TYPE, equals)(left->first + i, right->first + i)) return false;                           \
     return true;                                                                                                        \
 }                                                                                                                       \
                                                                                                                         \
@@ -406,23 +410,17 @@ static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, end)(VECTOR_NAME* vec)
  *
  * This macro instantiates:
  * 
- * - The vector API (   `_create`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
+ * - The vector API (   `_create`, `_create_capacity`, `_destroy`, `_clear`, `_copy`, `_move`, `_data`, `_size`, `_capacity`, `_empty`,
  *                      `_push_back`, `_pop_back`, `_element_front`, `_element_back`, `_element_at`, `_equals`,
  *                      `_begin`, `_end`
  *                  )
  * 
  * @param VECTOR_NAME_PUBLIC_PREFIX     The public name prefix for generated vector (e.g., `MyVec` -> `MyVec_create`, etc.).
  * @param TYPE                          Type stored in the vector.
- * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
- * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DESTROY_FUNC         Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_VECTOR(                                                                  \
     VECTOR_NAME_PUBLIC_PREFIX,                                                                  \
-    TYPE,                                                                                       \
-    TYPE_REF_EQUALS_FUNC,                                                                       \
-    TYPE_REF_COPY_FUNC,                                                                         \
-    TYPE_REF_DESTROY_FUNC                                                                       \
+    TYPE                                                                                        \
 )                                                                                               \
                                                                                                 \
 _DEFINE_GENERIC_VECTOR_DATA(                                                                    \
@@ -439,10 +437,7 @@ _DEFINE_GENERIC_VECTOR_ITERATOR(                                                
 _DEFINE_GENERIC_VECTOR_IMPL(                                                                    \
     VECTOR_NAME_PUBLIC_PREFIX,                                                                  \
     _C_PUBLIC_MEMBER(VECTOR_NAME_PUBLIC_PREFIX, Iterator),  /*same as above*/                   \
-    TYPE,                                                                                       \
-    TYPE_REF_EQUALS_FUNC,                                                                       \
-    TYPE_REF_COPY_FUNC,                                                                         \
-    TYPE_REF_DESTROY_FUNC                                                                       \
+    TYPE                                                                                        \
 )                                                                                               \
 
 
