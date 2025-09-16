@@ -182,14 +182,14 @@ static bool _C_PUBLIC_MEMBER(STACK_NAME, equals)(const STACK_NAME* left, const S
  * @param TYPE                          The element type stored in the stack
  * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
  * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC          Function that deletes/frees the internal data of a `TYPE*`
+ * @param TYPE_REF_DESTROY_FUNC         Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_STACK(                                                                                       \
     STACK_NAME_PUBLIC_PREFIX,                                                                                       \
     TYPE,                                                                                                           \
     TYPE_REF_EQUALS_FUNC,                                                                                           \
     TYPE_REF_COPY_FUNC,                                                                                             \
-    TYPE_REF_DELETE_FUNC                                                                                            \
+    TYPE_REF_DESTROY_FUNC                                                                                           \
 )                                                                                                                   \
                                                                                                                     \
 DEFINE_GENERIC_VECTOR(                                                                                              \
@@ -197,7 +197,7 @@ DEFINE_GENERIC_VECTOR(                                                          
     TYPE,                                                                                                           \
     TYPE_REF_EQUALS_FUNC,                                                                                           \
     TYPE_REF_COPY_FUNC,                                                                                             \
-    TYPE_REF_DELETE_FUNC                                                                                            \
+    TYPE_REF_DESTROY_FUNC                                                                                           \
 )                                                                                                                   \
                                                                                                                     \
 _DEFINE_GENERIC_STACK_IMPL(                                                                                         \

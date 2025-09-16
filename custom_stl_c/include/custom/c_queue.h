@@ -182,14 +182,14 @@ static bool _C_PUBLIC_MEMBER(QUEUE_NAME, equals)(const QUEUE_NAME* left, const Q
  * @param TYPE                          The element type stored in the queue
  * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
  * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC          Function that deletes/frees the internal data of a `TYPE*`
+ * @param TYPE_REF_DESTROY_FUNC         Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_QUEUE(                                                                                   \
     QUEUE_NAME_PUBLIC_PREFIX,                                                                                   \
     TYPE,                                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                                       \
     TYPE_REF_COPY_FUNC,                                                                                         \
-    TYPE_REF_DELETE_FUNC                                                                                        \
+    TYPE_REF_DESTROY_FUNC                                                                                       \
 )                                                                                                               \
                                                                                                                 \
 DEFINE_GENERIC_LIST(                                                                                            \
@@ -197,7 +197,7 @@ DEFINE_GENERIC_LIST(                                                            
     TYPE,                                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                                       \
     TYPE_REF_COPY_FUNC,                                                                                         \
-    TYPE_REF_DELETE_FUNC                                                                                        \
+    TYPE_REF_DESTROY_FUNC                                                                                       \
 )                                                                                                               \
                                                                                                                 \
 _DEFINE_GENERIC_QUEUE_IMPL(                                                                                     \

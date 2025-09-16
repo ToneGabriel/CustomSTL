@@ -136,7 +136,7 @@ static bool _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME*
  * @param TYPE                      Type of elements to be stored in the vector.
  * @param TYPE_REF_EQUALS_FUNC      Function comparing two `TYPE*` for equality.
  * @param TYPE_REF_COPY_FUNC        Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC      Function that deletes/frees the internal data of a `TYPE*`
+ * @param TYPE_REF_DESTROY_FUNC      Function that deletes/frees the internal data of a `TYPE*`
  */
 #define _DEFINE_GENERIC_VECTOR_IMPL(                                                                                    \
     VECTOR_NAME,                                                                                                        \
@@ -144,7 +144,7 @@ static bool _C_PUBLIC_MEMBER(VECTOR_ITERATOR_NAME, equals)(VECTOR_ITERATOR_NAME*
     TYPE,                                                                                                               \
     TYPE_REF_EQUALS_FUNC,                                                                                               \
     TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DELETE_FUNC                                                                                                \
+    TYPE_REF_DESTROY_FUNC                                                                                               \
 )                                                                                                                       \
                                                                                                                         \
 static VECTOR_NAME          _C_PUBLIC_MEMBER(VECTOR_NAME, create)(size_t capacity);                                     \
@@ -192,7 +192,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, destroy)(VECTOR_NAME* vec)            
     if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
-        TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
+        TYPE_REF_DESTROY_FUNC(vec->first + i);                                                                          \
     free(vec->first);                                                                                                   \
     vec->first = vec->last = vec->final = NULL;                                                                         \
 }                                                                                                                       \
@@ -207,7 +207,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, clear)(VECTOR_NAME* vec)              
     if (NULL == vec->first) return;                                                                                     \
     size_t vec_size = _C_PUBLIC_MEMBER(VECTOR_NAME, size)(vec);                                                         \
     for (size_t i = 0; i < vec_size; ++i)                                                                               \
-        TYPE_REF_DELETE_FUNC(vec->first + i);                                                                           \
+        TYPE_REF_DESTROY_FUNC(vec->first + i);                                                                          \
     vec->last = vec->first;                                                                                             \
 }                                                                                                                       \
                                                                                                                         \
@@ -320,7 +320,7 @@ static void _C_PUBLIC_MEMBER(VECTOR_NAME, pop_back)(VECTOR_NAME* vec)           
 {                                                                                                                       \
     _C_CUSTOM_ASSERT(NULL != vec, "Vector is NULL");                                                                    \
     if (vec->first == vec->last) return;                                                                                \
-    TYPE_REF_DELETE_FUNC(--vec->last);                                                                                  \
+    TYPE_REF_DESTROY_FUNC(--vec->last);                                                                                 \
 }                                                                                                                       \
                                                                                                                         \
 /**                                                                                                                     \
@@ -415,14 +415,14 @@ static VECTOR_ITERATOR_NAME _C_PUBLIC_MEMBER(VECTOR_NAME, end)(VECTOR_NAME* vec)
  * @param TYPE                          Type stored in the vector.
  * @param TYPE_REF_EQUALS_FUNC          Function comparing two `TYPE*` for equality
  * @param TYPE_REF_COPY_FUNC            Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC          Function that deletes/frees the internal data of a `TYPE*`
+ * @param TYPE_REF_DESTROY_FUNC         Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_VECTOR(                                                                  \
     VECTOR_NAME_PUBLIC_PREFIX,                                                                  \
     TYPE,                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                       \
     TYPE_REF_COPY_FUNC,                                                                         \
-    TYPE_REF_DELETE_FUNC                                                                        \
+    TYPE_REF_DESTROY_FUNC                                                                       \
 )                                                                                               \
                                                                                                 \
 _DEFINE_GENERIC_VECTOR_DATA(                                                                    \
@@ -442,7 +442,7 @@ _DEFINE_GENERIC_VECTOR_IMPL(                                                    
     TYPE,                                                                                       \
     TYPE_REF_EQUALS_FUNC,                                                                       \
     TYPE_REF_COPY_FUNC,                                                                         \
-    TYPE_REF_DELETE_FUNC                                                                        \
+    TYPE_REF_DESTROY_FUNC                                                                       \
 )                                                                                               \
 
 

@@ -93,7 +93,7 @@ static bool _C_PUBLIC_MEMBER(LIST_ITERATOR_NAME, equals)(LIST_ITERATOR_NAME* lef
     TYPE,                                                                                                                                                   \
     TYPE_REF_EQUALS_FUNC,                                                                                                                                   \
     TYPE_REF_COPY_FUNC,                                                                                                                                     \
-    TYPE_REF_DELETE_FUNC                                                                                                                                    \
+    TYPE_REF_DESTROY_FUNC                                                                                                                                   \
 )                                                                                                                                                           \
                                                                                                                                                             \
 static LIST_NAME            _C_PUBLIC_MEMBER(LIST_NAME, create)();                                                                                          \
@@ -220,7 +220,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, pop_back)(LIST_NAME* list)              
     if (0 == list->size) return;                                                                                                                            \
     NODE_NAME* junk_node = list->head->prev;                                                                                                                \
     _C_PRIVATE_MEMBER(LIST_NAME, unlink_node)(list, junk_node);                                                                                             \
-    TYPE_REF_DELETE_FUNC(&junk_node->value);                                                                                                                \
+    TYPE_REF_DESTROY_FUNC(&junk_node->value);                                                                                                               \
     _C_PUBLIC_MEMBER(NODE_NAME, destroy)(junk_node);                                                                                                        \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -230,7 +230,7 @@ static void _C_PUBLIC_MEMBER(LIST_NAME, pop_front)(LIST_NAME* list)             
     if (0 == list->size) return;                                                                                                                            \
     NODE_NAME* junk_node = list->head->next;                                                                                                                \
     _C_PRIVATE_MEMBER(LIST_NAME, unlink_node)(list, junk_node);                                                                                             \
-    TYPE_REF_DELETE_FUNC(&junk_node->value);                                                                                                                \
+    TYPE_REF_DESTROY_FUNC(&junk_node->value);                                                                                                               \
     _C_PUBLIC_MEMBER(NODE_NAME, destroy)(junk_node);                                                                                                        \
 }                                                                                                                                                           \
                                                                                                                                                             \
@@ -274,7 +274,7 @@ static LIST_ITERATOR_NAME _C_PUBLIC_MEMBER(LIST_NAME, end)(LIST_NAME* list)     
     TYPE,                                                                                                               \
     TYPE_REF_EQUALS_FUNC,                                                                                               \
     TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DELETE_FUNC                                                                                                \
+    TYPE_REF_DESTROY_FUNC                                                                                               \
 )                                                                                                                       \
                                                                                                                         \
 DEFINE_GENERIC_DOUBLE_NODE(                                                                                             \
@@ -301,7 +301,7 @@ _DEFINE_GENERIC_LIST_IMPL(                                                      
     TYPE,                                                                                                               \
     TYPE_REF_EQUALS_FUNC,                                                                                               \
     TYPE_REF_COPY_FUNC,                                                                                                 \
-    TYPE_REF_DELETE_FUNC                                                                                                \
+    TYPE_REF_DESTROY_FUNC                                                                                               \
 )                                                                                                                       \
 
 

@@ -206,7 +206,7 @@ static bool _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME
  * @param TYPE_REF_COMPARE_FUNC               Function comparing two `TYPE*` (for priority)
  * @param TYPE_REF_EQUALS_FUNC                Function comparing two `TYPE*` for equality
  * @param TYPE_REF_COPY_FUNC                  Function that copies from `TYPE*` to `TYPE*`
- * @param TYPE_REF_DELETE_FUNC                Function that deletes/frees the internal data of a `TYPE*`
+ * @param TYPE_REF_DESTROY_FUNC               Function that deletes/frees the internal data of a `TYPE*`
  */
 #define DEFINE_GENERIC_PRIORITY_QUEUE(                                                                                      \
     PRIORITY_QUEUE_NAME_PUBLIC_PREFIX,                                                                                      \
@@ -214,7 +214,7 @@ static bool _C_PUBLIC_MEMBER(PQ_NAME, equals)(const PQ_NAME* left, const PQ_NAME
     TYPE_REF_COMPARE_FUNC,                                                                                                  \
     TYPE_REF_EQUALS_FUNC,                                                                                                   \
     TYPE_REF_COPY_FUNC,                                                                                                     \
-    TYPE_REF_DELETE_FUNC                                                                                                    \
+    TYPE_REF_DESTROY_FUNC                                                                                                   \
 )                                                                                                                           \
                                                                                                                             \
 DEFINE_GENERIC_HEAPIFY_FUNCTIONS(                                                                                           \
@@ -229,7 +229,7 @@ DEFINE_GENERIC_VECTOR(                                                          
     TYPE,                                                                                                                   \
     TYPE_REF_EQUALS_FUNC,                                                                                                   \
     TYPE_REF_COPY_FUNC,                                                                                                     \
-    TYPE_REF_DELETE_FUNC                                                                                                    \
+    TYPE_REF_DESTROY_FUNC                                                                                                   \
 )                                                                                                                           \
                                                                                                                             \
 _DEFINE_GENERIC_PRIORITY_QUEUE_IMPL(                                                                                        \
